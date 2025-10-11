@@ -1,6 +1,6 @@
-flask==3.0.0
-gunicorn==21.2.0
 outscraper==5.9.2
 openai==1.57.2
-requests==2.31.0
-python-dotenv==1.0.0
+gspread==5.11.3
+google-auth==2.23.0
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.1.1
