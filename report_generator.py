@@ -55,10 +55,14 @@ def scrape_market_data(city, state, focus_areas, property_type):
         # Use Outscraper's Google Maps scraper
         results = outscraper_client.google_maps_search(
             query,
-            limit=10,
+            limit=30,
             language='en',
             region='us'
         )
+        
+        # Outscraper returns nested list - flatten it
+        if results and isinstance(results[0], list):
+            results = results[0]
         
         # Extract property data
         properties = []
@@ -68,7 +72,9 @@ def scrape_market_data(city, state, focus_areas, property_type):
                 'address': result.get('full_address', 'N/A'),
                 'rating': result.get('rating', 'N/A'),
                 'reviews': result.get('reviews', 0),
-                'category': result.get('category', 'N/A')
+                'category': result.get('category', 'N/A'),
+                'phone': result.get('phone', 'N/A'),
+                'website': result.get('site', 'N/A')
             }
             properties.append(property_data)
         
@@ -87,8 +93,8 @@ def generate_insights(city, state, properties):
     
     # Create summary for OpenAI
     property_summary = "\n".join([
-        f"- {p['name']} at {p['address']}, Rating: {p['rating']}, Reviews: {p['reviews']}"
-        for p in properties[:10]
+        f"- {p['name']} at {p['address']}, Rating: {p['rating']}, Reviews: {p['reviews']}, Category: {p['category']}"
+        for p in properties[:20]
     ])
     
     try:
@@ -108,7 +114,7 @@ def generate_insights(city, state, properties):
                 },
                 {
                     "role": "user",
-                    "content": f"""Analyze this {city}, {state} luxury real estate market snapshot:
+                    "content": f"""Analyze this {city}, {state} luxury real estate market snapshot with {len(properties)} listings:
                     
 {property_summary}
 
@@ -136,8 +142,8 @@ def write_to_sheet(worksheet, client_data, properties, insights):
     
     # Format properties as text
     top_properties = "\n\n".join([
-        f"{i+1}. {p['name']}\n   {p['address']}\n   Rating: {p['rating']} ({p['reviews']} reviews)"
-        for i, p in enumerate(properties[:5])
+        f"{i+1}. {p['name']}\n   {p['address']}\n   Rating: {p['rating']} ({p['reviews']} reviews)\n   {p['category']}"
+        for i, p in enumerate(properties[:10])
     ])
     
     # Create row data
@@ -177,7 +183,7 @@ def main():
                 "Focus Areas",
                 "Properties Analyzed",
                 "Insights (RAISE/REDUCE/ROTATE)",
-                "Top 5 Properties",
+                "Top 10 Properties",
                 "Status"
             ]
             worksheet.append_row(headers)
@@ -196,7 +202,7 @@ def main():
         
         if not properties:
             print("⚠️ No properties found, using placeholder data")
-            properties = [{"name": "Sample Property", "address": "Miami, FL", "rating": "N/A", "reviews": 0, "category": "Real Estate"}]
+            properties = [{"name": "Sample Property", "address": "Miami, FL", "rating": "N/A", "reviews": 0, "category": "Real Estate", "phone": "N/A", "website": "N/A"}]
         
         # Generate AI insights
         insights = generate_insights(
