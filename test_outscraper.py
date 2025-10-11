@@ -33,6 +33,10 @@ for i, query in enumerate(test_queries, 1):
             region='us'
         )
         
+        # Flatten nested list if needed
+        if results and isinstance(results[0], list):
+            results = results[0]
+        
         print(f"✅ Results found: {len(results)}")
         
         if results:
@@ -48,13 +52,19 @@ for i, query in enumerate(test_queries, 1):
                 # Print ALL available fields for first result
                 if idx == 1:
                     print(f"\n     All available fields:")
-                    for key in result.keys():
-                        print(f"       - {key}: {result.get(key)}")
+                    for key in sorted(result.keys()):
+                        value = result.get(key)
+                        # Truncate long values
+                        if isinstance(value, str) and len(value) > 100:
+                            value = value[:100] + "..."
+                        print(f"       - {key}: {value}")
         else:
             print("⚠️ No results returned")
             
     except Exception as e:
         print(f"❌ ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 print("\n" + "=" * 60)
 print("TEST COMPLETE")
