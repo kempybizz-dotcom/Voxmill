@@ -58,4 +58,4 @@ At £700/month per client = 6,363x ROI per client.
 
 ---
 
-**Status**: MVP - JSON output only (PDF coming next)
+**Status**: MVP - JSON output only (PDF coming next) 
