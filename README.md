@@ -1,61 +1,52 @@
-# VOXMILL MARKET INTELLIGENCE ENGINE
+# VOXMILL MARKET INTELLIGENCE - AUTOMATED REPORTS
 
-Automated real estate market intelligence reports for US markets.
+Hands-off market intelligence reports for luxury real estate clients.
 
 ## Architecture
 
 ```
-Outscraper (Zillow/Google Maps) → Flask API → OpenAI Analysis → JSON Response
+Render Cron Job (weekly) → Scrapes Market Data → Writes to Google Sheet → Zapier → PDF → Email
 ```
 
-## Endpoints
+## How It Works
 
-- **`GET /`** - Web UI for testing
-- **`POST /generate-report`** - Generate market report
-- **`GET /health`** - Health check
+1. **Script runs automatically** every Monday at 9am
+2. **Pulls real estate data** for each client's market (Outscraper)
+3. **Generates AI insights** (OpenAI: RAISE/REDUCE/ROTATE)
+4. **Writes to Google Sheet** (one row per report)
+5. **Zapier watches sheet** → creates PDF → emails client
 
-## Environment Variables
+## Demo Client
 
-Set these in Render dashboard:
+**Miami Brokers Group** (Mike Diaz)
+- Market: Miami (Pinecrest, Coral Gables, Palmetto Bay)
+- Property Type: Luxury residential
+
+## Environment Variables (Set in Render)
 
 ```
-OUTSCRAPER_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
+OUTSCRAPER_API_KEY=your_outscraper_key
+OPENAI_API_KEY=your_openai_key
+GOOGLE_SHEET_ID=1yG10YDNwZE7BGoQ1l67xg4obGtqNyYzIYRVZi4cWit4
+GOOGLE_CREDENTIALS_JSON={"type":"service_account",...}
 ```
 
-## Deployment
+## Google Sheet Structure
 
-1. Push code to GitHub
-2. Render auto-deploys from `main` branch
-3. Access at: `https://voxmill-report-engine.onrender.com`
-
-## Testing
-
-### Via Web UI
-Navigate to your Render URL and use the form.
-
-### Via cURL
-```bash
-curl -X POST https://your-render-url.onrender.com/generate-report \
-  -H "Content-Type: application/json" \
-  -d '{"city": "Miami", "state": "FL", "property_type": "luxury"}'
-```
+| Timestamp | Client Name | Contact | Market | Focus Areas | Properties Analyzed | Insights | Top 5 Properties | Status |
+|-----------|-------------|---------|--------|-------------|---------------------|----------|------------------|--------|
 
 ## Cost Per Report
 
-- Outscraper: ~$0.10 per 10 listings
-- OpenAI: ~$0.01 per analysis
+- Outscraper: $0.10 per 10 listings
+- OpenAI: $0.01 per analysis
 - **Total: ~$0.11 per report**
 
-At £700/month per client = 6,363x ROI per client.
+At £700/month per client = 6,363x ROI
 
 ## Next Steps
 
-1. Test with Miami, Austin, Denver
-2. Add PDF generation (Google Slides API)
-3. Add email delivery (Gmail API)
-4. Set up weekly cron job
-
----
-
-**Status**: MVP - JSON output only (PDF coming next) 
+1. ✅ Script writes to Google Sheet
+2. ⏳ Set up Zapier automation (Sheet → PDF → Email)
+3. ⏳ Add real clients to system
+4. ⏳ Scale to 10 clients = £7,000 MRR
