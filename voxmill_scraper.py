@@ -2,9 +2,12 @@ import os
 from outscraper import ApiClient
 from openai import OpenAI
 
-# Initialize clients
-outscraper_client = ApiClient(api_key=os.environ.get('OUTSCRAPER_API_KEY'))
-openai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+# Initialize clients lazily to avoid import-time errors with Python 3.13
+def get_outscraper_client():
+    return ApiClient(api_key=os.environ.get('OUTSCRAPER_API_KEY'))
+
+def get_openai_client():
+    return OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
 def generate_market_report(city, state, property_type):
     """
@@ -19,6 +22,10 @@ def generate_market_report(city, state, property_type):
         Dictionary with market data and insights
     """
     
+    # Initialize clients
+    outscraper_client = get_outscraper_client()
+    openai_client = get_openai_client()
+    
     # Step 1: Pull Zillow data via Outscraper
     print(f"Pulling data for {city}, {state}...")
     
@@ -32,7 +39,6 @@ def generate_market_report(city, state, property_type):
     
     try:
         # Use Outscraper's Google Maps scraper (works for real estate listings)
-        # Note: You can also use their dedicated Zillow scraper if you have access
         results = outscraper_client.google_maps_search(
             query,
             limit=10,
