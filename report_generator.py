@@ -64,40 +64,54 @@ def fetch_realty_listings(city, state_code, min_price=500000):
         
         data = response.json()
         
+        # DEBUG: Show response structure
+        print(f"  Response type: {type(data)}")
+        print(f"  Response keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
+        
+        if data and isinstance(data, dict):
+            if 'data' in data:
+                print(f"  Data keys: {list(data['data'].keys())}")
+                if 'home_search' in data.get('data', {}):
+                    print(f"  Home search keys: {list(data['data']['home_search'].keys())}")
+            else:
+                print(f"  Full response preview: {json.dumps(data, indent=2)[:500]}")
+        
         listings = []
         
-        if 'data' in data and 'home_search' in data['data'] and 'results' in data['data']['home_search']:
-            results = data['data']['home_search']['results']
-            
-            for listing in results:
-                description = listing.get('description', {})
-                location = listing.get('location', {})
-                address = location.get('address', {})
-                
-                property_data = {
-                    'address': address.get('line', 'N/A'),
-                    'city': address.get('city', 'N/A'),
-                    'state': address.get('state_code', 'N/A'),
-                    'zip': address.get('postal_code', 'N/A'),
-                    'price': listing.get('list_price', 0),
-                    'beds': description.get('beds', 'N/A'),
-                    'baths': description.get('baths', 'N/A'),
-                    'sqft': description.get('sqft', 'N/A'),
-                    'lot_sqft': description.get('lot_sqft', 'N/A'),
-                    'year_built': description.get('year_built', 'N/A'),
-                    'property_type': description.get('type', 'N/A'),
-                    'days_on_market': listing.get('days_on_mls', 'N/A'),
-                    'status': listing.get('status', 'N/A'),
-                    'listing_id': listing.get('property_id', 'N/A')
-                }
-                
-                if property_data['price'] > 0:
-                    listings.append(property_data)
-            
-            print(f"  ✅ Found {len(listings)} listings with prices")
-        else:
-            print(f"  ⚠️ Unexpected response structure")
-            print(f"  Response keys: {list(data.keys())}")
+        # Try to navigate response
+        if data and isinstance(data, dict) and 'data' in data:
+            data_section = data.get('data', {})
+            if 'home_search' in data_section:
+                home_search = data_section['home_search']
+                if 'results' in home_search:
+                    results = home_search['results']
+                    
+                    for listing in results:
+                        description = listing.get('description', {})
+                        location = listing.get('location', {})
+                        address = location.get('address', {})
+                        
+                        property_data = {
+                            'address': address.get('line', 'N/A'),
+                            'city': address.get('city', 'N/A'),
+                            'state': address.get('state_code', 'N/A'),
+                            'zip': address.get('postal_code', 'N/A'),
+                            'price': listing.get('list_price', 0),
+                            'beds': description.get('beds', 'N/A'),
+                            'baths': description.get('baths', 'N/A'),
+                            'sqft': description.get('sqft', 'N/A'),
+                            'lot_sqft': description.get('lot_sqft', 'N/A'),
+                            'year_built': description.get('year_built', 'N/A'),
+                            'property_type': description.get('type', 'N/A'),
+                            'days_on_market': listing.get('days_on_mls', 'N/A'),
+                            'status': listing.get('status', 'N/A'),
+                            'listing_id': listing.get('property_id', 'N/A')
+                        }
+                        
+                        if property_data['price'] > 0:
+                            listings.append(property_data)
+                    
+                    print(f"  ✅ Found {len(listings)} listings with prices")
         
         return listings
     
@@ -106,6 +120,8 @@ def fetch_realty_listings(city, state_code, min_price=500000):
         return []
     except Exception as e:
         print(f"  ❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def calc_metrics(listings):
