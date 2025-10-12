@@ -42,15 +42,16 @@ def try_realty_api(city, state_code, min_price=500000):
             "X-RapidAPI-Host": "realty-in-us.p.rapidapi.com",
             "Content-Type": "application/json"
         }
+        # 🔧 FIX 1: Use postal_code instead of city/state for more reliable results
         payload = {
             "limit": 30,
-            "city": city,
-            "state_code": state_code,
+            "postal_code": "33156",  # Coral Gables - change this for other markets
             "status": ["for_sale"],
             "price_min": min_price
         }
         
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        # 🔧 FIX 2: Increased timeout from 20 to 60 seconds
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
         if response.status_code != 200:
             print(f"  ❌ Status {response.status_code}")
             return []
