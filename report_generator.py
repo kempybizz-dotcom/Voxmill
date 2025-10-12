@@ -38,22 +38,23 @@ def fetch_realty_listings(city, state_code, min_price=500000):
     
     headers = {
         "X-RapidAPI-Key": api_key,
-        "X-RapidAPI-Host": "realty-in-us.p.rapidapi.com"
+        "X-RapidAPI-Host": "realty-in-us.p.rapidapi.com",
+        "Content-Type": "application/json"
     }
     
-    querystring = {
-        "limit": "30",
-        "offset": "0",
+    payload = {
+        "limit": 30,
+        "offset": 0,
         "postal_code": "",
-        "status": "for_sale",
-        "sort": "relevance",
+        "status": ["for_sale", "ready_to_build"],
+        "sort": {"direction": "desc", "field": "list_date"},
         "city": city,
         "state_code": state_code,
-        "price_min": str(min_price)
+        "price_min": min_price
     }
     
     try:
-        response = requests.get(url, headers=headers, params=querystring, timeout=30)
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         
         print(f"  API Status: {response.status_code}")
         
@@ -65,12 +66,10 @@ def fetch_realty_listings(city, state_code, min_price=500000):
         
         listings = []
         
-        # Navigate response structure
         if 'data' in data and 'home_search' in data['data'] and 'results' in data['data']['home_search']:
             results = data['data']['home_search']['results']
             
             for listing in results:
-                # Extract property details
                 description = listing.get('description', {})
                 location = listing.get('location', {})
                 address = location.get('address', {})
@@ -92,7 +91,6 @@ def fetch_realty_listings(city, state_code, min_price=500000):
                     'listing_id': listing.get('property_id', 'N/A')
                 }
                 
-                # Only include if we have a price
                 if property_data['price'] > 0:
                     listings.append(property_data)
             
@@ -120,7 +118,6 @@ def calc_metrics(listings):
     doms = [l['days_on_market'] for l in listings if isinstance(l['days_on_market'], (int, float))]
     beds = [l['beds'] for l in listings if isinstance(l['beds'], (int, float))]
     
-    # Calculate price per sqft
     price_per_sqft_list = []
     for l in listings:
         if isinstance(l['price'], (int, float)) and isinstance(l['sqft'], (int, float)) and l['sqft'] > 0:
@@ -146,7 +143,6 @@ def gen_insights(city, state, listings, metrics):
     
     client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
     
-    # Create detailed property summary
     listing_summary = "\n".join([
         f"- ${l['price']:,} | {l['beds']}bed/{l['baths']}bath | {l['sqft']:,} sqft | {l['days_on_market']} days | {l['address']}, {l['city']}"
         for l in listings[:20]
@@ -223,7 +219,6 @@ def write_sheet(ws, client_data, listings, metrics, insights):
     
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Format market summary
     market_summary = f"""Active Listings: {metrics['total_listings']}
 Average Price: ${metrics['avg_price']:,}
 Median Price: ${metrics['median_price']:,}
@@ -257,7 +252,6 @@ def main():
     try:
         ws = get_google_sheet()
         
-        # Add headers if needed
         if ws.row_count == 0 or not ws.cell(1, 1).value:
             ws.append_row([
                 "Timestamp", "Client Name", "Contact Person", "Market", 
@@ -271,7 +265,6 @@ def main():
         print(f"Market: {DEMO_CLIENT['city']}, {DEMO_CLIENT['state_code']}")
         print('=' * 75)
         
-        # Fetch real listings from API
         listings = fetch_realty_listings(
             DEMO_CLIENT['city'],
             DEMO_CLIENT['state_code'],
@@ -279,10 +272,9 @@ def main():
         )
         
         if not listings or len(listings) < 5:
-            print("⚠️ Insufficient listings - check API key or try different parameters")
+            print("⚠️ Insufficient listings - check API key or parameters")
             return
         
-        # Calculate comprehensive metrics
         metrics = calc_metrics(listings)
         print(f"\n📊 Market Metrics:")
         print(f"   Total Listings: {metrics['total_listings']}")
@@ -291,7 +283,6 @@ def main():
         print(f"   Price/SqFt: ${metrics['price_per_sqft']:,}")
         print(f"   Avg DOM: {metrics['avg_dom']} days")
         
-        # Generate AI insights
         insights = gen_insights(
             DEMO_CLIENT['city'],
             DEMO_CLIENT['state'],
@@ -299,7 +290,6 @@ def main():
             metrics
         )
         
-        # Write to sheet
         write_sheet(ws, DEMO_CLIENT, listings, metrics, insights)
         
         print("\n" + "=" * 75)
