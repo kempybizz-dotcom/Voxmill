@@ -1,7 +1,9 @@
 import os
 import json
+import re
 from datetime import datetime
 import requests
+from outscraper import ApiClient
 from openai import OpenAI
 import gspread
 from google.oauth2.service_account import Credentials
@@ -9,12 +11,10 @@ from google.oauth2.service_account import Credentials
 DEMO_CLIENT = {
     "name": "Miami Brokers Group",
     "contact": "Mike Diaz",
-    "email": "demo@miamibrokersgroup.com",
     "city": "Miami",
     "state": "FL",
     "state_code": "FL",
-    "focus_areas": "Pinecrest, Coral Gables, Palmetto Bay",
-    "property_type": "luxury"
+    "focus_areas": "Pinecrest, Coral Gables, Palmetto Bay"
 }
 
 def get_google_sheet():
@@ -25,293 +25,297 @@ def get_google_sheet():
     credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(credentials)
     sheet_id = os.environ.get('GOOGLE_SHEET_ID')
-    spreadsheet = client.open_by_key(sheet_id)
-    return spreadsheet.sheet1
+    return client.open_by_key(sheet_id).sheet1
 
-def fetch_realty_listings(city, state_code, min_price=500000):
-    """Fetch real property listings using Realty In US API"""
-    print(f"Fetching real listings from Realty In US API for {city}, {state_code}...")
-    
-    api_key = os.environ.get('REALTY_US_API_KEY')
-    
-    url = "https://realty-in-us.p.rapidapi.com/properties/v3/list"
-    
-    headers = {
-        "X-RapidAPI-Key": api_key,
-        "X-RapidAPI-Host": "realty-in-us.p.rapidapi.com",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "limit": 30,
-        "offset": 0,
-        "postal_code": "",
-        "status": ["for_sale", "ready_to_build"],
-        "sort": {"direction": "desc", "field": "list_date"},
-        "city": city,
-        "state_code": state_code,
-        "price_min": min_price
-    }
-    
+def try_realty_api(city, state_code, min_price=500000):
+    """SOURCE 1: RapidAPI Realty In US"""
+    print(f"\n[SOURCE 1] Trying Realty API...")
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        api_key = os.environ.get('REALTY_US_API_KEY')
+        if not api_key:
+            print("  ⚠️ No API key")
+            return []
         
-        print(f"  API Status: {response.status_code}")
+        url = "https://realty-in-us.p.rapidapi.com/properties/v3/list"
+        headers = {
+            "X-RapidAPI-Key": api_key,
+            "X-RapidAPI-Host": "realty-in-us.p.rapidapi.com",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "limit": 30,
+            "city": city,
+            "state_code": state_code,
+            "status": ["for_sale"],
+            "price_min": min_price
+        }
         
+        response = requests.post(url, headers=headers, json=payload, timeout=20)
         if response.status_code != 200:
-            print(f"  ❌ API Error: {response.text[:200]}")
+            print(f"  ❌ Status {response.status_code}")
             return []
         
         data = response.json()
-        
-        # DEBUG: Show response structure
-        print(f"  Response type: {type(data)}")
-        print(f"  Response keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
-        
-        if data and isinstance(data, dict):
-            if 'data' in data:
-                print(f"  Data keys: {list(data['data'].keys())}")
-                if 'home_search' in data.get('data', {}):
-                    print(f"  Home search keys: {list(data['data']['home_search'].keys())}")
-            else:
-                print(f"  Full response preview: {json.dumps(data, indent=2)[:500]}")
+        results = data.get('data', {}).get('home_search', {}).get('results', [])
         
         listings = []
+        for r in results:
+            desc = r.get('description') or {}
+            loc = r.get('location', {}).get('address') or {}
+            price = r.get('list_price', 0)
+            if price > 0:
+                listings.append({
+                    'source': 'Realty API',
+                    'address': loc.get('line', 'N/A'),
+                    'city': loc.get('city', city),
+                    'price': price,
+                    'beds': desc.get('beds', 'N/A'),
+                    'baths': desc.get('baths', 'N/A'),
+                    'sqft': desc.get('sqft', 'N/A'),
+                    'days_on_market': r.get('days_on_mls', 'N/A'),
+                    'property_type': desc.get('type', 'Single Family')
+                })
         
-        # Try to navigate response
-        if data and isinstance(data, dict) and 'data' in data:
-            data_section = data.get('data', {})
-            if 'home_search' in data_section:
-                home_search = data_section['home_search']
-                if 'results' in home_search:
-                    results = home_search['results']
-                    
-                    for listing in results:
-                        description = listing.get('description', {})
-                        location = listing.get('location', {})
-                        address = location.get('address', {})
-                        
-                        property_data = {
-                            'address': address.get('line', 'N/A'),
-                            'city': address.get('city', 'N/A'),
-                            'state': address.get('state_code', 'N/A'),
-                            'zip': address.get('postal_code', 'N/A'),
-                            'price': listing.get('list_price', 0),
-                            'beds': description.get('beds', 'N/A'),
-                            'baths': description.get('baths', 'N/A'),
-                            'sqft': description.get('sqft', 'N/A'),
-                            'lot_sqft': description.get('lot_sqft', 'N/A'),
-                            'year_built': description.get('year_built', 'N/A'),
-                            'property_type': description.get('type', 'N/A'),
-                            'days_on_market': listing.get('days_on_mls', 'N/A'),
-                            'status': listing.get('status', 'N/A'),
-                            'listing_id': listing.get('property_id', 'N/A')
-                        }
-                        
-                        if property_data['price'] > 0:
-                            listings.append(property_data)
-                    
-                    print(f"  ✅ Found {len(listings)} listings with prices")
-        
+        print(f"  ✅ Found {len(listings)} listings")
         return listings
-    
-    except requests.exceptions.Timeout:
-        print("  ❌ Request timeout")
-        return []
     except Exception as e:
-        print(f"  ❌ Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print(f"  ❌ Error: {e}")
         return []
 
+def try_outscraper_search(city, focus_areas):
+    """SOURCE 2: Outscraper Google Search"""
+    print(f"\n[SOURCE 2] Trying Outscraper Google Search...")
+    try:
+        client = ApiClient(api_key=os.environ.get('OUTSCRAPER_API_KEY'))
+        queries = [
+            f"site:zillow.com {city} {focus_areas} homes for sale",
+            f"site:realtor.com {city} {focus_areas} luxury"
+        ]
+        
+        all_listings = []
+        for q in queries:
+            try:
+                results = client.google_search(q, num=15, language='en')
+                if results and isinstance(results[0], list):
+                    results = results[0]
+                
+                for r in results:
+                    title = r.get('title', '')
+                    snippet = r.get('snippet', '')
+                    combined = f"{title} {snippet}"
+                    
+                    # Extract price
+                    price = None
+                    price_match = re.search(r'\$([0-9,]+)', combined)
+                    if price_match:
+                        price = int(price_match.group(1).replace(',', ''))
+                    
+                    if price and price > 400000:
+                        # Extract beds/baths
+                        beds = None
+                        baths = None
+                        bed_match = re.search(r'(\d+)\s*(?:bed|bd)', combined, re.I)
+                        bath_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:bath|ba)', combined, re.I)
+                        if bed_match:
+                            beds = int(bed_match.group(1))
+                        if bath_match:
+                            baths = float(bath_match.group(1))
+                        
+                        all_listings.append({
+                            'source': 'Zillow/Realtor',
+                            'address': title[:100],
+                            'city': city,
+                            'price': price,
+                            'beds': beds or 'N/A',
+                            'baths': baths or 'N/A',
+                            'sqft': 'N/A',
+                            'days_on_market': 'N/A',
+                            'property_type': 'Single Family'
+                        })
+            except:
+                continue
+        
+        print(f"  ✅ Found {len(all_listings)} listings")
+        return all_listings
+    except Exception as e:
+        print(f"  ❌ Error: {e}")
+        return []
+
+def try_outscraper_maps(city, focus_areas):
+    """SOURCE 3: Outscraper Google Maps (agents + properties)"""
+    print(f"\n[SOURCE 3] Trying Outscraper Google Maps...")
+    try:
+        client = ApiClient(api_key=os.environ.get('OUTSCRAPER_API_KEY'))
+        queries = [
+            f"{city} {focus_areas} luxury homes for sale",
+            f"{city} real estate {focus_areas}"
+        ]
+        
+        all_data = []
+        for q in queries:
+            try:
+                results = client.google_maps_search(q, limit=15, language='en', region='us')
+                if results and isinstance(results[0], list):
+                    results = results[0]
+                
+                for r in results:
+                    desc = r.get('description', '')
+                    price = None
+                    price_match = re.search(r'\$([0-9,]+)', desc)
+                    if price_match:
+                        price = int(price_match.group(1).replace(',', ''))
+                    
+                    all_data.append({
+                        'source': 'Google Maps',
+                        'address': r.get('name', 'N/A'),
+                        'city': city,
+                        'price': price or 0,
+                        'beds': 'N/A',
+                        'baths': 'N/A',
+                        'sqft': 'N/A',
+                        'days_on_market': 'N/A',
+                        'property_type': r.get('category', 'Real Estate'),
+                        'rating': r.get('rating', 'N/A'),
+                        'reviews': r.get('reviews', 0)
+                    })
+            except:
+                continue
+        
+        print(f"  ✅ Found {len(all_data)} entities")
+        return all_data
+    except Exception as e:
+        print(f"  ❌ Error: {e}")
+        return []
+
+def aggregate_listings(client_data):
+    """Aggregate data from all sources"""
+    print("\n" + "=" * 70)
+    print("AGGREGATING DATA FROM MULTIPLE SOURCES")
+    print("=" * 70)
+    
+    all_data = []
+    
+    # Try each source
+    realty_data = try_realty_api(client_data['city'], client_data['state_code'])
+    all_data.extend(realty_data)
+    
+    search_data = try_outscraper_search(client_data['city'], client_data['focus_areas'])
+    all_data.extend(search_data)
+    
+    maps_data = try_outscraper_maps(client_data['city'], client_data['focus_areas'])
+    all_data.extend(maps_data)
+    
+    print(f"\n📊 TOTAL DATA COLLECTED: {len(all_data)} items")
+    print(f"   - Realty API: {len(realty_data)}")
+    print(f"   - Zillow/Realtor Search: {len(search_data)}")
+    print(f"   - Google Maps: {len(maps_data)}")
+    
+    # Sort by price (highest first), filter out zero prices
+    listings_with_price = [d for d in all_data if d.get('price', 0) > 0]
+    listings_with_price.sort(key=lambda x: x['price'], reverse=True)
+    
+    return listings_with_price, all_data
+
 def calc_metrics(listings):
-    """Calculate comprehensive market metrics"""
     if not listings:
         return {}
-    
-    prices = [l['price'] for l in listings if isinstance(l['price'], (int, float)) and l['price'] > 0]
-    sqfts = [l['sqft'] for l in listings if isinstance(l['sqft'], (int, float)) and l['sqft'] > 0]
-    doms = [l['days_on_market'] for l in listings if isinstance(l['days_on_market'], (int, float))]
-    beds = [l['beds'] for l in listings if isinstance(l['beds'], (int, float))]
-    
-    price_per_sqft_list = []
-    for l in listings:
-        if isinstance(l['price'], (int, float)) and isinstance(l['sqft'], (int, float)) and l['sqft'] > 0:
-            price_per_sqft_list.append(l['price'] / l['sqft'])
-    
-    metrics = {
-        'total_listings': len(listings),
+    prices = [l['price'] for l in listings if l.get('price', 0) > 0]
+    return {
+        'total': len(listings),
+        'with_pricing': len(prices),
         'avg_price': int(sum(prices) / len(prices)) if prices else 0,
         'median_price': int(sorted(prices)[len(prices)//2]) if prices else 0,
         'min_price': min(prices) if prices else 0,
-        'max_price': max(prices) if prices else 0,
-        'avg_sqft': int(sum(sqfts) / len(sqfts)) if sqfts else 0,
-        'avg_beds': round(sum(beds) / len(beds), 1) if beds else 0,
-        'avg_dom': int(sum(doms) / len(doms)) if doms else 0,
-        'price_per_sqft': int(sum(price_per_sqft_list) / len(price_per_sqft_list)) if price_per_sqft_list else 0
+        'max_price': max(prices) if prices else 0
     }
-    
-    return metrics
 
-def gen_insights(city, state, listings, metrics):
-    """Generate AI insights from real listing data"""
-    print("Generating strategic insights...")
-    
+def gen_insights(city, listings, metrics):
+    print("\nGenerating AI insights...")
     client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
     
-    listing_summary = "\n".join([
-        f"- ${l['price']:,} | {l['beds']}bed/{l['baths']}bath | {l['sqft']:,} sqft | {l['days_on_market']} days | {l['address']}, {l['city']}"
-        for l in listings[:20]
-        if isinstance(l['beds'], (int, float)) and isinstance(l['baths'], (int, float))
+    summary = "\n".join([
+        f"- ${l['price']:,} | {l.get('beds', 'N/A')}bd/{l.get('baths', 'N/A')}ba | {l['address'][:60]}"
+        for l in listings[:20] if l.get('price', 0) > 0
     ])
     
-    market_context = f"""Market Overview for {city}, {state}:
-- Total Active Listings: {metrics['total_listings']}
-- Average Price: ${metrics['avg_price']:,}
-- Median Price: ${metrics['median_price']:,}
-- Price Range: ${metrics['min_price']:,} - ${metrics['max_price']:,}
-- Avg Property: {metrics['avg_beds']} beds | {metrics['avg_sqft']:,} sqft
-- Avg Days on Market: {metrics['avg_dom']} days
-- Price per SqFt: ${metrics['price_per_sqft']:,}"""
+    context = f"""Market: {city}
+Total: {metrics['total']} | Priced: {metrics['with_pricing']}
+Avg: ${metrics['avg_price']:,} | Median: ${metrics['median_price']:,}
+Range: ${metrics['min_price']:,} - ${metrics['max_price']:,}"""
     
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": """You are Voxmill Market Intelligence — an executive real estate analyst.
-                    Analyze REAL MLS listing data and provide strategic insights:
-                    
-                    RAISE: [Specific underpriced opportunities - cite actual prices and addresses]
-                    REDUCE: [Overpriced listings needing adjustment - cite actual prices]
-                    ROTATE: [Strategic marketing shifts based on DOM and pricing - cite numbers]
-                    
-                    Be specific. Use actual dollar amounts and days on market. Each line max 25 words."""
-                },
-                {
-                    "role": "user",
-                    "content": f"""{market_context}
-
-Active MLS Listings:
-{listing_summary}
-
-Generate data-driven RAISE / REDUCE / ROTATE strategic insights."""
-                }
+                {"role": "system", "content": "You are Voxmill Market Intelligence. Analyze data and provide RAISE / REDUCE / ROTATE insights. Max 20 words each."},
+                {"role": "user", "content": f"{context}\n\nListings:\n{summary}\n\nGenerate insights:"}
             ],
             temperature=0.7,
-            max_tokens=350
+            max_tokens=250
         )
-        
-        print("✅ Insights generated")
         return completion.choices[0].message.content.strip()
-    
     except Exception as e:
-        print(f"❌ Error: {e}")
-        return f"Error generating insights: {e}"
+        return f"Error: {e}"
 
-def format_listings(listings, count=10):
-    """Format listings for Google Sheet"""
-    formatted = []
-    
+def format_for_sheet(listings, count=10):
+    out = []
     for i, l in enumerate(listings[:count], 1):
-        bed_bath = f"{l['beds']}bed/{l['baths']}bath" if l['beds'] != 'N/A' else "N/A"
-        sqft_str = f"{l['sqft']:,} sqft" if isinstance(l['sqft'], (int, float)) else "N/A"
-        dom_str = f"{l['days_on_market']} days" if isinstance(l['days_on_market'], (int, float)) else "N/A"
-        price_sqft = f"${int(l['price']/l['sqft'])}/sqft" if isinstance(l['sqft'], (int, float)) and l['sqft'] > 0 else ""
-        
-        formatted.append(
-            f"{i}. ${l['price']:,} {price_sqft}\n"
-            f"   {bed_bath} | {sqft_str} | {dom_str} on market\n"
-            f"   {l['address']}, {l['city']}, {l['state']} {l['zip']}\n"
-            f"   {l['property_type']} | Built: {l['year_built']}"
-        )
-    
-    return "\n\n".join(formatted)
+        bed_bath = f"{l.get('beds', 'N/A')}bd/{l.get('baths', 'N/A')}ba" if l.get('beds') != 'N/A' else ""
+        out.append(f"{i}. ${l['price']:,} {bed_bath}\n   {l['address']}\n   Source: {l.get('source', 'Unknown')}")
+    return "\n\n".join(out)
 
 def write_sheet(ws, client_data, listings, metrics, insights):
-    """Write comprehensive report to Google Sheet"""
-    print("Writing to Google Sheet...")
+    print("\nWriting to Google Sheet...")
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    market_summary = f"""Active Listings: {metrics['total_listings']}
-Average Price: ${metrics['avg_price']:,}
-Median Price: ${metrics['median_price']:,}
-Price Range: ${metrics['min_price']:,} - ${metrics['max_price']:,}
-Avg Property: {metrics['avg_beds']} beds | {metrics['avg_sqft']:,} sqft
-Avg Days on Market: {metrics['avg_dom']} days
-Price per SqFt: ${metrics['price_per_sqft']:,}"""
-    
-    top_listings = format_listings(listings, 10)
+    summary = f"""Total Entities: {metrics['total']}
+With Pricing: {metrics['with_pricing']}
+Avg Price: ${metrics['avg_price']:,}
+Median: ${metrics['median_price']:,}
+Range: ${metrics['min_price']:,} - ${metrics['max_price']:,}"""
     
     row = [
-        timestamp,
+        ts,
         client_data['name'],
         client_data['contact'],
         f"{client_data['city']}, {client_data['state']}",
         client_data['focus_areas'],
-        market_summary,
+        summary,
         insights,
-        top_listings,
+        format_for_sheet(listings, 10),
         "Generated"
     ]
-    
     ws.append_row(row)
-    print("✅ Report written to sheet")
+    print("✅ Done")
 
 def main():
-    print("=" * 75)
-    print("VOXMILL MARKET INTELLIGENCE - REALTY IN US API")
-    print("=" * 75)
+    print("=" * 70)
+    print("VOXMILL - MULTI-SOURCE MARKET INTELLIGENCE")
+    print("=" * 70)
     
     try:
         ws = get_google_sheet()
-        
         if ws.row_count == 0 or not ws.cell(1, 1).value:
-            ws.append_row([
-                "Timestamp", "Client Name", "Contact Person", "Market", 
-                "Focus Areas", "Market Metrics", "Strategic Insights", 
-                "Top 10 Listings", "Status"
-            ])
-            print("✅ Headers added")
+            ws.append_row(["Timestamp", "Client", "Contact", "Market", "Focus Areas", "Metrics", "Insights", "Top Listings", "Status"])
         
-        print(f"\n{'=' * 75}")
-        print(f"Generating report for: {DEMO_CLIENT['name']}")
-        print(f"Market: {DEMO_CLIENT['city']}, {DEMO_CLIENT['state_code']}")
-        print('=' * 75)
+        print(f"\nGenerating for: {DEMO_CLIENT['name']}")
         
-        listings = fetch_realty_listings(
-            DEMO_CLIENT['city'],
-            DEMO_CLIENT['state_code'],
-            min_price=500000
-        )
+        # Aggregate from all sources
+        priced_listings, all_data = aggregate_listings(DEMO_CLIENT)
         
-        if not listings or len(listings) < 5:
-            print("⚠️ Insufficient listings - check API key or parameters")
+        if len(priced_listings) < 3:
+            print("⚠️ Insufficient data")
             return
         
-        metrics = calc_metrics(listings)
-        print(f"\n📊 Market Metrics:")
-        print(f"   Total Listings: {metrics['total_listings']}")
-        print(f"   Avg Price: ${metrics['avg_price']:,}")
-        print(f"   Median Price: ${metrics['median_price']:,}")
-        print(f"   Price/SqFt: ${metrics['price_per_sqft']:,}")
-        print(f"   Avg DOM: {metrics['avg_dom']} days")
+        metrics = calc_metrics(all_data)
+        print(f"\n📊 Final Metrics: {metrics['with_pricing']} priced listings, Avg ${metrics['avg_price']:,}")
         
-        insights = gen_insights(
-            DEMO_CLIENT['city'],
-            DEMO_CLIENT['state'],
-            listings,
-            metrics
-        )
+        insights = gen_insights(DEMO_CLIENT['city'], priced_listings, metrics)
+        write_sheet(ws, DEMO_CLIENT, priced_listings, metrics, insights)
         
-        write_sheet(ws, DEMO_CLIENT, listings, metrics, insights)
-        
-        print("\n" + "=" * 75)
-        print("✅ REPORT COMPLETE - REAL MLS DATA")
-        print("=" * 75)
-        print(f"\nView: https://docs.google.com/spreadsheets/d/{os.environ.get('GOOGLE_SHEET_ID')}")
+        print("\n" + "=" * 70)
+        print("✅ COMPLETE")
+        print("=" * 70)
         
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
