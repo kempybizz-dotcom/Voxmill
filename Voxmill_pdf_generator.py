@@ -1,672 +1,458 @@
 """
-VOXMILL PDF GENERATOR — ELITE VISUAL INTELLIGENCE
-==================================================
-Generates luxury market intelligence PDFs with:
-- Matplotlib charts (price distribution, deal scores, trends)
-- Visual property cards with scoring bars
-- Risk matrix heatmaps
-- Fortune 500-level design
-- Black-and-gold aesthetic
+VOXMILL MARKET INTELLIGENCE — PRODUCTION VERSION
+=================================================
+Automated London luxury real estate intelligence system
+Outputs: CSV data + JSON analytics
+
+NO GOOGLE DEPENDENCIES
 """
 
 import os
 import json
+import re
 from datetime import datetime
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-from reportlab.lib.colors import HexColor
-from reportlab.lib.utils import ImageReader
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from io import BytesIO
-import gspread
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+import requests
+from outscraper import ApiClient
+from openai import OpenAI
+import csv
+import time
 
 # ============================================================================
-# VISUAL DESIGN SYSTEM
+# CONFIGURATION
 # ============================================================================
 
-COLORS = {
-    'black': HexColor('#0A0A0A'),
-    'gold': HexColor('#D4AF37'),
-    'gold_light': HexColor('#F4E4A8'),
-    'white': HexColor('#FFFFFF'),
-    'grey_dark': HexColor('#1A1A1A'),
-    'grey_medium': HexColor('#333333'),
-    'grey_light': HexColor('#666666'),
-    'red': HexColor('#FF4444'),
-    'green': HexColor('#44FF88')
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', '1440de56aamsh945d6c41f441399p1af6adjsne2d964758775')
+OUTSCRAPER_API_KEY = os.environ.get('OUTSCRAPER_API_KEY')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
+CLIENT = {
+    "name": "London Property Intelligence",
+    "city": "London",
+    "focus_areas": ["Mayfair", "Knightsbridge", "Chelsea", "Kensington"],
+    "currency": "£"
 }
 
-# ============================================================================
-# GOOGLE SHEETS CONNECTION
-# ============================================================================
-
-def get_sheet_data(sheet_name="London Real Estate"):
-    """Pull latest report data from Google Sheets"""
-    print(f"📊 Fetching data from: {sheet_name}")
-    
-    creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-    creds_dict = json.loads(creds_json)
-    scopes = ['https://www.googleapis.com/auth/spreadsheets']
-    credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    client = gspread.authorize(credentials)
-    sheet_id = os.environ.get('GOOGLE_SHEET_ID')
-    
-    spreadsheet = client.open_by_key(sheet_id)
-    ws = spreadsheet.worksheet(sheet_name)
-    
-    # Get all data
-    data = ws.get_all_values()
-    
-    if len(data) < 2:
-        raise ValueError("No data in sheet")
-    
-    headers = data[0]
-    latest_row = data[-1]  # Most recent report
-    
-    # Parse into dictionary
-    report = dict(zip(headers, latest_row))
-    
-    print(f"  ✅ Loaded report from: {report.get('Timestamp', 'Unknown')}")
-    return report
+OUTPUT_DIR = os.environ.get('OUTPUT_DIR', '/tmp')
 
 # ============================================================================
-# CHART GENERATION
+# DATA COLLECTION — ZOOPLA API
 # ============================================================================
 
-def generate_price_distribution_chart(properties_text, currency="£"):
-    """Generate price distribution bar chart"""
-    print("📈 Generating price distribution chart...")
+def collect_zoopla_data(areas, max_per_area=25):
+    """Collect London real estate from Zoopla via RapidAPI"""
+    print(f"\n📊 COLLECTING DATA: London Real Estate")
+    print(f"   Areas: {', '.join(areas)}")
     
-    # Parse properties from text
-    prices = []
-    for line in properties_text.split('\n'):
-        if currency in line:
-            # Extract price
-            import re
-            match = re.search(rf'{currency}([\d,]+)', line)
-            if match:
-                price = int(match.group(1).replace(',', ''))
-                prices.append(price)
+    all_listings = []
     
-    if not prices:
-        return None
+    url = "https://zoopla.p.rapidapi.com/properties/list"
+    headers = {
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "zoopla.p.rapidapi.com"
+    }
     
-    # Create bins
-    min_price = min(prices)
-    max_price = max(prices)
-    range_size = (max_price - min_price) / 5
-    
-    bins = [min_price + i * range_size for i in range(6)]
-    
-    # Count properties in each bin
-    counts = [0] * 5
-    for price in prices:
-        for i in range(5):
-            if bins[i] <= price < bins[i+1]:
-                counts[i] += 1
-                break
-    
-    # Create chart
-    fig, ax = plt.subplots(figsize=(8, 4), facecolor='#0A0A0A')
-    ax.set_facecolor('#0A0A0A')
-    
-    bin_labels = [f'{currency}{int(bins[i]/1000)}k-{int(bins[i+1]/1000)}k' for i in range(5)]
-    x_pos = range(len(bin_labels))
-    
-    bars = ax.bar(x_pos, counts, color='#D4AF37', edgecolor='#F4E4A8', linewidth=2)
-    
-    ax.set_xlabel('Price Range', color='#FFFFFF', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Number of Properties', color='#FFFFFF', fontsize=12, fontweight='bold')
-    ax.set_title('PRICE DISTRIBUTION ANALYSIS', color='#D4AF37', fontsize=14, fontweight='bold', pad=20)
-    ax.set_xticks(x_pos)
-    ax.set_xticklabels(bin_labels, color='#FFFFFF', rotation=45, ha='right')
-    ax.tick_params(axis='y', colors='#FFFFFF')
-    ax.spines['bottom'].set_color('#D4AF37')
-    ax.spines['left'].set_color('#D4AF37')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.grid(axis='y', alpha=0.2, color='#666666')
-    
-    # Add value labels on bars
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{int(height)}',
-                ha='center', va='bottom', color='#FFFFFF', fontweight='bold')
-    
-    plt.tight_layout()
-    
-    # Save to BytesIO
-    img_buffer = BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=150, facecolor='#0A0A0A', edgecolor='none')
-    img_buffer.seek(0)
-    plt.close()
-    
-    print("  ✅ Price distribution chart generated")
-    return img_buffer
-
-def generate_deal_score_chart(properties_text):
-    """Generate horizontal bar chart showing deal scores"""
-    print("📈 Generating deal score chart...")
-    
-    # Parse properties
-    import re
-    properties = []
-    current_prop = {}
-    
-    for line in properties_text.split('\n'):
-        if line.strip().startswith(tuple('123456789')):
-            if current_prop:
-                properties.append(current_prop)
-            current_prop = {'address': line.strip()}
-        elif 'Score:' in line:
-            match = re.search(r'Score: ([\d.]+)/10', line)
-            if match and current_prop:
-                current_prop['score'] = float(match.group(1))
-    
-    if current_prop:
-        properties.append(current_prop)
-    
-    if not properties or not any('score' in p for p in properties):
-        return None
-    
-    # Take top 5
-    properties = [p for p in properties if 'score' in p][:5]
-    
-    # Create chart
-    fig, ax = plt.subplots(figsize=(8, 4), facecolor='#0A0A0A')
-    ax.set_facecolor('#0A0A0A')
-    
-    scores = [p['score'] for p in properties]
-    labels = [f"Property {i+1}" for i in range(len(properties))]
-    y_pos = range(len(labels))
-    
-    # Color bars by score (green for 8+, gold for 6-8, grey for <6)
-    colors = []
-    for score in scores:
-        if score >= 8.0:
-            colors.append('#44FF88')
-        elif score >= 6.0:
-            colors.append('#D4AF37')
-        else:
-            colors.append('#666666')
-    
-    bars = ax.barh(y_pos, scores, color=colors, edgecolor='#F4E4A8', linewidth=2)
-    
-    ax.set_xlabel('Deal Score (1-10)', color='#FFFFFF', fontsize=12, fontweight='bold')
-    ax.set_title('TOP PROPERTIES — DEAL SCORE RANKING', color='#D4AF37', fontsize=14, fontweight='bold', pad=20)
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(labels, color='#FFFFFF')
-    ax.tick_params(axis='x', colors='#FFFFFF')
-    ax.spines['bottom'].set_color('#D4AF37')
-    ax.spines['left'].set_color('#D4AF37')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.set_xlim(0, 10)
-    ax.grid(axis='x', alpha=0.2, color='#666666')
-    
-    # Add score labels
-    for i, (bar, score) in enumerate(zip(bars, scores)):
-        ax.text(score + 0.2, bar.get_y() + bar.get_height()/2.,
-                f'{score}/10',
-                va='center', color='#FFFFFF', fontweight='bold')
-    
-    # Add legend
-    green_patch = mpatches.Patch(color='#44FF88', label='HOT DEAL (8+)')
-    gold_patch = mpatches.Patch(color='#D4AF37', label='GOOD (6-8)')
-    grey_patch = mpatches.Patch(color='#666666', label='WATCH (<6)')
-    ax.legend(handles=[green_patch, gold_patch, grey_patch], 
-              loc='lower right', facecolor='#1A1A1A', edgecolor='#D4AF37',
-              labelcolor='#FFFFFF')
-    
-    plt.tight_layout()
-    
-    img_buffer = BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=150, facecolor='#0A0A0A', edgecolor='none')
-    img_buffer.seek(0)
-    plt.close()
-    
-    print("  ✅ Deal score chart generated")
-    return img_buffer
-
-def generate_metrics_dashboard(report):
-    """Generate visual metrics dashboard"""
-    print("📈 Generating metrics dashboard...")
-    
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(8, 6), facecolor='#0A0A0A')
-    
-    # Metric 1: Total Listings (big number)
-    ax1.set_facecolor('#1A1A1A')
-    ax1.axis('off')
-    total = report.get('Total Listings', '0')
-    ax1.text(0.5, 0.6, total, ha='center', va='center', 
-             color='#D4AF37', fontsize=48, fontweight='bold')
-    ax1.text(0.5, 0.3, 'TOTAL LISTINGS', ha='center', va='center',
-             color='#FFFFFF', fontsize=12, fontweight='bold')
-    
-    # Metric 2: Avg Price (big number)
-    ax2.set_facecolor('#1A1A1A')
-    ax2.axis('off')
-    avg_price = report.get('Avg Price', '£0')
-    ax2.text(0.5, 0.6, avg_price, ha='center', va='center',
-             color='#D4AF37', fontsize=36, fontweight='bold')
-    ax2.text(0.5, 0.3, 'AVG PRICE', ha='center', va='center',
-             color='#FFFFFF', fontsize=12, fontweight='bold')
-    
-    # Metric 3: Hot Deals vs Stale (pie chart)
-    ax3.set_facecolor('#0A0A0A')
-    hot = int(report.get('Hot Deals (8+)', '0'))
-    stale = int(report.get('Stale (90+)', '0')) if 'Stale (90+)' in report else 0
-    other = int(report.get('Total Listings', '0')) - hot - stale
-    
-    if hot + stale + other > 0:
-        sizes = [hot, stale, other]
-        colors_pie = ['#44FF88', '#FF4444', '#666666']
-        labels_pie = ['HOT', 'STALE', 'OTHER']
+    for area in areas:
+        params = {
+            "area": f"{area}, London",
+            "category": "residential",
+            "order_by": "age",
+            "ordering": "descending",
+            "page_number": "1",
+            "page_size": str(max_per_area)
+        }
         
-        wedges, texts, autotexts = ax3.pie(sizes, labels=labels_pie, colors=colors_pie,
-                                             autopct='%1.0f%%', startangle=90,
-                                             textprops={'color': '#FFFFFF', 'fontweight': 'bold'})
-        ax3.set_title('DEAL STATUS', color='#FFFFFF', fontsize=12, fontweight='bold', pad=10)
-    
-    # Metric 4: Price/SqFt (bar)
-    ax4.set_facecolor('#0A0A0A')
-    ppsf = report.get('Avg $/SqFt', '£0')
-    if '£' in ppsf:
-        ppsf_val = int(ppsf.replace('£', '').replace(',', ''))
-        ax4.bar(['AVG'], [ppsf_val], color='#D4AF37', edgecolor='#F4E4A8', linewidth=2)
-        ax4.set_ylabel('Price/SqFt', color='#FFFFFF', fontweight='bold')
-        ax4.set_title('PRICE PER SQFT', color='#FFFFFF', fontsize=12, fontweight='bold', pad=10)
-        ax4.tick_params(axis='both', colors='#FFFFFF')
-        ax4.spines['bottom'].set_color('#D4AF37')
-        ax4.spines['left'].set_color('#D4AF37')
-        ax4.spines['top'].set_visible(False)
-        ax4.spines['right'].set_visible(False)
-        ax4.set_facecolor('#0A0A0A')
-        ax4.text(0, ppsf_val + 50, f'£{ppsf_val}', ha='center', 
-                color='#FFFFFF', fontweight='bold')
-    
-    plt.tight_layout()
-    
-    img_buffer = BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=150, facecolor='#0A0A0A', edgecolor='none')
-    img_buffer.seek(0)
-    plt.close()
-    
-    print("  ✅ Metrics dashboard generated")
-    return img_buffer
-
-# ============================================================================
-# PDF GENERATION
-# ============================================================================
-
-def create_luxury_pdf(report, output_path="/mnt/user-data/outputs/voxmill_report.pdf"):
-    """Generate Fortune 500-level PDF with charts and visual intelligence"""
-    print("\n🎨 Generating luxury PDF...")
-    
-    c = canvas.Canvas(output_path, pagesize=A4)
-    width, height = A4
-    
-    # ========== PAGE 1: EXECUTIVE COVER + BLUF ==========
-    
-    # Background
-    c.setFillColor(COLORS['black'])
-    c.rect(0, 0, width, height, fill=True, stroke=False)
-    
-    # Gold header bar
-    c.setFillColor(COLORS['gold'])
-    c.rect(0, height - 1.5*inch, width, 1.5*inch, fill=True, stroke=False)
-    
-    # Title
-    c.setFillColor(COLORS['black'])
-    c.setFont("Helvetica-Bold", 32)
-    c.drawCentredString(width/2, height - 0.8*inch, "VOXMILL")
-    c.setFont("Helvetica", 16)
-    c.drawCentredString(width/2, height - 1.1*inch, "MARKET INTELLIGENCE")
-    
-    # Report details
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica-Bold", 20)
-    market = report.get('Market', 'London')
-    c.drawCentredString(width/2, height - 2.3*inch, f"{market.upper()}")
-    
-    c.setFont("Helvetica", 12)
-    timestamp = report.get('Timestamp', datetime.now().strftime('%d %B %Y'))
-    c.drawCentredString(width/2, height - 2.7*inch, f"Week of {timestamp}")
-    
-    # Gold divider line
-    c.setStrokeColor(COLORS['gold'])
-    c.setLineWidth(2)
-    c.line(1*inch, height - 3*inch, width - 1*inch, height - 3*inch)
-    
-    # BLUF Section
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(1*inch, height - 3.5*inch, "🎯 BLUF (BOTTOM LINE UP FRONT)")
-    
-    # BLUF box
-    c.setFillColor(COLORS['grey_dark'])
-    c.rect(1*inch, height - 6.5*inch, width - 2*inch, 2.7*inch, fill=True, stroke=False)
-    c.setStrokeColor(COLORS['gold'])
-    c.setLineWidth(3)
-    c.rect(1*inch, height - 6.5*inch, width - 2*inch, 2.7*inch, fill=False, stroke=True)
-    
-    # Parse BLUF content
-    bluf_text = report.get('🎯 BLUF (Bottom Line Up Front)', 'No BLUF available')
-    
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica", 10)
-    
-    # Word wrap BLUF
-    y_position = height - 4*inch
-    max_width = width - 2.5*inch
-    
-    lines = []
-    for line in bluf_text.split('\n'):
-        if line.strip():
-            # Word wrap
-            words = line.split()
-            current_line = []
-            for word in words:
-                test_line = ' '.join(current_line + [word])
-                if c.stringWidth(test_line, "Helvetica", 10) < max_width:
-                    current_line.append(word)
-                else:
-                    if current_line:
-                        lines.append(' '.join(current_line))
-                    current_line = [word]
-            if current_line:
-                lines.append(' '.join(current_line))
-    
-    for line in lines[:15]:  # Max 15 lines
-        c.drawString(1.2*inch, y_position, line)
-        y_position -= 0.18*inch
-    
-    # Key Metrics Box
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(1*inch, height - 7*inch, "📊 KEY METRICS")
-    
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica", 11)
-    metrics_y = height - 7.4*inch
-    
-    total_listings = report.get('Total Listings', '0')
-    avg_price = report.get('Avg Price', '£0')
-    hot_deals = report.get('Hot Deals (8+)', '0')
-    
-    c.drawString(1.2*inch, metrics_y, f"• {total_listings} Active Listings")
-    c.drawString(1.2*inch, metrics_y - 0.25*inch, f"• Avg Price: {avg_price}")
-    c.drawString(1.2*inch, metrics_y - 0.5*inch, f"• {hot_deals} Hot Deals (8+/10 score)")
-    
-    # Footer
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica", 9)
-    c.drawString(1*inch, 0.7*inch, "Prepared by: Olly Kempster")
-    c.drawString(1*inch, 0.5*inch, "info@voxmill.co.uk")
-    c.setFillColor(COLORS['grey_light'])
-    c.drawRightString(width - 1*inch, 0.5*inch, "© Voxmill Intelligence 2025")
-    
-    c.showPage()
-    
-    # ========== PAGE 2: CHARTS & VISUAL DATA ==========
-    
-    c.setFillColor(COLORS['black'])
-    c.rect(0, 0, width, height, fill=True, stroke=False)
-    
-    # Header
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 24)
-    c.drawString(1*inch, height - 1*inch, "MARKET ANALYTICS")
-    
-    c.setStrokeColor(COLORS['gold'])
-    c.setLineWidth(2)
-    c.line(1*inch, height - 1.2*inch, width - 1*inch, height - 1.2*inch)
-    
-    # Generate and insert charts
-    properties_text = report.get('Top 10 Properties (Ranked)', '')
-    currency = '£' if 'London' in report.get('Market', '') else '$'
-    
-    # Chart 1: Metrics Dashboard
-    metrics_chart = generate_metrics_dashboard(report)
-    if metrics_chart:
-        img = ImageReader(metrics_chart)
-        c.drawImage(img, 0.8*inch, height - 5*inch, width=6.5*inch, height=3*inch, preserveAspectRatio=True)
-    
-    # Chart 2: Deal Scores
-    deal_chart = generate_deal_score_chart(properties_text)
-    if deal_chart:
-        img = ImageReader(deal_chart)
-        c.drawImage(img, 0.8*inch, height - 8.5*inch, width=6.5*inch, height=3*inch, preserveAspectRatio=True)
-    
-    # Footer
-    c.setFillColor(COLORS['grey_light'])
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(width/2, 0.5*inch, "Page 2 of 3")
-    
-    c.showPage()
-    
-    # ========== PAGE 3: TOP DEALS + RISKS ==========
-    
-    c.setFillColor(COLORS['black'])
-    c.rect(0, 0, width, height, fill=True, stroke=False)
-    
-    # Header
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 24)
-    c.drawString(1*inch, height - 1*inch, "DEAL ALERTS & RISKS")
-    
-    c.setStrokeColor(COLORS['gold'])
-    c.setLineWidth(2)
-    c.line(1*inch, height - 1.2*inch, width - 1*inch, height - 1.2*inch)
-    
-    # Top Opportunities
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(1*inch, height - 1.7*inch, "💎 TOP OPPORTUNITIES")
-    
-    opportunities = report.get('💎 Top Opportunities', 'No opportunities listed')
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica", 9)
-    
-    y_pos = height - 2.1*inch
-    for line in opportunities.split('\n')[:20]:
-        if line.strip():
-            wrapped = []
-            words = line.split()
-            current = []
-            for word in words:
-                test = ' '.join(current + [word])
-                if c.stringWidth(test, "Helvetica", 9) < width - 2.5*inch:
-                    current.append(word)
-                else:
-                    if current:
-                        wrapped.append(' '.join(current))
-                    current = [word]
-            if current:
-                wrapped.append(' '.join(current))
+        try:
+            print(f"   → {area}...", end=" ")
+            response = requests.get(url, headers=headers, params=params, timeout=30)
             
-            for w_line in wrapped:
-                c.drawString(1.2*inch, y_pos, w_line)
-                y_pos -= 0.15*inch
-                if y_pos < height - 5.5*inch:
-                    break
-            if y_pos < height - 5.5*inch:
-                break
+            if response.status_code == 200:
+                data = response.json()
+                listings = data.get('listing', [])
+                
+                for prop in listings:
+                    price = prop.get('price', 0)
+                    if isinstance(price, str):
+                        price = int(re.sub(r'[^\d]', '', price)) if re.search(r'\d', price) else 0
+                    
+                    sqft = prop.get('floor_area', {}).get('max_floor_area', {}).get('square_feet', 0)
+                    
+                    if price > 0:
+                        all_listings.append({
+                            'source': 'Zoopla',
+                            'address': prop.get('displayable_address', 'N/A'),
+                            'city': 'London',
+                            'area': area,
+                            'price': price,
+                            'beds': prop.get('num_bedrooms', 0),
+                            'baths': prop.get('num_bathrooms', 0),
+                            'sqft': sqft if sqft else 0,
+                            'price_per_sqft': round(price / sqft, 2) if sqft else 0,
+                            'days_on_market': prop.get('first_published_date', 'N/A'),
+                            'property_type': prop.get('property_type', 'N/A'),
+                            'url': prop.get('details_url', '')
+                        })
+                
+                print(f"✅ {len(listings)} properties")
+                time.sleep(1)  # Rate limit protection
+                
+            else:
+                print(f"❌ Status {response.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            continue
     
-    # Risk Assessment
-    c.setFillColor(COLORS['red'])
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(1*inch, height - 6*inch, "⚠️ RISK ASSESSMENT")
-    
-    risks = report.get('⚠️ Risk Assessment', 'No risks listed')
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica", 9)
-    
-    y_pos = height - 6.4*inch
-    for line in risks.split('\n')[:15]:
-        if line.strip():
-            wrapped = []
-            words = line.split()
-            current = []
-            for word in words:
-                test = ' '.join(current + [word])
-                if c.stringWidth(test, "Helvetica", 9) < width - 2.5*inch:
-                    current.append(word)
-                else:
-                    if current:
-                        wrapped.append(' '.join(current))
-                    current = [word]
-            if current:
-                wrapped.append(' '.join(current))
-            
-            for w_line in wrapped:
-                c.drawString(1.2*inch, y_pos, w_line)
-                y_pos -= 0.15*inch
-                if y_pos < height - 8.5*inch:
-                    break
-            if y_pos < height - 8.5*inch:
-                break
-    
-    # Action Triggers
-    c.setFillColor(COLORS['gold'])
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(1*inch, height - 9*inch, "⚡ ACTION TRIGGERS")
-    
-    triggers = report.get('⚡ Action Triggers', 'No triggers listed')
-    c.setFillColor(COLORS['white'])
-    c.setFont("Helvetica", 9)
-    
-    y_pos = height - 9.4*inch
-    for line in triggers.split('\n')[:10]:
-        if line.strip():
-            c.drawString(1.2*inch, y_pos, line[:90])
-            y_pos -= 0.15*inch
-    
-    # Final footer with CTA
-    c.setFillColor(COLORS['gold'])
-    c.rect(0.5*inch, 0.8*inch, width - 1*inch, 0.6*inch, fill=True, stroke=False)
-    c.setFillColor(COLORS['black'])
-    c.setFont("Helvetica-Bold", 12)
-    c.drawCentredString(width/2, 1.05*inch, "Want weekly intelligence? Contact: info@voxmill.co.uk")
-    
-    c.setFillColor(COLORS['grey_light'])
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(width/2, 0.5*inch, "Page 3 of 3")
-    
-    c.save()
-    
-    print(f"  ✅ PDF saved: {output_path}")
-    return output_path
+    print(f"\n   TOTAL: {len(all_listings)} properties collected")
+    return all_listings
 
 # ============================================================================
-# GOOGLE DRIVE UPLOAD
+# ANALYTICS ENGINE
 # ============================================================================
 
-def upload_to_gdrive(pdf_path, folder_id="1yx7EtPN6_xu3x0U9qg8T5pOc1HbY7y0G"):
-    """Upload PDF to Google Drive folder"""
-    print(f"\n☁️ Uploading to Google Drive...")
+def calculate_metrics(listings):
+    """Calculate market metrics and score properties"""
+    print(f"\n📊 ANALYZING MARKET DATA")
+    
+    priced = [l for l in listings if l.get('price', 0) > 0]
+    
+    if not priced:
+        return None
+    
+    # Core metrics
+    prices = [l['price'] for l in priced]
+    ppsf_vals = [l['price_per_sqft'] for l in priced if l.get('price_per_sqft', 0) > 0]
+    
+    avg_price = int(sum(prices) / len(prices))
+    avg_ppsf = int(sum(ppsf_vals) / len(ppsf_vals)) if ppsf_vals else 0
+    median_ppsf = int(sorted(ppsf_vals)[len(ppsf_vals)//2]) if ppsf_vals else 0
+    
+    print(f"   → Avg Price: £{avg_price:,}")
+    print(f"   → Avg £/sqft: £{avg_ppsf}")
+    
+    # Score each property
+    for listing in priced:
+        score = 5.0
+        ppsf = listing.get('price_per_sqft', 0)
+        
+        # Price/sqft scoring
+        if ppsf > 0 and avg_ppsf > 0:
+            if ppsf < avg_ppsf * 0.8:
+                score += 2.5  # Significantly underpriced
+            elif ppsf < avg_ppsf * 0.9:
+                score += 1.5  # Moderately underpriced
+            elif ppsf > avg_ppsf * 1.2:
+                score -= 1.5  # Overpriced
+            elif ppsf > avg_ppsf * 1.1:
+                score -= 0.5  # Slightly overpriced
+        
+        listing['deal_score'] = min(max(round(score, 1), 1.0), 10.0)
+        
+        # Add flags
+        if score >= 8.0:
+            listing['flag'] = '🔥 HOT DEAL'
+        elif ppsf > 0 and avg_ppsf > 0 and ppsf < avg_ppsf * 0.85:
+            listing['flag'] = '💰 UNDERPRICED'
+        else:
+            listing['flag'] = '—'
+    
+    # Sort by deal score
+    priced.sort(key=lambda x: x.get('deal_score', 0), reverse=True)
+    
+    hot_deals = len([l for l in priced if l.get('deal_score', 0) >= 8.0])
+    
+    print(f"   → Hot Deals: {hot_deals} (score 8+)")
+    
+    metrics = {
+        'total_listings': len(listings),
+        'priced_listings': len(priced),
+        'avg_price': avg_price,
+        'min_price': min(prices),
+        'max_price': max(prices),
+        'avg_ppsf': avg_ppsf,
+        'median_ppsf': median_ppsf,
+        'hot_deals': hot_deals,
+        'properties': priced
+    }
+    
+    return metrics
+
+# ============================================================================
+# AI INTELLIGENCE GENERATION
+# ============================================================================
+
+def generate_ai_intelligence(metrics, client):
+    """Generate strategic intelligence using OpenAI"""
+    print(f"\n🧠 GENERATING AI INTELLIGENCE")
+    
+    if not OPENAI_API_KEY:
+        print("   ⚠️ No OpenAI API key - skipping intelligence generation")
+        return {
+            'bluf': 'OpenAI API key not configured',
+            'opportunities': 'N/A',
+            'risks': 'N/A',
+            'action_triggers': 'N/A'
+        }
     
     try:
-        # Get credentials
-        creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-        creds_dict = json.loads(creds_json)
-        scopes = [
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/drive'
-        ]
-        credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
         
-        # Build Drive service
-        drive_service = build('drive', 'v3', credentials=credentials)
+        top_properties = metrics['properties'][:5]
         
-        # Generate filename with timestamp
-        timestamp = datetime.now().strftime('%Y-%m-%d_%H%M')
-        filename = f"Voxmill_Report_{timestamp}.pdf"
+        context = f"""MARKET: {client['city']} Luxury Real Estate
+FOCUS AREAS: {', '.join(client['focus_areas'])}
+TOTAL LISTINGS: {metrics['priced_listings']}
+AVG PRICE: {client['currency']}{metrics['avg_price']:,}
+AVG PRICE/SQFT: {client['currency']}{metrics['avg_ppsf']}
+HOT DEALS: {metrics['hot_deals']} (score 8+/10)
+
+TOP 5 PROPERTIES:
+""" + "\n".join([
+            f"- {client['currency']}{p['price']:,} | {p.get('beds', 0)}bd/{p.get('baths', 0)}ba | {p.get('area', 'N/A')} | Score: {p.get('deal_score', 0)}/10"
+            for p in top_properties
+        ])
         
-        # File metadata
-        file_metadata = {
-            'name': filename,
-            'parents': [folder_id]
-        }
+        intelligence = {}
         
-        # Upload file
-        media = MediaFileUpload(pdf_path, mimetype='application/pdf')
-        file = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, webViewLink'
-        ).execute()
+        # 1. BLUF (Bottom Line Up Front)
+        print("   → Generating BLUF...", end=" ")
+        prompt_bluf = f"""{context}
+
+Provide a military-style BLUF (Bottom Line Up Front) summary in exactly 3 lines:
+
+INSIGHT: [One sentence: What's the single most important market insight?]
+ACTION: [One sentence: What should be done immediately?]
+RISK: [One sentence: What's the biggest threat?]"""
         
-        file_id = file.get('id')
-        web_link = file.get('webViewLink')
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a senior real estate market analyst providing executive briefings."},
+                {"role": "user", "content": prompt_bluf}
+            ],
+            temperature=0.6,
+            max_tokens=150
+        )
+        intelligence['bluf'] = response.choices[0].message.content.strip()
+        print("✅")
         
-        print(f"  ✅ Uploaded to Google Drive")
-        print(f"  📄 File ID: {file_id}")
-        print(f"  🔗 View: {web_link}")
+        # 2. Top Opportunities
+        print("   → Generating opportunities...", end=" ")
+        prompt_opps = f"""{context}
+
+Identify the top 3 opportunities, ranked by urgency:
+
+1. IMMEDIATE (act this week): [specific property or strategy with £ amount]
+2. STRATEGIC (30 days): [positioning move with rationale]
+3. LONG-TERM (90 days): [market shift opportunity]"""
         
-        return {
-            'file_id': file_id,
-            'web_link': web_link,
-            'filename': filename
-        }
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are an investment strategist identifying high-ROI opportunities."},
+                {"role": "user", "content": prompt_opps}
+            ],
+            temperature=0.7,
+            max_tokens=250
+        )
+        intelligence['opportunities'] = response.choices[0].message.content.strip()
+        print("✅")
+        
+        # 3. Risk Assessment
+        print("   → Generating risk assessment...", end=" ")
+        prompt_risks = f"""{context}
+
+Provide 3 specific market risks:
+
+PRICING RISK: [What price movements threaten deals?]
+VELOCITY RISK: [Is inventory moving too fast/slow?]
+COMPETITIVE RISK: [What are competitors doing better?]"""
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a risk analyst identifying market threats."},
+                {"role": "user", "content": prompt_risks}
+            ],
+            temperature=0.7,
+            max_tokens=200
+        )
+        intelligence['risks'] = response.choices[0].message.content.strip()
+        print("✅")
+        
+        # 4. Action Triggers
+        print("   → Generating action triggers...", end=" ")
+        prompt_triggers = f"""Based on {metrics['hot_deals']} hot deals in {client['city']}, provide 3 IF-THEN action triggers:
+
+IF [specific market condition with numbers] THEN [specific tactical action]
+
+Example: IF hot deals drop below 5 THEN increase outreach budget 20%"""
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a tactical advisor creating actionable decision frameworks."},
+                {"role": "user", "content": prompt_triggers}
+            ],
+            temperature=0.7,
+            max_tokens=150
+        )
+        intelligence['action_triggers'] = response.choices[0].message.content.strip()
+        print("✅")
+        
+        print("   ✅ AI intelligence generated")
+        return intelligence
         
     except Exception as e:
-        print(f"  ❌ Upload failed: {e}")
-        return None
+        print(f"   ❌ Error: {e}")
+        return {
+            'bluf': f'Error: {str(e)}',
+            'opportunities': 'Error generating intelligence',
+            'risks': 'Error generating intelligence',
+            'action_triggers': 'Error generating intelligence'
+        }
+
+# ============================================================================
+# DATA EXPORT
+# ============================================================================
+
+def export_data(metrics, intelligence, client):
+    """Export data to CSV and JSON files"""
+    print(f"\n💾 EXPORTING DATA")
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Ensure output directory exists
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    # 1. Export summary report (CSV)
+    report_path = f"{OUTPUT_DIR}/voxmill_report.csv"
+    report = {
+        'Timestamp': timestamp,
+        'Client': client['name'],
+        'Market': f"{client['city']} ({', '.join(client['focus_areas'])})",
+        'Total Listings': metrics['total_listings'],
+        'Avg Price': f"{client['currency']}{metrics['avg_price']:,}",
+        'Price Range': f"{client['currency']}{metrics['min_price']:,} - {client['currency']}{metrics['max_price']:,}",
+        'Avg $/SqFt': f"{client['currency']}{metrics['avg_ppsf']}",
+        'Hot Deals': metrics['hot_deals'],
+        'BLUF': intelligence.get('bluf', 'N/A'),
+        'Top Opportunities': intelligence.get('opportunities', 'N/A'),
+        'Risk Assessment': intelligence.get('risks', 'N/A'),
+        'Action Triggers': intelligence.get('action_triggers', 'N/A')
+    }
+    
+    with open(report_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=report.keys())
+        writer.writeheader()
+        writer.writerow(report)
+    
+    print(f"   ✅ Report: {report_path}")
+    
+    # 2. Export properties (CSV)
+    properties_path = f"{OUTPUT_DIR}/voxmill_properties.csv"
+    
+    if metrics['properties']:
+        with open(properties_path, 'w', newline='', encoding='utf-8') as f:
+            fieldnames = ['address', 'area', 'price', 'beds', 'baths', 'sqft', 
+                         'price_per_sqft', 'deal_score', 'flag', 'url']
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for prop in metrics['properties'][:50]:  # Top 50 properties
+                writer.writerow({
+                    'address': prop.get('address', ''),
+                    'area': prop.get('area', ''),
+                    'price': prop.get('price', 0),
+                    'beds': prop.get('beds', 0),
+                    'baths': prop.get('baths', 0),
+                    'sqft': prop.get('sqft', 0),
+                    'price_per_sqft': prop.get('price_per_sqft', 0),
+                    'deal_score': prop.get('deal_score', 0),
+                    'flag': prop.get('flag', ''),
+                    'url': prop.get('url', '')
+                })
+        
+        print(f"   ✅ Properties: {properties_path}")
+    
+    # 3. Export full data (JSON)
+    json_path = f"{OUTPUT_DIR}/voxmill_data.json"
+    
+    full_data = {
+        'timestamp': timestamp,
+        'client': client,
+        'metrics': {
+            'total_listings': metrics['total_listings'],
+            'priced_listings': metrics['priced_listings'],
+            'avg_price': metrics['avg_price'],
+            'min_price': metrics['min_price'],
+            'max_price': metrics['max_price'],
+            'avg_ppsf': metrics['avg_ppsf'],
+            'median_ppsf': metrics['median_ppsf'],
+            'hot_deals': metrics['hot_deals']
+        },
+        'intelligence': intelligence,
+        'top_properties': metrics['properties'][:20]  # Top 20 for JSON
+    }
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(full_data, f, indent=2, ensure_ascii=False)
+    
+    print(f"   ✅ JSON: {json_path}")
+    
+    return report_path, properties_path, json_path
 
 # ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
 def main():
-    """Generate luxury PDF from latest Google Sheet data"""
+    """Main execution flow"""
     print("\n" + "="*70)
-    print("VOXMILL PDF GENERATOR — ELITE VISUAL INTELLIGENCE")
+    print("VOXMILL MARKET INTELLIGENCE — DATA COLLECTION")
     print("="*70)
+    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Target: {CLIENT['city']} Luxury Real Estate")
     
     try:
-        # Pull data from sheet
-        report = get_sheet_data("London Real Estate")
+        # Step 1: Collect data
+        listings = collect_zoopla_data(CLIENT['focus_areas'])
         
-        # Generate PDF locally first
-        local_path = "/tmp/voxmill_report.pdf"
-        pdf_path = create_luxury_pdf(report, output_path=local_path)
+        if len(listings) < 3:
+            print("\n❌ INSUFFICIENT DATA")
+            print("   Collected fewer than 3 properties. Check API credentials.")
+            return
         
-        # Upload to Google Drive
-        drive_result = upload_to_gdrive(pdf_path)
+        # Step 2: Analyze
+        metrics = calculate_metrics(listings)
         
-        # Also save to outputs for local access
-        output_path = "/mnt/user-data/outputs/voxmill_report.pdf"
-        import shutil
-        shutil.copy(local_path, output_path)
-        print(f"\n📁 Local copy: {output_path}")
+        if not metrics:
+            print("\n❌ ANALYSIS FAILED")
+            return
         
+        # Step 3: Generate intelligence
+        intelligence = generate_ai_intelligence(metrics, CLIENT)
+        
+        # Step 4: Export
+        report_path, props_path, json_path = export_data(metrics, intelligence, CLIENT)
+        
+        # Summary
         print("\n" + "="*70)
-        print("✅ PDF GENERATION & UPLOAD COMPLETE")
+        print("✅ DATA COLLECTION COMPLETE")
         print("="*70)
-        print("\n🎨 Features:")
-        print("   • Black-and-gold Fortune 500 design")
-        print("   • BLUF executive summary")
-        print("   • Matplotlib charts (metrics dashboard, deal scores)")
-        print("   • Visual property rankings")
-        print("   • Risk matrix with action triggers")
-        print("   • 3 pages of strategic intelligence")
-        
-        if drive_result:
-            print("\n☁️ Google Drive:")
-            print(f"   • Filename: {drive_result['filename']}")
-            print(f"   • Link: {drive_result['web_link']}")
+        print(f"\n📊 SUMMARY:")
+        print(f"   • {metrics['priced_listings']} properties analyzed")
+        print(f"   • Avg: £{metrics['avg_price']:,}")
+        print(f"   • {metrics['hot_deals']} hot deals (score 8+)")
+        print(f"\n📁 OUTPUT FILES:")
+        print(f"   • {report_path}")
+        print(f"   • {props_path}")
+        print(f"   • {json_path}")
         
     except Exception as e:
-        print(f"\n❌ ERROR: {e}")
+        print(f"\n❌ CRITICAL ERROR: {e}")
         import traceback
         traceback.print_exc()
+        raise
 
 if __name__ == "__main__":
     main()
