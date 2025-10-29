@@ -265,8 +265,144 @@ def collect_miami_real_estate(client: Dict) -> List[Dict]:
 # ============================================================================
 
 def collect_london_real_estate(client: Dict) -> List[Dict]:
-    """Collect London real estate with deep Zoopla analysis"""
+    """Collect London real estate using PROPERTY_DATA_API"""
     print(f"\n📊 Collecting: {client['name']}")
+    all_listings = []
+    
+    # Get API key from environment
+    property_api_key = os.environ.get('PROPERTY_DATA_API')
+    
+    if not property_api_key:
+        print("  ⚠️ PROPERTY_DATA_API not set, trying Zoopla fallback...")
+        return collect_london_zoopla_fallback(client)
+    
+    # Try multiple UK property data endpoints
+    endpoints = [
+        {
+            "url": "https://uk-real-estate.p.rapidapi.com/properties/list-for-sale",
+            "host": "uk-real-estate.p.rapidapi.com"
+        },
+        {
+            "url": "https://zoopla.p.rapidapi.com/properties/list",
+            "host": "zoopla.p.rapidapi.com"
+        },
+        {
+            "url": "https://rightmove-api.p.rapidapi.com/properties/list",
+            "host": "rightmove-api.p.rapidapi.com"
+        }
+    ]
+    
+    for endpoint_config in endpoints:
+        try:
+            print(f"  Trying: {endpoint_config['host']}")
+            
+            headers = {
+                "X-RapidAPI-Key": property_api_key,
+                "X-RapidAPI-Host": endpoint_config['host']
+            }
+            
+            for area in client['focus_areas'][:2]:  # Limit to 2 areas for rate limiting
+                params = {
+                    "location": f"{area}, London, UK",
+                    "maxPrice": "5000000",
+                    "minPrice": "500000",
+                    "propertyType": "houses,flats",
+                    "sortBy": "newest",
+                    "resultsSize": "25"
+                }
+                
+                response = requests.get(endpoint_config['url'], headers=headers, params=params, timeout=30)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Handle different API response structures
+                    properties = []
+                    if 'properties' in data:
+                        properties = data['properties']
+                    elif 'listing' in data:
+                        properties = data['listing']
+                    elif 'results' in data:
+                        properties = data['results']
+                    elif isinstance(data, list):
+                        properties = data
+                    
+                    for prop in properties:
+                        # Extract price
+                        price = 0
+                        if 'price' in prop:
+                            price = prop['price']
+                        elif 'displayPrice' in prop:
+                            price_str = prop['displayPrice']
+                            price_match = re.search(r'£?([\d,]+)', str(price_str))
+                            if price_match:
+                                price = int(price_match.group(1).replace(',', ''))
+                        
+                        if isinstance(price, str):
+                            price = int(re.sub(r'[^\d]', '', price)) if re.search(r'\d', price) else 0
+                        
+                        # Extract bedrooms
+                        beds = prop.get('bedrooms', prop.get('numberOfBedrooms', prop.get('beds', 'N/A')))
+                        
+                        # Extract bathrooms
+                        baths = prop.get('bathrooms', prop.get('numberOfBathrooms', prop.get('baths', 'N/A')))
+                        
+                        # Extract square footage
+                        sqft = 0
+                        if 'size' in prop:
+                            sqft = prop['size']
+                        elif 'floorArea' in prop:
+                            floor_area = prop['floorArea']
+                            if isinstance(floor_area, dict):
+                                sqft = floor_area.get('squareFeet', floor_area.get('max', 0))
+                            else:
+                                sqft = floor_area
+                        
+                        # Extract address
+                        address = prop.get('address', prop.get('displayAddress', prop.get('location', 'N/A')))
+                        if isinstance(address, dict):
+                            address = address.get('displayAddress', 'N/A')
+                        
+                        # Extract URL
+                        url = prop.get('propertyUrl', prop.get('detailUrl', prop.get('url', '')))
+                        
+                        if price > 0:
+                            all_listings.append({
+                                'source': endpoint_config['host'].split('.')[0].title(),
+                                'address': str(address)[:100],
+                                'city': 'London',
+                                'area': area,
+                                'price': int(price),
+                                'beds': beds,
+                                'baths': baths,
+                                'sqft': int(sqft) if sqft else 'N/A',
+                                'price_per_sqft': round(price / sqft, 2) if sqft else 0,
+                                'days_on_market': prop.get('daysOnMarket', prop.get('addedOrReduced', 'N/A')),
+                                'property_type': prop.get('propertyType', prop.get('type', 'N/A')),
+                                'url': url
+                            })
+                    
+                    if properties:
+                        print(f"  ✅ {area}: {len(properties)} properties from {endpoint_config['host']}")
+                        time.sleep(1)
+                    
+            # If we got data from this endpoint, don't try others
+            if all_listings:
+                break
+                
+        except Exception as e:
+            print(f"  ⚠️ {endpoint_config['host']}: {e}")
+            continue
+    
+    if not all_listings:
+        print("  ⚠️ All endpoints failed, using Outscraper fallback...")
+        return collect_london_outscraper_fallback(client)
+    
+    return all_listings
+
+def collect_london_zoopla_fallback(client: Dict) -> List[Dict]:
+    """Fallback: Zoopla API using RAPIDAPI_KEY"""
+    print(f"  Using Zoopla fallback...")
     all_listings = []
     
     url = "https://zoopla.p.rapidapi.com/properties/list"
@@ -275,7 +411,7 @@ def collect_london_real_estate(client: Dict) -> List[Dict]:
         "X-RapidAPI-Host": "zoopla.p.rapidapi.com"
     }
     
-    for area in client['focus_areas']:
+    for area in client['focus_areas'][:2]:
         params = {
             "area": f"{area}, London",
             "category": "residential",
@@ -315,9 +451,60 @@ def collect_london_real_estate(client: Dict) -> List[Dict]:
                         })
                 
                 print(f"  ✅ {area}: {len(listings)} properties")
-                time.sleep(1)  # Rate limit protection
+                time.sleep(1)
         except Exception as e:
             print(f"  ⚠️ {area}: {e}")
+    
+    return all_listings
+
+def collect_london_outscraper_fallback(client: Dict) -> List[Dict]:
+    """Fallback: Outscraper Google Search for UK properties"""
+    print(f"  Using Outscraper fallback...")
+    all_listings = []
+    
+    try:
+        outscraper = ApiClient(api_key=os.environ.get('OUTSCRAPER_API_KEY'))
+        
+        for area in client['focus_areas'][:2]:
+            query = f"site:rightmove.co.uk {area} London properties for sale"
+            
+            results = outscraper.google_search(query, num=20, language='en')
+            if results and isinstance(results[0], list):
+                results = results[0]
+            
+            for r in results:
+                combined = f"{r.get('title', '')} {r.get('snippet', '')}"
+                
+                # Extract price in GBP
+                price_match = re.search(r'£([\d,]+)', combined)
+                if price_match:
+                    price = int(price_match.group(1).replace(',', ''))
+                    
+                    if price > 400000:
+                        # Extract beds
+                        bed_match = re.search(r'(\d+)\s*(?:bed|bedroom)', combined, re.I)
+                        beds = int(bed_match.group(1)) if bed_match else 'N/A'
+                        
+                        all_listings.append({
+                            'source': 'Rightmove/Search',
+                            'address': r.get('title', 'N/A')[:100],
+                            'city': 'London',
+                            'area': area,
+                            'price': price,
+                            'beds': beds,
+                            'baths': 'N/A',
+                            'sqft': 'N/A',
+                            'price_per_sqft': 0,
+                            'days_on_market': 'N/A',
+                            'property_type': 'N/A',
+                            'url': r.get('link', '')
+                        })
+            
+            print(f"  ✅ {area}: Found {len([l for l in all_listings if l['area'] == area])} properties")
+            time.sleep(2)
+            
+    except Exception as e:
+        print(f"  ⚠️ Outscraper: {e}")
     
     return all_listings
 
