@@ -1,10 +1,8 @@
 """
-VOXMILL ELITE PDF GENERATOR
-============================
-Fortune 500-level visual intelligence reports
-Black/gold premium design inspired by McKinsey, BCG, Goldman Sachs
-
-THIS WILL DESTROY ANY GOOGLE SLIDES TEMPLATE.
+VOXMILL ELITE PDF GENERATOR — FORTUNE 500 REDESIGN
+===================================================
+Cinematic black/gold market intelligence reports
+Goldman Sachs x McKinsey aesthetic
 """
 
 import os
@@ -26,14 +24,19 @@ import numpy as np
 INPUT_FILE = "/tmp/voxmill_analysis.json"
 OUTPUT_FILE = "/tmp/Voxmill_Elite_Intelligence.pdf"
 
-# Voxmill Elite Brand Colors
-COLOR_BLACK = colors.HexColor('#0A0A0A')
-COLOR_GOLD = colors.HexColor('#D4AF37')
-COLOR_DARK_GOLD = colors.HexColor('#B8960C')
-COLOR_LIGHT_GOLD = colors.HexColor('#F4E5B8')
-COLOR_GRAY_DARK = colors.HexColor('#1A1A1A')
-COLOR_GRAY_MED = colors.HexColor('#4A4A4A')
-COLOR_GRAY_LIGHT = colors.HexColor('#E8E8E8')
+# Voxmill Elite Brand Colors — REDESIGNED
+COLOR_BLACK = colors.HexColor('#0C0C0C')           # Rich matte black (main background)
+COLOR_GOLD = colors.HexColor('#CBA135')            # Soft metallic gold (primary accent)
+COLOR_GOLD_WARM = colors.HexColor('#D1B469')       # Warm gold tint (accent text/numbers)
+COLOR_DARK_GOLD = colors.HexColor('#967A32')       # Deep gold (gradients)
+COLOR_LIGHT_GOLD = colors.HexColor('#F4E5B8')      # Light gold (highlights)
+COLOR_CARD_BG = colors.HexColor('#1A1A1A')         # Content panels
+COLOR_CHART_BG = colors.HexColor('#2C2C2C')        # Chart backgrounds
+COLOR_GRAY_DARK = colors.HexColor('#121212')       # Table row 1
+COLOR_GRAY_MED = colors.HexColor('#181818')        # Table row 2
+COLOR_GRAY_DIVIDER = colors.HexColor('#2C2C2C')    # Subtle dividers
+COLOR_GRAY_LIGHT = colors.HexColor('#E8E8E8')      # Body text
+COLOR_GRAY_FOOTER = colors.HexColor('#777777')     # Footer text
 COLOR_WHITE = colors.HexColor('#FFFFFF')
 
 # ============================================================================
@@ -41,7 +44,7 @@ COLOR_WHITE = colors.HexColor('#FFFFFF')
 # ============================================================================
 
 class VoxmillEliteTemplate(canvas.Canvas):
-    """Ultra-premium page template"""
+    """Ultra-premium page template with refined aesthetics"""
     
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
@@ -62,165 +65,159 @@ class VoxmillEliteTemplate(canvas.Canvas):
     def draw_page_elements(self, page_num, page_count):
         """Draw premium page elements"""
         
-        # Top gold accent line
+        # Top gold accent line (refined weight)
         self.setStrokeColor(COLOR_GOLD)
-        self.setLineWidth(3)
-        self.line(0.5*inch, 10.7*inch, 8*inch, 10.7*inch)
+        self.setLineWidth(2.5)
+        self.line(0.75*inch, 10.6*inch, 7.75*inch, 10.6*inch)
         
-        # Voxmill logo image (top left)
-        logo_path = os.path.join(os.path.dirname(__file__), 'voxmill_logo.png')
-        if os.path.exists(logo_path):
-            self.drawImage(logo_path, 0.5*inch, 10.75*inch, width=0.35*inch, height=0.35*inch, preserveAspectRatio=True, mask='auto')
-            # Add "VOXMILL" text next to logo
-            self.setFont('Helvetica-Bold', 11)
-            self.setFillColor(COLOR_GOLD)
-            self.drawString(0.95*inch, 10.85*inch, "VOXMILL")
-        else:
-            # Fallback to text only
-            self.setFont('Helvetica-Bold', 11)
-            self.setFillColor(COLOR_GOLD)
-            self.drawString(0.5*inch, 10.85*inch, "VOXMILL")
+        # Voxmill branding (top left)
+        self.setFont('Helvetica-Bold', 11)
+        self.setFillColor(COLOR_GOLD)
+        self.drawString(0.75*inch, 10.75*inch, "VOXMILL")
         
         # Footer elements
         self.setFont('Helvetica', 7)
-        self.setFillColor(COLOR_GRAY_MED)
+        self.setFillColor(COLOR_GRAY_FOOTER)
         
         # Left: Classification
-        self.drawString(0.5*inch, 0.4*inch, "CONFIDENTIAL MARKET INTELLIGENCE")
+        self.drawString(0.75*inch, 0.5*inch, "CONFIDENTIAL MARKET INTELLIGENCE")
         
         # Center: Copyright
-        self.drawCentredString(4.25*inch, 0.4*inch, f"© Voxmill Automations {datetime.now().year}")
+        self.drawCentredString(4.25*inch, 0.5*inch, f"© Voxmill Automations {datetime.now().year}")
         
         # Right: Page number
         self.setFont('Helvetica-Bold', 7)
-        self.drawRightString(8*inch, 0.4*inch, f"PAGE {page_num} OF {page_count}")
+        self.drawRightString(7.75*inch, 0.5*inch, f"PAGE {page_num} OF {page_count}")
         
-        # Bottom gold line
+        # Bottom gold line (subtle)
         self.setStrokeColor(COLOR_GOLD)
-        self.setLineWidth(1)
-        self.line(0.5*inch, 0.55*inch, 8*inch, 0.55*inch)
+        self.setLineWidth(1.5)
+        self.line(0.75*inch, 0.65*inch, 7.75*inch, 0.65*inch)
 
 # ============================================================================
 # ELITE CHART GENERATION
 # ============================================================================
 
 def create_kpi_overview_chart(data):
-    """Create executive KPI overview (inspired by your slide 1)"""
+    """Executive KPI overview with cinematic aesthetic"""
     
     metrics = data['metrics']
     
-    fig = plt.figure(figsize=(10, 4), facecolor='#0A0A0A')
+    fig = plt.figure(figsize=(10, 4), facecolor='#0C0C0C')
     gs = fig.add_gridspec(1, 2, width_ratios=[1, 2], wspace=0.3)
     
-    # Left: Simple bar (listings)
+    # Left: Analyzed properties bar
     ax1 = fig.add_subplot(gs[0])
-    ax1.set_facecolor('#0A0A0A')
+    ax1.set_facecolor('#0C0C0C')
     
     ax1.bar([0], [metrics['total_properties']], width=0.6, 
-            color='#D4AF37', edgecolor='#D4AF37', linewidth=2)
+            color='#CBA135', edgecolor='#967A32', linewidth=2, alpha=0.85)
     ax1.set_xlim(-0.5, 0.5)
     ax1.set_ylim(0, metrics['total_properties'] * 1.2)
     ax1.set_xticks([0])
-    ax1.set_xticklabels(['Analyzed'], color='#E8E8E8', fontsize=9)
-    ax1.set_ylabel('Properties', color='#E8E8E8', fontsize=9)
+    ax1.set_xticklabels(['Analyzed'], color='#E8E8E8', fontsize=10)
+    ax1.set_ylabel('Properties', color='#E8E8E8', fontsize=10)
     ax1.tick_params(colors='#E8E8E8')
     ax1.spines['top'].set_visible(False)
     ax1.spines['right'].set_visible(False)
-    ax1.spines['left'].set_color('#4A4A4A')
-    ax1.spines['bottom'].set_color('#4A4A4A')
-    ax1.grid(axis='y', alpha=0.2, color='#4A4A4A', linestyle='--')
+    ax1.spines['left'].set_color('#2C2C2C')
+    ax1.spines['bottom'].set_color('#2C2C2C')
+    ax1.grid(axis='y', alpha=0.15, color='#2C2C2C', linestyle='--', linewidth=0.5)
     
-    # Right: KPI bars - need to calculate deal categories
-    # Count properties by deal score
+    # Right: Deal category distribution
     exceptional_deals = sum(1 for p in data['properties'] if p.get('deal_score', 0) >= 9)
     hot_deals = sum(1 for p in data['properties'] if 7 <= p.get('deal_score', 0) < 9)
     strong_value = sum(1 for p in data['properties'] if 5 <= p.get('deal_score', 0) < 7)
     
     ax2 = fig.add_subplot(gs[1])
-    ax2.set_facecolor('#0A0A0A')
+    ax2.set_facecolor('#0C0C0C')
     
     categories = ['Exceptional\nDeals', 'Hot\nDeals', 'Strong\nValue']
     values = [exceptional_deals, hot_deals, strong_value]
     
-    bars = ax2.barh(categories, values, color='#D4AF37', edgecolor='#D4AF37', linewidth=1.5)
+    bars = ax2.barh(categories, values, color='#CBA135', edgecolor='#967A32', 
+                    linewidth=1.5, alpha=0.8)
     
     # Add value labels
     for i, (bar, val) in enumerate(zip(bars, values)):
-        ax2.text(val + max(values)*0.02 if max(values) > 0 else 0.5, i, str(val), va='center', ha='left',
-                color='#D4AF37', fontsize=11, fontweight='bold')
+        if val > 0:
+            ax2.text(val + max(values)*0.02 if max(values) > 0 else 0.5, i, str(val), 
+                    va='center', ha='left', color='#D1B469', fontsize=11, fontweight='bold')
     
-    ax2.set_xlabel('Count', color='#E8E8E8', fontsize=9)
+    ax2.set_xlabel('Count', color='#E8E8E8', fontsize=10)
     ax2.tick_params(colors='#E8E8E8')
     ax2.spines['top'].set_visible(False)
     ax2.spines['right'].set_visible(False)
-    ax2.spines['left'].set_color('#4A4A4A')
-    ax2.spines['bottom'].set_color('#4A4A4A')
-    ax2.grid(axis='x', alpha=0.2, color='#4A4A4A', linestyle='--')
+    ax2.spines['left'].set_color('#2C2C2C')
+    ax2.spines['bottom'].set_color('#2C2C2C')
+    ax2.grid(axis='x', alpha=0.15, color='#2C2C2C', linestyle='--', linewidth=0.5)
     
     plt.tight_layout()
     
     path = '/tmp/kpi_overview.png'
-    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0A0A0A')
+    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0C0C0C')
     plt.close()
     
     return path
 
 def create_performance_insights_chart(data):
-    """Create performance graph (inspired by your slide 2)"""
+    """Performance analysis with translucent gold overlays"""
     
     properties = data['properties'][:10]
     
-    fig = plt.figure(figsize=(10, 5), facecolor='#0A0A0A')
-    gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
+    fig = plt.figure(figsize=(10, 5), facecolor='#0C0C0C')
+    gs = fig.add_gridspec(2, 2, hspace=0.35, wspace=0.35)
     
     # Top left: Price comparison
     ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_facecolor('#0A0A0A')
+    ax1.set_facecolor('#0C0C0C')
     
     prices = [p['price']/1000000 for p in properties[:6]]
     addresses = [p['address'].split(',')[0][:15] + '...' for p in properties[:6]]
     
-    ax1.barh(range(len(prices)), prices, color='#D4AF37', edgecolor='#B8960C', linewidth=1)
+    ax1.barh(range(len(prices)), prices, color='#CBA135', edgecolor='#967A32', 
+             linewidth=1, alpha=0.75)
     ax1.set_yticks(range(len(addresses)))
     ax1.set_yticklabels(addresses, color='#E8E8E8', fontsize=8)
     ax1.set_xlabel('Price (£M)', color='#E8E8E8', fontsize=9)
-    ax1.tick_params(colors='#E8E8E8')
+    ax1.tick_params(colors='#E8E8E8', labelsize=8)
     ax1.spines['top'].set_visible(False)
     ax1.spines['right'].set_visible(False)
-    ax1.spines['left'].set_color('#4A4A4A')
-    ax1.spines['bottom'].set_color('#4A4A4A')
-    ax1.grid(axis='x', alpha=0.2, color='#4A4A4A')
+    ax1.spines['left'].set_color('#2C2C2C')
+    ax1.spines['bottom'].set_color('#2C2C2C')
+    ax1.grid(axis='x', alpha=0.15, color='#2C2C2C', linewidth=0.5)
     
-    # Top right: Trend line
+    # Top right: Price per sqft trend
     ax2 = fig.add_subplot(gs[0, 1])
-    ax2.set_facecolor('#0A0A0A')
+    ax2.set_facecolor('#0C0C0C')
     
     x = list(range(len(properties)))
     y = [p['price_per_sqft'] for p in properties]
     
-    ax2.plot(x, y, color='#D4AF37', linewidth=2.5, marker='o', markersize=6, 
-             markerfacecolor='#D4AF37', markeredgecolor='#B8960C', markeredgewidth=1.5)
-    ax2.fill_between(x, y, alpha=0.3, color='#B8960C')
+    ax2.plot(x, y, color='#CBA135', linewidth=2.5, marker='o', markersize=6, 
+             markerfacecolor='#CBA135', markeredgecolor='#967A32', markeredgewidth=1.5, alpha=0.9)
+    ax2.fill_between(x, y, alpha=0.2, color='#CBA135')
     
     ax2.set_xlabel('Property Rank', color='#E8E8E8', fontsize=9)
     ax2.set_ylabel('£/sqft', color='#E8E8E8', fontsize=9)
-    ax2.tick_params(colors='#E8E8E8')
+    ax2.tick_params(colors='#E8E8E8', labelsize=8)
     ax2.spines['top'].set_visible(False)
     ax2.spines['right'].set_visible(False)
-    ax2.spines['left'].set_color('#4A4A4A')
-    ax2.spines['bottom'].set_color('#4A4A4A')
-    ax2.grid(alpha=0.2, color='#4A4A4A')
+    ax2.spines['left'].set_color('#2C2C2C')
+    ax2.spines['bottom'].set_color('#2C2C2C')
+    ax2.grid(alpha=0.15, color='#2C2C2C', linewidth=0.5)
     
-    # Bottom left: Property type distribution
+    # Bottom left: Property type distribution (pie chart)
     ax3 = fig.add_subplot(gs[1, 0])
-    ax3.set_facecolor('#0A0A0A')
+    ax3.set_facecolor('#0C0C0C')
     
     types = {}
     for p in properties:
         ptype = p['property_type']
         types[ptype] = types.get(ptype, 0) + 1
     
-    wedges, texts = ax3.pie(types.values(), startangle=90, colors=['#D4AF37', '#B8960C', '#8B7209', '#6B5507'])
+    gold_spectrum = ['#CBA135', '#B8960C', '#967A32', '#6B5507']
+    wedges, texts = ax3.pie(types.values(), startangle=90, colors=gold_spectrum[:len(types)])
     
     # Add percentage labels
     total = sum(types.values())
@@ -228,44 +225,45 @@ def create_performance_insights_chart(data):
         angle = (wedge.theta2 + wedge.theta1) / 2
         x = 0.7 * np.cos(np.radians(angle))
         y = 0.7 * np.sin(np.radians(angle))
-        ax3.text(x, y, f'{int(count/total*100)}%', ha='center', va='center',
-                color='#0A0A0A', fontsize=12, fontweight='bold')
+        pct = int(count/total*100) if total > 0 else 0
+        ax3.text(x, y, f'{pct}%', ha='center', va='center',
+                color='#0C0C0C', fontsize=11, fontweight='bold')
     
-    # Legend
     ax3.legend(types.keys(), loc='lower left', fontsize=7, 
-              facecolor='#1A1A1A', edgecolor='#4A4A4A', labelcolor='#E8E8E8')
+              facecolor='#1A1A1A', edgecolor='#2C2C2C', labelcolor='#E8E8E8')
     
     # Bottom right: Deal score distribution
     ax4 = fig.add_subplot(gs[1, 1])
-    ax4.set_facecolor('#0A0A0A')
+    ax4.set_facecolor('#0C0C0C')
     
     scores = [p['deal_score'] for p in properties]
-    colors_map = ['#D4AF37' if s >= 8 else '#B8960C' if s >= 7 else '#6B5507' for s in scores]
+    colors_map = ['#CBA135' if s >= 8 else '#B8960C' if s >= 7 else '#6B5507' for s in scores]
     
-    ax4.bar(range(len(scores)), scores, color=colors_map, edgecolor='#4A4A4A', linewidth=1)
-    ax4.axhline(y=8, color='#D4AF37', linestyle='--', linewidth=1, alpha=0.5)
-    ax4.axhline(y=7, color='#B8960C', linestyle='--', linewidth=1, alpha=0.5)
+    ax4.bar(range(len(scores)), scores, color=colors_map, edgecolor='#2C2C2C', 
+            linewidth=1, alpha=0.8)
+    ax4.axhline(y=8, color='#CBA135', linestyle='--', linewidth=1, alpha=0.4)
+    ax4.axhline(y=7, color='#B8960C', linestyle='--', linewidth=1, alpha=0.4)
     
     ax4.set_xlabel('Property', color='#E8E8E8', fontsize=9)
     ax4.set_ylabel('Deal Score', color='#E8E8E8', fontsize=9)
     ax4.set_ylim(0, 10)
-    ax4.tick_params(colors='#E8E8E8')
+    ax4.tick_params(colors='#E8E8E8', labelsize=8)
     ax4.spines['top'].set_visible(False)
     ax4.spines['right'].set_visible(False)
-    ax4.spines['left'].set_color('#4A4A4A')
-    ax4.spines['bottom'].set_color('#4A4A4A')
-    ax4.grid(axis='y', alpha=0.2, color='#4A4A4A')
+    ax4.spines['left'].set_color('#2C2C2C')
+    ax4.spines['bottom'].set_color('#2C2C2C')
+    ax4.grid(axis='y', alpha=0.15, color='#2C2C2C', linewidth=0.5)
     
     plt.tight_layout()
     
     path = '/tmp/performance_insights.png'
-    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0A0A0A')
+    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0C0C0C')
     plt.close()
     
     return path
 
 def create_competitor_landscape_chart(data):
-    """Create competitor analysis (inspired by your slide 3)"""
+    """Competitor analysis with soft gold gradients"""
     
     properties = data['properties']
     
@@ -278,22 +276,23 @@ def create_competitor_landscape_chart(data):
     # Top 5 agents
     top_agents = sorted(agents.items(), key=lambda x: x[1], reverse=True)[:5]
     
-    fig = plt.figure(figsize=(10, 4), facecolor='#0A0A0A')
-    gs = fig.add_gridspec(1, 2, width_ratios=[1.2, 1], wspace=0.3)
+    fig = plt.figure(figsize=(10, 4), facecolor='#0C0C0C')
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.2, 1], wspace=0.35)
     
-    # Left: Agent bar chart
+    # Left: Agent listings bar chart
     ax1 = fig.add_subplot(gs[0])
-    ax1.set_facecolor('#0A0A0A')
+    ax1.set_facecolor('#0C0C0C')
     
     agent_names = [a[0] for a in top_agents]
     agent_counts = [a[1] for a in top_agents]
     
-    bars = ax1.barh(range(len(agent_names)), agent_counts, color='#D4AF37', 
-                    edgecolor='#B8960C', linewidth=1.5)
+    bars = ax1.barh(range(len(agent_names)), agent_counts, color='#CBA135', 
+                    edgecolor='#967A32', linewidth=1.5, alpha=0.75)
     
     for i, (bar, count) in enumerate(zip(bars, agent_counts)):
-        ax1.text(count + max(agent_counts)*0.02, i, str(count), va='center', ha='left',
-                color='#D4AF37', fontsize=10, fontweight='bold')
+        if count > 0:
+            ax1.text(count + max(agent_counts)*0.02, i, str(count), va='center', ha='left',
+                    color='#D1B469', fontsize=10, fontweight='bold')
     
     ax1.set_yticks(range(len(agent_names)))
     ax1.set_yticklabels(agent_names, color='#E8E8E8', fontsize=9)
@@ -301,15 +300,15 @@ def create_competitor_landscape_chart(data):
     ax1.tick_params(colors='#E8E8E8')
     ax1.spines['top'].set_visible(False)
     ax1.spines['right'].set_visible(False)
-    ax1.spines['left'].set_color('#4A4A4A')
-    ax1.spines['bottom'].set_color('#4A4A4A')
-    ax1.grid(axis='x', alpha=0.2, color='#4A4A4A')
+    ax1.spines['left'].set_color('#2C2C2C')
+    ax1.spines['bottom'].set_color('#2C2C2C')
+    ax1.grid(axis='x', alpha=0.15, color='#2C2C2C', linewidth=0.5)
     
     # Right: Market share pie
     ax2 = fig.add_subplot(gs[1])
-    ax2.set_facecolor('#0A0A0A')
+    ax2.set_facecolor('#0C0C0C')
     
-    colors_pie = ['#D4AF37', '#B8960C', '#8B7209', '#6B5507', '#4A4A4A']
+    colors_pie = ['#CBA135', '#B8960C', '#967A32', '#6B5507', '#4A4A4A']
     wedges, texts = ax2.pie(agent_counts, startangle=90, colors=colors_pie[:len(agent_counts)])
     
     total = sum(agent_counts)
@@ -317,14 +316,14 @@ def create_competitor_landscape_chart(data):
         angle = (wedge.theta2 + wedge.theta1) / 2
         x = 0.7 * np.cos(np.radians(angle))
         y = 0.7 * np.sin(np.radians(angle))
-        pct = int(count/total*100)
+        pct = int(count/total*100) if total > 0 else 0
         ax2.text(x, y, f'{pct}%', ha='center', va='center',
-                color='#0A0A0A', fontsize=11, fontweight='bold')
+                color='#0C0C0C', fontsize=11, fontweight='bold')
     
     plt.tight_layout()
     
     path = '/tmp/competitor_landscape.png'
-    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0A0A0A')
+    plt.savefig(path, dpi=200, bbox_inches='tight', facecolor='#0C0C0C')
     plt.close()
     
     return path
@@ -334,59 +333,51 @@ def create_competitor_landscape_chart(data):
 # ============================================================================
 
 def create_elite_pdf(data):
-    """Create the elite PDF report"""
+    """Create the elite PDF report with Fortune-500 aesthetic"""
     
     print(f"\n📄 CREATING ELITE PDF")
     
     doc = SimpleDocTemplate(
         OUTPUT_FILE,
         pagesize=letter,
-        leftMargin=0.5*inch,
-        rightMargin=0.5*inch,
+        leftMargin=0.75*inch,
+        rightMargin=0.75*inch,
         topMargin=1.1*inch,
-        bottomMargin=0.8*inch
+        bottomMargin=0.9*inch
     )
     
     story = []
     styles = getSampleStyleSheet()
     
-    # Custom styles
+    # Custom styles with refined typography
     title_style = ParagraphStyle(
         'EliteTitle',
         parent=styles['Heading1'],
-        fontSize=28,
+        fontSize=32,
         textColor=COLOR_WHITE,
-        spaceAfter=8,
+        spaceAfter=10,
         fontName='Helvetica-Bold',
-        leading=32
+        leading=36
     )
     
     subtitle_style = ParagraphStyle(
         'EliteSubtitle',
         parent=styles['Normal'],
-        fontSize=12,
-        textColor=COLOR_GOLD,
-        spaceAfter=30,
+        fontSize=11,
+        textColor=COLOR_GOLD_WARM,
+        spaceAfter=25,
         fontName='Helvetica-Bold'
     )
     
     section_title_style = ParagraphStyle(
         'SectionTitle',
         parent=styles['Heading2'],
-        fontSize=20,
+        fontSize=18,
         textColor=COLOR_WHITE,
-        spaceBefore=10,
-        spaceAfter=15,
-        fontName='Helvetica-Bold'
-    )
-    
-    section_subtitle_style = ParagraphStyle(
-        'SectionSubtitle',
-        parent=styles['Normal'],
-        fontSize=10,
-        textColor=COLOR_GRAY_LIGHT,
-        spaceAfter=20,
-        fontName='Helvetica-Oblique'
+        spaceBefore=12,
+        spaceAfter=18,
+        fontName='Helvetica-Bold',
+        leading=22
     )
     
     body_style = ParagraphStyle(
@@ -395,22 +386,8 @@ def create_elite_pdf(data):
         fontSize=10,
         textColor=COLOR_GRAY_LIGHT,
         spaceAfter=12,
-        leading=14,
+        leading=15,
         alignment=TA_JUSTIFY
-    )
-    
-    insight_style = ParagraphStyle(
-        'Insight',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=COLOR_WHITE,
-        spaceAfter=10,
-        leftIndent=15,
-        fontName='Helvetica',
-        leading=16,
-        borderColor=COLOR_GOLD,
-        borderWidth=0,
-        borderPadding=10
     )
     
     # ========================================================================
@@ -425,17 +402,17 @@ def create_elite_pdf(data):
     story.append(Paragraph("OVERVIEW", title_style))
     story.append(Spacer(1, 0.2*inch))
     
-    # Market info box
+    # Market info
     info_text = f"""EXECUTIVE KPI OVERVIEW — WEEKLY MARKET PRECISION REPORT<br/>
     <b>{metadata['area'].upper()}, {metadata['city'].upper()}</b> | {datetime.now().strftime('%B %d, %Y')}"""
     
     story.append(Paragraph(info_text, subtitle_style))
-    story.append(Spacer(1, 0.1*inch))
+    story.append(Spacer(1, 0.15*inch))
     
     # KPI chart
     print(f"   → Generating KPI overview chart...")
     kpi_chart = create_kpi_overview_chart(data)
-    story.append(Image(kpi_chart, width=7*inch, height=2.8*inch))
+    story.append(Image(kpi_chart, width=6.5*inch, height=2.6*inch))
     
     story.append(Spacer(1, 0.3*inch))
     
@@ -443,28 +420,29 @@ def create_elite_pdf(data):
     pricing_data = [
         ['', 'LOW VALUE', 'HIGH VALUE', 'AVG VALUE'],
         ['Price', f'£{metrics["min_price"]:,}', f'£{metrics["max_price"]:,}', f'£{metrics["avg_price"]:,.0f}'],
-        ['Description', 'Represents entry-level\npricing in the market', 
-         'Reflects the upper end of\nthe luxury market', 'Indicates overall market\npricing trends']
+        ['Description', 'Entry-level market\npricing benchmark', 
+         'Upper luxury market\nsegment ceiling', 'Central market trend\nindicator']
     ]
     
-    pricing_table = Table(pricing_data, colWidths=[1*inch, 2*inch, 2*inch, 2*inch])
+    pricing_table = Table(pricing_data, colWidths=[1.2*inch, 1.8*inch, 1.8*inch, 1.8*inch])
     pricing_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), COLOR_BLACK),
+        ('BACKGROUND', (0, 0), (-1, 0), COLOR_GOLD),
+        ('BACKGROUND', (0, 1), (0, 1), COLOR_CARD_BG),
         ('BACKGROUND', (1, 1), (-1, 1), COLOR_GRAY_DARK),
-        ('BACKGROUND', (1, 2), (-1, 2), COLOR_BLACK),
-        ('TEXTCOLOR', (0, 0), (-1, 0), COLOR_GOLD),
-        ('TEXTCOLOR', (0, 1), (0, -1), COLOR_GOLD),
+        ('BACKGROUND', (0, 2), (0, 2), COLOR_CARD_BG),
+        ('BACKGROUND', (1, 2), (-1, 2), COLOR_GRAY_MED),
+        ('TEXTCOLOR', (0, 0), (-1, 0), COLOR_WHITE),
+        ('TEXTCOLOR', (0, 1), (0, -1), COLOR_GOLD_WARM),
         ('TEXTCOLOR', (1, 1), (-1, -1), COLOR_GRAY_LIGHT),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 1), (-1, 1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('FONTSIZE', (0, 1), (-1, -1), 9),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
         ('TOPPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, COLOR_GRAY_MED),
+        ('GRID', (0, 0), (-1, -1), 0.5, COLOR_GRAY_DIVIDER),
         ('LINEABOVE', (0, 0), (-1, 0), 2, COLOR_GOLD),
     ]))
     
@@ -473,28 +451,26 @@ def create_elite_pdf(data):
     story.append(PageBreak())
     
     # ========================================================================
-    # PAGE 2: PERFORMANCE GRAPH AND MARKET INSIGHTS
+    # PAGE 2: PERFORMANCE INSIGHTS
     # ========================================================================
     
     story.append(Paragraph("PERFORMANCE GRAPH", section_title_style))
     story.append(Paragraph("AND MARKET INSIGHTS", title_style))
-    story.append(Paragraph("Analysis of market performance and strategic market insights", section_subtitle_style))
+    story.append(Spacer(1, 0.2*inch))
     
     # Performance charts
     print(f"   → Generating performance insights chart...")
     perf_chart = create_performance_insights_chart(data)
-    story.append(Image(perf_chart, width=7*inch, height=3.5*inch))
+    story.append(Image(perf_chart, width=6.5*inch, height=3.25*inch))
     
-    story.append(Spacer(1, 0.2*inch))
+    story.append(Spacer(1, 0.25*inch))
     
-    # Key insights box
+    # Key insights
     story.append(Paragraph("KEY INSIGHTS", section_title_style))
     
-    # Extract insights from intelligence
     insights_text = intelligence.get('executive_summary', 'Market analysis in progress.')
     story.append(Paragraph(insights_text, body_style))
     
-    # Add strategic insights as bullet points
     if 'strategic_insights' in intelligence:
         for insight in intelligence['strategic_insights'][:3]:
             story.append(Paragraph(f"• {insight}", body_style))
@@ -502,37 +478,37 @@ def create_elite_pdf(data):
     story.append(PageBreak())
     
     # ========================================================================
-    # PAGE 3: COMPETITOR LANDSCAPE ANALYSIS
+    # PAGE 3: COMPETITOR LANDSCAPE
     # ========================================================================
     
     story.append(Paragraph("COMPETITOR", section_title_style))
-    story.append(Paragraph("<font color='#D4AF37'>LANDSCAPE</font>", title_style))
+    story.append(Paragraph("<font color='#CBA135'>LANDSCAPE</font>", title_style))
     story.append(Paragraph("ANALYSIS", title_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Competitor chart
     print(f"   → Generating competitor landscape chart...")
     comp_chart = create_competitor_landscape_chart(data)
-    story.append(Image(comp_chart, width=7*inch, height=2.8*inch))
+    story.append(Image(comp_chart, width=6.5*inch, height=2.6*inch))
     
-    story.append(Spacer(1, 0.2*inch))
+    story.append(Spacer(1, 0.25*inch))
     
     # Competitor insights
-    insight_box_text = """Competitors are actively adjusting strategies to capture market share. 
+    insight_text = """Competitors are actively adjusting strategies to capture market share. 
     Price reductions and new listings are prevalent across major agencies."""
     
-    story.append(Paragraph(insight_box_text, body_style))
+    story.append(Paragraph(insight_text, body_style))
     
     story.append(PageBreak())
     
     # ========================================================================
-    # PAGE 4: STRATEGIC INTELLIGENCE & OPPORTUNITIES
+    # PAGE 4: STRATEGIC INTELLIGENCE
     # ========================================================================
     
     story.append(Paragraph("STRATEGIC INTELLIGENCE", title_style))
     story.append(Spacer(1, 0.3*inch))
     
-    # BLUF - Executive Summary
+    # Executive Summary
     story.append(Paragraph("EXECUTIVE SUMMARY", section_title_style))
     bluf_text = intelligence.get('executive_summary', 'Analysis based on current market conditions.')
     story.append(Paragraph(bluf_text, body_style))
@@ -577,7 +553,7 @@ def create_elite_pdf(data):
     # ========================================================================
     
     story.append(Paragraph("TOP OPPORTUNITIES", title_style))
-    story.append(Spacer(1, 0.2*inch))
+    story.append(Spacer(1, 0.25*inch))
     
     # Top 8 properties table
     top_props = data['top_opportunities'][:8]
@@ -586,35 +562,36 @@ def create_elite_pdf(data):
     
     for prop in top_props:
         prop_data.append([
-            prop['address'].split(',')[0][:35],
+            prop['address'].split(',')[0][:32],
             f"£{prop['price']:,}",
             f"{prop['beds']}/{prop['baths']}",
             f"£{prop['price_per_sqft']:,.0f}",
             f"{prop['deal_score']}/10"
         ])
     
-    prop_table = Table(prop_data, colWidths=[2.5*inch, 1.3*inch, 0.9*inch, 0.9*inch, 0.7*inch])
+    prop_table = Table(prop_data, colWidths=[2.3*inch, 1.3*inch, 0.9*inch, 0.9*inch, 0.7*inch])
     prop_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), COLOR_BLACK),
+        ('BACKGROUND', (0, 0), (-1, 0), COLOR_GOLD),
         ('BACKGROUND', (0, 1), (-1, -1), COLOR_GRAY_DARK),
-        ('TEXTCOLOR', (0, 0), (-1, 0), COLOR_GOLD),
+        ('TEXTCOLOR', (0, 0), (-1, 0), COLOR_WHITE),
         ('TEXTCOLOR', (0, 1), (-1, -1), COLOR_GRAY_LIGHT),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+        ('ALIGN', (0, 1), (0, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('FONTSIZE', (0, 1), (-1, -1), 9),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, COLOR_GRAY_MED),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('FONTSIZE', (0, 1), (-1, -1), 8.5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, COLOR_GRAY_DIVIDER),
         ('LINEABOVE', (0, 0), (-1, 0), 2, COLOR_GOLD),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [COLOR_GRAY_DARK, COLOR_BLACK])
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [COLOR_GRAY_DARK, COLOR_GRAY_MED])
     ]))
     
     story.append(prop_table)
     
-    story.append(Spacer(1, 0.3*inch))
+    story.append(Spacer(1, 0.35*inch))
     
     # Closing statement
     closing_text = """<b>INSIGHTS SUMMARY</b><br/><br/>
@@ -624,7 +601,7 @@ def create_elite_pdf(data):
     story.append(Paragraph(closing_text, body_style))
     
     # Build PDF
-    print(f"   → Building PDF with custom template...")
+    print(f"   → Building PDF with elite template...")
     doc.build(story, canvasmaker=VoxmillEliteTemplate)
     
     print(f"   ✅ Elite PDF created: {OUTPUT_FILE}")
@@ -638,7 +615,7 @@ def main():
     """Main execution"""
     
     print("\n" + "="*70)
-    print("VOXMILL ELITE PDF GENERATOR")
+    print("VOXMILL ELITE PDF GENERATOR — FORTUNE 500 EDITION")
     print("="*70)
     
     try:
@@ -651,6 +628,7 @@ def main():
         pdf_file = create_elite_pdf(data)
         
         print(f"\n✅ PDF generation complete")
+        print(f"   Output: {pdf_file}")
         return pdf_file
         
     except Exception as e:
