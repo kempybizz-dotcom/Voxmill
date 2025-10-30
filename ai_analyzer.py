@@ -25,8 +25,8 @@ def calculate_metrics(properties):
     
     print(f"\n📊 CALCULATING MARKET METRICS")
     
-    if not properties or len(properties) < 3:
-        raise Exception("Insufficient properties for analysis")
+    if not properties or len(properties) < 2:
+        raise Exception("Insufficient properties for analysis (need at least 2)")
     
     prices = [p['price'] for p in properties]
     ppsf_values = [p['price_per_sqft'] for p in properties if p['price_per_sqft'] > 0]
