@@ -2,13 +2,13 @@
 VOXMILL AI ANALYZER - PRODUCTION VERSION
 =========================================
 GPT-4o powered market intelligence generation
-Fixed for Render proxy environment
+Uses direct HTTP requests - bypasses OpenAI library proxy issues
 """
 
 import os
 import json
+import requests
 from datetime import datetime
-from openai import OpenAI
 
 # Environment
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
@@ -18,7 +18,7 @@ OUTPUT_FILE = "/tmp/voxmill_analysis.json"
 def generate_ai_intelligence(metrics, area, city):
     """
     Generate AI-powered market intelligence using GPT-4o.
-    Fixed for Render environment compatibility.
+    Uses direct HTTP requests to bypass Render proxy issues.
     """
     
     print(f"\n🤖 GENERATING AI INTELLIGENCE")
@@ -29,14 +29,6 @@ def generate_ai_intelligence(metrics, area, city):
         raise Exception("OPENAI_API_KEY not configured")
     
     try:
-        # Initialize OpenAI client - FIXED for Render proxy
-        # Don't pass any proxy-related arguments - let the library handle it
-        client = OpenAI(
-            api_key=OPENAI_API_KEY,
-            timeout=60.0,
-            max_retries=2
-        )
-        
         # Build comprehensive prompt
         prompt = f"""You are an elite market intelligence analyst for luxury real estate in {area}, {city}.
 
@@ -87,56 +79,130 @@ Format as JSON:
 
 Use direct, confident language. No hedging. Board-room ready."""
 
-        print(f"   → Sending request to GPT-4o...")
+        print(f"   → Sending request to GPT-4o via direct HTTP...")
         
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an elite luxury real estate market analyst. Your reports drive multi-million pound decisions. Be direct, confident, and actionable."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.7,
-            max_tokens=1500,
-            response_format={"type": "json_object"}
+        # Direct HTTP request to OpenAI API - bypasses library proxy issues
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {OPENAI_API_KEY}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': 'gpt-4o',
+                'messages': [
+                    {
+                        'role': 'system',
+                        'content': 'You are an elite luxury real estate market analyst. Your reports drive multi-million pound decisions. Be direct, confident, and actionable.'
+                    },
+                    {
+                        'role': 'user',
+                        'content': prompt
+                    }
+                ],
+                'temperature': 0.7,
+                'max_tokens': 1500,
+                'response_format': {'type': 'json_object'}
+            },
+            timeout=60
         )
         
-        intelligence = json.loads(response.choices[0].message.content)
+        # Check response
+        if response.status_code != 200:
+            error_detail = response.text[:500] if response.text else 'Unknown error'
+            raise Exception(f"OpenAI API error {response.status_code}: {error_detail}")
         
-        print(f"   ✅ AI intelligence generated")
+        # Parse response
+        api_response = response.json()
+        
+        if 'error' in api_response:
+            raise Exception(f"OpenAI API error: {api_response['error'].get('message', 'Unknown error')}")
+        
+        if 'choices' not in api_response or len(api_response['choices']) == 0:
+            raise Exception("No response from OpenAI API")
+        
+        # Extract intelligence
+        content = api_response['choices'][0]['message']['content']
+        intelligence = json.loads(content)
+        
+        print(f"   ✅ AI intelligence generated via direct HTTP")
         print(f"      Sentiment: {intelligence.get('market_sentiment', 'N/A')}")
         print(f"      Confidence: {intelligence.get('confidence_level', 'N/A')}")
         
         return intelligence
         
-    except Exception as e:
-        print(f"   ❌ AI generation failed: {str(e)}")
+    except requests.exceptions.Timeout:
+        print(f"   ⚠️  OpenAI API timeout - using fallback intelligence...")
+        return generate_fallback_intelligence(metrics, area, city)
         
-        # Fallback intelligence if API fails
+    except requests.exceptions.RequestException as e:
+        print(f"   ⚠️  OpenAI API request failed: {str(e)}")
         print(f"   🔄 Using fallback intelligence...")
+        return generate_fallback_intelligence(metrics, area, city)
         
-        return {
-            "executive_summary": f"Market analysis of {metrics['total_properties']} luxury properties in {area}. Average price point of £{metrics['avg_price']:,.0f} indicates premium positioning. Strategic opportunities exist in the £{metrics['median_price']:,.0f}-£{int(metrics['median_price'] * 1.2):,.0f} range.",
-            "strategic_insights": [
-                f"Price range of £{metrics['min_price']:,.0f}-£{metrics['max_price']:,.0f} shows market diversity",
-                f"{metrics['most_common_type']} properties dominate current listings",
-                f"Average £{metrics['avg_price_per_sqft']:.0f}/sqft suggests competitive positioning opportunity",
-                "Market shows activity across multiple property types and price points"
-            ],
-            "tactical_opportunities": {
-                "immediate": f"Focus on properties in the £{int(metrics['median_price'] * 0.9):,.0f}-£{int(metrics['median_price'] * 1.1):,.0f} range for quick conversion",
-                "near_term": f"Position {metrics['most_common_type'].lower()} inventory for seasonal demand",
-                "strategic": f"Build presence in {area}'s premium segment (£{int(metrics['avg_price'] * 1.2):,.0f}+)"
-            },
-            "risk_assessment": f"Market concentration in {metrics['most_common_type'].lower()} properties may indicate supply pressure. Monitor pricing trends weekly for early signals of shifts.",
-            "market_sentiment": "Neutral",
-            "confidence_level": "Medium"
-        }
+    except json.JSONDecodeError as e:
+        print(f"   ⚠️  Failed to parse OpenAI response: {str(e)}")
+        print(f"   🔄 Using fallback intelligence...")
+        return generate_fallback_intelligence(metrics, area, city)
+        
+    except Exception as e:
+        print(f"   ⚠️  AI generation failed: {str(e)}")
+        print(f"   🔄 Using fallback intelligence...")
+        return generate_fallback_intelligence(metrics, area, city)
+
+
+def generate_fallback_intelligence(metrics, area, city):
+    """
+    Generate fallback intelligence when OpenAI API is unavailable.
+    Still produces professional, data-driven insights.
+    """
+    
+    print(f"   📊 Generating data-driven fallback intelligence...")
+    
+    # Calculate additional insights
+    price_volatility = (metrics['max_price'] - metrics['min_price']) / metrics['avg_price']
+    market_tier = "ultra-premium" if metrics['avg_price'] > 5000000 else "premium" if metrics['avg_price'] > 2000000 else "luxury"
+    
+    # Determine sentiment based on metrics
+    if metrics['avg_price_per_sqft'] > 1500:
+        sentiment = "Bullish"
+        confidence = "High"
+    elif metrics['avg_price_per_sqft'] > 1000:
+        sentiment = "Neutral"
+        confidence = "Medium"
+    else:
+        sentiment = "Bearish"
+        confidence = "Medium"
+    
+    intelligence = {
+        "executive_summary": f"Market analysis of {metrics['total_properties']} {market_tier} properties in {area} reveals average pricing at £{metrics['avg_price']:,.0f} with {int(price_volatility * 100)}% price volatility. Current market conditions suggest {sentiment.lower()} positioning with median transactions at £{metrics['median_price']:,.0f}. Strategic opportunities exist in the £{int(metrics['median_price'] * 0.85):,.0f}-£{int(metrics['median_price'] * 1.15):,.0f} range for optimal conversion.",
+        
+        "strategic_insights": [
+            f"Price distribution from £{metrics['min_price']:,.0f} to £{metrics['max_price']:,.0f} indicates diverse market segmentation with opportunities across multiple tiers",
+            f"{metrics['most_common_type']} properties represent dominant inventory type - positioning against this segment critical for differentiation",
+            f"Average £{metrics['avg_price_per_sqft']:.0f}/sqft suggests {'premium' if metrics['avg_price_per_sqft'] > 1200 else 'competitive'} pricing environment with {'limited' if metrics['avg_price_per_sqft'] > 1200 else 'strong'} value positioning opportunities",
+            f"Market demonstrates {'high' if price_volatility > 0.5 else 'moderate'} price volatility ({int(price_volatility * 100)}%) indicating {'dynamic' if price_volatility > 0.5 else 'stable'} trading conditions and {'aggressive' if price_volatility > 0.5 else 'measured'} pricing strategies"
+        ],
+        
+        "tactical_opportunities": {
+            "immediate": f"Target properties in £{int(metrics['median_price'] * 0.9):,.0f}-£{int(metrics['median_price'] * 1.1):,.0f} corridor for rapid conversion. Current median of £{metrics['median_price']:,.0f} represents sweet spot for buyer activity and inventory turnover.",
+            
+            "near_term": f"Position {metrics['most_common_type'].lower()} inventory strategically against market saturation. Consider counter-positioning with alternative property types for competitive advantage and premium capture.",
+            
+            "strategic": f"Build long-term presence in {area}'s {market_tier} segment with focus on properties above £{int(metrics['avg_price'] * 1.2):,.0f}. Market fundamentals support sustained activity in top-tier positioning through strategic acquisition and selective listing management."
+        },
+        
+        "risk_assessment": f"Market concentration in {metrics['most_common_type'].lower()} properties (dominant type) creates potential supply pressure and pricing compression risk. Price volatility of {int(price_volatility * 100)}% suggests active trading but requires careful timing and positioning. Monitor £/sqft trends weekly for early signals of directional shifts or competitive repositioning that could impact valuations and transaction velocity.",
+        
+        "market_sentiment": sentiment,
+        "confidence_level": confidence
+    }
+    
+    print(f"   ✅ Fallback intelligence generated")
+    print(f"      Sentiment: {sentiment}")
+    print(f"      Confidence: {confidence}")
+    
+    return intelligence
 
 
 def calculate_deal_scores(properties):
@@ -272,7 +338,7 @@ def analyze_market_data():
         # Calculate metrics
         metrics = calculate_metrics(properties)
         
-        # Generate AI intelligence
+        # Generate AI intelligence (tries GPT-4o, falls back if needed)
         intelligence = generate_ai_intelligence(
             metrics,
             metadata['area'],
@@ -287,7 +353,7 @@ def analyze_market_data():
             'metadata': {
                 **metadata,
                 'analysis_timestamp': datetime.now().isoformat(),
-                'ai_model': 'gpt-4o'
+                'ai_model': 'gpt-4o-direct-http'
             },
             'metrics': metrics,
             'intelligence': intelligence,
