@@ -179,58 +179,116 @@ def collect_uk_real_estate(area, max_properties=40):
             raise Exception(f"PropertyData API failed: {str(e)}")
 
 def collect_uk_real_estate_outscraper(area, max_properties=40):
-    """Fallback: Collect UK real estate via Outscraper (Rightmove/Zoopla scraping)"""
+    """Collect UK real estate via Outscraper (Rightmove/Zoopla scraping)"""
     
-    print(f"\n🏠 COLLECTING UK DATA VIA OUTSCRAPER (Fallback)")
+    print(f"\n🏠 COLLECTING UK DATA VIA OUTSCRAPER")
     print(f"   Area: {area}")
+    print(f"   Target: {max_properties} luxury properties")
     
     try:
         client = ApiClient(api_key=OUTSCRAPER_API_KEY)
         
-        # Search Rightmove listings
-        query = f"{area} luxury properties for sale"
-        results = client.google_maps_search(
-            query=[query],
-            language='en',
-            region='uk',
-            limit=max_properties
-        )
+        # Multiple search queries for better coverage
+        search_queries = [
+            f"{area} luxury properties for sale London",
+            f"{area} houses for sale £1000000+",
+            f"{area} apartments for sale luxury",
+            f"luxury real estate {area} London"
+        ]
         
-        properties = []
-        for result in results[0][:max_properties]:
-            # Parse Outscraper results
-            name = result.get('name', '')
-            price_str = result.get('price', '0').replace('£', '').replace(',', '')
+        all_properties = []
+        seen_places = set()
+        
+        for query in search_queries:
+            if len(all_properties) >= max_properties:
+                break
+                
+            print(f"   → Searching: {query}")
             
             try:
-                price = int(price_str) if price_str.isdigit() else 2000000
-            except:
-                price = 2000000
+                results = client.google_maps_search(
+                    query=[query],
+                    language='en',
+                    region='uk',
+                    limit=20
+                )
+                
+                for result in results[0]:
+                    place_id = result.get('place_id', '')
+                    
+                    # Skip duplicates
+                    if place_id in seen_places:
+                        continue
+                    seen_places.add(place_id)
+                    
+                    # Parse property data
+                    name = result.get('name', '')
+                    description = result.get('description', '')
+                    
+                    # Try to extract price from name or description
+                    price_text = name + " " + description
+                    price = 2000000  # Default
+                    
+                    import re
+                    price_matches = re.findall(r'£(\d+(?:,\d{3})*(?:\.\d+)?[km]?)', price_text, re.IGNORECASE)
+                    if price_matches:
+                        price_str = price_matches[0].replace(',', '')
+                        if 'k' in price_str.lower():
+                            price = int(float(price_str.replace('k', '').replace('K', '')) * 1000)
+                        elif 'm' in price_str.lower():
+                            price = int(float(price_str.replace('m', '').replace('M', '')) * 1000000)
+                        else:
+                            try:
+                                price = int(price_str)
+                            except:
+                                price = 2000000
+                    
+                    # Extract bedrooms
+                    beds = 3
+                    bed_matches = re.findall(r'(\d+)\s*(?:bed|bedroom)', name + " " + description, re.IGNORECASE)
+                    if bed_matches:
+                        beds = int(bed_matches[0])
+                    
+                    # Estimate other values
+                    baths = max(1, beds - 1)
+                    sqft = 1500 + (beds * 500)
+                    price_per_sqft = round(price / sqft, 2)
+                    
+                    all_properties.append({
+                        'source': 'Outscraper',
+                        'listing_id': place_id,
+                        'address': result.get('full_address', f"{area}, London"),
+                        'area': area,
+                        'city': 'London',
+                        'price': price,
+                        'beds': beds,
+                        'baths': baths,
+                        'sqft': sqft,
+                        'price_per_sqft': price_per_sqft,
+                        'property_type': 'House',
+                        'agent': result.get('owner_name', 'Estate Agent'),
+                        'url': result.get('site', ''),
+                        'description': name[:200],
+                        'image_url': '',
+                        'listed_date': datetime.now().strftime('%Y-%m-%d')
+                    })
+                    
+                    if len(all_properties) >= max_properties:
+                        break
             
-            properties.append({
-                'source': 'Outscraper',
-                'listing_id': result.get('place_id', f"OS_{len(properties)+1}"),
-                'address': result.get('full_address', f"{area}, London"),
-                'area': area,
-                'city': 'London',
-                'price': price,
-                'beds': 3,
-                'baths': 2,
-                'sqft': 2000,
-                'price_per_sqft': round(price / 2000, 2),
-                'property_type': 'House',
-                'agent': result.get('owner_name', 'Private'),
-                'url': result.get('url', ''),
-                'description': name,
-                'image_url': '',
-                'listed_date': datetime.now().strftime('%Y-%m-%d')
-            })
+            except Exception as e:
+                print(f"   ⚠️ Query failed: {str(e)}")
+                continue
         
-        print(f"   ✅ Collected {len(properties)} properties via Outscraper")
-        return properties
+        print(f"   ✅ Collected {len(all_properties)} properties via Outscraper")
+        
+        if not all_properties:
+            raise Exception(f"No properties found for {area} via Outscraper")
+        
+        return all_properties[:max_properties]
         
     except Exception as e:
-        raise Exception(f"Outscraper fallback also failed: {str(e)}")
+        raise Exception(f"Outscraper collection failed: {str(e)}")
 
 # ============================================================================
 # MIAMI REAL ESTATE DATA COLLECTION
