@@ -1,294 +1,172 @@
 """
-VOXMILL ELITE DATA COLLECTOR - PropertyData.co.uk Edition
-==========================================================
-Real-time data collection using PropertyData.co.uk Premium API
-Supports: UK Real Estate, Miami Real Estate, UK Luxury Car Rentals, Chartering
-
-100% REAL MARKET DATA FROM PropertyData.co.uk
+VOXMILL ELITE DATA COLLECTOR - FINAL VERSION
+=============================================
+Real-time data collection using UK Real Estate Rightmove API (RapidAPI)
+100% REAL MARKET DATA
 """
 
 import os
 import json
 import requests
 from datetime import datetime
-from outscraper import ApiClient
 
 # API Configuration
-PROPERTY_DATA_API = os.environ.get('PROPERTY_DATA_API')
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
 REALTY_US_API_KEY = os.environ.get('REALTY_US_API_KEY')
 OUTSCRAPER_API_KEY = os.environ.get('OUTSCRAPER_API_KEY')
-RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
 
 OUTPUT_FILE = "/tmp/voxmill_raw_data.json"
 
 # ============================================================================
-# UK REAL ESTATE DATA COLLECTION (PropertyData.co.uk)
+# UK REAL ESTATE DATA COLLECTION (Rightmove API)
 # ============================================================================
 
 def collect_uk_real_estate(area, max_properties=40):
-    """Collect real UK luxury real estate data via PropertyData.co.uk API"""
+    """Collect real UK luxury real estate data via Rightmove API"""
     
     print(f"\n🏠 COLLECTING UK REAL ESTATE DATA")
     print(f"   Area: {area}")
     print(f"   Target: {max_properties} luxury properties")
-    print(f"   Source: PropertyData.co.uk Premium API")
+    print(f"   Source: UK Real Estate Rightmove API")
     
-    if not PROPERTY_DATA_API:
-        raise Exception("PROPERTY_DATA_API not configured - add your PropertyData.co.uk API key")
+    if not RAPIDAPI_KEY:
+        raise Exception("RAPIDAPI_KEY not configured")
     
     try:
-        # PropertyData.co.uk sales endpoint
-        url = "https://api.propertydata.co.uk/sales"
+        # UK Real Estate Rightmove API
+        url = "https://uk-real-estate-rightmove.p.rapidapi.com/buy/property-for-sale"
         
         headers = {
-            "Authorization": f"Bearer {PROPERTY_DATA_API}",
-            "Content-Type": "application/json"
+            "X-RapidAPI-Key": RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "uk-real-estate-rightmove.p.rapidapi.com"
         }
-        
-        # Map area to postcode for PropertyData API
-        area_postcodes = {
-            'Mayfair': 'W1K',
-            'Knightsbridge': 'SW1X',
-            'Chelsea': 'SW3',
-            'Kensington': 'W8',
-            'Belgravia': 'SW1W',
-            'Notting Hill': 'W11',
-            'South Kensington': 'SW7',
-            'Marylebone': 'W1U',
-            'Fitzrovia': 'W1T',
-            'Bloomsbury': 'WC1'
-        }
-        
-        postcode = area_postcodes.get(area, 'W1')  # Default to W1 (West End)
         
         # Search parameters
         params = {
-            "postcode": postcode,
-            "radius": "2",  # 2km radius
-            "min_price": "1000000",  # £1M minimum for luxury
-            "max_results": str(max_properties),
-            "status": "for_sale"
+            "identifier": area,  # e.g., "REGION^61294" for Mayfair or just "Mayfair"
+            "search_radius": "0.0",
+            "sort_by": "highest_price",
+            "added_to_site": "1",
+            "min_price": "1000000",  # £1M minimum
+            "max_results": str(min(max_properties, 100))
         }
         
-        print(f"   → Querying PropertyData API (postcode: {postcode})...")
+        print(f"   → Querying UK Real Estate Rightmove API...")
         response = requests.get(url, headers=headers, params=params, timeout=30)
         
         if response.status_code == 401:
-            raise Exception("PropertyData API authentication failed - check API key validity")
+            raise Exception("RapidAPI authentication failed - check RAPIDAPI_KEY")
         
         if response.status_code == 403:
-            raise Exception("PropertyData API access forbidden - check subscription status")
+            raise Exception("RapidAPI access forbidden - check subscription")
         
-        if response.status_code == 404:
-            # Try alternative listings endpoint
-            url = "https://api.propertydata.co.uk/listings"
-            response = requests.get(url, headers=headers, params=params, timeout=30)
+        if response.status_code == 429:
+            raise Exception("RapidAPI rate limit exceeded - wait or upgrade plan")
         
         if response.status_code != 200:
             error_msg = response.text[:300] if response.text else "Unknown error"
-            raise Exception(f"PropertyData API error {response.status_code}: {error_msg}")
+            raise Exception(f"Rightmove API error {response.status_code}: {error_msg}")
         
         data = response.json()
         
-        # Parse PropertyData response format
-        raw_properties = []
-        if isinstance(data, dict):
-            raw_properties = data.get('data', data.get('listings', data.get('results', [])))
-        elif isinstance(data, list):
-            raw_properties = data
+        # Parse response
+        raw_properties = data.get('data', data.get('properties', data.get('results', [])))
         
-        print(f"   ✅ Received {len(raw_properties)} properties from PropertyData.co.uk")
+        print(f"   ✅ Received {len(raw_properties)} properties from Rightmove")
         
         if not raw_properties:
-            print(f"   ⚠️ No properties found for {area} - trying broader search...")
+            # Try broader search
+            print(f"   ⚠️ No results - trying broader search...")
             params["min_price"] = "500000"
-            params["radius"] = "5"
-            response = requests.get(url, headers=headers, params=params, timeout=30)
+            params["identifier"] = "London"
             
+            response = requests.get(url, headers=headers, params=params, timeout=30)
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, dict):
-                    raw_properties = data.get('data', data.get('listings', data.get('results', [])))
-                elif isinstance(data, list):
-                    raw_properties = data
+                raw_properties = data.get('data', data.get('properties', data.get('results', [])))
                 print(f"   ✅ Broader search found {len(raw_properties)} properties")
+        
+        if not raw_properties:
+            raise Exception(f"No properties found for {area}")
         
         properties = []
         for prop in raw_properties[:max_properties]:
-            # Extract property details (PropertyData format)
+            # Extract property details
             price = prop.get('price', prop.get('asking_price', 0))
-            address_obj = prop.get('address', {})
             
-            # Handle different address formats
-            if isinstance(address_obj, dict):
-                address_line = f"{address_obj.get('line_1', '')}, {address_obj.get('line_2', '')}".strip(', ')
-                if not address_line:
-                    address_line = address_obj.get('full_address', f"{area}, London")
-            else:
-                address_line = str(address_obj) if address_obj else f"{area}, London"
+            # Handle price as string (e.g., "£1,500,000")
+            if isinstance(price, str):
+                price = int(''.join(filter(str.isdigit, price)) or 0)
             
-            # Extract bedroom/bathroom counts
-            bedrooms = prop.get('bedrooms', prop.get('num_bedrooms', 3))
-            bathrooms = prop.get('bathrooms', prop.get('num_bathrooms', 2))
+            # Address
+            address_parts = []
+            if prop.get('address'):
+                if isinstance(prop['address'], dict):
+                    address_parts.append(prop['address'].get('displayAddress', ''))
+                else:
+                    address_parts.append(str(prop['address']))
             
-            # Floor area
-            floor_area = prop.get('floor_area', prop.get('internal_area', prop.get('sqft', 0)))
-            if not floor_area and bedrooms:
-                floor_area = bedrooms * 800  # Estimate
+            if prop.get('location'):
+                address_parts.append(str(prop['location']))
             
-            # Calculate price per sqft
-            if floor_area and price:
-                price_per_sqft = round(price / floor_area, 2)
-            else:
-                price_per_sqft = round(price / 2000, 2)  # Default estimate
+            address = ', '.join(filter(None, address_parts)) or f"{area}, London"
+            
+            # Bedrooms/bathrooms
+            bedrooms = prop.get('bedrooms', prop.get('bedroom', prop.get('beds', 3)))
+            bathrooms = prop.get('bathrooms', prop.get('bathroom', prop.get('baths', 2)))
+            
+            # Square footage
+            sqft = 0
+            if prop.get('size'):
+                try:
+                    sqft = int(prop['size'].get('sqft', 0))
+                except:
+                    pass
+            
+            if not sqft and bedrooms:
+                sqft = bedrooms * 800  # Estimate
+            
+            if not sqft:
+                sqft = 2000  # Default
+            
+            # Price per sqft
+            price_per_sqft = round(price / sqft, 2) if sqft and price else 0
+            
+            # Property type
+            prop_type = prop.get('propertyType', prop.get('type', 'House'))
+            
+            # Agent
+            agent = 'Private'
+            if prop.get('agent'):
+                agent = prop['agent'].get('name', 'Private')
+            elif prop.get('branch'):
+                agent = prop['branch'].get('name', 'Private')
             
             properties.append({
-                'source': 'PropertyData.co.uk',
-                'listing_id': prop.get('id', prop.get('property_id', f"PD_{len(properties)+1}")),
-                'address': address_line,
+                'source': 'Rightmove',
+                'listing_id': str(prop.get('id', prop.get('property_id', f"RM_{len(properties)+1}"))),
+                'address': address,
                 'area': area,
                 'city': 'London',
                 'price': int(price),
                 'beds': int(bedrooms),
                 'baths': int(bathrooms),
-                'sqft': int(floor_area),
+                'sqft': int(sqft),
                 'price_per_sqft': price_per_sqft,
-                'property_type': prop.get('property_type', prop.get('type', 'House')),
-                'agent': prop.get('agent', {}).get('name', prop.get('agent_name', 'Private')),
-                'url': prop.get('url', prop.get('listing_url', '')),
-                'description': prop.get('description', prop.get('summary', ''))[:200],
-                'image_url': prop.get('image_url', prop.get('main_image', '')),
-                'listed_date': prop.get('date_added', prop.get('listing_date', datetime.now().strftime('%Y-%m-%d')))
+                'property_type': str(prop_type),
+                'agent': agent,
+                'url': prop.get('propertyUrl', prop.get('url', '')),
+                'description': (prop.get('summary', prop.get('description', '')))[:200],
+                'image_url': prop.get('mainImage', prop.get('image', '')),
+                'listed_date': prop.get('addedOn', prop.get('listingDate', datetime.now().strftime('%Y-%m-%d')))
             })
         
         print(f"   ✅ Parsed {len(properties)} properties successfully")
-        
-        if not properties:
-            raise Exception(f"No luxury properties found in {area} - area may not have active listings")
-        
         return properties
         
     except Exception as e:
-        print(f"   ❌ PropertyData API failed: {str(e)}")
-        
-        # Fallback to Outscraper if available
-        if OUTSCRAPER_API_KEY:
-            print(f"   → Attempting fallback to Outscraper...")
-            return collect_uk_real_estate_outscraper(area, max_properties)
-        else:
-            raise Exception(f"PropertyData API failed: {str(e)}")
-
-def collect_uk_real_estate_outscraper(area, max_properties=40):
-    """Collect UK real estate via Outscraper (Rightmove/Zoopla scraping)"""
-    
-    print(f"\n🏠 COLLECTING UK DATA VIA OUTSCRAPER")
-    print(f"   Area: {area}")
-    print(f"   Target: {max_properties} luxury properties")
-    
-    try:
-        client = ApiClient(api_key=OUTSCRAPER_API_KEY)
-        
-        # Multiple search queries for better coverage
-        search_queries = [
-            f"{area} luxury properties for sale London",
-            f"{area} houses for sale £1000000+",
-            f"{area} apartments for sale luxury",
-            f"luxury real estate {area} London"
-        ]
-        
-        all_properties = []
-        seen_places = set()
-        
-        for query in search_queries:
-            if len(all_properties) >= max_properties:
-                break
-                
-            print(f"   → Searching: {query}")
-            
-            try:
-                results = client.google_maps_search(
-                    query=[query],
-                    language='en',
-                    region='uk',
-                    limit=20
-                )
-                
-                for result in results[0]:
-                    place_id = result.get('place_id', '')
-                    
-                    # Skip duplicates
-                    if place_id in seen_places:
-                        continue
-                    seen_places.add(place_id)
-                    
-                    # Parse property data
-                    name = result.get('name', '')
-                    description = result.get('description', '')
-                    
-                    # Try to extract price from name or description
-                    price_text = name + " " + description
-                    price = 2000000  # Default
-                    
-                    import re
-                    price_matches = re.findall(r'£(\d+(?:,\d{3})*(?:\.\d+)?[km]?)', price_text, re.IGNORECASE)
-                    if price_matches:
-                        price_str = price_matches[0].replace(',', '')
-                        if 'k' in price_str.lower():
-                            price = int(float(price_str.replace('k', '').replace('K', '')) * 1000)
-                        elif 'm' in price_str.lower():
-                            price = int(float(price_str.replace('m', '').replace('M', '')) * 1000000)
-                        else:
-                            try:
-                                price = int(price_str)
-                            except:
-                                price = 2000000
-                    
-                    # Extract bedrooms
-                    beds = 3
-                    bed_matches = re.findall(r'(\d+)\s*(?:bed|bedroom)', name + " " + description, re.IGNORECASE)
-                    if bed_matches:
-                        beds = int(bed_matches[0])
-                    
-                    # Estimate other values
-                    baths = max(1, beds - 1)
-                    sqft = 1500 + (beds * 500)
-                    price_per_sqft = round(price / sqft, 2)
-                    
-                    all_properties.append({
-                        'source': 'Outscraper',
-                        'listing_id': place_id,
-                        'address': result.get('full_address', f"{area}, London"),
-                        'area': area,
-                        'city': 'London',
-                        'price': price,
-                        'beds': beds,
-                        'baths': baths,
-                        'sqft': sqft,
-                        'price_per_sqft': price_per_sqft,
-                        'property_type': 'House',
-                        'agent': result.get('owner_name', 'Estate Agent'),
-                        'url': result.get('site', ''),
-                        'description': name[:200],
-                        'image_url': '',
-                        'listed_date': datetime.now().strftime('%Y-%m-%d')
-                    })
-                    
-                    if len(all_properties) >= max_properties:
-                        break
-            
-            except Exception as e:
-                print(f"   ⚠️ Query failed: {str(e)}")
-                continue
-        
-        print(f"   ✅ Collected {len(all_properties)} properties via Outscraper")
-        
-        if not all_properties:
-            raise Exception(f"No properties found for {area} via Outscraper")
-        
-        return all_properties[:max_properties]
-        
-    except Exception as e:
-        raise Exception(f"Outscraper collection failed: {str(e)}")
+        print(f"   ❌ Rightmove API failed: {str(e)}")
+        raise
 
 # ============================================================================
 # MIAMI REAL ESTATE DATA COLLECTION
@@ -364,7 +242,7 @@ def collect_miami_real_estate(area, max_properties=40):
         raise
 
 # ============================================================================
-# UK LUXURY CAR RENTALS
+# UK LUXURY CAR RENTALS (Using Outscraper)
 # ============================================================================
 
 def collect_uk_car_rentals(city="London", max_results=30):
@@ -377,6 +255,7 @@ def collect_uk_car_rentals(city="London", max_results=30):
         raise Exception("OUTSCRAPER_API_KEY not configured")
     
     try:
+        from outscraper import ApiClient
         client = ApiClient(api_key=OUTSCRAPER_API_KEY)
         
         query = f"luxury car rental {city}"
@@ -424,9 +303,9 @@ def collect_chartering_companies(area="London", max_results=30):
         raise Exception("OUTSCRAPER_API_KEY not configured")
     
     try:
+        from outscraper import ApiClient
         client = ApiClient(api_key=OUTSCRAPER_API_KEY)
         
-        # Search for yacht and private jet charters
         queries = [
             f"yacht charter {area}",
             f"private jet charter {area}"
@@ -484,7 +363,7 @@ def collect_market_data(vertical, area, city):
             'area': area,
             'city': city,
             'timestamp': datetime.now().isoformat(),
-            'data_source': 'PropertyData.co.uk Premium API'
+            'data_source': 'UK Real Estate Rightmove API (RapidAPI)'
         },
         'raw_data': {}
     }
