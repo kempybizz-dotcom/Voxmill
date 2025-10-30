@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-INPUT_FILE = "/tmp/voxmill_intelligence.json"
+INPUT_FILE = "/tmp/voxmill_analysis.json"
 OUTPUT_FILE = "/tmp/Voxmill_Elite_Intelligence.pdf"
 
 # Voxmill Elite Brand Colors
