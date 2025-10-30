@@ -1,304 +1,528 @@
-VOXMILL MARKET INTELLIGENCE — DEPLOYMENT GUIDE
-===============================================
-
-This package contains everything you need to run automated market intelligence reports
-for London real estate agencies.
-
-📦 WHAT'S INCLUDED
-==================
+# VOXMILL ELITE MARKET INTELLIGENCE SYSTEM
 
-1. voxmill_elite_v2.py — Data collection script (pulls from Zoopla, RapidAPI, Outscraper)
-2. voxmill_pdf_generator.py — PDF generation with charts (uploads to Google Drive)
-3. requirements.txt — Python dependencies
-4. This README
+**The most sophisticated automated market intelligence platform for luxury verticals.**
 
+Real-time data collection • GPT-4o AI analysis • Elite PDF reports • Professional email delivery
 
-🎯 WHAT IT DOES
-===============
+---
 
-STEP 1: Data Collection (voxmill_elite_v2.py)
-----------------------------------------------
-• Collects Miami real estate data (US market)
-• Collects London real estate data (Zoopla via RapidAPI)
-• Collects London luxury car rental data (Google Places)
-• Generates AI insights (BLUF, opportunities, risks, action triggers)
-• Writes to Google Sheets with Fortune 500 formatting
+## 🎯 WHAT THIS IS
 
-STEP 2: PDF Generation (voxmill_pdf_generator.py)
---------------------------------------------------
-• Pulls latest data from Google Sheet
-• Generates 3-page luxury PDF with:
-  - Black-and-gold Fortune 500 design
-  - BLUF executive summary
-  - Matplotlib charts (metrics dashboard, deal scores, pie charts)
-  - Top opportunities and risk assessment
-  - Action triggers (IF-THEN framework)
-• Uploads to Google Drive (folder: 1yx7EtPN6_xu3x0U9qg8T5pOc1HbY7y0G)
-• Saves local copy to /mnt/user-data/outputs/
+When you call a luxury real estate agency and promise them "interesting market data", you need to deliver a report that makes them say **"WOW, WE NEED THIS."**
 
+This system does that.
 
-🚀 DEPLOYMENT INSTRUCTIONS
-==========================
+- **Real data** from Zoopla, Realty APIs (no demo data)
+- **AI-powered insights** from GPT-4o (anomaly detection, trend analysis)
+- **Fortune 500-level PDFs** (black/gold design, better than any Google Slides template)
+- **Professional HTML emails** (branded, with PDF attached)
 
-OPTION A: RENDER.COM (AUTOMATED WEEKLY CRON)
----------------------------------------------
+**One command. Full execution. Elite output.**
 
-1. CREATE NEW WEB SERVICE
-   • Go to Render.com
-   • Click "New +" → "Web Service"
-   • Connect your GitHub repo (or upload these files)
+---
 
-2. SET ENVIRONMENT VARIABLES
-   In Render dashboard, go to Environment and add:
+## 📦 WHAT'S INCLUDED
 
-   RAPIDAPI_KEY=1440de56aamsh945d6c41f441399p1af6adjsne2d964758775
-   OUTSCRAPER_API_KEY=[your Outscraper key]
-   OPENAI_API_KEY=[your OpenAI key]
-   GOOGLE_SHEET_ID=[your Google Sheet ID]
-   GOOGLE_CREDENTIALS_JSON=[paste your service account JSON here]
+```
+voxmill_master.py         → One command runs everything
+data_collector.py         → Real API data collection (Zoopla, Realty, Outscraper)
+ai_analyzer.py            → GPT-4o intelligence engine
+pdf_generator.py          → Elite Fortune 500-style PDF generation
+email_sender.py           → Professional HTML email delivery
+live_alerts.py            → Daily monitoring + instant alert notifications
+voxmill_logo.png          → Premium brand logo
+requirements.txt          → Python dependencies
+```
 
-   To get GOOGLE_CREDENTIALS_JSON:
-   • Go to Google Cloud Console
-   • Create service account
-   • Download JSON key
-   • Share your Google Sheet with the service account email
-   • Copy entire JSON contents into this variable
+---
 
-3. SET BUILD COMMAND
-   pip install -r requirements.txt
+## 🚀 SETUP
 
-4. SET START COMMAND
-   python voxmill_elite_v2.py && python voxmill_pdf_generator.py
+### 1. Install Dependencies
 
-5. ADD CRON JOB (OPTIONAL)
-   In Render dashboard:
-   • Go to "Cron Jobs"
-   • Schedule: "0 9 * * 1" (Every Monday at 9am)
-   • Command: python voxmill_elite_v2.py && python voxmill_pdf_generator.py
+```bash
+pip install -r requirements.txt --break-system-packages
+```
 
+### 2. Configure Environment Variables
 
-OPTION B: LOCAL TESTING (YOUR COMPUTER)
-----------------------------------------
+**Required for ALL verticals:**
+```bash
+export RAPIDAPI_KEY="your_rapidapi_key"
+export OPENAI_API_KEY="your_openai_key"
+export OUTSCRAPER_API_KEY="your_outscraper_key"
+```
 
-1. INSTALL PYTHON 3.12+
-   Download from python.org
+**Required for email delivery:**
+```bash
+export VOXMILL_EMAIL="your@gmail.com"
+export VOXMILL_EMAIL_PASSWORD="your_app_password"
+```
 
-2. INSTALL DEPENDENCIES
-   Open terminal and run:
-   pip install -r requirements.txt
+**Note:** For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833), not your regular password.
 
-3. SET ENVIRONMENT VARIABLES
-   Create a file called .env and add:
-
-   RAPIDAPI_KEY=1440de56aamsh945d6c41f441399p1af6adjsne2d964758775
-   OUTSCRAPER_API_KEY=[your key]
-   OPENAI_API_KEY=[your key]
-   GOOGLE_SHEET_ID=[your sheet ID]
-   GOOGLE_CREDENTIALS_JSON=[your service account JSON]
-
-   Then in terminal:
-   export $(cat .env | xargs)
-
-4. RUN SCRIPTS
-   # Collect data
-   python voxmill_elite_v2.py
-
-   # Generate PDF
-   python voxmill_pdf_generator.py
-
-
-📊 GOOGLE SHEETS SETUP
-======================
-
-The script will create 3 sheets automatically:
-1. Miami Real Estate
-2. London Real Estate  
-3. London Luxury Car Rental
-
-Each sheet has:
-• Black header row with white text
-• Color-coded columns (green for hot deals, yellow for stale, gold for ultra-luxury)
-• Frozen header row
-• Professional column widths
-
-
-☁️ GOOGLE DRIVE SETUP
-=====================
-
-PDFs are automatically uploaded to your Google Drive folder:
-Folder ID: 1yx7EtPN6_xu3x0U9qg8T5pOc1HbY7y0G
-
-Filename format: Voxmill_Report_2025-10-27_1430.pdf (timestamped)
-
-Make sure your service account has access to this folder:
-1. Open the folder in Google Drive
-2. Click "Share"
-3. Add your service account email (ends with @*.iam.gserviceaccount.com)
-4. Give "Editor" permission
-
-
-📧 ZAPIER EMAIL AUTOMATION (OPTIONAL)
-=====================================
-
-OPTION 1: Watch Google Drive
------------------------------
-Trigger: New file in Google Drive folder
-Action: Send email with PDF attachment
-
-Steps:
-1. Zapier → Create Zap
-2. Trigger: Google Drive → New File in Folder
-3. Select folder: 1yx7EtPN6_xu3x0U9qg8T5pOc1HbY7y0G
-4. Action: Gmail/Outlook → Send Email
-5. Attach file from trigger
-6. Subject: "Voxmill Market Intelligence — [Date]"
-7. Body: "Your weekly London market report is attached."
-
-
-OPTION 2: Watch Google Sheet
------------------------------
-Trigger: New row in Google Sheet
-Action: Get file from Drive → Send email
-
-Steps:
-1. Zapier → Create Zap
-2. Trigger: Google Sheets → New Row
-3. Select sheet: London Real Estate
-4. Action: Google Drive → Find File (by timestamp)
-5. Action: Gmail/Outlook → Send Email
-6. Attach file from step 4
-
-
-🎯 YOUR OUTREACH WORKFLOW
-=========================
-
-NOW THAT YOU HAVE THE SYSTEM RUNNING:
-
-1. RUN THE SCRIPT (Monday morning)
-   • Generates fresh London real estate data
-   • Creates luxury PDF with charts
-   • Uploads to Google Drive
-
-2. MAKE YOUR CALLS (Monday-Wednesday)
-   Call script:
-   
-   "Hi, this is Olly from Voxmill Market Intelligence. We track luxury property
-   pricing across London for boutique agencies.
-   
-   I just ran this week's report on [Mayfair/Knightsbridge] and found [X] properties
-   trading below market average on price-per-square-foot. A couple have been sitting
-   for 90+ days.
-   
-   I thought [Director Name] would want to see this before the weekend — it's a
-   1-page intelligence brief with charts and deal scores. Can I send it over to
-   their email?"
-
-3. SEND THE PDF (immediately after call)
-   • Forward the Google Drive link
-   • Or attach the PDF from /mnt/user-data/outputs/
-
-4. FOLLOW UP (Thursday)
-   Email subject: "Following up — [Their Area] market report"
-   
-   "Hi [Director Name],
-   
-   Wanted to follow up on the market intelligence report I sent Monday.
-   
-   Quick question: Would a weekly version of this focused on your specific
-   focus areas be useful? I can customize it to track properties in your
-   target price range.
-   
-   If you'd like to discuss, I'm available for a 10-minute call.
-   
-   — Olly"
-
-5. CLOSE THE DEAL (Friday)
-   If they respond positively:
-   
-   "Perfect. Here's what I propose:
-   
-   £700/month for weekly London market intelligence reports:
-   • Your specific neighborhoods (Mayfair, Knightsbridge, etc.)
-   • Hot deals scored 8+/10 (underpriced properties)
-   • Stale listings (90+ days — negotiation leverage)
-   • Risk alerts and action triggers
-   • Delivered every Monday at 9am
-   
-   First report is free. If you like it, we invoice monthly.
-   
-   Sound good?"
-
-
-💰 PRICING GUIDE
-================
-
-YOUR OFFER:
-£700-1,000/month per client for weekly reports
-
-COST PER REPORT:
-• Outscraper: ~$0.10
-• OpenAI: ~$0.01
-• RapidAPI: Included in subscription
-• Total: ~£0.10 per report
-
-ROI:
-£700/month client = 7,000x cost
-£1,000/month client = 10,000x cost
-
-SCALE TARGETS:
-• 5 clients = £3,500-5,000 MRR
-• 10 clients = £7,000-10,000 MRR
-• 20 clients = £14,000-20,000 MRR
-
-All automated. Zero manual work per client.
-
-
-🔧 TROUBLESHOOTING
-==================
-
-"Script fails with 'No module named X'"
-→ Run: pip install -r requirements.txt --break-system-packages
-
-"Can't connect to Google Sheets"
-→ Check GOOGLE_CREDENTIALS_JSON is set correctly
-→ Make sure service account has access to the sheet
-
-"Zoopla returns no data"
-→ Check RAPIDAPI_KEY is correct
-→ Check RapidAPI subscription includes Zoopla API
-
-"PDF has no charts"
-→ Make sure matplotlib and reportlab are installed
-→ Check Google Sheet has data in it
-
-"Upload to Google Drive fails"
-→ Share Drive folder with service account email
-→ Give "Editor" permission
-
-
-📞 SUPPORT
-==========
-
-If you get stuck:
-1. Check error messages in terminal/Render logs
-2. Verify all environment variables are set
-3. Test each script separately (data collection, then PDF generation)
-
-
-🎉 YOU'RE READY
-===============
-
-You now have a fully automated market intelligence system that:
-✅ Collects real market data weekly
-✅ Generates Fortune 500-level PDFs with charts
-✅ Uploads to Google Drive automatically
-✅ Can email to clients via Zapier
-
-YOUR ONLY JOB:
-Make calls. Send PDFs. Close deals.
-
-Target: 1 client at £700-1,000/month in 30 days.
-
-STOP BUILDING. START SELLING.
-
-— Voxmill Operations Architect
+**For Render deployment:**
+Add these in your Render dashboard → Environment Variables
+
+---
+
+## 💻 USAGE
+
+### **One-Command Execution (The Weapon)**
+
+```bash
+python voxmill_master.py \
+  --vertical uk-real-estate \
+  --area Mayfair \
+  --city London \
+  --email john@luxuryagency.com \
+  --name "John Smith"
+```
+
+**This single command:**
+1. ✅ Collects 40+ real Mayfair luxury properties from Zoopla
+2. ✅ Analyzes data with GPT-4o (deal scoring, anomalies, trends)
+3. ✅ Generates elite 5-page PDF with charts
+4. ✅ Sends professional HTML email with PDF attached
+
+**Time:** 30-60 seconds  
+**Output:** Email sent, ready to follow up
+
+---
+
+## 📞 YOUR WORKFLOW (WHEN YOU CALL A LEAD)
+
+### **Scenario:** You're on a call with a Chelsea agency
+
+**During or right after the call:**
+
+```bash
+python voxmill_master.py \
+  --vertical uk-real-estate \
+  --area Chelsea \
+  --city London \
+  --email contact@chelseaproperties.com \
+  --name "Sarah Johnson"
+```
+
+**What happens:**
+- Script runs (30-60 seconds)
+- Email sent automatically
+- You see: `✅ VOXMILL PIPELINE COMPLETE`
+- They receive: Professional email with elite PDF attached
+
+**Your next step:** Follow up in 24-48 hours
+
+---
+
+## 🎨 SUPPORTED VERTICALS
+
+### **1. UK Real Estate**
+```bash
+python voxmill_master.py \
+  --vertical uk-real-estate \
+  --area "Mayfair" \
+  --city London \
+  --email client@agency.com \
+  --name "Client Name"
+```
+
+**Areas:** Mayfair, Chelsea, Knightsbridge, Kensington, Belgravia, Cotswolds, Manchester
+
+---
+
+### **2. Miami Real Estate**
+```bash
+python voxmill_master.py \
+  --vertical miami-real-estate \
+  --area "Miami Beach" \
+  --city Miami \
+  --email client@realty.com \
+  --name "Client Name"
+```
+
+**Areas:** Miami Beach, Brickell, Coral Gables, Coconut Grove
+
+---
+
+### **3. UK Luxury Car Rentals**
+```bash
+python voxmill_master.py \
+  --vertical uk-car-rentals \
+  --area "Central London" \
+  --city London \
+  --email client@luxurycars.com \
+  --name "Client Name"
+```
+
+**Cities:** London, Manchester, Edinburgh, Birmingham
+
+---
+
+### **4. Chartering Companies**
+```bash
+python voxmill_master.py \
+  --vertical chartering \
+  --area "Mayfair" \
+  --city London \
+  --email client@yachtcharter.com \
+  --name "Client Name"
+```
+
+**Types:** Yacht charters, private jet charters
+
+---
+
+## 🚨 LIVE ALERTS SYSTEM (FOR PAYING CLIENTS)
+
+### **What It Does:**
+
+Monitors markets **daily** and sends **instant email alerts** when critical events occur:
+
+- 🔥 **Exceptional deals** (properties scoring 9.0+)
+- 📊 **Market shifts** (avg price moves >5%)
+- 💰 **Deal volume spikes** (3+ new hot deals appear)
+- 📏 **Pricing anomalies** (significant under/over pricing)
+- ⚠️ **Price drops** (individual properties drop >10%)
+
+### **Setup for Client:**
+
+After you close a client, set up daily monitoring in Render:
+
+**1. Create Cron Job in Render:**
+
+- Service Type: **Cron Job**
+- Schedule: `0 9 * * *` (Every day at 9am)
+- Command:
+
+```bash
+python live_alerts.py \
+  --vertical uk-real-estate \
+  --area Mayfair \
+  --city London \
+  --email client@agency.com \
+  --name "Client Name"
+```
+
+**2. What Happens:**
+
+- Script runs daily at 9am
+- Collects fresh market data
+- Compares to previous day
+- Detects anomalies/changes
+- **IF alert threshold met** → Sends instant email
+- **IF market stable** → No email (silent)
+
+### **Alert Email Example:**
+
+**Subject:** 🚨 3 Market Alert(s) — Mayfair
+
+**Body:**
+```
+Client Name,
+
+3 critical market event(s) detected in Mayfair, London requiring immediate attention.
+
+🔥 EXCEPTIONAL DEAL ALERT: Mayfair
+New property scored 9.2/10
+15 Park Lane, Mayfair
+£4,250,000 | 5bd/4ba | £1,850/sqft
+
+This is 23% below market average.
+
+📊 MARKET SHIFT ALERT: Mayfair
+Average price has dropped 6.2% in 24 hours.
+
+Previous: £4,850,000
+Current: £4,550,000
+
+This represents a significant market movement.
+
+⚡ RECOMMENDED ACTION
+Review these opportunities within the next 4-6 hours. 
+Market conditions are dynamic—early action provides competitive advantage.
+```
+
+### **Customizing Thresholds:**
+
+Edit `live_alerts.py` line 22-28:
+
+```python
+ALERT_THRESHOLDS = {
+    'price_drop_percent': 10,           # Alert if drop >10%
+    'new_hot_deals_threshold': 3,       # Alert if 3+ new deals
+    'avg_price_change_percent': 5,      # Alert if market moves >5%
+    'exceptional_deal_score': 9.0,      # Alert on 9.0+ scores
+    'market_volatility_spike': 1.5      # Alert if volatility spikes
+}
+```
+
+### **Multiple Clients:**
+
+Set up **separate cron jobs** for each client:
+
+```bash
+# Client 1: Mayfair agency
+python live_alerts.py --vertical uk-real-estate --area Mayfair --city London --email client1@agency.com --name "Client 1"
+
+# Client 2: Chelsea agency
+python live_alerts.py --vertical uk-real-estate --area Chelsea --city London --email client2@agency.com --name "Client 2"
+
+# Client 3: Miami agency
+python live_alerts.py --vertical miami-real-estate --area "Miami Beach" --city Miami --email client3@realty.com --name "Client 3"
+```
+
+---
+
+## 📧 WHAT THE EMAIL LOOKS LIKE
+
+**Subject:** Market intelligence snapshot — Mayfair
+
+**Body:**
+```
+John,
+
+Following our conversation — I've attached this week's Voxmill Market 
+Intelligence report for Mayfair, London.
+
+📊 REPORT HIGHLIGHTS
+• 40+ luxury properties analyzed with AI-powered deal scoring
+• Competitor landscape analysis and market positioning
+• Executive intelligence with actionable insights
+• Pricing trends and anomaly detection
+
+Have a look at the attached PDF. I'll follow up in 24-48 hours to discuss 
+anything that stands out for your portfolio.
+
+Best,
+Olly
+Voxmill Market Intelligence
+```
+
+**Design:** Black/gold HTML email with professional branding
+
+**Attachment:** `Voxmill_London_Mayfair_Intelligence.pdf` (5 pages, elite design)
+
+---
+
+## 📄 WHAT THE PDF LOOKS LIKE
+
+**Page 1:** KPI Summary Overview
+- Executive KPI charts
+- Market snapshot
+- Pricing summary table
+
+**Page 2:** Performance Graph and Market Insights
+- 4-panel performance charts
+- Price trends
+- Deal score distribution
+- Key insights
+
+**Page 3:** Competitor Landscape Analysis
+- Agent market share
+- Competitive positioning
+- Strategic insights
+
+**Page 4:** Pricing Summary & Strategic Intelligence
+- BLUF (Bottom Line Up Front)
+- Opportunities (immediate/tactical/strategic)
+- Risk assessment
+
+**Page 5:** Top Opportunities
+- Top 8 properties table
+- Deal scores
+- Insights summary
+
+**Design:** Black background, gold accents, Fortune 500-level charts
+
+---
+
+## 🔧 ADVANCED USAGE
+
+### **Skip Email (PDF Only)**
+
+```bash
+python voxmill_master.py \
+  --vertical uk-real-estate \
+  --area Mayfair \
+  --city London \
+  --email test@test.com \
+  --name "Test" \
+  --skip-email
+```
+
+PDF saved to: `/tmp/Voxmill_Elite_Intelligence.pdf`
+
+Use this for:
+- Testing the system
+- Generating PDFs without sending
+- Manual email delivery
+
+---
+
+### **Run Individual Scripts**
+
+If you want granular control:
+
+```bash
+# Step 1: Collect data
+python data_collector.py uk-real-estate Mayfair London
+
+# Step 2: Analyze with AI
+python ai_analyzer.py
+
+# Step 3: Generate PDF
+python pdf_generator.py
+
+# Step 4: Send email
+python email_sender.py john@agency.com "John Smith" Mayfair London
+```
+
+---
+
+## 📊 API COSTS (APPROXIMATE)
+
+For 50 reports per month:
+
+- **Zoopla API** (RapidAPI): ~$30/month
+- **Realty API** (RapidAPI): ~$30/month
+- **Outscraper**: ~$40/month (you have this)
+- **OpenAI GPT-4o**: ~$20/month
+
+**Total:** ~$120/month for 50 elite reports
+
+**ROI:** Close 1 client at £700/month = 583% ROI in month 1
+
+---
+
+## 🚨 TROUBLESHOOTING
+
+### "ModuleNotFoundError"
+```bash
+pip install -r requirements.txt --break-system-packages
+```
+
+### "RAPIDAPI_KEY not configured"
+```bash
+export RAPIDAPI_KEY="your_key_here"
+```
+
+Or add to Render environment variables
+
+### "Email delivery failed"
+- Check Gmail App Password (not regular password)
+- Enable "Less secure app access" if using older Gmail
+- Use `--skip-email` flag to generate PDF only
+
+### "No properties returned"
+- Check API credits on RapidAPI dashboard
+- Verify area name spelling (e.g., "Mayfair" not "Mayfare")
+- Try different area if no listings available
+
+---
+
+## 🎯 30-DAY EXECUTION PLAN
+
+### **Week 1: Outreach Blitz**
+- Call 50+ luxury agencies
+- Generate custom PDF for each interested lead
+- Send emails immediately
+- **Goal:** 15-20 PDFs sent
+
+### **Week 2: Follow-Up & Close**
+- Follow up on all sends
+- Schedule calls with interested parties
+- **Goal:** Close first £700/month client
+
+### **Week 3: Deliver First Reports**
+- Manually send first weekly report to client
+- Refine based on feedback
+
+### **Week 4: Automate**
+- Set up Render cron job for weekly delivery
+- Configure Zapier for email automation
+- **Goal:** Recurring revenue locked in
+
+---
+
+## 🚫 NO-PIVOT CLAUSE
+
+This system is **locked for 90 days**. Do not:
+- ❌ Add new features
+- ❌ Change the design
+- ❌ Add more data sources
+- ❌ Build Zapier automation (until you have a client)
+
+**Only do this:**
+- ✅ Call agencies
+- ✅ Generate PDFs
+- ✅ Send emails
+- ✅ Follow up
+- ✅ Close deals
+
+**After first £700/month client → Then automate everything**
+
+---
+
+## 📁 GITHUB REPO STRUCTURE
+
+```
+Voxmill/
+├── voxmill_master.py          # Master orchestrator
+├── data_collector.py          # Real API data collection
+├── ai_analyzer.py             # GPT-4o intelligence
+├── pdf_generator.py           # Elite PDF generation
+├── email_sender.py            # Professional email delivery
+├── requirements.txt           # Dependencies
+└── README.md                  # This file
+```
+
+---
+
+## ⚡ QUICK REFERENCE
+
+```bash
+# UK Real Estate - Mayfair
+python voxmill_master.py --vertical uk-real-estate --area Mayfair --city London \
+  --email contact@agency.com --name "Contact Name"
+
+# Miami Real Estate
+python voxmill_master.py --vertical miami-real-estate --area "Miami Beach" --city Miami \
+  --email contact@realty.com --name "Contact Name"
+
+# PDF only (no email)
+python voxmill_master.py --vertical uk-real-estate --area Chelsea --city London \
+  --email test@test.com --name "Test" --skip-email
+
+# Check environment variables
+echo $RAPIDAPI_KEY
+echo $OPENAI_API_KEY
+
+# Install dependencies
+pip install -r requirements.txt --break-system-packages
+```
+
+---
+
+## 🔥 READY TO EXECUTE?
+
+```bash
+# Test the system
+python voxmill_master.py \
+  --vertical uk-real-estate \
+  --area Mayfair \
+  --city London \
+  --email your@email.com \
+  --name "Your Name" \
+  --skip-email
+```
+
+**Open the PDF. Review it. Make sure it's elite.**
+
+**Then call 10 agencies and close your first deal.**
+
+---
+
+**BUILT WITH MAXIMUM PRECISION. ZERO COMPROMISES. PURE EXECUTION.**
+
+© Voxmill Automations 2025
