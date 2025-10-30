@@ -45,20 +45,26 @@ def collect_uk_real_estate(area, max_properties=40):
         
         # High-end property search
         querystring = {
-            "area": f"{area}, London",
+            "area": f"{area}",
             "order_by": "age",
             "ordering": "descending",
             "page_number": "1",
             "page_size": str(max_properties),
-            "minimum_price": "2000000",
+            "minimum_price": "1000000",  # Lowered from 2M to get more results
             "listing_status": "sale"
         }
         
         print(f"   → Querying Zoopla API...")
         response = requests.get(url, headers=headers, params=querystring, timeout=20)
         
+        if response.status_code == 204:
+            # No content - try broader search
+            print(f"   ⚠️ No results with minimum £1M - trying broader search...")
+            querystring["minimum_price"] = "500000"
+            response = requests.get(url, headers=headers, params=querystring, timeout=20)
+        
         if response.status_code != 200:
-            raise Exception(f"Zoopla API error: {response.status_code}")
+            raise Exception(f"Zoopla API error: {response.status_code} - {response.text[:200]}")
         
         data = response.json()
         listings = data.get('listing', [])
