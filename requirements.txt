@@ -1,11 +1,21 @@
-outscraper==5.9.2
-openai==1.57.2
-gspread==5.11.3
-google-auth==2.23.0
-google-auth-oauthlib==1.1.0
-google-auth-httplib2==0.1.1
-google-api-python-client==2.108.0
+# VOXMILL ELITE MARKET INTELLIGENCE
+# Python Dependencies
+# Install: pip install -r requirements.txt --break-system-packages
+
+# Data Collection APIs
+outscraper==3.2.0
 requests==2.31.0
-reportlab==4.2.2
-matplotlib==3.10.7
-pillow==11.3.0
+
+# AI Analysis
+openai==1.12.0
+
+# PDF Generation
+reportlab==4.0.9
+matplotlib==3.8.2
+numpy==1.26.3
+
+# Email Delivery
+# (uses stdlib smtplib - no extra packages needed)
+
+# Utilities
+python-dateutil==2.8.2
