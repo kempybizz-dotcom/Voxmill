@@ -3,7 +3,7 @@
 # Install: pip install -r requirements.txt --break-system-packages
 
 # Data Collection APIs
-outscraper==3.2.0
+outscraper==5.9.2
 requests==2.31.0
 
 # AI Analysis
