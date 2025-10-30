@@ -125,23 +125,28 @@ def create_kpi_overview_chart(data):
     ax1.set_ylabel('Properties', color='#E8E8E8', fontsize=9)
     ax1.tick_params(colors='#E8E8E8')
     ax1.spines['top'].set_visible(False)
-    ax1.spines('right').set_visible(False)
+    ax1.spines['right'].set_visible(False)
     ax1.spines['left'].set_color('#4A4A4A')
     ax1.spines['bottom'].set_color('#4A4A4A')
     ax1.grid(axis='y', alpha=0.2, color='#4A4A4A', linestyle='--')
     
-    # Right: KPI bars
+    # Right: KPI bars - need to calculate deal categories
+    # Count properties by deal score
+    exceptional_deals = sum(1 for p in data['properties'] if p.get('deal_score', 0) >= 9)
+    hot_deals = sum(1 for p in data['properties'] if 7 <= p.get('deal_score', 0) < 9)
+    strong_value = sum(1 for p in data['properties'] if 5 <= p.get('deal_score', 0) < 7)
+    
     ax2 = fig.add_subplot(gs[1])
     ax2.set_facecolor('#0A0A0A')
     
     categories = ['Exceptional\nDeals', 'Hot\nDeals', 'Strong\nValue']
-    values = [metrics['exceptional_deals'], metrics['hot_deals'], metrics['strong_value']]
+    values = [exceptional_deals, hot_deals, strong_value]
     
     bars = ax2.barh(categories, values, color='#D4AF37', edgecolor='#D4AF37', linewidth=1.5)
     
     # Add value labels
     for i, (bar, val) in enumerate(zip(bars, values)):
-        ax2.text(val + max(values)*0.02, i, str(val), va='center', ha='left',
+        ax2.text(val + max(values)*0.02 if max(values) > 0 else 0.5, i, str(val), va='center', ha='left',
                 color='#D4AF37', fontsize=11, fontweight='bold')
     
     ax2.set_xlabel('Count', color='#E8E8E8', fontsize=9)
@@ -414,6 +419,7 @@ def create_elite_pdf(data):
     
     metadata = data['metadata']
     metrics = data['metrics']
+    intelligence = data['intelligence']
     
     story.append(Paragraph("KPI SUMMARY", section_title_style))
     story.append(Paragraph("OVERVIEW", title_style))
@@ -421,7 +427,7 @@ def create_elite_pdf(data):
     
     # Market info box
     info_text = f"""EXECUTIVE KPI OVERVIEW — WEEKLY MARKET PRECISION REPORT<br/>
-    <b>{metadata['area'].upper()}, {metadata['city'].upper()}</b> | {metadata['timestamp']}"""
+    <b>{metadata['area'].upper()}, {metadata['city'].upper()}</b> | {datetime.now().strftime('%B %d, %Y')}"""
     
     story.append(Paragraph(info_text, subtitle_style))
     story.append(Spacer(1, 0.1*inch))
@@ -436,7 +442,7 @@ def create_elite_pdf(data):
     # Pricing summary table
     pricing_data = [
         ['', 'LOW VALUE', 'HIGH VALUE', 'AVG VALUE'],
-        ['Price', f'£{metrics["min_price"]:,}', f'£{metrics["max_price"]:,}', f'£{metrics["avg_price"]:,}'],
+        ['Price', f'£{metrics["min_price"]:,}', f'£{metrics["max_price"]:,}', f'£{metrics["avg_price"]:,.0f}'],
         ['Description', 'Represents entry-level\npricing in the market', 
          'Reflects the upper end of\nthe luxury market', 'Indicates overall market\npricing trends']
     ]
@@ -484,10 +490,14 @@ def create_elite_pdf(data):
     # Key insights box
     story.append(Paragraph("KEY INSIGHTS", section_title_style))
     
-    intelligence = data['intelligence']
-    trend_text = intelligence.get('trends', 'Market analysis in progress')
+    # Extract insights from intelligence
+    insights_text = intelligence.get('executive_summary', 'Market analysis in progress.')
+    story.append(Paragraph(insights_text, body_style))
     
-    story.append(Paragraph(trend_text, body_style))
+    # Add strategic insights as bullet points
+    if 'strategic_insights' in intelligence:
+        for insight in intelligence['strategic_insights'][:3]:
+            story.append(Paragraph(f"• {insight}", body_style))
     
     story.append(PageBreak())
     
@@ -509,57 +519,68 @@ def create_elite_pdf(data):
     
     # Competitor insights
     insight_box_text = """Competitors are actively adjusting strategies to capture market share. 
-    Price reductions and new listings are prevalent."""
+    Price reductions and new listings are prevalent across major agencies."""
     
     story.append(Paragraph(insight_box_text, body_style))
     
     story.append(PageBreak())
     
     # ========================================================================
-    # PAGE 4: PRICING SUMMARY & KEY INSIGHTS
+    # PAGE 4: STRATEGIC INTELLIGENCE & OPPORTUNITIES
     # ========================================================================
     
-    story.append(Paragraph("PRICING SUMMARY", title_style))
+    story.append(Paragraph("STRATEGIC INTELLIGENCE", title_style))
     story.append(Spacer(1, 0.3*inch))
     
-    # Reuse pricing table from page 1
-    story.append(pricing_table)
-    
-    story.append(Spacer(1, 0.4*inch))
-    
-    story.append(Paragraph("KEY INSIGHTS AND", section_title_style))
-    story.append(Paragraph("METRICS", title_style))
-    story.append(Paragraph("A detailed look at strategic insights and key metrics", section_subtitle_style))
-    
-    # BLUF
-    bluf_text = intelligence.get('bluf', '')
-    for line in bluf_text.split('\n'):
-        if line.strip():
-            story.append(Paragraph(line.strip(), insight_style))
+    # BLUF - Executive Summary
+    story.append(Paragraph("EXECUTIVE SUMMARY", section_title_style))
+    bluf_text = intelligence.get('executive_summary', 'Analysis based on current market conditions.')
+    story.append(Paragraph(bluf_text, body_style))
     
     story.append(Spacer(1, 0.2*inch))
     
-    # Opportunities
-    story.append(Paragraph("STRATEGIC OPPORTUNITIES", section_title_style))
-    story.append(Paragraph(intelligence.get('opportunities', ''), body_style))
+    # Tactical Opportunities
+    if 'tactical_opportunities' in intelligence:
+        story.append(Paragraph("TACTICAL OPPORTUNITIES", section_title_style))
+        
+        tact_opps = intelligence['tactical_opportunities']
+        if isinstance(tact_opps, dict):
+            if 'immediate' in tact_opps:
+                story.append(Paragraph(f"<b>Immediate:</b> {tact_opps['immediate']}", body_style))
+            if 'near_term' in tact_opps:
+                story.append(Paragraph(f"<b>Near-term:</b> {tact_opps['near_term']}", body_style))
+            if 'strategic' in tact_opps:
+                story.append(Paragraph(f"<b>Strategic:</b> {tact_opps['strategic']}", body_style))
+        else:
+            story.append(Paragraph(str(tact_opps), body_style))
     
     story.append(Spacer(1, 0.2*inch))
     
-    # Risks
+    # Risk Assessment
     story.append(Paragraph("RISK ASSESSMENT", section_title_style))
-    story.append(Paragraph(intelligence.get('risks', ''), body_style))
+    risk_text = intelligence.get('risk_assessment', 'Standard market risks apply.')
+    story.append(Paragraph(risk_text, body_style))
+    
+    story.append(Spacer(1, 0.2*inch))
+    
+    # Market Sentiment
+    sentiment = intelligence.get('market_sentiment', 'Neutral')
+    confidence = intelligence.get('confidence_level', 'Medium')
+    
+    sentiment_text = f"<b>Market Sentiment:</b> {sentiment} | <b>Confidence Level:</b> {confidence}"
+    story.append(Paragraph(sentiment_text, subtitle_style))
     
     story.append(PageBreak())
     
     # ========================================================================
-    # PAGE 5: TOP PROPERTIES
+    # PAGE 5: TOP OPPORTUNITIES
     # ========================================================================
     
     story.append(Paragraph("TOP OPPORTUNITIES", title_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Top 8 properties table
-    top_props = data['properties'][:8]
+    top_props = data['top_opportunities'][:8]
     
     prop_data = [['ADDRESS', 'PRICE', 'BEDS/BATHS', '£/SQFT', 'SCORE']]
     
@@ -568,7 +589,7 @@ def create_elite_pdf(data):
             prop['address'].split(',')[0][:35],
             f"£{prop['price']:,}",
             f"{prop['beds']}/{prop['baths']}",
-            f"£{prop['price_per_sqft']:,}",
+            f"£{prop['price_per_sqft']:,.0f}",
             f"{prop['deal_score']}/10"
         ])
     
@@ -597,8 +618,8 @@ def create_elite_pdf(data):
     
     # Closing statement
     closing_text = """<b>INSIGHTS SUMMARY</b><br/><br/>
-    Key insights highlighted above represent immediate market opportunities. 
-    We'll follow up within 24-48 hours to discuss strategic implications for your portfolio and competitive positioning."""
+    Key insights highlighted above represent immediate market opportunities based on current data analysis. 
+    This intelligence is designed to support strategic decision-making and competitive positioning in the luxury real estate market."""
     
     story.append(Paragraph(closing_text, body_style))
     
