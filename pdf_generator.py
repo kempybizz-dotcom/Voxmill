@@ -351,7 +351,7 @@ def create_pdf(data):
     story.append(Spacer(1, 0.25*inch))
     
     print("→ Creating KPI chart...")
-    kpi = create_kpi_chart(data)
+    kpi = create_chart_kpi(data)
     story.append(Image(kpi, width=6.8*inch, height=2.4*inch))
     story.append(Spacer(1, 0.2*inch))
     
@@ -392,7 +392,7 @@ def create_pdf(data):
     story.append(Paragraph("PERFORMANCE ANALYSIS", title_style))
     story.append(Spacer(1, 0.15*inch))
     print("→ Creating performance chart...")
-    perf = create_performance_chart(data)
+    perf = create_chart_performance(data)
     story.append(Image(perf, width=6.8*inch, height=3.7*inch))
     story.append(Spacer(1, 0.15*inch))
     story.append(Paragraph("KEY INSIGHTS", section_style))
@@ -404,7 +404,7 @@ def create_pdf(data):
     story.append(Paragraph("COMPETITOR LANDSCAPE", title_style))
     story.append(Spacer(1, 0.15*inch))
     print("→ Creating competitor chart...")
-    comp = create_competitor_chart(data)
+    comp = create_chart_competitors(data)
     story.append(Image(comp, width=6.8*inch, height=2.4*inch))
     story.append(PageBreak())
     
