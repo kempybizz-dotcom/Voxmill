@@ -38,7 +38,7 @@ def validate_environment():
     return sender_email, sender_password
 
 def create_simple_email(recipient_name, area, city):
-    """Create simple, elegant email like LexCura"""
+    """Create Fortune-500 luxury email template"""
     
     return f"""
 <!DOCTYPE html>
@@ -46,231 +46,337 @@ def create_simple_email(recipient_name, area, city):
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Voxmill Market Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
         body {{
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #0C0C0C;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }}
+        .email-wrapper {{
+            background-color: #0C0C0C;
+            padding: 0;
         }}
         .container {{
-            max-width: 600px;
+            max-width: 640px;
             margin: 0 auto;
-            background-color: #0A0A0A;
+            background-color: #0C0C0C;
         }}
         .header {{
-            padding: 60px 40px 50px 40px;
+            background-color: #0C0C0C;
+            padding: 40px 32px 32px 32px;
             text-align: center;
-            border-top: 3px solid #CBA135;
+            position: relative;
+        }}
+        .header::before {{
+            content: "V";
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 120px;
+            font-weight: 700;
+            color: #B08D57;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }}
+        .logo-container {{
+            position: relative;
+            z-index: 1;
+            margin-bottom: 24px;
         }}
         .logo {{
-            width: 50px;
-            height: 50px;
-            background: #CBA135;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #B08D57 0%, #CBA135 100%);
             transform: rotate(45deg);
-            margin: 0 auto 20px auto;
+            margin: 0 auto;
             position: relative;
+            box-shadow: 0 6px 20px rgba(176, 141, 87, 0.25);
         }}
         .logo-v {{
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
-            font-family: Georgia, serif;
-            font-size: 24px;
-            font-weight: bold;
-            color: #0A0A0A;
-        }}
-        .brand {{
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 22px;
             font-weight: 700;
-            color: #FFFFFF;
-            letter-spacing: 3px;
-            margin-bottom: 6px;
+            color: #0C0C0C;
+            line-height: 1;
         }}
-        .tagline {{
-            font-size: 10px;
-            color: #CBA135;
+        .brand {{
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #B08D57;
             letter-spacing: 2px;
             text-transform: uppercase;
+            margin-top: 8px;
+        }}
+        .header-divider {{
+            width: 100%;
+            height: 1px;
+            background-color: #2E2E2E;
+            margin-top: 32px;
         }}
         .content {{
-            padding: 40px;
-            color: #FFFFFF;
+            background-color: #111111;
+            padding: 40px 32px;
+            color: #D8D8D8;
         }}
         .greeting {{
-            font-size: 16px;
-            margin-bottom: 30px;
-            color: #E8E8E8;
+            font-size: 15px;
+            color: #D8D8D8;
+            margin-bottom: 32px;
+            font-weight: 400;
+        }}
+        .tagline {{
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #B08D57;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 16px;
         }}
         .title {{
-            font-size: 26px;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 28px;
             font-weight: 700;
-            color: #FFFFFF;
+            color: #F8F8F8;
+            text-align: center;
             margin-bottom: 12px;
             line-height: 1.3;
         }}
         .subtitle {{
-            font-size: 11px;
-            color: #CBA135;
-            letter-spacing: 2px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #999999;
+            text-align: center;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }}
         .body-text {{
             font-size: 15px;
-            color: #E8E8E8;
+            color: #D8D8D8;
             line-height: 1.7;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }}
         .highlight-box {{
-            background-color: #111111;
-            border-left: 3px solid #CBA135;
-            padding: 25px;
-            margin: 30px 0;
+            background-color: #0B0B0B;
+            border-left: 3px solid #B08D57;
+            border-radius: 0 4px 4px 0;
+            padding: 28px 24px;
+            margin: 32px 0;
+            box-shadow: 0 0 20px rgba(203, 161, 53, 0.08);
         }}
         .highlight-title {{
-            font-size: 10px;
-            color: #CBA135;
+            font-size: 11px;
+            font-weight: 700;
+            color: #B08D57;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 15px;
-            font-weight: 700;
+            margin-bottom: 18px;
         }}
         .highlight-item {{
             font-size: 14px;
-            color: #E8E8E8;
-            margin-bottom: 10px;
-            padding-left: 15px;
+            color: #D8D8D8;
+            margin-bottom: 12px;
+            padding-left: 18px;
             position: relative;
+            line-height: 1.6;
         }}
         .highlight-item:before {{
-            content: "▸";
+            content: "—";
             position: absolute;
             left: 0;
-            color: #CBA135;
+            color: #B08D57;
+            font-weight: 600;
+        }}
+        .highlight-item:last-child {{
+            margin-bottom: 0;
         }}
         .cta {{
             text-align: center;
-            margin: 40px 0 30px 0;
+            margin: 40px 0 28px 0;
         }}
         .cta-button {{
             display: inline-block;
-            background: #CBA135;
-            color: #000000;
+            background: linear-gradient(135deg, #B08D57 0%, #CBA135 100%);
+            color: #FFFFFF;
             text-decoration: none;
-            padding: 15px 40px;
+            padding: 14px 28px;
             border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            box-shadow: 0 4px 16px rgba(176, 141, 87, 0.3);
+            transition: all 0.3s ease;
+        }}
+        .cta-note {{
+            text-align: center;
+            color: #B08D57;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 12px;
+        }}
+        .followup-text {{
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 24px;
         }}
         .signature {{
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 1px solid #222222;
+            margin-top: 44px;
+            padding-top: 28px;
+            border-top: 1px solid #2E2E2E;
         }}
         .sig-name {{
             font-size: 15px;
-            color: #CBA135;
+            color: #F8F8F8;
             font-weight: 600;
             margin-bottom: 4px;
         }}
         .sig-title {{
             font-size: 12px;
             color: #999999;
+            font-weight: 400;
         }}
         .footer {{
-            padding: 30px 40px;
+            background-color: #0A0A0A;
+            padding: 32px 32px 40px 32px;
             text-align: center;
-            border-top: 1px solid #222222;
+            border-top: 1px solid #2E2E2E;
         }}
         .footer-text {{
             font-size: 11px;
-            color: #666666;
-            line-height: 1.6;
-            margin-bottom: 12px;
+            color: #777777;
+            line-height: 1.7;
+            margin-bottom: 16px;
         }}
-        .confidential {{
+        .footer-brand {{
             font-size: 10px;
-            color: #CBA135;
+            font-weight: 600;
+            color: #B08D57;
             letter-spacing: 2px;
             text-transform: uppercase;
         }}
         
-        @media screen and (max-width: 600px) {{
+        @media screen and (max-width: 640px) {{
+            .container {{
+                width: 100% !important;
+            }}
             .header, .content, .footer {{
-                padding-left: 20px !important;
-                padding-right: 20px !important;
+                padding-left: 24px !important;
+                padding-right: 24px !important;
             }}
             .title {{
-                font-size: 22px !important;
-            }}
-            .brand {{
-                font-size: 20px !important;
+                font-size: 24px !important;
             }}
             .highlight-box {{
-                padding: 20px !important;
+                padding: 24px 20px !important;
+            }}
+            .cta-button {{
+                padding: 13px 24px !important;
+                font-size: 10px !important;
+            }}
+        }}
+        
+        @media (prefers-color-scheme: dark) {{
+            .email-wrapper, .container, .header, .content, .footer {{
+                background-color: #0C0C0C !important;
             }}
         }}
     </style>
 </head>
 <body>
-    <div class="container">
-        
-        <div class="header">
-            <div class="logo">
-                <div class="logo-v">V</div>
+    <div class="email-wrapper">
+        <div class="container">
+            
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <div class="logo">
+                        <div class="logo-v">V</div>
+                    </div>
+                </div>
+                <div class="brand">VOXMILL MARKET INTELLIGENCE</div>
+                <div class="header-divider"></div>
             </div>
-            <div class="brand">VOXMILL</div>
-            <div class="tagline">Market Intelligence</div>
+            
+            <!-- Content -->
+            <div class="content">
+                
+                <div class="greeting">{recipient_name},</div>
+                
+                <div class="tagline">Weekly Precision Report</div>
+                <div class="title">Market Intelligence Snapshot<br/>{area}</div>
+                <div class="subtitle">{city} • {datetime.now().strftime('%B %d, %Y')}</div>
+                
+                <div class="body-text">
+                    Following our conversation — I've attached this week's Voxmill Market Intelligence 
+                    report for <strong style="color: #B08D57;">{area}, {city}</strong>. 
+                    This analysis provides executive-level insights into current market positioning and competitive dynamics.
+                </div>
+                
+                <!-- Highlight Box -->
+                <div class="highlight-box">
+                    <div class="highlight-title">Report Highlights</div>
+                    <div class="highlight-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
+                    <div class="highlight-item">Competitor landscape analysis and strategic market positioning</div>
+                    <div class="highlight-item">Executive intelligence briefing with actionable insights</div>
+                    <div class="highlight-item">Pricing trend analysis and market anomaly detection</div>
+                </div>
+                
+                <!-- CTA -->
+                <div class="cta">
+                    <a href="#" class="cta-button" style="pointer-events: none; cursor: default;">View Full Report</a>
+                </div>
+                
+                <div class="cta-note">
+                    📎 Full report attached above
+                </div>
+                
+                <div class="followup-text">
+                    I'll follow up within 24–48 hours to discuss strategic implications 
+                    and how this intelligence can enhance your competitive positioning.
+                </div>
+                
+                <!-- Signature -->
+                <div class="signature">
+                    <div class="sig-name">Olly</div>
+                    <div class="sig-title">Voxmill Market Intelligence</div>
+                </div>
+                
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <div class="footer-text">
+                    © {datetime.now().year} Voxmill Automations • Confidential Market Intelligence<br/>
+                    This briefing contains proprietary analysis for authorized recipients only
+                </div>
+                <div class="footer-brand">Voxmill Automations</div>
+            </div>
+            
         </div>
-        
-        <div class="content">
-            
-            <div class="greeting">Dear {recipient_name},</div>
-            
-            <div class="title">Market Intelligence Snapshot<br>{area}</div>
-            <div class="subtitle">Weekly Precision Report • {city}</div>
-            
-            <div class="body-text">
-                Following our conversation — I've attached this week's <strong style="color: #CBA135;">Voxmill Market Intelligence</strong> 
-                report for <strong>{area}, {city}</strong>. This analysis provides executive insights into current market positioning.
-            </div>
-            
-            <div class="highlight-box">
-                <div class="highlight-title">📊 Report Highlights</div>
-                <div class="highlight-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
-                <div class="highlight-item">Competitor landscape analysis and market positioning</div>
-                <div class="highlight-item">Executive intelligence with actionable insights</div>
-                <div class="highlight-item">Pricing trends and anomaly detection</div>
-            </div>
-            
-            <div class="cta">
-                <a href="#" class="cta-button">View Full Report</a>
-            </div>
-            
-            <div class="body-text" style="text-align: center; color: #999999; font-size: 14px;">
-                Have a look at the attached PDF. I'll follow up in 24-48 hours to discuss anything that stands out.
-            </div>
-            
-            <div class="signature">
-                <div class="sig-name">Olly</div>
-                <div class="sig-title">Voxmill Market Intelligence</div>
-            </div>
-            
-        </div>
-        
-        <div class="footer">
-            <div class="footer-text">
-                © {datetime.now().year} Voxmill Automations • Confidential Market Intelligence<br>
-                This report contains proprietary analysis for authorized recipients only
-            </div>
-            <div class="confidential">Voxmill Automations</div>
-        </div>
-        
     </div>
 </body>
 </html>
