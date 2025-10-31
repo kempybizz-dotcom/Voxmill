@@ -517,6 +517,12 @@ def send_luxury_email(recipient_email, recipient_name, area, city, pdf_path):
         print(f"   ❌ Email sending failed: {str(e)}")
         return False
 
+# Integration function for master script
+def send_email(recipient_email, recipient_name, area, city):
+    """Integration function for voxmill_master.py"""
+    pdf_path = "/tmp/Voxmill_Elite_Intelligence.pdf"
+    return send_luxury_email(recipient_email, recipient_name, area, city, pdf_path)
+
 def main():
     """Test function"""
     
