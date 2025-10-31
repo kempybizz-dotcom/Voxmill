@@ -1,8 +1,8 @@
 """
-VOXMILL PRODUCTION EMAIL SENDER - FULL VERSION
-===============================================
-Complete Fortune-500 styling with full CSS
-No shortcuts, no compression
+VOXMILL EMAIL SENDER - FORTUNE-500 EDITION
+===========================================
+Black background, bronze accents, real logo
+Inline CID attachment support
 """
 
 import smtplib
@@ -26,546 +26,187 @@ SMTP_PORT = 587
 DEFAULT_PDF_PATH = "/tmp/Voxmill_Elite_Intelligence.pdf"
 DEFAULT_LOGO_PATH = "/mnt/user-data/uploads/voxmill_logo.png"
 
-def embed_logo_base64(logo_path):
-    """Convert logo to base64 for embedding"""
-    try:
-        with open(logo_path, 'rb') as f:
-            logo_data = f.read()
-            return base64.b64encode(logo_data).decode('utf-8')
-    except FileNotFoundError:
-        logger.warning(f"Logo not found at {logo_path}, using diamond fallback")
-        return None
-
 def validate_environment():
-    """Validate email credentials exist"""
+    """Validate email credentials"""
     sender_email = os.environ.get('VOXMILL_EMAIL')
     sender_password = os.environ.get('VOXMILL_EMAIL_PASSWORD')
     
     if not sender_email:
-        raise EnvironmentError("VOXMILL_EMAIL not set in environment")
+        raise EnvironmentError("VOXMILL_EMAIL not set")
     if not sender_password:
-        raise EnvironmentError("VOXMILL_EMAIL_PASSWORD not set (use Gmail App Password)")
+        raise EnvironmentError("VOXMILL_EMAIL_PASSWORD not set")
     
-    logger.info(f"✅ Credentials validated: {sender_email}")
+    logger.info(f"✅ Credentials: {sender_email}")
     return sender_email, sender_password
 
-def create_luxury_email(recipient_name, area, city, logo_base64=None, pdf_cid=None):
-    """Create Fortune-500 luxury email with full styling"""
+def create_voxmill_email(recipient_name, area, city):
+    """Create Fortune-500 email HTML"""
     
-    # Decide logo display method
-    if logo_base64:
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" alt="Voxmill" style="width:120px;height:auto;margin:0 auto;display:block;">'
-    else:
-        # Fallback to diamond
-        logo_html = '''
-        <div class="logo-container">
-            <div class="logo">
-                <div class="logo-v">V</div>
-            </div>
-        </div>
-        '''
-    
-    # CTA button - link to PDF attachment using Content-ID
-    if pdf_cid:
-        button_html = f'<a href="cid:{pdf_cid}" class="cta-button">Open Full Report</a>'
-    else:
-        button_html = '<a href="#" class="cta-button" style="pointer-events: none; cursor: default;">View Full Report</a>'
-    
-    return f"""
-<!DOCTYPE html>
-<html lang="en">
+    return f"""<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Voxmill Market Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        /* Reset and base styles */
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        
-        body {{
-            margin: 0;
-            padding: 0;
-            background-color: #0C0C0C;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }}
-        
-        /* Email wrapper */
-        .email-wrapper {{
-            background-color: #0C0C0C;
-            padding: 0;
-            width: 100%;
-        }}
-        
-        /* Main container */
-        .container {{
-            max-width: 640px;
-            margin: 0 auto;
-            background-color: #0C0C0C;
-        }}
-        
-        /* Header section */
-        .header {{
-            background-color: #0C0C0C;
-            padding: 40px 32px 32px 32px;
-            text-align: center;
-            position: relative;
-        }}
-        
-        /* Large watermark V behind header */
-        .header::before {{
-            content: "V";
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 120px;
-            font-weight: 700;
-            color: #B08D57;
-            opacity: 0.05;
-            pointer-events: none;
-            z-index: 0;
-        }}
-        
-        /* Logo container */
-        .logo-container {{
-            position: relative;
-            z-index: 1;
-            margin-bottom: 24px;
-        }}
-        
-        /* Diamond logo */
-        .logo {{
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #B08D57 0%, #CBA135 100%);
-            transform: rotate(45deg);
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 6px 20px rgba(176, 141, 87, 0.25);
-        }}
-        
-        /* V inside diamond */
-        .logo-v {{
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #0C0C0C;
-            line-height: 1;
-        }}
-        
-        /* Brand name */
-        .brand {{
-            font-family: 'Inter', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            color: #B08D57;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 8px;
-        }}
-        
-        /* Header divider line */
-        .header-divider {{
-            width: 100%;
-            height: 1px;
-            background-color: #2E2E2E;
-            margin-top: 32px;
-        }}
-        
-        /* Main content section */
-        .content {{
-            background-color: #111111;
-            padding: 40px 32px;
-            color: #D8D8D8;
-        }}
-        
-        /* Greeting */
-        .greeting {{
-            font-size: 15px;
-            color: #D8D8D8;
-            margin-bottom: 32px;
-            font-weight: 400;
-        }}
-        
-        /* Report tagline */
-        .tagline {{
-            font-family: 'Inter', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            color: #B08D57;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 16px;
-        }}
-        
-        /* Main title */
-        .title {{
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 28px;
-            font-weight: 700;
-            color: #F8F8F8;
-            text-align: center;
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }}
-        
-        /* Subtitle */
-        .subtitle {{
-            font-size: 12px;
-            font-weight: 400;
-            color: #999999;
-            text-align: center;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 32px;
-        }}
-        
-        /* Body text */
-        .body-text {{
-            font-size: 15px;
-            color: #D8D8D8;
-            line-height: 1.7;
-            margin-bottom: 28px;
-        }}
-        
-        /* Highlight box */
-        .highlight-box {{
-            background-color: #0B0B0B;
-            border-left: 3px solid #B08D57;
-            border-radius: 0 4px 4px 0;
-            padding: 28px 24px;
-            margin: 32px 0;
-            box-shadow: 0 0 20px rgba(203, 161, 53, 0.08);
-        }}
-        
-        /* Highlight box title */
-        .highlight-title {{
-            font-size: 11px;
-            font-weight: 700;
-            color: #B08D57;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 18px;
-        }}
-        
-        /* Highlight box items */
-        .highlight-item {{
-            font-size: 14px;
-            color: #D8D8D8;
-            margin-bottom: 12px;
-            padding-left: 18px;
-            position: relative;
-            line-height: 1.6;
-        }}
-        
-        /* Bullet point (em dash) */
-        .highlight-item:before {{
-            content: "—";
-            position: absolute;
-            left: 0;
-            color: #B08D57;
-            font-weight: 600;
-        }}
-        
-        .highlight-item:last-child {{
-            margin-bottom: 0;
-        }}
-        
-        /* CTA section */
-        .cta {{
-            text-align: center;
-            margin: 40px 0 28px 0;
-        }}
-        
-        /* CTA button */
-        .cta-button {{
-            display: inline-block;
-            background: linear-gradient(135deg, #B08D57 0%, #CBA135 100%);
-            color: #FFFFFF;
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 4px 16px rgba(176, 141, 87, 0.3);
-            transition: all 0.3s ease;
-        }}
-        
-        /* CTA note */
-        .cta-note {{
-            text-align: center;
-            color: #B08D57;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 16px;
-            margin-bottom: 12px;
-        }}
-        
-        /* Follow-up text */
-        .followup-text {{
-            text-align: center;
-            color: #999999;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-top: 24px;
-        }}
-        
-        /* Signature section */
-        .signature {{
-            margin-top: 44px;
-            padding-top: 28px;
-            border-top: 1px solid #2E2E2E;
-        }}
-        
-        /* Signature name */
-        .sig-name {{
-            font-size: 15px;
-            color: #F8F8F8;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }}
-        
-        /* Signature title */
-        .sig-title {{
-            font-size: 12px;
-            color: #999999;
-            font-weight: 400;
-        }}
-        
-        /* Footer section */
-        .footer {{
-            background-color: #0A0A0A;
-            padding: 32px 32px 40px 32px;
-            text-align: center;
-            border-top: 1px solid #2E2E2E;
-        }}
-        
-        /* Footer text */
-        .footer-text {{
-            font-size: 11px;
-            color: #777777;
-            line-height: 1.7;
-            margin-bottom: 16px;
-        }}
-        
-        /* Footer brand */
-        .footer-brand {{
-            font-size: 10px;
-            font-weight: 600;
-            color: #B08D57;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }}
-        
-        /* Mobile responsive */
-        @media screen and (max-width: 640px) {{
-            .container {{
-                width: 100% !important;
-            }}
-            
-            .header, .content, .footer {{
-                padding-left: 24px !important;
-                padding-right: 24px !important;
-            }}
-            
-            .title {{
-                font-size: 24px !important;
-            }}
-            
-            .highlight-box {{
-                padding: 24px 20px !important;
-            }}
-            
-            .cta-button {{
-                padding: 13px 24px !important;
-                font-size: 10px !important;
-            }}
-        }}
-        
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {{
-            .email-wrapper, .container, .header, .content, .footer {{
-                background-color: #0C0C0C !important;
-            }}
-        }}
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{{margin:0;padding:0;box-sizing:border-box;}}
+body{{margin:0;padding:0;background:#0C0C0C;font-family:'Inter',Arial,sans-serif;}}
+.wrap{{max-width:640px;margin:0 auto;background:#0C0C0C;}}
+.hdr{{background:#0C0C0C;padding:32px 32px 24px;text-align:center;}}
+.logo{{margin:0 auto 10px;display:block;width:60px;height:auto;}}
+.brand{{font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;}}
+.divider{{width:100%;height:1px;background:#CBA135;}}
+.content{{background:#121212;padding:32px;margin:0;border-radius:6px;}}
+.greeting{{font-size:15px;color:#C9C9C9;margin-bottom:24px;}}
+.tag{{font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:12px;}}
+.title{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.3;margin-bottom:10px;}}
+.sub{{font-size:12px;color:#999999;text-align:center;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;}}
+.txt{{font-size:14px;color:#C9C9C9;line-height:1.7;margin-bottom:20px;}}
+.box{{background:#0C0C0C;border-left:3px solid #B08D57;border-radius:0 6px 6px 0;padding:24px 20px;margin:24px 0;}}
+.box-title{{font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}}
+.box-item{{font-size:13px;color:#C9C9C9;margin-bottom:10px;padding-left:16px;position:relative;line-height:1.6;}}
+.box-item:before{{content:"—";position:absolute;left:0;color:#CBA135;font-weight:600;}}
+.cta{{text-align:center;margin:28px 0 20px;}}
+.btn{{display:inline-block;background:linear-gradient(135deg,#B08D57,#CBA135);color:#FFF;text-decoration:none;padding:13px 26px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;box-shadow:0 4px 12px rgba(203,161,53,0.3);}}
+.note{{text-align:center;color:#CBA135;font-size:12px;font-weight:600;margin:14px 0 10px;}}
+.follow{{text-align:center;color:#999999;font-size:13px;line-height:1.6;margin-top:20px;}}
+.sig{{margin-top:32px;padding-top:20px;border-top:1px solid #333;}}
+.sig-name{{font-size:14px;color:#FFFFFF;font-weight:600;margin-bottom:4px;}}
+.sig-title{{font-size:11px;color:#999999;}}
+.ftr{{background:#0C0C0C;padding:24px 32px;text-align:center;border-top:1px solid #CBA135;margin-top:20px;}}
+.ftr-txt{{font-size:10px;color:#B08D57;line-height:1.6;letter-spacing:1px;text-transform:uppercase;}}
+@media (max-width:640px){{
+.hdr,.content,.ftr{{padding-left:20px!important;padding-right:20px!important;}}
+.title{{font-size:22px!important;}}
+.box{{padding:20px 16px!important;}}
+}}
+</style>
 </head>
 <body>
-    <div class="email-wrapper">
-        <div class="container">
-            
-            <!-- ============================================ -->
-            <!-- HEADER SECTION                               -->
-            <!-- ============================================ -->
-            <div class="header">
-                {logo_html}
-                <div class="brand">VOXMILL MARKET INTELLIGENCE</div>
-                <div class="header-divider"></div>
-            </div>
-            
-            <!-- ============================================ -->
-            <!-- CONTENT SECTION                              -->
-            <!-- ============================================ -->
-            <div class="content">
-                
-                <!-- Greeting -->
-                <div class="greeting">{recipient_name},</div>
-                
-                <!-- Report title -->
-                <div class="tagline">Weekly Precision Report</div>
-                <div class="title">Market Intelligence Snapshot<br/>{area}</div>
-                <div class="subtitle">{city} • {datetime.now().strftime('%B %d, %Y')}</div>
-                
-                <!-- Introduction -->
-                <div class="body-text">
-                    Following our conversation — I've attached this week's Voxmill Market Intelligence 
-                    report for <strong style="color: #B08D57;">{area}, {city}</strong>. 
-                    This analysis provides executive-level insights into current market positioning and competitive dynamics.
-                </div>
-                
-                <!-- Highlight Box -->
-                <div class="highlight-box">
-                    <div class="highlight-title">Report Highlights</div>
-                    <div class="highlight-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
-                    <div class="highlight-item">Competitor landscape analysis and strategic market positioning</div>
-                    <div class="highlight-item">Executive intelligence briefing with actionable insights</div>
-                    <div class="highlight-item">Pricing trend analysis and market anomaly detection</div>
-                </div>
-                
-                <!-- CTA Button -->
-                <div class="cta">
-                    {button_html}
-                </div>
-                
-                <!-- Attachment note -->
-                <div class="cta-note">
-                    📎 Full report attached above
-                </div>
-                
-                <!-- Follow-up message -->
-                <div class="followup-text">
-                    I'll follow up within 24–48 hours to discuss strategic implications 
-                    and how this intelligence can enhance your competitive positioning.
-                </div>
-                
-                <!-- Signature -->
-                <div class="signature">
-                    <div class="sig-name">Olly</div>
-                    <div class="sig-title">Voxmill Market Intelligence</div>
-                </div>
-                
-            </div>
-            
-            <!-- ============================================ -->
-            <!-- FOOTER SECTION                               -->
-            <!-- ============================================ -->
-            <div class="footer">
-                <div class="footer-text">
-                    © {datetime.now().year} Voxmill Automations • Confidential Market Intelligence<br/>
-                    This briefing contains proprietary analysis for authorized recipients only
-                </div>
-                <div class="footer-brand">Voxmill Automations</div>
-            </div>
-            
-        </div>
-    </div>
+<div class="wrap">
+<div class="hdr">
+<img src="cid:voxmill_logo" class="logo" alt="Voxmill">
+<div class="brand">VOXMILL MARKET INTELLIGENCE</div>
+<div class="divider"></div>
+</div>
+<div class="content">
+<div class="greeting">{recipient_name},</div>
+<div class="tag">Weekly Precision Report</div>
+<div class="title">Market Intelligence Snapshot<br/>{area}</div>
+<div class="sub">{city} • {datetime.now().strftime('%B %d, %Y')}</div>
+<div class="txt">
+Following our conversation — I've attached this week's Voxmill Market Intelligence 
+report for <strong style="color:#B08D57">{area}, {city}</strong>. 
+This analysis provides executive-level insights into current market positioning.
+</div>
+<div class="box">
+<div class="box-title">Report Highlights</div>
+<div class="box-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
+<div class="box-item">Competitor landscape analysis and strategic positioning</div>
+<div class="box-item">Executive intelligence briefing with actionable insights</div>
+<div class="box-item">Pricing trend analysis and market anomaly detection</div>
+</div>
+<div class="cta">
+<a href="cid:voxmill_report_pdf" class="btn">Open Full Report</a>
+</div>
+<div class="note">📎 Full report attached above</div>
+<div class="follow">
+I'll follow up within 24–48 hours to discuss strategic implications 
+and how this intelligence can enhance your competitive positioning.
+</div>
+<div class="sig">
+<div class="sig-name">Olly</div>
+<div class="sig-title">Voxmill Market Intelligence</div>
+</div>
+</div>
+<div class="ftr">
+<div class="ftr-txt">
+Voxmill Automations — Confidential Market Intelligence | {datetime.now().year}<br/>
+This briefing contains proprietary analysis for authorized recipients only
+</div>
+</div>
+</div>
 </body>
-</html>
-"""
+</html>"""
 
-def send_production_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
-    """Send production-ready Voxmill intelligence email"""
+def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
+    """Send Voxmill Fortune-500 email"""
     
     logger.info("=" * 70)
-    logger.info("VOXMILL PRODUCTION EMAIL SENDER")
+    logger.info("VOXMILL FORTUNE-500 EMAIL SENDER")
     logger.info("=" * 70)
     
     try:
-        # Step 1: Validate environment
+        # Step 1: Validate
         logger.info("\nStep 1/6: Validating credentials...")
         sender_email, sender_password = validate_environment()
         
-        # Step 2: Check PDF exists
+        # Step 2: Check PDF
         if pdf_path is None:
             pdf_path = DEFAULT_PDF_PATH
         
         logger.info(f"Step 2/6: Checking PDF at {pdf_path}...")
         pdf_file = Path(pdf_path)
         if not pdf_file.exists():
-            raise FileNotFoundError(f"PDF not found at {pdf_path}")
+            raise FileNotFoundError(f"PDF not found: {pdf_path}")
         
         pdf_size = pdf_file.stat().st_size
-        logger.info(f"✅ PDF found: {pdf_size:,} bytes ({pdf_size/1024:.1f} KB)")
+        logger.info(f"✅ PDF: {pdf_size:,} bytes ({pdf_size/1024:.1f} KB)")
         
-        # Step 3: Load logo if available
+        # Step 3: Load logo
         logger.info("Step 3/6: Loading logo...")
-        logo_base64 = None
         if logo_path is None:
             logo_path = DEFAULT_LOGO_PATH
         
-        if Path(logo_path).exists():
-            logo_base64 = embed_logo_base64(logo_path)
-            logger.info(f"✅ Logo embedded from {logo_path}")
-        else:
-            logger.info("ℹ️  No logo found, using diamond fallback")
+        if not Path(logo_path).exists():
+            raise FileNotFoundError(f"Logo not found: {logo_path}")
         
-        # Generate Content-ID for PDF
-        pdf_cid = "voxmill_report_pdf"
+        logger.info(f"✅ Logo: {logo_path}")
         
-        # Step 4: Create email message
+        # Step 4: Build email
         logger.info("Step 4/6: Building email message...")
         msg = MIMEMultipart('related')
         msg['From'] = f"Olly - Voxmill Intelligence <{sender_email}>"
         msg['To'] = recipient_email
         msg['Subject'] = f"Market intelligence snapshot — {area}"
         
-        # Create HTML content with logo and clickable PDF button
-        html_content = create_luxury_email(recipient_name, area, city, logo_base64, pdf_cid)
+        # HTML content
+        html_content = create_voxmill_email(recipient_name, area, city)
         html_part = MIMEText(html_content, 'html', 'utf-8')
         msg.attach(html_part)
         
-        logger.info("✅ HTML email created (Fortune-500 design)")
+        logger.info("✅ HTML created")
         
-        # Step 5: Attach PDF with Content-ID for inline linking
-        logger.info("Step 5/6: Attaching PDF report...")
-        with open(pdf_path, "rb") as attachment:
-            # Regular attachment
+        # Step 5: Attach logo as inline image
+        logger.info("Step 5/6: Attaching inline logo...")
+        with open(logo_path, 'rb') as f:
+            logo_img = MIMEImage(f.read())
+            logo_img.add_header('Content-ID', '<voxmill_logo>')
+            logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
+            msg.attach(logo_img)
+        
+        logger.info("✅ Logo embedded")
+        
+        # Step 6: Attach PDF
+        logger.info("Step 6/6: Attaching PDF...")
+        with open(pdf_path, "rb") as f:
             part = MIMEBase('application', 'pdf')
-            part.set_payload(attachment.read())
+            part.set_payload(f.read())
             encoders.encode_base64(part)
             
-            # Clean filename
             area_clean = area.replace(' ', '_').replace(',', '')
             city_clean = city.replace(' ', '_').replace(',', '')
             filename = f"Voxmill_{city_clean}_{area_clean}_Intelligence.pdf"
             
-            # Add both Content-ID (for button link) and Content-Disposition (for attachment)
-            part.add_header('Content-ID', f'<{pdf_cid}>')
+            part.add_header('Content-ID', '<voxmill_report_pdf>')
             part.add_header('Content-Disposition', f'attachment; filename={filename}')
             msg.attach(part)
         
-        logger.info(f"✅ PDF attached as: {filename}")
-        logger.info(f"✅ PDF button linked to attachment")
+        logger.info(f"✅ PDF attached: {filename}")
+        logger.info(f"✅ PDF button linked")
         
-        # Step 6: Send email
-        logger.info(f"Step 6/6: Sending to {recipient_email}...")
+        # Send
+        logger.info(f"\nSending to {recipient_email}...")
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
             server.starttls()
             server.login(sender_email, sender_password)
@@ -576,7 +217,6 @@ def send_production_email(recipient_email, recipient_name, area, city, pdf_path=
         logger.info(f"   To: {recipient_email}")
         logger.info(f"   Name: {recipient_name}")
         logger.info(f"   Area: {area}, {city}")
-        logger.info(f"   Subject: Market intelligence snapshot — {area}")
         logger.info("=" * 70 + "\n")
         
         return True
@@ -585,18 +225,16 @@ def send_production_email(recipient_email, recipient_name, area, city, pdf_path=
         logger.error(f"\n❌ ERROR: {str(e)}")
         raise
 
-# Integration function for backwards compatibility
 def send_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
     """Integration function"""
-    return send_production_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
+    return send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
 
 def main():
-    """Command-line interface"""
+    """CLI"""
     if len(sys.argv) < 4:
-        print("Usage: python PRODUCTION_email_sender_FULL.py <recipient_email> <recipient_name> <area> [city] [pdf_path] [logo_path]")
+        print("Usage: python VOXMILL_email_sender.py <email> <name> <area> [city] [pdf] [logo]")
         print("\nExample:")
-        print("  python PRODUCTION_email_sender_FULL.py john@example.com 'John Smith' Mayfair London")
-        print("  python PRODUCTION_email_sender_FULL.py john@example.com 'John Smith' Mayfair London /path/to/report.pdf /path/to/logo.png")
+        print("  python VOXMILL_email_sender.py john@example.com 'John Smith' Mayfair London")
         sys.exit(1)
     
     recipient_email = sys.argv[1]
@@ -607,7 +245,7 @@ def main():
     logo_path = sys.argv[6] if len(sys.argv) > 6 else None
     
     try:
-        send_production_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
+        send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
         sys.exit(0)
     except Exception as e:
         logger.error(f"\nCRITICAL FAILURE: {str(e)}")
