@@ -1,376 +1,458 @@
 """
-VOXMILL ELITE EMAIL SENDER — FORTUNE 500 REDESIGN
-===================================================
-Executive-grade HTML email delivery with PDF attachment
-Cinematic black/bronze/gold aesthetic
-£10,000/month consultancy visual authority
-
-PRODUCTION-GRADE EMAIL DELIVERY.
+VOXMILL CINEMA-GRADE EMAIL TEMPLATE
+===================================
+LexCura-inspired luxury email design
+Rich black background, strategic gold accents, perfect responsive layout
 """
 
-import os
 import smtplib
+import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-from email.mime.image import MIMEImage
+from email.mime.base import MIMEBase
+from email import encoders
 from datetime import datetime
 
-# Email configuration
-SMTP_HOST = "smtp.gmail.com"
-SMTP_PORT = 587
-SENDER_EMAIL = os.environ.get('VOXMILL_EMAIL')
-SENDER_PASSWORD = os.environ.get('VOXMILL_EMAIL_PASSWORD')
-SENDER_NAME = "Olly - Voxmill Market Intelligence"
-
-PDF_FILE = "/tmp/Voxmill_Elite_Intelligence.pdf"
-
-# ============================================================================
-# HTML EMAIL TEMPLATE — ELITE EDITION
-# ============================================================================
-
-def generate_html_email(recipient_name, area, city):
-    """Generate Fortune-500 grade HTML email"""
+def create_luxury_email_template(recipient_name, area, city, pdf_path):
+    """Create LexCura-level luxury email template"""
     
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap');
-            
-            body {{
-                margin: 0;
-                padding: 0;
-                font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                background-color: #0B0B0B;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }}
-            
-            .elite-heading {{
-                font-family: 'Playfair Display', Georgia, serif;
-                font-weight: 700;
-                letter-spacing: 2px;
-            }}
-            
-            .section-label {{
-                font-family: 'Inter', sans-serif;
-                font-weight: 600;
-                letter-spacing: 2px;
-                text-transform: uppercase;
-                font-size: 11px;
-            }}
-            
-            @media only screen and (max-width: 640px) {{
-                .email-container {{
-                    width: 100% !important;
-                    padding: 20px !important;
-                }}
-                .content-box {{
-                    padding: 25px !important;
-                }}
-            }}
-        </style>
-    </head>
-    <body style="margin: 0; padding: 0; background-color: #0B0B0B;">
+    # Luxury email HTML with responsive design
+    email_html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxmill Market Intelligence</title>
+    <style>
+        /* Reset and base styles */
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
         
-        <!-- Outer wrapper -->
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0B0B0B; padding: 50px 0;">
-            <tr>
-                <td align="center">
-                    
-                    <!-- Main email container -->
-                    <table class="email-container" width="640" cellpadding="0" cellspacing="0" border="0" style="background-color: #0B0B0B; max-width: 640px;">
-                        
-                        <!-- Header with watermark -->
-                        <tr>
-                            <td style="position: relative; padding: 50px 40px 40px 40px; text-align: center;">
-                                
-                                <!-- Watermark V (semi-transparent) -->
-                                <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); opacity: 0.08; z-index: 0;">
-                                    <span style="font-family: 'Playfair Display', serif; font-size: 120px; color: #B08D57; font-weight: 700;">V</span>
-                                </div>
-                                
-                                <!-- Logo -->
-                                <div style="position: relative; z-index: 1; margin-bottom: 20px;">
-                                    <img src="cid:voxmill_logo" alt="Voxmill" width="50" height="50" style="display: inline-block; vertical-align: middle;" />
-                                </div>
-                                
-                                <!-- Brand name -->
-                                <h1 class="elite-heading" style="margin: 0 0 5px 0; color: #B08D57; font-size: 26px; letter-spacing: 3px;">
-                                    VOXMILL
-                                </h1>
-                                <p class="section-label" style="margin: 0; color: #AFAFAF; font-size: 10px; letter-spacing: 2px;">
-                                    MARKET INTELLIGENCE
-                                </p>
-                                
-                                <!-- Gold divider -->
-                                <div style="margin: 30px auto 0 auto; width: 80px; height: 1px; background: linear-gradient(90deg, transparent 0%, #CBA135 50%, transparent 100%);"></div>
-                                
-                            </td>
-                        </tr>
-                        
-                        <!-- Main content box -->
-                        <tr>
-                            <td style="padding: 0 40px;">
-                                <table class="content-box" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #121212; border-radius: 12px; overflow: hidden;">
-                                    <tr>
-                                        <td style="padding: 40px;">
-                                            
-                                            <!-- Greeting -->
-                                            <p style="color: #EAEAEA; font-size: 16px; line-height: 26px; margin: 0 0 25px 0; font-weight: 400;">
-                                                {recipient_name},
-                                            </p>
-                                            
-                                            <!-- Main message -->
-                                            <p style="color: #EAEAEA; font-size: 15px; line-height: 26px; margin: 0 0 25px 0;">
-                                                Following our conversation — I've attached this week's <span style="color: #B08D57; font-weight: 600;">Voxmill Market Intelligence</span> report for <span style="color: #CBA135; font-weight: 600;">{area}, {city}</span>.
-                                            </p>
-                                            
-                                            <!-- Report highlights box -->
-                                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(176,141,87,0.08); border: 1px solid rgba(176,141,87,0.25); border-radius: 8px; margin: 30px 0; box-shadow: 0 0 20px rgba(203,161,53,0.08);">
-                                                <tr>
-                                                    <td style="padding: 25px 30px;">
-                                                        
-                                                        <!-- Section header -->
-                                                        <p class="section-label" style="color: #B08D57; font-size: 11px; margin: 0 0 18px 0; letter-spacing: 2px; text-shadow: 0 0 15px rgba(203,161,53,0.15);">
-                                                            📊 REPORT HIGHLIGHTS
-                                                        </p>
-                                                        
-                                                        <!-- Bullet list -->
-                                                        <table cellpadding="0" cellspacing="0" border="0">
-                                                            <tr>
-                                                                <td style="vertical-align: top; padding: 0 12px 12px 0;">
-                                                                    <span style="color: #CBA135; font-size: 14px;">▸</span>
-                                                                </td>
-                                                                <td style="color: #EAEAEA; font-size: 14px; line-height: 22px; padding-bottom: 12px;">
-                                                                    40+ luxury properties analyzed with AI-powered deal scoring
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td style="vertical-align: top; padding: 0 12px 12px 0;">
-                                                                    <span style="color: #CBA135; font-size: 14px;">▸</span>
-                                                                </td>
-                                                                <td style="color: #EAEAEA; font-size: 14px; line-height: 22px; padding-bottom: 12px;">
-                                                                    Competitor landscape analysis and market positioning
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td style="vertical-align: top; padding: 0 12px 12px 0;">
-                                                                    <span style="color: #CBA135; font-size: 14px;">▸</span>
-                                                                </td>
-                                                                <td style="color: #EAEAEA; font-size: 14px; line-height: 22px; padding-bottom: 12px;">
-                                                                    Executive intelligence with actionable insights
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td style="vertical-align: top; padding: 0 12px 0 0;">
-                                                                    <span style="color: #CBA135; font-size: 14px;">▸</span>
-                                                                </td>
-                                                                <td style="color: #EAEAEA; font-size: 14px; line-height: 22px;">
-                                                                    Pricing trends and anomaly detection
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                        
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                            
-                                            <!-- Follow-up message -->
-                                            <p style="color: #EAEAEA; font-size: 15px; line-height: 26px; margin: 0 0 25px 0;">
-                                                Have a look at the attached PDF. I'll follow up in 24-48 hours to discuss anything that stands out for your portfolio.
-                                            </p>
-                                            
-                                            <!-- Optional CTA button -->
-                                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px 0 0 0;">
-                                                <tr>
-                                                    <td style="background: linear-gradient(135deg, #B08D57 0%, #CBA135 100%); border-radius: 8px; padding: 16px 32px; text-align: center;">
-                                                        <a href="#" style="color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
-                                                            View Full Report
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                            
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                        
-                        <!-- Signature -->
-                        <tr>
-                            <td style="padding: 35px 40px 20px 40px;">
-                                <p style="color: #EAEAEA; font-size: 15px; line-height: 26px; margin: 0;">
-                                    Best,<br>
-                                    <span style="color: #B08D57; font-weight: 600; font-size: 16px;">Olly</span><br>
-                                    <span style="color: #AFAFAF; font-size: 13px;">Voxmill Market Intelligence</span>
-                                </p>
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer divider -->
-                        <tr>
-                            <td style="padding: 20px 40px 0 40px;">
-                                <div style="height: 1px; background-color: #2E2E2E;"></div>
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background-color: #0B0B0B; padding: 30px 40px 40px 40px; text-align: center;">
-                                <p class="section-label" style="color: #B08D57; font-size: 11px; margin: 0 0 10px 0; letter-spacing: 2px;">
-                                    VOXMILL AUTOMATIONS
-                                </p>
-                                <p style="color: #6B6B6B; font-size: 11px; line-height: 18px; margin: 0;">
-                                    Confidential Market Intelligence | {datetime.now().year}<br>
-                                    This report contains proprietary analysis for authorized recipients only
-                                </p>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                    
-                </td>
-            </tr>
-        </table>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #0A0A0A;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }}
         
-    </body>
-    </html>
-    """
-    
-    return html
-
-def generate_plain_text_email(recipient_name, area, city):
-    """Generate plain text fallback"""
-    
-    text = f"""{recipient_name},
-
-Following our conversation — I've attached this week's Voxmill Market Intelligence report for {area}, {city}.
-
-REPORT HIGHLIGHTS:
-▸ 40+ luxury properties analyzed with AI-powered deal scoring
-▸ Competitor landscape analysis and market positioning
-▸ Executive intelligence with actionable insights
-▸ Pricing trends and anomaly detection
-
-Have a look at the attached PDF. I'll follow up in 24-48 hours to discuss anything that stands out for your portfolio.
-
-Best,
-Olly
-Voxmill Market Intelligence
-
----
-VOXMILL AUTOMATIONS
-Confidential Market Intelligence | {datetime.now().year}
-This report contains proprietary analysis for authorized recipients only
+        /* Container */
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #0A0A0A;
+            padding: 0;
+        }}
+        
+        /* Header */
+        .header {{
+            background-color: #0A0A0A;
+            padding: 40px 40px 20px 40px;
+            text-align: center;
+            border-top: 3px solid #CBA135;
+        }}
+        
+        .logo-section {{
+            margin-bottom: 30px;
+        }}
+        
+        .logo-diamond {{
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #CBA135 0%, #D4B55A 100%);
+            transform: rotate(45deg);
+            margin: 0 auto 20px auto;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(203, 161, 53, 0.3);
+        }}
+        
+        .logo-v {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-family: Georgia, serif;
+            font-size: 28px;
+            font-weight: bold;
+            color: #0A0A0A;
+            line-height: 1;
+        }}
+        
+        .brand-name {{
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }}
+        
+        .brand-tagline {{
+            font-size: 11px;
+            color: #CBA135;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }}
+        
+        /* Main content */
+        .main-content {{
+            padding: 30px 40px;
+            background-color: #0A0A0A;
+        }}
+        
+        .greeting {{
+            font-size: 16px;
+            color: #FFFFFF;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }}
+        
+        .headline {{
+            font-size: 28px;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }}
+        
+        .subheadline {{
+            font-size: 14px;
+            color: #CBA135;
+            text-align: center;
+            margin-bottom: 35px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }}
+        
+        .description {{
+            font-size: 15px;
+            color: #E8E8E8;
+            line-height: 1.7;
+            margin-bottom: 30px;
+            text-align: center;
+        }}
+        
+        /* Highlights box */
+        .highlights-box {{
+            background-color: #111111;
+            border-left: 4px solid #CBA135;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 6px 6px 0;
+        }}
+        
+        .highlights-title {{
+            font-size: 12px;
+            color: #CBA135;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }}
+        
+        .highlight-item {{
+            font-size: 14px;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }}
+        
+        .highlight-item::before {{
+            content: "•";
+            color: #CBA135;
+            font-size: 16px;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }}
+        
+        /* CTA Button */
+        .cta-section {{
+            text-align: center;
+            margin: 40px 0 30px 0;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #CBA135 0%, #D4B55A 100%);
+            color: #0A0A0A;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(203, 161, 53, 0.4);
+            transition: all 0.3s ease;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(203, 161, 53, 0.5);
+        }}
+        
+        .follow-up {{
+            font-size: 14px;
+            color: #B8B8B8;
+            text-align: center;
+            margin-top: 25px;
+            line-height: 1.6;
+        }}
+        
+        /* Signature */
+        .signature {{
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #222222;
+        }}
+        
+        .sig-name {{
+            font-size: 16px;
+            color: #FFFFFF;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }}
+        
+        .sig-title {{
+            font-size: 13px;
+            color: #CBA135;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }}
+        
+        .sig-company {{
+            font-size: 12px;
+            color: #999999;
+            letter-spacing: 1px;
+        }}
+        
+        /* Footer */
+        .footer {{
+            background-color: #0A0A0A;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #1A1A1A;
+        }}
+        
+        .footer-text {{
+            font-size: 11px;
+            color: #666666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }}
+        
+        .confidential {{
+            font-size: 10px;
+            color: #CBA135;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }}
+        
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {{
+            .email-container {{
+                width: 100% !important;
+                max-width: 100% !important;
+            }}
+            
+            .header,
+            .main-content,
+            .footer {{
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+            }}
+            
+            .headline {{
+                font-size: 24px !important;
+                line-height: 1.2 !important;
+            }}
+            
+            .brand-name {{
+                font-size: 20px !important;
+                letter-spacing: 2px !important;
+            }}
+            
+            .logo-diamond {{
+                width: 50px !important;
+                height: 50px !important;
+            }}
+            
+            .logo-v {{
+                font-size: 24px !important;
+            }}
+            
+            .cta-button {{
+                padding: 14px 30px !important;
+                font-size: 13px !important;
+            }}
+            
+            .highlights-box {{
+                padding: 20px !important;
+            }}
+        }}
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {{
+            .email-container {{
+                background-color: #0A0A0A !important;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-diamond">
+                    <div class="logo-v">V</div>
+                </div>
+                <div class="brand-name">VOXMILL</div>
+                <div class="brand-tagline">MARKET INTELLIGENCE</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="greeting">Dear {recipient_name},</div>
+            
+            <div class="headline">Market Intelligence Snapshot —<br>{area}</div>
+            <div class="subheadline">Weekly Precision Report • Confidential Analysis</div>
+            
+            <div class="description">
+                Following our conversation, I've prepared this week's market intelligence 
+                report for <strong>{area}, {city}</strong>. This analysis provides executive-level 
+                insights into current market positioning and competitive dynamics.
+            </div>
+            
+            <!-- Highlights -->
+            <div class="highlights-box">
+                <div class="highlights-title">📊 Report Highlights</div>
+                <div class="highlight-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
+                <div class="highlight-item">Competitor landscape analysis and market positioning</div>
+                <div class="highlight-item">Executive intelligence with actionable insights</div>
+                <div class="highlight-item">Pricing trends and anomaly detection</div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-section">
+                <a href="#" class="cta-button">Access Full Report</a>
+            </div>
+            
+            <div class="follow-up">
+                I'll follow up in 24-48 hours to discuss strategic implications 
+                and how this intelligence can enhance your competitive positioning.
+            </div>
+            
+            <!-- Signature -->
+            <div class="signature">
+                <div class="sig-name">Olly</div>
+                <div class="sig-title">Voxmill Market Intelligence</div>
+                <div class="sig-company">CONFIDENTIAL MARKET ANALYSIS</div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">
+                © {datetime.now().year} Voxmill Automations • Confidential Market Intelligence<br>
+                This report contains proprietary analysis for authorized recipients only
+            </div>
+            <div class="confidential">VOXMILL AUTOMATIONS</div>
+        </div>
+    </div>
+</body>
+</html>
 """
     
-    return text
+    return email_html
 
-# ============================================================================
-# EMAIL SENDING
-# ============================================================================
-
-def send_email(recipient_email, recipient_name, area, city, subject=None):
-    """Send professional email with PDF attachment"""
+def send_luxury_email(recipient_email, recipient_name, area, city, pdf_path):
+    """Send LexCura-level luxury email with PDF attachment"""
     
-    print(f"\n📧 SENDING ELITE EMAIL")
+    print(f"\n📧 SENDING LUXURY EMAIL")
     print(f"   To: {recipient_email}")
-    print(f"   Subject: Market intelligence snapshot — {area}")
-    
-    if not SENDER_EMAIL or not SENDER_PASSWORD:
-        raise Exception("Email credentials not configured (VOXMILL_EMAIL, VOXMILL_EMAIL_PASSWORD)")
-    
-    if not os.path.exists(PDF_FILE):
-        raise Exception(f"PDF not found: {PDF_FILE}")
+    print(f"   Market: {area}, {city}")
     
     try:
+        # Email credentials
+        sender_email = os.getenv('VOXMILL_EMAIL')
+        sender_password = os.getenv('VOXMILL_EMAIL_PASSWORD')
+        
+        if not sender_email or not sender_password:
+            print(f"   ⚠️  Email credentials not set - generating template only")
+            return False
+        
         # Create message
-        msg = MIMEMultipart('alternative')
-        msg['From'] = f"{SENDER_NAME} <{SENDER_EMAIL}>"
+        msg = MIMEMultipart('related')
+        msg['From'] = f"Olly - Voxmill Intelligence <{sender_email}>"
         msg['To'] = recipient_email
-        msg['Subject'] = subject or f"Market intelligence snapshot — {area}"
+        msg['Subject'] = f"Market intelligence snapshot — {area}"
         
-        # Generate email content
-        text_content = generate_plain_text_email(recipient_name, area, city)
-        html_content = generate_html_email(recipient_name, area, city)
+        # Create HTML content
+        html_content = create_luxury_email_template(recipient_name, area, city, pdf_path)
         
-        # Attach both versions
-        part_text = MIMEText(text_content, 'plain')
-        part_html = MIMEText(html_content, 'html')
-        
-        msg.attach(part_text)
-        msg.attach(part_html)
-        
-        # Embed logo as inline image
-        logo_path = os.path.join(os.path.dirname(__file__), 'voxmill_logo.png')
-        if os.path.exists(logo_path):
-            with open(logo_path, 'rb') as logo_file:
-                logo_image = MIMEImage(logo_file.read())
-                logo_image.add_header('Content-ID', '<voxmill_logo>')
-                logo_image.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
-                msg.attach(logo_image)
-        else:
-            print(f"   ⚠️  Logo not found at {logo_path}, email will use text-only header")
+        # Attach HTML
+        html_part = MIMEText(html_content, 'html', 'utf-8')
+        msg.attach(html_part)
         
         # Attach PDF
-        with open(PDF_FILE, 'rb') as f:
-            pdf_attachment = MIMEApplication(f.read(), _subtype='pdf')
-            pdf_attachment.add_header('Content-Disposition', 'attachment', 
-                                     filename=f'Voxmill_{city}_{area}_Intelligence.pdf')
-            msg.attach(pdf_attachment)
+        if os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as attachment:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(attachment.read())
+                encoders.encode_base64(part)
+                
+                filename = f"Voxmill_{area}_{city}_Intelligence.pdf"
+                part.add_header(
+                    'Content-Disposition',
+                    f'attachment; filename= {filename}'
+                )
+                msg.attach(part)
         
-        # Send via SMTP
-        print(f"   → Connecting to {SMTP_HOST}...")
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(msg)
+        # Send email
+        print(f"   → Connecting to smtp.gmail.com...")
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
         
-        print(f"   ✅ Elite email sent successfully")
+        text = msg.as_string()
+        server.sendmail(sender_email, recipient_email, text)
+        server.quit()
+        
+        print(f"   ✅ Luxury email sent successfully")
         return True
         
     except Exception as e:
-        print(f"   ❌ Email delivery failed: {str(e)}")
-        raise
-
-# ============================================================================
-# MAIN
-# ============================================================================
+        print(f"   ❌ Email failed: {str(e)}")
+        return False
 
 def main():
-    """Main execution"""
+    """Test luxury email template"""
     
-    print("\n" + "="*70)
-    print("VOXMILL ELITE EMAIL SENDER — FORTUNE 500 EDITION")
-    print("="*70)
+    # Create test email
+    html = create_luxury_email_template("Lead Name", "Mayfair", "London", "/tmp/test.pdf")
     
-    import sys
+    # Save for preview
+    with open('/tmp/luxury_email_template.html', 'w', encoding='utf-8') as f:
+        f.write(html)
     
-    if len(sys.argv) < 4:
-        print("Usage: python email_sender.py <recipient_email> <recipient_name> <area> [city]")
-        print("Example: python email_sender.py john@agency.com 'John Smith' Mayfair London")
-        sys.exit(1)
+    print("✅ Luxury email template created")
+    print("   Preview: /tmp/luxury_email_template.html")
     
-    recipient_email = sys.argv[1]
-    recipient_name = sys.argv[2]
-    area = sys.argv[3]
-    city = sys.argv[4] if len(sys.argv) > 4 else "London"
-    
-    try:
-        send_email(recipient_email, recipient_name, area, city)
-        print(f"\n✅ Elite email delivery complete")
-        
-    except Exception as e:
-        print(f"\n❌ CRITICAL ERROR: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    return True
 
 if __name__ == "__main__":
     main()
