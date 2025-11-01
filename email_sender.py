@@ -1,15 +1,14 @@
 """
-VOXMILL EMAIL SENDER - FORTUNE-500 EDITION
-===========================================
-Black background, bronze accents, real logo
-Inline CID attachment support
+VOXMILL EXECUTIVE EMAIL SENDER
+===============================
+Fortune-500 black/bronze design system
+Full functionality preserved
 """
 
 import smtplib
 import os
 import sys
 import logging
-import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -40,100 +39,167 @@ def validate_environment():
     return sender_email, sender_password
 
 def create_voxmill_email(recipient_name, area, city):
-    """Create Fortune-500 email HTML"""
+    """Create executive email - EXACT Voxmill design system"""
+    
+    year = datetime.now().year
+    date = datetime.now().strftime('%B %d, %Y')
     
     return f"""<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-*{{margin:0;padding:0;box-sizing:border-box;}}
-body{{margin:0;padding:0;background:#0C0C0C;font-family:'Inter',Arial,sans-serif;}}
-.wrap{{max-width:640px;margin:0 auto;background:#0C0C0C;}}
-.hdr{{background:#0C0C0C;padding:32px 32px 24px;text-align:center;}}
-.logo{{margin:0 auto 10px;display:block;width:60px;height:auto;}}
-.brand{{font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;}}
-.divider{{width:100%;height:1px;background:#CBA135;}}
-.content{{background:#121212;padding:32px;margin:0;border-radius:6px;}}
-.greeting{{font-size:15px;color:#C9C9C9;margin-bottom:24px;}}
-.tag{{font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:12px;}}
-.title{{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.3;margin-bottom:10px;}}
-.sub{{font-size:12px;color:#999999;text-align:center;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;}}
-.txt{{font-size:14px;color:#C9C9C9;line-height:1.7;margin-bottom:20px;}}
-.box{{background:#0C0C0C;border-left:3px solid #B08D57;border-radius:0 6px 6px 0;padding:24px 20px;margin:24px 0;}}
-.box-title{{font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}}
-.box-item{{font-size:13px;color:#C9C9C9;margin-bottom:10px;padding-left:16px;position:relative;line-height:1.6;}}
-.box-item:before{{content:"—";position:absolute;left:0;color:#CBA135;font-weight:600;}}
-.cta{{text-align:center;margin:28px 0 20px;}}
-.btn{{display:inline-block;background:linear-gradient(135deg,#B08D57,#CBA135);color:#FFF;text-decoration:none;padding:13px 26px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;box-shadow:0 4px 12px rgba(203,161,53,0.3);}}
-.note{{text-align:center;color:#CBA135;font-size:12px;font-weight:600;margin:14px 0 10px;}}
-.follow{{text-align:center;color:#999999;font-size:13px;line-height:1.6;margin-top:20px;}}
-.sig{{margin-top:32px;padding-top:20px;border-top:1px solid #333;}}
-.sig-name{{font-size:14px;color:#FFFFFF;font-weight:600;margin-bottom:4px;}}
-.sig-title{{font-size:11px;color:#999999;}}
-.ftr{{background:#0C0C0C;padding:24px 32px;text-align:center;border-top:1px solid #CBA135;margin-top:20px;}}
-.ftr-txt{{font-size:10px;color:#B08D57;line-height:1.6;letter-spacing:1px;text-transform:uppercase;}}
-@media (max-width:640px){{
-.hdr,.content,.ftr{{padding-left:20px!important;padding-right:20px!important;}}
-.title{{font-size:22px!important;}}
-.box{{padding:20px 16px!important;}}
-}}
-</style>
+<title>Voxmill Market Intelligence</title>
 </head>
-<body>
-<div class="wrap">
-<div class="hdr">
-<img src="cid:voxmill_logo" class="logo" alt="Voxmill">
-<div class="brand">VOXMILL MARKET INTELLIGENCE</div>
-<div class="divider"></div>
+<body style="margin:0;padding:0;background-color:#0B0B0B;font-family:Arial,Helvetica,sans-serif;">
+
+<!-- OUTER WRAPPER -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B0B0B;margin:0;padding:0;">
+<tr>
+<td align="center" style="padding:0;">
+
+<!-- MAIN CONTAINER 640px -->
+<table width="640" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;margin:0 auto;">
+
+<!-- HEADER -->
+<tr>
+<td style="background-color:#0B0B0B;padding:36px 0 28px;text-align:center;">
+<img src="cid:voxmill_logo" width="56" height="56" alt="Voxmill" style="display:block;margin:0 auto 12px;">
+<div style="font-family:'Times New Roman',Times,serif;font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">
+VOXMILL MARKET INTELLIGENCE
 </div>
-<div class="content">
-<div class="greeting">{recipient_name},</div>
-<div class="tag">Weekly Precision Report</div>
-<div class="title">Market Intelligence Snapshot<br/>{area}</div>
-<div class="sub">{city} • {datetime.now().strftime('%B %d, %Y')}</div>
-<div class="txt">
-Following our conversation — I've attached this week's Voxmill Market Intelligence 
-report for <strong style="color:#B08D57">{area}, {city}</strong>. 
-This analysis provides executive-level insights into current market positioning.
-</div>
-<div class="box">
-<div class="box-title">Report Highlights</div>
-<div class="box-item">40+ luxury properties analyzed with AI-powered deal scoring</div>
-<div class="box-item">Competitor landscape analysis and strategic positioning</div>
-<div class="box-item">Executive intelligence briefing with actionable insights</div>
-<div class="box-item">Pricing trend analysis and market anomaly detection</div>
-</div>
-<div class="cta">
-<a href="cid:voxmill_report_pdf" class="btn">Open Full Report</a>
-</div>
-<div class="note">📎 Full report attached above</div>
-<div class="follow">
-I'll follow up within 24–48 hours to discuss strategic implications 
-and how this intelligence can enhance your competitive positioning.
-</div>
-<div class="sig">
-<div class="sig-name">Olly</div>
-<div class="sig-title">Voxmill Market Intelligence</div>
-</div>
-</div>
-<div class="ftr">
-<div class="ftr-txt">
-Voxmill Automations — Confidential Market Intelligence | {datetime.now().year}<br/>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td style="height:1px;background-color:#CBA135;"></td></tr>
+</table>
+</td>
+</tr>
+
+<!-- CONTENT PANEL -->
+<tr>
+<td style="padding:0 20px 20px;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#121212;border:1px solid rgba(203,161,53,0.25);border-radius:14px;">
+<tr>
+<td style="padding:36px;">
+
+<!-- GREETING -->
+<p style="margin:0 0 24px;font-size:15px;color:#EAEAEA;line-height:1.5;">
+{recipient_name},
+</p>
+
+<!-- TAG LINE -->
+<p style="margin:0 0 8px;font-family:'Times New Roman',Times,serif;font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1px;text-transform:uppercase;text-align:center;">
+WEEKLY PRECISION REPORT
+</p>
+
+<!-- TITLE -->
+<h1 style="margin:0 0 8px;font-family:'Times New Roman',Times,serif;font-size:24px;font-weight:700;color:#EAEAEA;text-align:center;line-height:1.3;letter-spacing:1px;">
+Market Intelligence Snapshot
+</h1>
+<p style="margin:0 0 24px;font-size:13px;color:#AFAFAF;text-align:center;text-transform:uppercase;letter-spacing:0.5px;">
+{area}, {city} • {date}
+</p>
+
+<!-- MAIN PARAGRAPH -->
+<p style="margin:0 0 24px;font-size:15px;color:#EAEAEA;line-height:1.7;">
+Following our conversation — I've attached this week's Voxmill Market Intelligence report for <strong style="color:#B08D57;">{area}, {city}</strong>. This analysis provides executive-level insights into current market positioning and competitive dynamics.
+</p>
+
+<!-- HIGHLIGHT BOX -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:rgba(176,141,87,0.06);border-left:4px solid #B08D57;border-radius:0 8px 8px 0;margin:24px 0;">
+<tr>
+<td style="padding:24px 20px;">
+
+<!-- BOX TITLE -->
+<p style="margin:0 0 16px;font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1px;text-transform:uppercase;">
+REPORT HIGHLIGHTS
+</p>
+
+<!-- BULLET LIST -->
+<table cellpadding="0" cellspacing="0" border="0">
+<tr><td style="padding-bottom:10px;font-size:14px;color:#EAEAEA;line-height:1.6;">
+<span style="color:#CBA135;font-weight:700;margin-right:8px;">—</span>40+ luxury properties analyzed with AI-powered deal scoring
+</td></tr>
+<tr><td style="padding-bottom:10px;font-size:14px;color:#EAEAEA;line-height:1.6;">
+<span style="color:#CBA135;font-weight:700;margin-right:8px;">—</span>Competitor landscape analysis and strategic market positioning
+</td></tr>
+<tr><td style="padding-bottom:10px;font-size:14px;color:#EAEAEA;line-height:1.6;">
+<span style="color:#CBA135;font-weight:700;margin-right:8px;">—</span>Executive intelligence briefing with actionable insights
+</td></tr>
+<tr><td style="font-size:14px;color:#EAEAEA;line-height:1.6;">
+<span style="color:#CBA135;font-weight:700;margin-right:8px;">—</span>Pricing trend analysis and market anomaly detection
+</td></tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+<!-- CTA BUTTON -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 20px;">
+<tr>
+<td align="center">
+<a href="cid:voxmill_report_pdf" style="display:inline-block;background:linear-gradient(135deg,#B08D57 0%,#CBA135 100%);color:#FFFFFF;text-decoration:none;padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">
+OPEN FULL REPORT
+</a>
+</td>
+</tr>
+</table>
+
+<!-- ATTACHMENT NOTE -->
+<p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#CBA135;text-align:center;">
+📎 Full report attached above
+</p>
+
+<!-- FOLLOW UP -->
+<p style="margin:20px 0 0;font-size:13px;color:#AFAFAF;line-height:1.6;text-align:center;">
+I'll follow up within 24–48 hours to discuss strategic implications and how this intelligence can enhance your competitive positioning.
+</p>
+
+<!-- SIGNATURE -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;padding-top:20px;border-top:1px solid #2E2E2E;">
+<tr>
+<td>
+<p style="margin:0 0 4px;font-size:14px;color:#EAEAEA;font-weight:600;">Olly</p>
+<p style="margin:0;font-size:11px;color:#AFAFAF;">Voxmill Market Intelligence</p>
+</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- FOOTER -->
+<tr>
+<td style="background-color:#0B0B0B;padding:24px 20px;text-align:center;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+<tr><td style="height:1px;background-color:#CBA135;"></td></tr>
+</table>
+<p style="margin:0;font-size:10px;color:#B08D57;line-height:1.6;letter-spacing:1px;text-transform:uppercase;">
+VOXMILL AUTOMATIONS — CONFIDENTIAL | {year}
+</p>
+<p style="margin:8px 0 0;font-size:10px;color:#AFAFAF;line-height:1.5;">
 This briefing contains proprietary analysis for authorized recipients only
-</div>
-</div>
-</div>
+</p>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
 </body>
 </html>"""
 
 def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
-    """Send Voxmill Fortune-500 email"""
+    """Send executive email"""
     
     logger.info("=" * 70)
-    logger.info("VOXMILL FORTUNE-500 EMAIL SENDER")
+    logger.info("VOXMILL EXECUTIVE EMAIL SENDER")
     logger.info("=" * 70)
     
     try:
@@ -177,7 +243,7 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         
         logger.info("✅ HTML created")
         
-        # Step 5: Attach logo as inline image
+        # Step 5: Attach logo
         logger.info("Step 5/6: Attaching inline logo...")
         with open(logo_path, 'rb') as f:
             logo_img = MIMEImage(f.read())
@@ -232,9 +298,9 @@ def send_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_
 def main():
     """CLI"""
     if len(sys.argv) < 4:
-        print("Usage: python VOXMILL_email_sender.py <email> <name> <area> [city] [pdf] [logo]")
+        print("Usage: python VOXMILL_FINAL_email_sender.py <email> <name> <area> [city] [pdf] [logo]")
         print("\nExample:")
-        print("  python VOXMILL_email_sender.py john@example.com 'John Smith' Mayfair London")
+        print("  python VOXMILL_FINAL_email_sender.py john@example.com 'John Smith' Mayfair London")
         sys.exit(1)
     
     recipient_email = sys.argv[1]
