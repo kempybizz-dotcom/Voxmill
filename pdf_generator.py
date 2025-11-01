@@ -49,6 +49,11 @@ class VoxmillCanvas(canvas.Canvas):
     def save(self):
         page_count = len(self.pages)
         for i, page in enumerate(self.pages):
+            # Draw black background FIRST
+            self.setFillColor(BG_BLACK)
+            self.rect(0, 0, 8.5*inch, 11*inch, fill=1, stroke=0)
+            
+            # Then restore page content and draw template
             self.__dict__.update(page)
             self.draw_template(i + 1, page_count)
             canvas.Canvas.showPage(self)
@@ -56,10 +61,6 @@ class VoxmillCanvas(canvas.Canvas):
         
     def draw_template(self, page_num, page_count):
         """Draw header and footer"""
-        
-        # Black background
-        self.setFillColor(BG_BLACK)
-        self.rect(0, 0, 8.5*inch, 11*inch, fill=1, stroke=0)
         
         # Top gold line
         self.setStrokeColor(GOLD)
