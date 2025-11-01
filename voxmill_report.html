@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxmill Market Intelligence Report</title>
+    <link rel="stylesheet" href="voxmill_style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- PAGE 1: MARKET SNAPSHOT -->
+<div class="page page-cover">
+    <div class="gold-rule-top"></div>
+    
+    <div class="logo-container">
+        <svg class="voxmill-logo" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#CBA135" stroke-width="1.5"/>
+            <text x="40" y="47" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+            <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#B08D57;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+    
+    <div class="page-header-bronze">
+        VOXMILL MARKET INTELLIGENCE
+    </div>
+
+    <div class="cover-content">
+        <h1 class="report-title">Market Intelligence Snapshot</h1>
+        <div class="report-subtitle">
+            <span class="location-gold">{{ location }}</span> · 
+            <span class="date-text">{{ report_date }}</span> · 
+            <span class="confidential-bronze">Confidential Executive Brief</span>
+        </div>
+    </div>
+
+    <div class="panel kpi-panel">
+        <h2 class="section-title">Market Overview</h2>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Active Listings</div>
+                <div class="kpi-value">{{ kpis.total_properties }}</div>
+                <div class="kpi-change positive">+{{ kpis.property_change }}% vs. last week</div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-label">Average Price</div>
+                <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price) }}</div>
+                <div class="kpi-change {{ 'positive' if kpis.price_change > 0 else 'negative' }}">
+                    {{ "+" if kpis.price_change > 0 else "" }}{{ kpis.price_change }}% vs. last week
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-label">Price per sqft</div>
+                <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+                <div class="kpi-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+                    {{ "+" if kpis.sqft_change > 0 else "" }}{{ kpis.sqft_change }}% vs. last week
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-label">Market Velocity</div>
+                <div class="kpi-value">{{ kpis.days_on_market }} days</div>
+                <div class="kpi-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+                    {{ "+" if kpis.velocity_change > 0 else "" }}{{ kpis.velocity_change }}% vs. last week
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline SVG Chart: Price Distribution -->
+        <div class="chart-container">
+            <h3 class="chart-title">Price Distribution</h3>
+            <svg class="chart-svg" width="100%" height="200" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet">
+                <!-- Background grid -->
+                <line x1="50" y1="20" x2="50" y2="180" stroke="#2E2E2E" stroke-width="1"/>
+                <line x1="50" y1="180" x2="580" y2="180" stroke="#2E2E2E" stroke-width="1"/>
+                
+                <!-- Bars -->
+                {% for bar in chart_data.price_distribution %}
+                <rect x="{{ 70 + loop.index0 * 100 }}" 
+                      y="{{ 180 - bar.height }}" 
+                      width="70" 
+                      height="{{ bar.height }}" 
+                      fill="url(#barGradient)" 
+                      stroke="#CBA135" 
+                      stroke-width="1"/>
+                <text x="{{ 105 + loop.index0 * 100 }}" 
+                      y="{{ 175 - bar.height }}" 
+                      font-family="IBM Plex Mono" 
+                      font-size="11" 
+                      fill="#CBA135" 
+                      text-anchor="middle">{{ bar.count }}</text>
+                <text x="{{ 105 + loop.index0 * 100 }}" 
+                      y="195" 
+                      font-family="Inter" 
+                      font-size="9" 
+                      fill="#AFAFAF" 
+                      text-anchor="middle">{{ bar.label }}</text>
+                {% endfor %}
+                
+                <defs>
+                    <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#CBA135;stop-opacity:0.8" />
+                        <stop offset="100%" style="stop-color:#B08D57;stop-opacity:0.4" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <span class="footer-text">Voxmill Automations — Confidential | 2025</span>
+        <span class="page-number">1</span>
+    </div>
+</div>
+
+<!-- PAGE 2: PERFORMANCE ANALYSIS -->
+<div class="page">
+    <div class="page-header">
+        <div class="header-title">Performance Analysis</div>
+        <div class="header-subtitle">{{ location }} · {{ report_date }}</div>
+    </div>
+
+    <div class="two-column-layout">
+        <div class="panel chart-panel">
+            <h3 class="chart-title">Price Range Distribution</h3>
+            <svg class="chart-svg" width="100%" height="240" viewBox="0 0 300 240" preserveAspectRatio="xMidYMid meet">
+                <!-- Horizontal bars -->
+                {% for item in chart_data.price_ranges %}
+                <text x="10" y="{{ 30 + loop.index0 * 40 }}" font-family="Inter" font-size="10" fill="#EAEAEA">{{ item.range }}</text>
+                <rect x="120" 
+                      y="{{ 18 + loop.index0 * 40 }}" 
+                      width="{{ item.percentage * 1.5 }}" 
+                      height="20" 
+                      fill="url(#horizontalGradient)" 
+                      stroke="#B08D57" 
+                      stroke-width="1"/>
+                <text x="{{ 125 + item.percentage * 1.5 }}" 
+                      y="{{ 32 + loop.index0 * 40 }}" 
+                      font-family="IBM Plex Mono" 
+                      font-size="9" 
+                      fill="#CBA135">{{ item.percentage }}%</text>
+                {% endfor %}
+                
+                <defs>
+                    <linearGradient id="horizontalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#B08D57;stop-opacity:0.6" />
+                        <stop offset="100%" style="stop-color:#CBA135;stop-opacity:0.9" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="panel chart-panel">
+            <h3 class="chart-title">Weekly Trend: £/sqft</h3>
+            <svg class="chart-svg" width="100%" height="240" viewBox="0 0 300 240" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid lines -->
+                {% for i in range(5) %}
+                <line x1="30" y1="{{ 40 + i * 40 }}" x2="280" y2="{{ 40 + i * 40 }}" stroke="#2E2E2E" stroke-width="0.5"/>
+                {% endfor %}
+                
+                <!-- Trend line -->
+                <polyline 
+                    points="{% for point in chart_data.weekly_trend %}{{ 30 + loop.index0 * 50 }},{{ 220 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
+                    fill="none" 
+                    stroke="#CBA135" 
+                    stroke-width="2.5"/>
+                
+                <!-- Data points -->
+                {% for point in chart_data.weekly_trend %}
+                <circle cx="{{ 30 + loop.index0 * 50 }}" 
+                        cy="{{ 220 - point.value }}" 
+                        r="4" 
+                        fill="#CBA135" 
+                        stroke="#0C0C0C" 
+                        stroke-width="2"/>
+                <text x="{{ 30 + loop.index0 * 50 }}" 
+                      y="235" 
+                      font-family="Inter" 
+                      font-size="8" 
+                      fill="#AFAFAF" 
+                      text-anchor="middle">{{ point.label }}</text>
+                {% endfor %}
+            </svg>
+        </div>
+    </div>
+
+    <div class="insight-cards">
+        <div class="insight-card">
+            <div class="insight-icon">📈</div>
+            <div class="insight-title">Market Momentum</div>
+            <div class="insight-text">{{ insights.momentum }}</div>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-icon">🎯</div>
+            <div class="insight-title">Price Positioning</div>
+            <div class="insight-text">{{ insights.positioning }}</div>
+        </div>
+
+        <div class="insight-card">
+            <div class="insight-icon">⚡</div>
+            <div class="insight-title">Velocity Signal</div>
+            <div class="insight-text">{{ insights.velocity }}</div>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <span class="footer-text">Voxmill Automations — Confidential | 2025</span>
+        <span class="page-number">2</span>
+    </div>
+</div>
+
+<!-- PAGE 3: COMPETITOR LANDSCAPE -->
+<div class="page">
+    <div class="page-header">
+        <div class="header-title">Competitor Landscape</div>
+        <div class="header-subtitle">{{ location }} · {{ report_date }}</div>
+    </div>
+
+    <div class="two-column-layout">
+        <div class="panel chart-panel">
+            <h3 class="chart-title">Agency Market Share</h3>
+            <svg class="chart-svg" width="100%" height="280" viewBox="0 0 300 280" preserveAspectRat io="xMidYMid meet">
+                <!-- Pie chart - simplified representation using circles instead of paths -->
+                <circle cx="150" cy="140" r="90" fill="none" stroke="#2E2E2E" stroke-width="1"/>
+                
+                <!-- Segments as positioned circles (simplified visualization) -->
+                {% for segment in chart_data.market_share %}
+                <circle 
+                    cx="{{ 150 + (60 * loop.index0 / (chart_data.market_share|length)) }}" 
+                    cy="{{ 140 - (30 if loop.index0 % 2 == 0 else -30) }}" 
+                    r="{{ 15 + (segment.percentage / 5) }}" 
+                    fill="{{ segment.color }}" 
+                    stroke="#171717" 
+                    stroke-width="2" 
+                    opacity="0.7"/>
+                {% endfor %}
+                
+                <!-- Center circle -->
+                <circle cx="150" cy="140" r="50" fill="#0C0C0C" stroke="#CBA135" stroke-width="1.5"/>
+                <text x="150" y="145" font-family="Playfair Display" font-size="18" font-weight="600" fill="#CBA135" text-anchor="middle">{{ chart_data.market_share | length }}</text>
+                <text x="150" y="160" font-family="Inter" font-size="9" fill="#AFAFAF" text-anchor="middle">Agencies</text>
+            </svg>
+            
+            <!-- Legend -->
+            <div class="legend">
+                {% for agency in chart_data.market_share %}
+                <div class="legend-item">
+                    <span class="legend-color" style="background: {{ agency.color }};"></span>
+                    <span class="legend-label">{{ agency.name }}</span>
+                    <span class="legend-value">{{ agency.percentage }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel chart-panel">
+            <h3 class="chart-title">Competitor Inventory</h3>
+            <svg class="chart-svg" width="100%" height="280" viewBox="0 0 300 280" preserveAspectRatio="xMidYMid meet">
+                <!-- Horizontal bars for competitors -->
+                {% for competitor in chart_data.competitor_inventory %}
+                <text x="10" y="{{ 30 + loop.index0 * 45 }}" font-family="Inter" font-size="10" fill="#EAEAEA">{{ competitor.name }}</text>
+                <rect x="120" 
+                      y="{{ 18 + loop.index0 * 45 }}" 
+                      width="{{ competitor.listings * 0.8 }}" 
+                      height="22" 
+                      fill="url(#competitorGradient)" 
+                      stroke="#B08D57" 
+                      stroke-width="1"/>
+                <text x="{{ 128 + competitor.listings * 0.8 }}" 
+                      y="{{ 34 + loop.index0 * 45 }}" 
+                      font-family="IBM Plex Mono" 
+                      font-size="10" 
+                      fill="#CBA135">{{ competitor.listings }}</text>
+                {% endfor %}
+                
+                <defs>
+                    <linearGradient id="competitorGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#B08D57;stop-opacity:0.5" />
+                        <stop offset="100%" style="stop-color:#CBA135;stop-opacity:0.85" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <div class="panel insight-panel">
+        <h3 class="section-title-small">Competitive Intelligence</h3>
+        <p class="body-text">{{ competitive_analysis.summary }}</p>
+        <ul class="bullet-list">
+            {% for insight in competitive_analysis.key_insights %}
+            <li>{{ insight }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="page-footer">
+        <span class="footer-text">Voxmill Automations — Confidential | 2025</span>
+        <span class="page-number">3</span>
+    </div>
+</div>
+
+<!-- PAGE 4: STRATEGIC INTELLIGENCE -->
+<div class="page">
+    <div class="page-header">
+        <div class="header-title">Strategic Intelligence</div>
+        <div class="header-subtitle">{{ location }} · {{ report_date }}</div>
+    </div>
+
+    <div class="watermark">VOXMILL MARKET INTELLIGENCE</div>
+
+    <div class="panel intelligence-panel">
+        <h3 class="section-title-small">Market Dynamics</h3>
+        <div class="bronze-divider"></div>
+        <p class="body-text">{{ strategic_intelligence.market_dynamics }}</p>
+    </div>
+
+    <div class="panel intelligence-panel">
+        <h3 class="section-title-small">Pricing Strategy Implications</h3>
+        <div class="bronze-divider"></div>
+        <p class="body-text">{{ strategic_intelligence.pricing_strategy }}</p>
+    </div>
+
+    <div class="panel intelligence-panel">
+        <h3 class="section-title-small">Opportunity Assessment</h3>
+        <div class="bronze-divider"></div>
+        <p class="body-text">{{ strategic_intelligence.opportunity_assessment }}</p>
+    </div>
+
+    <div class="panel recommendation-panel">
+        <div class="recommendation-header">
+            <span class="recommendation-icon">💡</span>
+            <span class="recommendation-title">Executive Recommendation</span>
+        </div>
+        <p class="recommendation-text">{{ strategic_intelligence.recommendation }}</p>
+    </div>
+
+    <div class="page-footer">
+        <span class="footer-text">Voxmill Automations — Confidential | 2025</span>
+        <span class="page-number">4</span>
+    </div>
+</div>
+
+<!-- PAGE 5: TOP OPPORTUNITIES -->
+<div class="page">
+    <div class="page-header">
+        <div class="header-title">Top Market Opportunities</div>
+        <div class="header-subtitle">{{ location }} · {{ report_date }}</div>
+    </div>
+
+    <table class="table-lux">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>£/sqft</th>
+                <th>Days Listed</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for opportunity in top_opportunities %}
+            <tr>
+                <td class="property-address">{{ opportunity.address }}</td>
+                <td>{{ opportunity.property_type }}</td>
+                <td class="align-right">{{ opportunity.size }} sqft</td>
+                <td class="align-right">£{{ "{:,.0f}".format(opportunity.price) }}</td>
+                <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft) }}</td>
+                <td class="align-center">{{ opportunity.days_listed }}</td>
+                <td class="align-center">
+                    <span class="score-badge score-{{ opportunity.score_class }}">{{ opportunity.score }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="panel scoring-methodology">
+        <h3 class="section-title-small">Scoring Methodology</h3>
+        <div class="methodology-grid">
+            <div class="methodology-item">
+                <span class="methodology-label">Price Competitiveness</span>
+                <span class="methodology-weight">35%</span>
+            </div>
+            <div class="methodology-item">
+                <span class="methodology-label">Market Velocity</span>
+                <span class="methodology-weight">25%</span>
+            </div>
+            <div class="methodology-item">
+                <span class="methodology-label">Location Premium</span>
+                <span class="methodology-weight">20%</span>
+            </div>
+            <div class="methodology-item">
+                <span class="methodology-label">Property Condition</span>
+                <span class="methodology-weight">20%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="final-footer">
+        <div class="footer-logo">
+            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGoldGradient)" stroke="#CBA135" stroke-width="1.5"/>
+                <text x="40" y="47" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs>
+                    <linearGradient id="footerGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#B08D57;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <div class="footer-company">
+            <div class="footer-company-name">Voxmill Automations</div>
+            <div class="footer-tagline">Market Intelligence for Executive Decision-Making</div>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <span class="footer-text">Voxmill Automations — Confidential | 2025</span>
+        <span class="page-number">5</span>
+    </div>
+</div>
+
+</body>
+</html>
