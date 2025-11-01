@@ -1,0 +1,634 @@
+/* ==========================================================================
+   VOXMILL MARKET INTELLIGENCE — CSS DESIGN SYSTEM
+   Fortune-500 Executive Report Styling
+   ========================================================================== */
+
+/* === CSS VARIABLES === */
+:root {
+    --vm-black: #0C0C0C;
+    --vm-charcoal: #121212;
+    --vm-panel: #171717;
+    --vm-bronze: #B08D57;
+    --vm-gold: #CBA135;
+    --vm-text: #EAEAEA;
+    --vm-muted: #AFAFAF;
+    --vm-grid: #2E2E2E;
+    
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+}
+
+/* === PAGE SETUP === */
+@page {
+    size: A4 portrait;
+    margin: 1cm;
+    background: #121212;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--vm-text);
+    background: linear-gradient(180deg, #0C0C0C 0%, #121212 100%);
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+/* === PAGE STRUCTURE === */
+.page {
+    position: relative;
+    width: 100%;
+    min-height: 277mm;
+    page-break-after: always;
+    padding: 20px;
+    background: #121212;
+}
+
+.page:last-child {
+    page-break-after: auto;
+}
+
+/* === COVER PAGE === */
+.page-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #0C0C0C 0%, #121212 100%);
+}
+
+.gold-rule-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--vm-bronze) 0%, var(--vm-gold) 50%, var(--vm-bronze) 100%);
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.voxmill-logo {
+    filter: drop-shadow(0 4px 12px rgba(203, 161, 53, 0.3));
+}
+
+.page-header-bronze {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vm-bronze);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.cover-content {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.report-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: #EAEAEA;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+.report-subtitle {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--vm-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.location-gold {
+    color: var(--vm-gold);
+    font-weight: 600;
+}
+
+.date-text {
+    color: var(--vm-muted);
+}
+
+.confidential-bronze {
+    color: var(--vm-bronze);
+}
+
+/* === PANELS === */
+.panel {
+    background: #0C0C0C;
+    border: 1px solid rgba(203, 161, 53, 0.3);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: inset 0 0 20px #0A0A0A;
+}
+
+.kpi-panel {
+    margin-top: 30px;
+}
+
+/* === KPI GRID === */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.kpi-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid var(--vm-grid);
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.kpi-label {
+    font-family: var(--font-body);
+    font-size: 8pt;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.kpi-value {
+    font-family: var(--font-display);
+    font-size: 24pt;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 5px;
+}
+
+.kpi-change {
+    font-family: var(--font-mono);
+    font-size: 8pt;
+    font-weight: 500;
+}
+
+.kpi-change.positive {
+    color: #4CAF50;
+}
+
+.kpi-change.negative {
+    color: #F44336;
+}
+
+/* === SECTION TITLES === */
+.section-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--vm-bronze);
+    margin-bottom: 20px;
+    border-bottom: 0.5px solid rgba(203, 161, 53, 0.6);
+    padding-bottom: 10px;
+    letter-spacing: 0.06em;
+}
+
+.section-title-small {
+    font-family: var(--font-display);
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+}
+
+/* === PAGE HEADERS === */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--vm-grid);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.header-title {
+    font-family: var(--font-display);
+    font-size: 20pt;
+    font-weight: 600;
+    color: var(--vm-gold);
+}
+
+.header-subtitle {
+    font-family: var(--font-body);
+    font-size: 9pt;
+    color: var(--vm-muted);
+    letter-spacing: 0.05em;
+}
+
+/* === CHARTS === */
+.chart-container {
+    margin-top: 20px;
+}
+
+.chart-title {
+    font-family: var(--font-body);
+    font-size: 11pt;
+    font-weight: 600;
+    color: var(--vm-text);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.chart-svg {
+    display: block;
+    margin: 0 auto;
+}
+
+.chart-panel {
+    background: rgba(23, 23, 23, 0.6);
+    border: 1px solid rgba(176, 141, 87, 0.2);
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 0 20px rgba(203, 161, 53, 0.05);
+}
+
+/* === TWO COLUMN LAYOUT === */
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* === INSIGHT CARDS === */
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.insight-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid var(--vm-grid);
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.insight-icon {
+    font-size: 24pt;
+    margin-bottom: 8px;
+}
+
+.insight-title {
+    font-family: var(--font-body);
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--vm-bronze);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.insight-text {
+    font-family: var(--font-body);
+    font-size: 9pt;
+    color: var(--vm-text);
+    line-height: 1.5;
+}
+
+/* === LEGEND === */
+.legend {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--vm-grid);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 9pt;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 8px;
+    border: 1px solid rgba(234, 234, 234, 0.2);
+}
+
+.legend-label {
+    flex: 1;
+    color: var(--vm-text);
+}
+
+.legend-value {
+    font-family: var(--font-mono);
+    color: var(--vm-gold);
+    font-weight: 500;
+}
+
+/* === STRATEGIC INTELLIGENCE PAGE === */
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-family: var(--font-display);
+    font-size: 48pt;
+    font-weight: 700;
+    color: rgba(203, 161, 53, 0.04);
+    letter-spacing: 0.1em;
+    z-index: 0;
+    white-space: nowrap;
+}
+
+.intelligence-panel {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+}
+
+.bronze-divider {
+    height: 2px;
+    background: linear-gradient(90deg, var(--vm-bronze) 0%, transparent 100%);
+    margin-bottom: 15px;
+}
+
+.body-text {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--vm-text);
+    line-height: 1.6;
+    text-align: justify;
+}
+
+.bullet-list {
+    list-style: none;
+    margin-top: 12px;
+    padding-left: 0;
+}
+
+.bullet-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 8px;
+    font-size: 9pt;
+    color: var(--vm-text);
+}
+
+.bullet-list li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: bold;
+}
+
+.insight-panel {
+    background: rgba(23, 23, 23, 0.8);
+    border-left: 3px solid var(--vm-bronze);
+}
+
+/* === RECOMMENDATION PANEL === */
+.recommendation-panel {
+    background: linear-gradient(135deg, rgba(203, 161, 53, 0.1) 0%, rgba(176, 141, 87, 0.05) 100%);
+    border: 1px solid var(--vm-bronze);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.recommendation-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.recommendation-icon {
+    font-size: 20pt;
+    margin-right: 10px;
+}
+
+.recommendation-title {
+    font-family: var(--font-display);
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--vm-gold);
+}
+
+.recommendation-text {
+    font-family: var(--font-body);
+    font-size: 10pt;
+    color: var(--vm-text);
+    line-height: 1.7;
+}
+
+/* === LUXURY TABLE === */
+.table-lux {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: rgba(18, 18, 18, 0.6);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-lux thead {
+    background: linear-gradient(90deg, var(--vm-bronze) 0%, var(--vm-gold) 100%);
+}
+
+.table-lux th {
+    font-family: var(--font-body);
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--vm-black);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 10px;
+    text-align: left;
+}
+
+.table-lux tbody tr {
+    border-bottom: 1px solid var(--vm-grid);
+}
+
+.table-lux tbody tr:nth-child(even) {
+    background: rgba(18, 18, 18, 0.4);
+}
+
+.table-lux tbody tr:hover {
+    background: rgba(203, 161, 53, 0.1);
+}
+
+.table-lux td {
+    font-family: var(--font-body);
+    font-size: 8pt;
+    color: var(--vm-text);
+    padding: 10px;
+}
+
+.property-address {
+    font-weight: 500;
+    color: var(--vm-gold);
+}
+
+.align-right {
+    text-align: right;
+    font-family: var(--font-mono);
+}
+
+.align-center {
+    text-align: center;
+}
+
+.score-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 8pt;
+    font-weight: 600;
+}
+
+.score-high {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.score-medium {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 1px solid #FFC107;
+}
+
+.score-low {
+    background: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+    border: 1px solid #F44336;
+}
+
+/* === SCORING METHODOLOGY === */
+.scoring-methodology {
+    background: rgba(23, 23, 23, 0.8);
+    margin-top: 20px;
+}
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.methodology-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(18, 18, 18, 0.6);
+    border-radius: 4px;
+    border-left: 2px solid var(--vm-bronze);
+}
+
+.methodology-label {
+    font-size: 9pt;
+    color: var(--vm-text);
+}
+
+.methodology-weight {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--vm-gold);
+}
+
+/* === FINAL FOOTER === */
+.final-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid var(--vm-grid);
+}
+
+.footer-logo {
+    margin-right: 15px;
+}
+
+.footer-company-name {
+    font-family: var(--font-display);
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 4px;
+}
+
+.footer-tagline {
+    font-family: var(--font-body);
+    font-size: 8pt;
+    color: var(--vm-muted);
+    letter-spacing: 0.05em;
+}
+
+/* === PAGE FOOTER === */
+.page-footer {
+    position: absolute;
+    bottom: 15px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--vm-grid);
+}
+
+.footer-text {
+    font-family: var(--font-body);
+    font-size: 8pt;
+    color: var(--vm-muted);
+    letter-spacing: 0.05em;
+}
+
+.page-number {
+    font-family: var(--font-mono);
+    font-size: 10pt;
+    font-weight: 500;
+    color: var(--vm-bronze);
+    background: rgba(176, 141, 87, 0.1);
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+/* === PRINT OPTIMIZATIONS === */
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .page {
+        page-break-inside: avoid;
+    }
+    
+    .panel {
+        page-break-inside: avoid;
+    }
+}
