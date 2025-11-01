@@ -64,7 +64,10 @@ def create_voxmill_email(recipient_name, area, city):
 <!-- HEADER -->
 <tr>
 <td style="background-color:#0B0B0B;padding:36px 0 28px;text-align:center;">
-<img src="cid:voxmill_logo" width="56" height="56" alt="Voxmill" style="display:block;margin:0 auto 12px;">
+<!-- Logo or V text fallback -->
+<div style="width:56px;height:56px;margin:0 auto 12px;background:linear-gradient(135deg,#B08D57,#CBA135);transform:rotate(45deg);position:relative;">
+<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-family:'Times New Roman',Times,serif;font-size:28px;font-weight:700;color:#0B0B0B;">V</div>
+</div>
 <div style="font-family:'Times New Roman',Times,serif;font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">
 VOXMILL MARKET INTELLIGENCE
 </div>
@@ -224,10 +227,12 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         if logo_path is None:
             logo_path = DEFAULT_LOGO_PATH
         
-        if not Path(logo_path).exists():
-            raise FileNotFoundError(f"Logo not found: {logo_path}")
-        
-        logger.info(f"✅ Logo: {logo_path}")
+        logo_exists = Path(logo_path).exists()
+        if logo_exists:
+            logger.info(f"✅ Logo: {logo_path}")
+        else:
+            logger.warning(f"⚠️  Logo not found at {logo_path}, using text fallback")
+            logo_path = None
         
         # Step 4: Build email
         logger.info("Step 4/6: Building email message...")
@@ -243,15 +248,17 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         
         logger.info("✅ HTML created")
         
-        # Step 5: Attach logo
-        logger.info("Step 5/6: Attaching inline logo...")
-        with open(logo_path, 'rb') as f:
-            logo_img = MIMEImage(f.read())
-            logo_img.add_header('Content-ID', '<voxmill_logo>')
-            logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
-            msg.attach(logo_img)
-        
-        logger.info("✅ Logo embedded")
+        # Step 5: Attach logo (if available)
+        if logo_path:
+            logger.info("Step 5/6: Attaching inline logo...")
+            with open(logo_path, 'rb') as f:
+                logo_img = MIMEImage(f.read())
+                logo_img.add_header('Content-ID', '<voxmill_logo>')
+                logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
+                msg.attach(logo_img)
+            logger.info("✅ Logo embedded")
+        else:
+            logger.info("Step 5/6: Skipping logo (using text fallback)")
         
         # Step 6: Attach PDF
         logger.info("Step 6/6: Attaching PDF...")
