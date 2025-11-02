@@ -32,7 +32,7 @@ class VoxmillPDFGenerator:
     
     def __init__(
         self,
-        template_dir: str = "/app",
+        template_dir: str = "/opt/render/project/src",
         output_dir: str = "/tmp",
         data_path: str = "/tmp/voxmill_analysis.json"
     ):
@@ -527,7 +527,7 @@ def main():
     Main execution function for standalone use.
     """
     # Check for custom paths in environment variables
-    template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/app')
+    template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/opt/render/project/src')
     output_dir = os.getenv('VOXMILL_OUTPUT_DIR', '/tmp')
     data_path = os.getenv('VOXMILL_DATA_PATH', '/tmp/voxmill_analysis.json')
     
