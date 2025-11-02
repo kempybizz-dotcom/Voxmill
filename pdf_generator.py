@@ -336,7 +336,7 @@ class VoxmillPDFGenerator:
     def generate_pdf(
         self,
         html_content: str,
-        output_filename: str = "Voxmill_Executive_Intelligence.pdf"
+        output_filename: str = "Voxmill_Elite_Intelligence.pdf"
     ) -> Path:
         """
         Convert HTML to PDF using WeasyPrint.
@@ -385,7 +385,7 @@ class VoxmillPDFGenerator:
     
     def generate(
         self,
-        output_filename: str = "Voxmill_Executive_Intelligence.pdf"
+        output_filename: str = "Voxmill_Elite_Intelligence.pdf"
     ) -> Path:
         """
         Complete pipeline: load data → render template → generate PDF.
