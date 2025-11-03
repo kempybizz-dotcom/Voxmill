@@ -42,26 +42,29 @@ def collect_rightmove_data(area, max_properties=40):
         # Try multiple search strategies
         search_configs = [
             params = {
-    "locationIdentifier": "REGION^87523",
-    "minPrice": "1000000",
-    "radius": "1.0",
-    "sortType": "highest_price",
-    "maxResults": str(min(max_properties, 100))
-},
-        params = {
-    "locationIdentifier": "REGION^87523",
-    "minPrice": "1000000",
-    "radius": "5.0",
-    "sortType": "highest_price",
-    "maxResults": str(min(max_properties, 100))
-},
-         params = {
-    "locationIdentifier": "REGION^87523",
-    "minPrice": "1000000",
-    "radius": "8.0",
-    "sortType": "highest_price",
-    "maxResults": str(min(max_properties, 100))
-}
+                "locationIdentifier": "REGION^87523",
+                "radius": "0.0",
+                "sort_by": "highest_price",
+                "minprice": "1000000",
+                "min_price": "1000000",
+                "max_results": str(min(max_properties, 100))
+            },
+            {
+                "locationIdentifier": "REGION^87523", London",
+                "radius": "1.0",
+                "sort_by": "highest_price",
+                "minPrice": "500000",
+                "min_price": "500000",
+                "max_results": str(min(max_properties, 100))
+            },
+            {
+                "locationIdentifier": "REGION^87523", "London",
+                "radius": "5.0",
+                "sort_by": "highest_price",
+                "minPrice": "1000000",
+                "min_price": "1000000",
+                "max_results": str(min(max_properties, 100))
+            }
         ]
         
         for i, params in enumerate(search_configs, 1):
