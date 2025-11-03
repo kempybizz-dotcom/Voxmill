@@ -42,22 +42,22 @@ def collect_rightmove_data(area, max_properties=40):
         # Try multiple search strategies
         search_configs = [
             {
-                "identifier": area,
-                "search_radius": "0.0",
+                "searchLocation": area,
+                "radius": "0.0",
                 "sort_by": "highest_price",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "identifier": f"{area}, London",
-                "search_radius": "1.0",
+                "searchLocation": f"{area}, London",
+                "radius": "1.0",
                 "sort_by": "highest_price",
                 "min_price": "500000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "identifier": "London",
-                "search_radius": "5.0",
+                "searchLocation": "London",
+                "radius": "5.0",
                 "sort_by": "highest_price",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
@@ -66,7 +66,7 @@ def collect_rightmove_data(area, max_properties=40):
         
         for i, params in enumerate(search_configs, 1):
             print(f"   → Attempt {i}/3: Querying Rightmove API...")
-            print(f"      Search: {params['identifier']}, Radius: {params['search_radius']}, Min: £{params['min_price']}")
+            print(f"      Search: {params['searchLocation']}, Radius: {params['radius']}, Min: £{params['minPrice']}")
             
             try:
                 response = requests.get(url, headers=headers, params=params, timeout=30)
