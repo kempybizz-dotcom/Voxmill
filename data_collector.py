@@ -45,21 +45,21 @@ def collect_rightmove_data(area, max_properties=40):
                 "searchLocation": area,
                 "radius": "0.0",
                 "sort_by": "highest_price",
-                "min_price": "1000000",
+                "minprice": "1000000",
                 "max_results": str(min(max_properties, 100))
             },
             {
                 "searchLocation": f"{area}, London",
                 "radius": "1.0",
                 "sort_by": "highest_price",
-                "min_price": "500000",
+                "minPrice": "500000",
                 "max_results": str(min(max_properties, 100))
             },
             {
                 "searchLocation": "London",
                 "radius": "5.0",
                 "sort_by": "highest_price",
-                "min_price": "1000000",
+                "minPrice": "1000000",
                 "max_results": str(min(max_properties, 100))
             }
         ]
