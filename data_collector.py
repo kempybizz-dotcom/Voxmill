@@ -41,27 +41,26 @@ def collect_rightmove_data(area, max_properties=40):
         
         # Try multiple search strategies
         search_configs = [
-            params = {
+            {  
                 "locationIdentifier": "REGION^87523",
                 "radius": "0.0",
                 "sort_by": "highest_price",
-                "minprice": "1000000",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "locationIdentifier": "REGION^87523", London",
+                "locationIdentifier": "REGION^87523",
+                "city": "London",
                 "radius": "1.0",
                 "sort_by": "highest_price",
-                "minPrice": "500000",
                 "min_price": "500000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "locationIdentifier": "REGION^87523", "London",
+                "locationIdentifier": "REGION^87523", 
+                "city": "London",
                 "radius": "5.0",
                 "sort_by": "highest_price",
-                "minPrice": "1000000",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
             }
@@ -69,7 +68,7 @@ def collect_rightmove_data(area, max_properties=40):
         
         for i, params in enumerate(search_configs, 1):
             print(f"   → Attempt {i}/3: Querying Rightmove API...")
-            print(f"      Search: {params['searchLocation']}, Radius: {params['radius']}, Min: £{params['min_price']}")
+            print(f"      Search: {params['locationIdentifier']}, Radius: {params['radius']}, Min: £{params['min_price']}")
             
             try:
                 response = requests.get(url, headers=headers, params=params, timeout=30)
