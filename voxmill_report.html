@@ -12,21 +12,41 @@
 <body>
 
 <!-- ============================================
-     SLIDE 1: COVER
+     SLIDE 1: COVER WITH LUXURY PATTERN
      ============================================ -->
-<div class="slide slide-cover">
-    <div class="logo-container">
-        <svg class="voxmill-logo" width="60" height="60" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#CBA135" stroke-width="2"/>
-            <text x="40" y="50" font-family="Playfair Display" font-size="36" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+<div class="slide slide-cover" style="background: linear-gradient(135deg, #0C0C0C 0%, #111111 100%); position: relative; overflow: hidden;">
+    <!-- LUXURY BACKGROUND PATTERN -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.03; z-index: 0;">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
-                </linearGradient>
+                <pattern id="luxuryPattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+                    <path d="M60,10 L70,30 L60,50 L50,30 Z" fill="#CBA135" opacity="0.4"/>
+                    <circle cx="60" cy="60" r="3" fill="#BA955F" opacity="0.3"/>
+                    <rect x="20" y="20" width="2" height="80" fill="#CBA135" opacity="0.2"/>
+                    <rect x="20" y="20" width="80" height="2" fill="#CBA135" opacity="0.2"/>
+                </pattern>
             </defs>
+            <rect width="100%" height="100%" fill="url(#luxuryPattern)"/>
         </svg>
     </div>
+    
+    <!-- CONTENT (z-index above pattern) -->
+    <div style="position: relative; z-index: 1;">
+        <div class="logo-container">
+            <!-- Use actual voxmill_logo.png from repo -->
+            <img src="voxmill_logo.png" alt="Voxmill" style="width: 80px; height: 80px; filter: drop-shadow(0 4px 20px rgba(203, 161, 53, 0.6));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <!-- Fallback if logo not found -->
+            <svg class="voxmill-logo" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#CBA135" stroke-width="2"/>
+                <text x="40" y="50" font-family="Playfair Display" font-size="36" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs>
+                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
     
     <div class="cover-label">VOXMILL MARKET INTELLIGENCE</div>
     
@@ -34,6 +54,7 @@
     
     <div class="cover-subtitle">
         <span class="location">{{ location }}</span> · {{ report_date }} · Confidential Executive Brief
+    </div>
     </div>
     
     <div class="slide-footer">
@@ -54,9 +75,9 @@
         </div>
     </div>
     
-    <div class="slide-content">
+    <div class="slide-content" style="padding-top: 40px;">
         <!-- 2×2 KPI GRID -->
-        <div class="kpi-grid">
+        <div class="kpi-grid" style="margin-top: 20px;">
             <div class="kpi-card">
                 <div class="kpi-label">Active Listings</div>
                 <div class="kpi-value">{{ kpis.total_properties }}</div>
@@ -94,27 +115,43 @@
             <div class="chart-container">
                 <h3 class="chart-title">Price Distribution</h3>
                 <svg width="100%" height="220" viewBox="0 0 1700 220" preserveAspectRatio="xMidYMid meet">
-                    <!-- Grid -->
-                    <line x1="80" y1="40" x2="80" y2="180" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                    <line x1="80" y1="180" x2="1620" y2="180" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                    <!-- Grid lines -->
+                    <line x1="80" y1="40" x2="80" y2="180" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+                    <line x1="80" y1="180" x2="1620" y2="180" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+                    {% for i in range(1, 5) %}
+                    <line x1="80" y1="{{ 40 + i * 35 }}" x2="1620" y2="{{ 40 + i * 35 }}" stroke="rgba(255,255,255,0.03)" stroke-width="0.8"/>
+                    {% endfor %}
                     
-                    <!-- Bars -->
+                    <!-- Bars with glow effect -->
                     {% for bar in chart_data.price_distribution %}
-                    <rect x="{{ 180 + loop.index0 * 350 }}" 
+                    <defs>
+                        <filter id="barGlow{{ loop.index0 }}">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <rect x="{{ 200 + loop.index0 * 350 }}" 
                           y="{{ 180 - (bar.height * 0.9) }}" 
-                          width="220" 
+                          width="200" 
                           height="{{ bar.height * 0.9 }}" 
                           fill="url(#barGradient)" 
                           stroke="#CBA135" 
-                          stroke-width="2"/>
-                    <text x="{{ 290 + loop.index0 * 350 }}" 
+                          stroke-width="2"
+                          filter="url(#barGlow{{ loop.index0 }})"
+                          rx="4"/>
+                    <!-- Value on bar -->
+                    <text x="{{ 300 + loop.index0 * 350 }}" 
                           y="{{ 165 - (bar.height * 0.9) }}" 
                           font-family="Inter" 
-                          font-size="20" 
-                          font-weight="600"
+                          font-size="22" 
+                          font-weight="700"
                           fill="#CBA135" 
                           text-anchor="middle">{{ bar.count }}</text>
-                    <text x="{{ 290 + loop.index0 * 350 }}" 
+                    <!-- Label below -->
+                    <text x="{{ 300 + loop.index0 * 350 }}" 
                           y="205" 
                           font-family="Inter" 
                           font-size="16" 
@@ -125,7 +162,8 @@
                     <defs>
                         <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" style="stop-color:#CBA135;stop-opacity:0.95" />
-                            <stop offset="100%" style="stop-color:#BA955F;stop-opacity:0.65" />
+                            <stop offset="50%" style="stop-color:#BA955F;stop-opacity:0.85" />
+                            <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.65" />
                         </linearGradient>
                     </defs>
                 </svg>
