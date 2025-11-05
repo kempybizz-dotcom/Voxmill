@@ -3,6 +3,7 @@ VOXMILL EXECUTIVE EMAIL SENDER
 ===============================
 Fortune-500 black/bronze design system
 Full functionality preserved
+UPDATED: PDF filename to match pdf_generator.py
 """
 
 import smtplib
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
-DEFAULT_PDF_PATH = "/tmp/Voxmill_Elite_Intelligence.pdf"
+DEFAULT_PDF_PATH = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"  # UPDATED: Match pdf_generator.py
 DEFAULT_LOGO_PATH = "/mnt/user-data/uploads/voxmill_logo.png"
 
 def validate_environment():
@@ -344,9 +345,9 @@ def send_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_
 def main():
     """CLI"""
     if len(sys.argv) < 4:
-        print("Usage: python VOXMILL_FINAL_email_sender.py <email> <name> <area> [city] [pdf] [logo]")
+        print("Usage: python email_sender.py <email> <name> <area> [city] [pdf] [logo]")
         print("\nExample:")
-        print("  python VOXMILL_FINAL_email_sender.py john@example.com 'John Smith' Mayfair London")
+        print("  python email_sender.py john@example.com 'John Smith' Mayfair London")
         sys.exit(1)
     
     recipient_email = sys.argv[1]
