@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-VOXMILL MARKET INTELLIGENCE — PDF GENERATOR (REFINED)
+VOXMILL MARKET INTELLIGENCE — PDF GENERATOR (16:9 SLIDE DECK)
 Production-ready HTML/CSS to PDF converter using WeasyPrint
-Fortune-500 grade report generation system with FIXED SCORE BINDING
+Fortune-500 grade executive intelligence deck generation
 """
 
 import os
@@ -26,9 +26,8 @@ logger = logging.getLogger(__name__)
 
 class VoxmillPDFGenerator:
     """
-    Fortune-500 grade PDF generator for Voxmill Market Intelligence reports.
-    Renders HTML/CSS templates using Jinja2 and exports via WeasyPrint.
-    REFINED: Fixed score binding + visual polish
+    Fortune-500 grade PDF generator for Voxmill Executive Intelligence Decks.
+    Renders 16:9 slide format HTML/CSS templates using Jinja2 and exports via WeasyPrint.
     """
     
     def __init__(
@@ -60,7 +59,7 @@ class VoxmillPDFGenerator:
             lstrip_blocks=True
         )
         
-        logger.info(f"Initialized Voxmill PDF Generator (REFINED)")
+        logger.info(f"Initialized Voxmill PDF Generator (16:9 SLIDE DECK)")
         logger.info(f"Template directory: {self.template_dir}")
         logger.info(f"Output directory: {self.output_dir}")
     
@@ -195,7 +194,7 @@ class VoxmillPDFGenerator:
     def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Format top opportunities with scoring badges.
-        FIXED: Properly extract 'score' or 'deal_score' from JSON data.
+        Properly extracts 'score' or 'deal_score' from JSON data.
         
         Args:
             data: Raw opportunities data
@@ -212,7 +211,7 @@ class VoxmillPDFGenerator:
             return opportunities
         
         for opp in opportunities_raw[:8]:
-            # FIXED: Try multiple score field names and ensure it's an integer
+            # Try multiple score field names and ensure it's an integer
             score = 0
             if 'score' in opp:
                 score = int(opp.get('score', 0))
@@ -251,7 +250,7 @@ class VoxmillPDFGenerator:
                 'price': opp.get('price', 0),
                 'price_per_sqft': opp.get('price_per_sqft', 0),
                 'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
-                'score': score,  # FIXED: Guaranteed non-zero
+                'score': score,
                 'score_class': score_class
             })
         
@@ -373,10 +372,10 @@ class VoxmillPDFGenerator:
     def generate_pdf(
         self,
         html_content: str,
-        output_filename: str = "Voxmill_Elite_Intelligence.pdf"
+        output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf"
     ) -> Path:
         """
-        Convert HTML to PDF using WeasyPrint.
+        Convert HTML to PDF using WeasyPrint (16:9 SLIDE FORMAT).
         
         Args:
             html_content: Rendered HTML string
@@ -390,23 +389,33 @@ class VoxmillPDFGenerator:
         logger.info(f"Generating PDF: {output_path}")
         
         try:
-            # Load CSS stylesheet
+            # Load main CSS stylesheet
             css_path = self.template_dir / 'voxmill_style.css'
             
+            # CRITICAL: Set 16:9 page size (1920×1080px)
+            page_css = CSS(string='''
+                @page {
+                    size: 1920px 1080px;
+                    margin: 0;
+                }
+                body {
+                    margin: 0;
+                    padding: 0;
+                }
+            ''')
+            
+            # Build stylesheet list
             if not css_path.exists():
                 logger.warning(f"CSS file not found: {css_path}")
-                css = None
+                stylesheets = [page_css]
             else:
-                css = CSS(filename=str(css_path))
+                main_css = CSS(filename=str(css_path))
+                stylesheets = [page_css, main_css]
                 logger.info(f"Loaded CSS from {css_path}")
             
             # Generate PDF
             html = HTML(string=html_content, base_url=str(self.template_dir))
-            
-            if css:
-                html.write_pdf(str(output_path), stylesheets=[css])
-            else:
-                html.write_pdf(str(output_path))
+            html.write_pdf(str(output_path), stylesheets=stylesheets)
             
             logger.info(f"✅ PDF generated: {output_path}")
             logger.info(f"📄 File size: {output_path.stat().st_size / 1024:.2f} KB")
@@ -419,7 +428,7 @@ class VoxmillPDFGenerator:
     
     def generate(
         self,
-        output_filename: str = "Voxmill_Elite_Intelligence.pdf"
+        output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf"
     ) -> Path:
         """
         Complete pipeline: load data → render template → generate PDF.
@@ -431,7 +440,7 @@ class VoxmillPDFGenerator:
             Path to generated PDF file
         """
         logger.info("=" * 70)
-        logger.info("VOXMILL MARKET INTELLIGENCE — PDF GENERATION (REFINED)")
+        logger.info("VOXMILL EXECUTIVE INTELLIGENCE DECK — PDF GENERATION")
         logger.info("=" * 70)
         
         start_time = datetime.now()
@@ -461,7 +470,7 @@ class VoxmillPDFGenerator:
 def create_sample_data() -> Dict[str, Any]:
     """Sample data for testing."""
     return {
-        'location': 'Mayfair · London',
+        'location': 'Mayfair, London',
         'report_date': 'November 2025',
         'kpis': {
             'total_properties': 247,
@@ -495,19 +504,19 @@ def create_sample_data() -> Dict[str, Any]:
             'velocity': 'Market velocity improving with 5.3% reduction in days on market.'
         },
         'competitive_analysis': {
-            'summary': 'The Mayfair luxury property market remains highly competitive.',
+            'summary': 'The Mayfair luxury property market remains highly competitive with established agency presence and opportunities for strategic market positioning across multiple price segments.',
             'key_insights': [
-                'Knight Frank leads with 68 active listings',
-                'Top 4 agencies control 86% of market share',
-                'Average inventory per agency is 52.5 listings',
-                'Market fragmentation in "Others" category indicates opportunities'
+                'Knight Frank leads with 68 active listings, commanding 28% market share',
+                'Top 4 agencies control 86% of total market inventory',
+                'Average inventory per leading agency is 52.5 listings',
+                'Market fragmentation in "Others" category indicates opportunities for consolidation'
             ]
         },
         'strategic_intelligence': {
-            'market_dynamics': 'The Mayfair market exhibits classic ultra-prime characteristics.',
-            'pricing_strategy': 'Current pricing dynamics favor strategic positioning in £1M-£2M bracket.',
-            'opportunity_assessment': 'Three primary opportunity vectors emerge across market segments.',
-            'recommendation': 'Focus acquisition efforts on £1M-£2M segment with aggressive marketing.'
+            'market_dynamics': 'The Mayfair market exhibits classic ultra-prime characteristics with strong demand fundamentals, limited supply dynamics, and premium pricing positioning. Current market velocity of 42 days indicates balanced transaction conditions.',
+            'pricing_strategy': 'Current pricing dynamics favor strategic positioning in £1M-£2M bracket where market activity is strongest. Premium segment pricing above £2M shows resilience despite extended market velocity, indicating sustained demand from high-net-worth buyers.',
+            'opportunity_assessment': 'Three primary opportunity vectors emerge: (1) Mid-market properties £1M-£2M showing strong velocity, (2) Premium properties £2M+ with negotiation potential due to extended listings, (3) Value-positioned properties under £1M offering entry-level access to prime location.',
+            'recommendation': 'Focus acquisition efforts on £1M-£2M segment with aggressive marketing timelines within 30-45 day velocity window. Consider selective premium acquisitions above £2M where extended listing periods indicate seller flexibility. Maintain disciplined pricing aligned with £1,850/sqft market average to optimize transaction probability.'
         },
         'top_opportunities': [
             {'address': '24 Mount Street, Mayfair', 'type': 'Apartment', 'size': 1850, 'price': 2950000, 'price_per_sqft': 1595, 'days_listed': 18, 'score': 92},
