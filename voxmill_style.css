@@ -50,6 +50,22 @@ body {
         0 8px 30px rgba(0, 0, 0, 0.8);
 }
 
+/* SUBTLE LUXURY PATTERN ON ALL SLIDES */
+.slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.02;
+    z-index: 0;
+    pointer-events: none;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(203, 161, 53, 0.05) 100px, rgba(203, 161, 53, 0.05) 102px),
+        repeating-linear-gradient(-45deg, transparent, transparent 100px, rgba(186, 149, 95, 0.03) 100px, rgba(186, 149, 95, 0.03) 102px);
+}
+
 .slide:last-child {
     page-break-after: auto;
 }
@@ -113,6 +129,7 @@ body {
     right: 80px;
     bottom: 120px;
     overflow: hidden;
+    z-index: 5;
 }
 
 /* ============================================
@@ -186,7 +203,7 @@ body {
         rgba(23, 23, 23, 0.95) 100%);
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-radius: 12px;
-    padding: 40px 30px;
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -199,21 +216,21 @@ body {
 }
 
 .kpi-label {
-    font-size: 18px;
+    font-size: 16px;
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-weight: 500;
 }
 
 .kpi-value {
     font-family: var(--font-body);
-    font-size: 72px;
+    font-size: 64px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     text-shadow: 
         0 3px 12px rgba(203, 161, 53, 0.5),
         0 0 30px rgba(203, 161, 53, 0.2);
