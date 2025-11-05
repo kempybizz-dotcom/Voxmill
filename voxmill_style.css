@@ -1,8 +1,8 @@
 /* ============================================
-   VOXMILL EXECUTIVE INTELLIGENCE DECK
-   16:9 Landscape Slide Format (1920×1080px)
-   Fixed Dimensions — No Overflow — Boardroom Luxury
-   ============================================ */
+VOXMILL EXECUTIVE INTELLIGENCE DECK V3
+16:9 Landscape Slide Format (1920×1080px)
+Fixed Dimensions — Boardroom Symmetry — Perfect Centering
+============================================ */
 
 :root {
     --vm-bronze: #BA955F;
@@ -33,8 +33,8 @@ body {
 }
 
 /* ============================================
-   SLIDE CONTAINER — FIXED 16:9 FORMAT
-   ============================================ */
+SLIDE CONTAINER — FIXED 16:9 FORMAT
+============================================ */
 
 .slide {
     width: 1920px;
@@ -45,12 +45,12 @@ body {
     overflow: hidden;
     /* LUXURY BORDER */
     border: 3px solid var(--vm-gold);
-    box-shadow: 
+    box-shadow:
         inset 0 0 40px rgba(203, 161, 53, 0.08),
         0 8px 30px rgba(0, 0, 0, 0.8);
 }
 
-/* SUBTLE LUXURY PATTERN ON ALL SLIDES */
+/* SUBTLE LUXURY PATTERN ON ALL SLIDES - VISIBLE 6% */
 .slide::after {
     content: '';
     position: absolute;
@@ -58,12 +58,12 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.02;
+    opacity: 0.06;
     z-index: 0;
     pointer-events: none;
-    background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(203, 161, 53, 0.05) 100px, rgba(203, 161, 53, 0.05) 102px),
-        repeating-linear-gradient(-45deg, transparent, transparent 100px, rgba(186, 149, 95, 0.03) 100px, rgba(186, 149, 95, 0.03) 102px);
+    background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(203, 161, 53, 0.1) 80px, rgba(203, 161, 53, 0.1) 82px),
+        repeating-linear-gradient(-45deg, transparent, transparent 80px, rgba(186, 149, 95, 0.08) 80px, rgba(186, 149, 95, 0.08) 82px);
 }
 
 .slide:last-child {
@@ -78,16 +78,16 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, 
-        var(--vm-bronze) 0%, 
-        var(--vm-gold) 50%, 
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        var(--vm-gold) 50%,
         var(--vm-bronze) 100%);
     z-index: 10;
 }
 
 /* ============================================
-   SLIDE HEADER — FIXED AT TOP
-   ============================================ */
+SLIDE HEADER — FIXED AT TOP
+============================================ */
 
 .slide-header {
     position: absolute;
@@ -119,8 +119,8 @@ body {
 }
 
 /* ============================================
-   SLIDE CONTENT AREA — 40PX GRID
-   ============================================ */
+SLIDE CONTENT AREA — 40PX GRID
+============================================ */
 
 .slide-content {
     position: absolute;
@@ -130,11 +130,12 @@ body {
     bottom: 120px;
     overflow: hidden;
     z-index: 5;
+    padding-top: 30px;
 }
 
 /* ============================================
-   COVER SLIDE
-   ============================================ */
+COVER SLIDE
+============================================ */
 
 .slide-cover {
     display: flex;
@@ -144,13 +145,13 @@ body {
 }
 
 .logo-container {
-    margin-bottom: 40px;
+    margin-bottom: 50px;
 }
 
 .voxmill-logo {
-    width: 60px;
-    height: 60px;
-    filter: drop-shadow(0 4px 15px rgba(203, 161, 53, 0.5));
+    width: 180px;
+    height: 180px;
+    filter: drop-shadow(0 8px 40px rgba(203, 161, 53, 0.9));
 }
 
 .cover-label {
@@ -185,53 +186,55 @@ body {
 }
 
 /* ============================================
-   KPI GRID — 2×2 FIXED LAYOUT
-   ============================================ */
+KPI GRID — 2×2 PERFECT CENTERING
+============================================ */
 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 30px;
-    height: 480px;
+    height: 460px;
     margin-bottom: 40px;
 }
 
 .kpi-card {
-    background: linear-gradient(135deg, 
-        rgba(12, 12, 12, 0.98) 0%, 
+    background: linear-gradient(135deg,
+        rgba(12, 12, 12, 0.98) 0%,
         rgba(23, 23, 23, 0.95) 100%);
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-radius: 12px;
-    padding: 30px 20px;
+    padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    box-shadow: 
+    box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.06),
         inset 0 0 40px rgba(203, 161, 53, 0.05),
         0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 .kpi-label {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--vm-muted);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 15px;
+    letter-spacing: 0.18em;
+    margin-bottom: 20px;
     font-weight: 500;
+    line-height: 1.4;
 }
 
 .kpi-value {
     font-family: var(--font-body);
-    font-size: 64px;
+    font-size: 68px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 12px;
-    text-shadow: 
+    margin: 0;
+    padding: 0;
+    text-shadow:
         0 3px 12px rgba(203, 161, 53, 0.5),
         0 0 30px rgba(203, 161, 53, 0.2);
 }
@@ -240,6 +243,8 @@ body {
     font-family: var(--font-mono);
     font-size: 16px;
     font-weight: 600;
+    margin-top: 18px;
+    line-height: 1.4;
 }
 
 .kpi-change.positive {
@@ -251,8 +256,8 @@ body {
 }
 
 /* ============================================
-   CHART CONTAINERS
-   ============================================ */
+CHART CONTAINERS
+============================================ */
 
 .chart-section {
     margin-top: 40px;
@@ -260,10 +265,10 @@ body {
 
 .chart-divider {
     height: 3px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
+    background: linear-gradient(90deg,
+        transparent 0%,
         var(--vm-bronze) 15%,
-        var(--vm-gold) 50%, 
+        var(--vm-gold) 50%,
         var(--vm-bronze) 85%,
         transparent 100%);
     margin: 30px 0;
@@ -271,13 +276,13 @@ body {
 }
 
 .chart-container {
-    background: linear-gradient(135deg, 
-        rgba(18, 18, 18, 0.95) 0%, 
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 
+    box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
         0 6px 20px rgba(0, 0, 0, 0.5);
@@ -294,8 +299,8 @@ body {
 }
 
 /* ============================================
-   TWO-COLUMN LAYOUT
-   ============================================ */
+TWO-COLUMN LAYOUT
+============================================ */
 
 .two-column {
     display: grid;
@@ -305,71 +310,74 @@ body {
 }
 
 .chart-panel {
-    background: linear-gradient(135deg, 
-        rgba(18, 18, 18, 0.95) 0%, 
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 30px;
-    box-shadow: 
+    padding: 28px;
+    box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
         0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ============================================
-   INSIGHT CARDS — 3 COLUMN
-   ============================================ */
+INSIGHT CARDS — 3 COLUMN
+============================================ */
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-top: 40px;
+    gap: 25px;
+    margin-top: 30px;
 }
 
 .insight-card {
-    background: linear-gradient(135deg, 
-        rgba(18, 18, 18, 0.98) 0%, 
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.98) 0%,
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(203, 161, 53, 0.5);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 30px 25px;
-    min-height: 160px;
-    box-shadow: 
+    padding: 28px 25px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow:
         inset 0 0 20px rgba(203, 161, 53, 0.08),
         0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .insight-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--vm-bronze);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .insight-text {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--vm-text-body);
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 /* ============================================
-   INTELLIGENCE PANELS
-   ============================================ */
+INTELLIGENCE PANELS
+============================================ */
 
 .panel {
-    background: linear-gradient(135deg, 
-        rgba(18, 18, 18, 0.95) 0%, 
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 35px 30px;
-    margin-bottom: 30px;
-    box-shadow: 
+    padding: 28px 30px;
+    margin-bottom: 25px;
+    box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
         0 6px 20px rgba(0, 0, 0, 0.5);
@@ -377,23 +385,23 @@ body {
 
 .panel-title {
     font-family: var(--font-display);
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .panel-divider {
     height: 2px;
-    background: linear-gradient(90deg, 
-        var(--vm-bronze) 0%, 
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
         transparent 100%);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     opacity: 0.5;
 }
 
 .panel-text {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.8;
 }
@@ -406,7 +414,7 @@ body {
 .bullet-list li {
     position: relative;
     padding-left: 25px;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
@@ -422,8 +430,8 @@ body {
 }
 
 /* ============================================
-   TABLE STYLING
-   ============================================ */
+TABLE STYLING
+============================================ */
 
 .table-luxury {
     width: 100%;
@@ -431,14 +439,14 @@ body {
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 
+    box-shadow:
         0 6px 20px rgba(0, 0, 0, 0.6),
         inset 0 2px 0 rgba(255, 255, 255, 0.05);
 }
 
 .table-luxury thead {
-    background: linear-gradient(90deg, 
-        var(--vm-bronze) 0%, 
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
         var(--vm-gold) 100%);
     height: 50px;
 }
@@ -506,8 +514,8 @@ body {
 }
 
 /* ============================================
-   SLIDE FOOTER — FIXED AT BOTTOM
-   ============================================ */
+SLIDE FOOTER — FIXED AT BOTTOM
+============================================ */
 
 .slide-footer {
     position: absolute;
@@ -540,8 +548,8 @@ body {
 }
 
 /* ============================================
-   WATERMARK
-   ============================================ */
+WATERMARK
+============================================ */
 
 .watermark {
     position: absolute;
@@ -559,23 +567,23 @@ body {
 }
 
 /* ============================================
-   PRINT OPTIMIZATION
-   ============================================ */
+PRINT OPTIMIZATION
+============================================ */
 
 @media print {
     body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .slide {
         page-break-inside: avoid;
     }
 }
 
 /* ============================================
-   UTILITY CLASSES
-   ============================================ */
+UTILITY CLASSES
+============================================ */
 
 .text-center { text-align: center; }
 .text-gold { color: var(--vm-gold); }
