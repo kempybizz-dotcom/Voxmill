@@ -1,27 +1,22 @@
 /* ============================================
-   VOXMILL EXECUTIVE V2 — BOARDROOM LUXURY
-   Quiet Luxury. Executive Precision.
-   Gold Borders. Glossy Polish. Visual Intelligence.
+   VOXMILL EXECUTIVE INTELLIGENCE DECK
+   16:9 Landscape Slide Format (1920×1080px)
+   Fixed Dimensions — No Overflow — Boardroom Luxury
    ============================================ */
 
 :root {
     --vm-bronze: #BA955F;
     --vm-gold: #CBA135;
     --vm-text: #EAEAEA;
-    --vm-text-body: rgba(234, 234, 234, 0.85);
+    --vm-text-body: rgba(234, 234, 234, 0.9);
     --vm-muted: #AFAFAF;
     --vm-dark: #0C0C0C;
-    --vm-darker: #121212;
+    --vm-darker: #111111;
     --vm-panel: #171717;
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
-}
-
-@page {
-    size: A4 portrait;
-    margin: 18mm;
-    background: var(--vm-darker);
+    --grid: 40px;
 }
 
 * {
@@ -33,456 +28,369 @@
 body {
     font-family: var(--font-body);
     color: var(--vm-text);
-    background: var(--vm-darker);
-    line-height: 1.6;
-    font-size: 11pt;
+    background: #000000;
+    overflow-x: hidden;
 }
 
 /* ============================================
-   PAGE STRUCTURE — GOLD BORDER LUXURY
+   SLIDE CONTAINER — FIXED 16:9 FORMAT
    ============================================ */
 
-.page {
+.slide {
+    width: 1920px;
+    height: 1080px;
+    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
-    width: 100%;
-    max-width: 185mm;
-    min-height: 267mm;
-    margin: 0 auto;
     page-break-after: always;
-    padding: 12mm;
-    background: var(--vm-darker);
-    /* V2 FIX: GOLD BORDER AROUND EVERY PAGE */
-    border: 2px solid var(--vm-gold);
+    overflow: hidden;
+    /* LUXURY BORDER */
+    border: 3px solid var(--vm-gold);
     box-shadow: 
-        inset 0 0 30px rgba(203, 161, 53, 0.08),
-        0 4px 20px rgba(0, 0, 0, 0.6);
+        inset 0 0 40px rgba(203, 161, 53, 0.08),
+        0 8px 30px rgba(0, 0, 0, 0.8);
 }
 
-.page:last-child {
+.slide:last-child {
     page-break-after: auto;
 }
 
-/* V2 FIX: GOLD RULE AT TOP OF EVERY PAGE */
-.page::before {
+/* GOLD TOP RULE */
+.slide::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 4px;
     background: linear-gradient(90deg, 
         var(--vm-bronze) 0%, 
         var(--vm-gold) 50%, 
         var(--vm-bronze) 100%);
+    z-index: 10;
 }
 
 /* ============================================
-   COVER PAGE — LUXURY TITLE
+   SLIDE HEADER — FIXED AT TOP
    ============================================ */
 
-.page-cover {
-    background: linear-gradient(180deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
+.slide-header {
+    position: absolute;
+    top: 60px;
+    left: 80px;
+    right: 80px;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(203, 161, 53, 0.5);
+    z-index: 5;
 }
 
-.gold-rule-top {
+.slide-title {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 12px rgba(203, 161, 53, 0.3);
+}
+
+.slide-meta {
+    font-size: 18px;
+    color: var(--vm-muted);
+    text-align: right;
+    line-height: 1.4;
+}
+
+/* ============================================
+   SLIDE CONTENT AREA — 40PX GRID
+   ============================================ */
+
+.slide-content {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, 
-        var(--vm-bronze) 0%, 
-        var(--vm-gold) 50%, 
-        var(--vm-bronze) 100%);
+    top: 180px;
+    left: 80px;
+    right: 80px;
+    bottom: 120px;
+    overflow: hidden;
+}
+
+/* ============================================
+   COVER SLIDE
+   ============================================ */
+
+.slide-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo-container {
-    margin-bottom: 15px;
-    text-align: center;
+    margin-bottom: 40px;
 }
 
 .voxmill-logo {
-    width: 28px;
-    height: 28px;
-    filter: drop-shadow(0 2px 8px rgba(203, 161, 53, 0.4));
+    width: 60px;
+    height: 60px;
+    filter: drop-shadow(0 4px 15px rgba(203, 161, 53, 0.5));
 }
 
-.page-header-bronze {
-    text-align: center;
-    font-size: 9.5pt;
+.cover-label {
+    font-size: 20px;
     font-weight: 600;
     color: var(--vm-bronze);
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
-.cover-content {
-    text-align: center;
-    margin-bottom: 25px;
-}
-
-.report-title {
+.cover-title {
     font-family: var(--font-display);
-    font-size: 32pt;
+    font-size: 72px;
     font-weight: 700;
     color: var(--vm-gold);
-    letter-spacing: 0.04em;
-    margin-bottom: 12px;
-    text-shadow: 0 2px 15px rgba(203, 161, 53, 0.3);
+    letter-spacing: 0.02em;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 20px rgba(203, 161, 53, 0.4);
 }
 
-.report-subtitle {
-    font-size: 10pt;
-    color: var(--vm-muted);
-    letter-spacing: 0.08em;
+.cover-subtitle {
+    font-size: 22px;
+    color: var(--vm-text-body);
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
-.location-gold { 
-    color: var(--vm-gold); 
-    font-weight: 600; 
-}
-
-.date-text { 
-    color: var(--vm-muted); 
-}
-
-.confidential-bronze { 
-    color: var(--vm-bronze);
-    font-weight: 500;
+.cover-subtitle .location {
+    color: var(--vm-gold);
+    font-weight: 600;
 }
 
 /* ============================================
-   V2 FIX: VISUAL KPI CARDS (NOT BULLET POINTS)
+   KPI GRID — 2×2 FIXED LAYOUT
    ============================================ */
 
-.panel {
-    background: rgba(23, 23, 23, 0.9);
-    border: 1.5px solid rgba(186, 149, 95, 0.4);
-    border-radius: 10px;
-    padding: 20px;
-    margin: 15px 0;
-    /* V2 FIX: GLOSSY DEPTH */
-    box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.05),
-        inset 0 0 20px rgba(255, 255, 255, 0.02),
-        0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-.kpi-panel {
-    background: linear-gradient(135deg, 
-        rgba(23, 23, 23, 0.95) 0%, 
-        rgba(12, 12, 12, 0.95) 100%);
-}
-
-.section-title {
-    font-family: var(--font-display);
-    font-size: 20pt;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 18px;
-    letter-spacing: 0.03em;
-    text-shadow: 0 2px 10px rgba(203, 161, 53, 0.2);
-    text-align: center;
-}
-
-/* V2 FIX: 2x2 VISUAL METRIC CARDS WITH LUXURY STYLING */
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-    margin-top: 22px;
-    margin-bottom: 25px;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 30px;
+    height: 480px;
+    margin-bottom: 40px;
 }
 
 .kpi-card {
     background: linear-gradient(135deg, 
         rgba(12, 12, 12, 0.98) 0%, 
-        rgba(18, 18, 18, 0.98) 100%);
-    border: 1.5px solid rgba(203, 161, 53, 0.3);
-    border-radius: 8px;
-    padding: 18px 16px;
-    text-align: center;
-    min-height: 130px;
+        rgba(23, 23, 23, 0.95) 100%);
+    border: 2px solid rgba(203, 161, 53, 0.4);
+    border-radius: 12px;
+    padding: 40px 30px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /* V2 FIX: GLOSSY CARD EFFECT */
+    align-items: center;
+    text-align: center;
     box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.06),
-        inset 0 0 25px rgba(203, 161, 53, 0.04),
-        0 3px 12px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s ease;
-}
-
-.kpi-card:hover {
-    border-color: rgba(203, 161, 53, 0.6);
-    box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        inset 0 0 30px rgba(203, 161, 53, 0.08),
-        0 5px 20px rgba(0, 0, 0, 0.6);
+        inset 0 2px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 40px rgba(203, 161, 53, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 .kpi-label {
-    font-size: 9.5pt;
+    font-size: 18px;
     color: var(--vm-muted);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 10px;
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
     font-weight: 500;
 }
 
 .kpi-value {
     font-family: var(--font-body);
-    font-size: 38pt;
+    font-size: 72px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 8px;
-    /* V2 FIX: CLEAN BOLD NUMBERS */
+    margin-bottom: 15px;
     text-shadow: 
-        0 2px 8px rgba(203, 161, 53, 0.4),
-        0 0 20px rgba(203, 161, 53, 0.15);
+        0 3px 12px rgba(203, 161, 53, 0.5),
+        0 0 30px rgba(203, 161, 53, 0.2);
 }
 
 .kpi-change {
     font-family: var(--font-mono);
-    font-size: 9pt;
+    font-size: 16px;
     font-weight: 600;
-    margin-top: 6px;
 }
 
-.kpi-change.positive { 
+.kpi-change.positive {
     color: #4CAF50;
-    text-shadow: 0 1px 4px rgba(76, 175, 80, 0.3);
 }
 
-.kpi-change.negative { 
+.kpi-change.negative {
     color: #F44336;
-    text-shadow: 0 1px 4px rgba(244, 67, 54, 0.3);
 }
 
-/* V2 FIX: GOLD DIVIDER BEFORE CHART */
+/* ============================================
+   CHART CONTAINERS
+   ============================================ */
+
+.chart-section {
+    margin-top: 40px;
+}
+
 .chart-divider {
-    height: 2px;
+    height: 3px;
     background: linear-gradient(90deg, 
         transparent 0%, 
-        var(--vm-bronze) 20%,
+        var(--vm-bronze) 15%,
         var(--vm-gold) 50%, 
-        var(--vm-bronze) 80%,
+        var(--vm-bronze) 85%,
         transparent 100%);
-    margin: 15px 0 18px 0;
+    margin: 30px 0;
     opacity: 0.6;
 }
 
-/* V2 FIX: ELEGANT CHART CONTAINER */
 .chart-container {
     background: linear-gradient(135deg, 
         rgba(18, 18, 18, 0.95) 0%, 
-        rgba(12, 12, 12, 0.95) 100%);
-    padding: 18px;
-    border-radius: 8px;
-    border: 1.5px solid rgba(186, 149, 95, 0.3);
-    /* V2 FIX: GLOSSY CHART FRAME */
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 30px;
     box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.05),
-        inset 0 0 20px rgba(255, 255, 255, 0.02),
-        0 3px 12px rgba(0, 0, 0, 0.4);
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .chart-title {
-    font-size: 12pt;
+    font-size: 20px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 15px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
+    margin-bottom: 25px;
     text-align: center;
 }
 
-.chart-svg {
-    display: block;
-    margin: 15px auto 0 auto;
-}
-
 /* ============================================
-   PAGE HEADERS (PAGES 2-5)
+   TWO-COLUMN LAYOUT
    ============================================ */
 
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid rgba(186, 149, 95, 0.5);
-    padding-bottom: 12px;
-    margin-bottom: 25px;
-}
-
-.header-title {
-    font-family: var(--font-display);
-    font-size: 24pt;
-    font-weight: 600;
-    color: var(--vm-gold);
-    text-shadow: 0 2px 10px rgba(203, 161, 53, 0.2);
-}
-
-.header-subtitle {
-    font-size: 9pt;
-    color: var(--vm-muted);
-    text-align: right;
-}
-
-/* ============================================
-   V2 FIX: TWO-COLUMN LAYOUT (PAGE 2 & 3)
-   ============================================ */
-
-.two-column-layout {
+.two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 25px;
+    gap: 40px;
+    height: 100%;
 }
 
 .chart-panel {
     background: linear-gradient(135deg, 
         rgba(18, 18, 18, 0.95) 0%, 
-        rgba(12, 12, 12, 0.95) 100%);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1.5px solid rgba(186, 149, 95, 0.3);
-    min-height: 280px;
-    /* V2 FIX: GLOSSY PANEL */
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 30px;
     box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.05),
-        inset 0 0 20px rgba(255, 255, 255, 0.02),
-        0 3px 12px rgba(0, 0, 0, 0.4);
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ============================================
-   V2 FIX: INSIGHT CARDS (PAGE 2)
+   INSIGHT CARDS — 3 COLUMN
    ============================================ */
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 25px;
+    gap: 30px;
+    margin-top: 40px;
 }
 
 .insight-card {
     background: linear-gradient(135deg, 
-        rgba(18, 18, 18, 0.95) 0%, 
-        rgba(12, 12, 12, 0.95) 100%);
-    border: 1.5px solid rgba(203, 161, 53, 0.4);
-    border-left: 3px solid var(--vm-gold);
-    border-radius: 8px;
-    padding: 20px 16px;
-    min-height: 135px;
-    /* V2 FIX: SUBTLE GLOW + DEPTH */
+        rgba(18, 18, 18, 0.98) 0%, 
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(203, 161, 53, 0.5);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 10px;
+    padding: 30px 25px;
+    min-height: 160px;
     box-shadow: 
-        inset 0 0 15px rgba(203, 161, 53, 0.06),
-        0 3px 12px rgba(0, 0, 0, 0.4);
+        inset 0 0 20px rgba(203, 161, 53, 0.08),
+        0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .insight-title {
-    font-size: 10pt;
+    font-size: 16px;
     font-weight: 600;
     color: var(--vm-bronze);
-    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
+    margin-bottom: 15px;
 }
 
 .insight-text {
-    font-size: 9.5pt;
+    font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
 /* ============================================
-   V2 FIX: COMPETITOR LANDSCAPE (PAGE 3)
+   INTELLIGENCE PANELS
    ============================================ */
 
-.legend {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(186, 149, 95, 0.3);
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 9pt;
-}
-
-.legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    margin-right: 8px;
-    border: 1px solid rgba(234, 234, 234, 0.2);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.legend-label {
-    flex: 1;
-    color: var(--vm-text);
-}
-
-.legend-value {
-    font-family: var(--font-mono);
-    color: var(--vm-gold);
-    font-weight: 600;
-}
-
-/* V2 FIX: COMPETITIVE INTELLIGENCE PANEL */
-.insight-panel {
-    border-left: 3px solid var(--vm-gold);
+.panel {
     background: linear-gradient(135deg, 
-        rgba(203, 161, 53, 0.08) 0%, 
-        rgba(186, 149, 95, 0.04) 100%);
+        rgba(18, 18, 18, 0.95) 0%, 
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 35px 30px;
+    margin-bottom: 30px;
+    box-shadow: 
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-.section-title-small {
+.panel-title {
     font-family: var(--font-display);
-    font-size: 15pt;
+    font-size: 28px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 12px;
+    margin-bottom: 20px;
 }
 
-.bronze-divider {
+.panel-divider {
     height: 2px;
     background: linear-gradient(90deg, 
         var(--vm-bronze) 0%, 
         transparent 100%);
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     opacity: 0.5;
 }
 
-.body-text {
-    font-size: 10pt;
+.panel-text {
+    font-size: 16px;
     color: var(--vm-text-body);
     line-height: 1.8;
-    text-align: justify;
 }
 
 .bullet-list {
     list-style: none;
-    margin-top: 12px;
+    margin-top: 15px;
 }
 
 .bullet-list li {
     position: relative;
-    padding-left: 20px;
-    margin-bottom: 10px;
-    font-size: 9.5pt;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
 }
@@ -493,306 +401,144 @@ body {
     left: 0;
     color: var(--vm-bronze);
     font-weight: 700;
+    font-size: 18px;
 }
 
 /* ============================================
-   V2 FIX: STRATEGIC INTELLIGENCE (PAGE 4)
+   TABLE STYLING
    ============================================ */
 
-.watermark {
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-family: var(--font-display);
-    font-size: 42pt;
-    font-weight: 700;
-    color: rgba(203, 161, 53, 0.03);
-    letter-spacing: 0.15em;
-    z-index: 0;
-    white-space: nowrap;
-}
-
-.intelligence-panel {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 15px;
-    min-height: 130px;
-}
-
-/* V2 FIX: RECOMMENDATION PANEL */
-.recommendation-panel {
-    background: linear-gradient(135deg, 
-        rgba(203, 161, 53, 0.15) 0%, 
-        rgba(176, 141, 87, 0.08) 100%);
-    border: 2px solid var(--vm-gold);
-    border-radius: 8px;
-    padding: 22px;
-    margin-top: 25px;
-    /* V2 FIX: PREMIUM GLOW */
-    box-shadow: 
-        inset 0 0 25px rgba(203, 161, 53, 0.1),
-        0 4px 15px rgba(0, 0, 0, 0.5);
-}
-
-.recommendation-title {
-    font-family: var(--font-display);
-    font-size: 15pt;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 12px;
-    text-shadow: 0 1px 8px rgba(203, 161, 53, 0.3);
-}
-
-.recommendation-text {
-    font-size: 10pt;
-    color: var(--vm-text);
-    line-height: 1.9;
-}
-
-/* ============================================
-   V2 FIX: TOP OPPORTUNITIES TABLE (PAGE 5)
-   ============================================ */
-
-.table-lux {
+.table-luxury {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
-    background: rgba(18, 18, 18, 0.9);
-    border-radius: 8px;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
     overflow: hidden;
-    /* V2 FIX: ELEGANT TABLE FRAME */
     box-shadow: 
-        0 4px 15px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.05);
 }
 
-.table-lux thead {
+.table-luxury thead {
     background: linear-gradient(90deg, 
         var(--vm-bronze) 0%, 
         var(--vm-gold) 100%);
-    height: 38px;
+    height: 50px;
 }
 
-.table-lux th {
-    font-size: 9.5pt;
+.table-luxury th {
+    font-size: 14px;
     font-weight: 600;
     color: var(--vm-dark);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 12px 10px;
+    letter-spacing: 0.1em;
+    padding: 15px 12px;
     text-align: left;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.table-lux tbody tr {
+.table-luxury tbody tr {
     border-bottom: 1px solid rgba(186, 149, 95, 0.2);
-    transition: background 0.2s ease;
 }
 
-/* V2 FIX: ALTERNATING ROW SHADING */
-.table-lux tbody tr:nth-child(odd) {
-    background: rgba(18, 18, 18, 0.7);
+.table-luxury tbody tr:nth-child(odd) {
+    background: rgba(18, 18, 18, 0.8);
 }
 
-.table-lux tbody tr:nth-child(even) {
-    background: rgba(23, 23, 23, 0.7);
+.table-luxury tbody tr:nth-child(even) {
+    background: rgba(23, 23, 23, 0.8);
 }
 
-.table-lux tbody tr:hover {
-    background: rgba(203, 161, 53, 0.08);
-}
-
-.table-lux td {
-    font-size: 9pt;
+.table-luxury td {
+    font-size: 14px;
     color: var(--vm-text);
-    padding: 12px 10px;
+    padding: 15px 12px;
 }
 
 .property-address {
     font-weight: 500;
     color: var(--vm-gold);
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.align-right {
-    text-align: right;
-    font-family: var(--font-mono);
-}
-
-.align-center {
-    text-align: center;
-}
-
-/* V2 FIX: REFINED SCORE BADGES */
 .score-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 6px 14px;
+    border-radius: 6px;
     font-family: var(--font-mono);
-    font-size: 9pt;
+    font-size: 13px;
     font-weight: 600;
-    box-shadow: 
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .score-high {
-    background: linear-gradient(135deg, 
-        rgba(76, 175, 80, 0.25) 0%, 
-        rgba(76, 175, 80, 0.15) 100%);
+    background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
     border: 1px solid #4CAF50;
 }
 
 .score-medium {
-    background: linear-gradient(135deg, 
-        rgba(255, 193, 7, 0.25) 0%, 
-        rgba(255, 193, 7, 0.15) 100%);
+    background: rgba(255, 193, 7, 0.2);
     color: #FFC107;
     border: 1px solid #FFC107;
 }
 
 .score-low {
-    background: linear-gradient(135deg, 
-        rgba(244, 67, 54, 0.25) 0%, 
-        rgba(244, 67, 54, 0.15) 100%);
+    background: rgba(244, 67, 54, 0.2);
     color: #F44336;
     border: 1px solid #F44336;
 }
 
 /* ============================================
-   SCORING METHODOLOGY (PAGE 5)
+   SLIDE FOOTER — FIXED AT BOTTOM
    ============================================ */
 
-.scoring-methodology {
-    margin-top: 20px;
-    padding: 20px;
-}
-
-.methodology-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-top: 15px;
-}
-
-.methodology-item {
+.slide-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 80px;
+    right: 80px;
     display: flex;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: rgba(18, 18, 18, 0.8);
-    border-radius: 6px;
-    border-left: 2px solid var(--vm-bronze);
-    box-shadow: 
-        inset 0 0 10px rgba(255, 255, 255, 0.02),
-        0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.methodology-label {
-    font-size: 9.5pt;
-    color: var(--vm-text);
-}
-
-.methodology-weight {
-    font-family: var(--font-mono);
-    font-size: 9.5pt;
-    font-weight: 600;
-    color: var(--vm-gold);
-}
-
-/* ============================================
-   EMPTY STATES
-   ============================================ */
-
-.empty-state {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    min-height: 200px;
-    padding: 40px;
-}
-
-.empty-text {
-    font-size: 9.5pt;
-    color: var(--vm-muted);
-    text-align: center;
-    line-height: 1.8;
-}
-
-.empty-opportunities {
-    min-height: 180px;
-    padding: 40px;
-}
-
-/* ============================================
-   V2 FIX: FINAL FOOTER (PAGE 5)
-   ============================================ */
-
-.final-footer {
-    display: flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 30px;
+    gap: 30px;
     padding-top: 20px;
     border-top: 2px solid var(--vm-gold);
-}
-
-.footer-logo {
-    margin-right: 15px;
-}
-
-.footer-company-name {
-    font-family: var(--font-display);
-    font-size: 14pt;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 4px;
-    text-shadow: 0 1px 6px rgba(203, 161, 53, 0.2);
-}
-
-.footer-tagline {
-    font-size: 8pt;
-    color: var(--vm-muted);
-}
-
-/* ============================================
-   V2 FIX: PAGE FOOTER (ALL PAGES) - CENTERED
-   ============================================ */
-
-.page-footer {
-    position: absolute;
-    bottom: 8mm;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    padding: 12px 0 0 0;
-    border-top: 1px solid var(--vm-gold);
+    z-index: 5;
 }
 
 .footer-text {
-    font-size: 8pt;
+    font-size: 14px;
     color: var(--vm-muted);
-    text-align: center;
 }
 
-.page-number {
+.footer-page {
     font-family: var(--font-mono);
-    font-size: 10pt;
+    font-size: 16px;
     font-weight: 600;
     color: var(--vm-gold);
     background: rgba(186, 149, 95, 0.15);
-    padding: 5px 14px;
-    border-radius: 4px;
-    box-shadow: inset 0 0 8px rgba(186, 149, 95, 0.1);
-    border: 1px solid rgba(203, 161, 53, 0.3);
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(203, 161, 53, 0.4);
+}
+
+/* ============================================
+   WATERMARK
+   ============================================ */
+
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(203, 161, 53, 0.03);
+    letter-spacing: 0.1em;
+    z-index: 0;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 /* ============================================
@@ -805,7 +551,18 @@ body {
         print-color-adjust: exact;
     }
     
-    .page {
+    .slide {
         page-break-inside: avoid;
     }
 }
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-center { text-align: center; }
+.text-gold { color: var(--vm-gold); }
+.text-bronze { color: var(--vm-bronze); }
+.text-muted { color: var(--vm-muted); }
+.align-right { text-align: right; }
+.align-center { text-align: center; }
