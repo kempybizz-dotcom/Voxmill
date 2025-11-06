@@ -49,10 +49,7 @@ class VoxmillPDFGenerator:
             lstrip_blocks=True
         )
         
-        # Add datetime filter for Jinja
-        self.jinja_env.filters['datetime'] = lambda x: datetime.strptime(x, '%B %Y') if isinstance(x, str) else x
-        
-        logger.info(f"Initialized Voxmill Elite PDF Generator")
+        logger.info(f"Initialized Voxmill PDF Generator (16:9 SLIDE DECK)")
         logger.info(f"Template directory: {self.template_dir}")
         logger.info(f"Output directory: {self.output_dir}")
     
@@ -78,33 +75,26 @@ class VoxmillPDFGenerator:
             logger.error(f"Error loading data: {e}")
             raise
     
+    # ============================================
+    # ELITE INTELLIGENCE METHODS
+    # ============================================
+    
     def calculate_liquidity_index(self, data: Dict[str, Any]) -> int:
-        """
-        Voxmill Liquidity Index (0-100)
-        Formula: 100 - (days_on_market / 2)
-        Higher = Faster transaction velocity
-        """
+        """Voxmill Liquidity Index (0-100) - Higher = Faster velocity"""
         kpis = data.get('kpis', data.get('metrics', {}))
         days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
         index = int(100 - (days / 2))
         return max(0, min(100, index))
     
     def calculate_demand_pressure(self, data: Dict[str, Any]) -> float:
-        """
-        Demand Pressure Index = Active Listings / Recent Sales
-        Higher = more supply than demand
-        """
+        """Demand Pressure Index - Higher = oversupply"""
         kpis = data.get('kpis', data.get('metrics', {}))
         active = kpis.get('total_properties', 100)
-        # Assume ~20% of active listings sell per month
         recent_sales = active * 0.2
         return round(active / max(recent_sales, 1), 2)
     
     def get_property_type_heatmap(self, data: Dict[str, Any]) -> List[Dict]:
-        """
-        Performance by property type
-        Returns: [{type, avg_price, velocity_score}]
-        """
+        """Property type performance analysis"""
         properties = data.get('properties', data.get('top_opportunities', []))
         type_stats = {}
         
@@ -159,8 +149,7 @@ class VoxmillPDFGenerator:
         return {
             'low': round(base_projection - confidence_band, 1),
             'mid': round(base_projection, 1),
-            'high': round(base_projection + confidence_band, 1),
-            'sentiment': 'Bullish' if base_projection > 2 else 'Bearish' if base_projection < -2 else 'Neutral'
+            'high': round(base_projection + confidence_band, 1)
         }
     
     def calculate_sentiment(self, data: Dict[str, Any]) -> str:
@@ -189,10 +178,7 @@ class VoxmillPDFGenerator:
         else: return "Neutral"
     
     def calculate_voxmill_index(self, data: Dict[str, Any]) -> int:
-        """
-        Voxmill Predictive Index (0-100)
-        Blend of liquidity, demand, and momentum
-        """
+        """Voxmill Predictive Index (0-100) - Composite market strength"""
         liquidity = self.calculate_liquidity_index(data)
         demand_pressure = self.calculate_demand_pressure(data)
         kpis = data.get('kpis', data.get('metrics', {}))
@@ -236,19 +222,13 @@ class VoxmillPDFGenerator:
         else:
             actions.append(f"Maintain standard {days_on_market}-day transaction cycles — velocity stable and predictable.")
         
-        # Action 3: Competitive positioning
-        market_share = data.get('chart_data', {}).get('market_share', [])
-        if market_share:
-            top_agency = market_share[0].get('name', 'leading agency')
-            actions.append(f"Track {top_agency} new listings — early indicator of premium inventory flow and pricing signals.")
-        
-        # Action 4: Property type opportunity
+        # Action 3: Property type opportunity
         prop_types = self.get_property_type_heatmap(data)
         if prop_types:
             best = prop_types[0]
             actions.append(f"Prioritize {best['type']} properties — velocity score {best['velocity_score']}/100 signals strong demand dynamics.")
         
-        # Action 5: Liquidity assessment
+        # Action 4: Liquidity assessment
         liquidity = self.calculate_liquidity_index(data)
         if liquidity < 60:
             actions.append("⚠️ Liquidity caution: Extended holding periods likely — ensure capital allocation supports longer exit timelines.")
@@ -257,13 +237,16 @@ class VoxmillPDFGenerator:
         
         return actions[:5]
     
+    # ============================================
+    # EXISTING METHODS (PRESERVED)
+    # ============================================
+    
     def prepare_chart_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Transform raw data into chart-ready format with elite features."""
         chart_data = {
             'price_distribution': [],
             'price_ranges': [],
             'weekly_trend': [],
-            'volume_trend': [],
             'market_share': [],
             'competitor_inventory': [],
             
@@ -278,6 +261,7 @@ class VoxmillPDFGenerator:
         }
         
         properties = data.get('properties', data.get('top_opportunities', []))
+        metrics = data.get('metrics', data.get('kpis', {}))
         
         # Price distribution
         if 'price_distribution' in data:
@@ -320,16 +304,6 @@ class VoxmillPDFGenerator:
             {'label': 'Wed', 'value': 140},
             {'label': 'Fri', 'value': 160},
             {'label': 'Sun', 'value': 150}
-        ]
-        
-        # Volume trend (4 weeks)
-        kpis = data.get('kpis', data.get('metrics', {}))
-        current_volume = kpis.get('total_properties', 100)
-        chart_data['volume_trend'] = [
-            {'week': 'Week 1', 'count': int(current_volume * 0.92), 'height': 110},
-            {'week': 'Week 2', 'count': int(current_volume * 0.96), 'height': 120},
-            {'week': 'Week 3', 'count': int(current_volume * 0.98), 'height': 130},
-            {'week': 'Week 4', 'count': current_volume, 'height': 140}
         ]
         
         # Market share
@@ -395,10 +369,11 @@ class VoxmillPDFGenerator:
     
     def render_template(self, data: Dict[str, Any]) -> str:
         """Render HTML template with elite intelligence data."""
-        logger.info("Rendering HTML template with elite features")
+        logger.info("Rendering HTML template")
         
         try:
-            template = self.jinja_env.get_template('index.html')
+            # CRITICAL FIX: Use voxmill_report.html (your existing template name)
+            template = self.jinja_env.get_template('voxmill_report.html')
             
             metadata = data.get('metadata', {})
             location = metadata.get('area', 'London')
@@ -457,7 +432,7 @@ class VoxmillPDFGenerator:
                 'strategic_intelligence': strategic_intelligence,
                 'top_opportunities': self.prepare_opportunities(data),
                 
-                # ELITE FEATURES
+                # ELITE FEATURES (available to template if it wants to use them)
                 'market_depth': {
                     'liquidity_index': chart_data['liquidity_index'],
                     'demand_pressure': chart_data['demand_pressure'],
@@ -483,7 +458,7 @@ class VoxmillPDFGenerator:
             }
             
             html_content = template.render(**template_data)
-            logger.info("✅ Template rendered successfully with elite features")
+            logger.info("✅ Template rendered successfully")
             
             return html_content
             
@@ -493,14 +468,14 @@ class VoxmillPDFGenerator:
             logger.error(traceback.format_exc())
             raise
     
-    def generate_pdf(self, html_content: str, output_filename: str = "Voxmill_Executive_Intelligence_Elite.pdf") -> Path:
+    def generate_pdf(self, html_content: str, output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf") -> Path:
         """Convert HTML to PDF using WeasyPrint."""
         output_path = self.output_dir / output_filename
         
         logger.info(f"Generating PDF: {output_path}")
         
         try:
-            css_path = self.template_dir / 'style.css'
+            css_path = self.template_dir / 'voxmill_style.css'
             
             page_css = CSS(string='''
                 @page {
@@ -533,10 +508,10 @@ class VoxmillPDFGenerator:
             logger.error(f"❌ Error generating PDF: {e}")
             raise
     
-    def generate(self, output_filename: str = "Voxmill_Executive_Intelligence_Elite.pdf") -> Path:
+    def generate(self, output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf") -> Path:
         """Complete pipeline: load → render → generate PDF."""
         logger.info("=" * 70)
-        logger.info("VOXMILL ELITE EXECUTIVE INTELLIGENCE — PDF GENERATION")
+        logger.info("VOXMILL EXECUTIVE INTELLIGENCE DECK — PDF GENERATION")
         logger.info("=" * 70)
         
         start_time = datetime.now()
@@ -549,7 +524,7 @@ class VoxmillPDFGenerator:
             duration = (datetime.now() - start_time).total_seconds()
             
             logger.info("=" * 70)
-            logger.info(f"✅ ELITE GENERATION COMPLETE")
+            logger.info(f"✅ GENERATION COMPLETE")
             logger.info(f"⏱️  Execution time: {duration:.2f} seconds")
             logger.info(f"📁 Output: {pdf_path}")
             logger.info("=" * 70)
@@ -577,7 +552,7 @@ def main():
     
     try:
         pdf_path = generator.generate()
-        print(f"\n✅ SUCCESS: Elite PDF generated at {pdf_path}")
+        print(f"\n✅ SUCCESS: PDF generated at {pdf_path}")
         return 0
     except Exception as e:
         print(f"\n❌ ERROR: {e}", file=sys.stderr)
