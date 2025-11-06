@@ -440,8 +440,8 @@ class VoxmillPDFGenerator:
                 },
                 
                 'forecast': {
-                    '30_day': chart_data['forecast_30_day'],
-                    '90_day': chart_data['forecast_90_day'],
+                    'day_30': chart_data['forecast_30_day'],
+                    'day_90': chart_data['forecast_90_day'],
                     'sentiment': chart_data['sentiment'],
                     'voxmill_index': chart_data['voxmill_index']
                 },
