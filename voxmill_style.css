@@ -1,8 +1,187 @@
 /* ============================================
-   ELITE FEATURE STYLES — ADD TO YOUR style.css
-   ============================================ */
+VOXMILL EXECUTIVE INTELLIGENCE DECK — COMPLETE STYLES
+16:9 Landscape Slide Format (1920×1080px)
+Black & Gold Luxury Design
+============================================ */
 
-/* COVER PAGE ENHANCEMENTS */
+:root {
+    --vm-bronze: #BA955F;
+    --vm-gold: #CBA135;
+    --vm-text: #EAEAEA;
+    --vm-text-body: rgba(234, 234, 234, 0.9);
+    --vm-muted: #AFAFAF;
+    --vm-dark: #0C0C0C;
+    --vm-darker: #111111;
+    --vm-panel: #171717;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --grid: 40px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--vm-text);
+    background: #000000;
+    overflow-x: hidden;
+}
+
+/* ============================================
+SLIDE CONTAINER
+============================================ */
+
+.slide {
+    width: 1920px;
+    height: 1080px;
+    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
+    position: relative;
+    page-break-after: always;
+    overflow: hidden;
+    border: 3px solid var(--vm-gold);
+    box-shadow:
+        inset 0 0 40px rgba(203, 161, 53, 0.08),
+        0 8px 30px rgba(0, 0, 0, 0.8);
+}
+
+.slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(203, 161, 53, 0.1) 80px, rgba(203, 161, 53, 0.1) 82px),
+        repeating-linear-gradient(-45deg, transparent, transparent 80px, rgba(186, 149, 95, 0.08) 80px, rgba(186, 149, 95, 0.08) 82px);
+}
+
+.slide:last-child {
+    page-break-after: auto;
+}
+
+.slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        var(--vm-gold) 50%,
+        var(--vm-bronze) 100%);
+    z-index: 10;
+}
+
+/* ============================================
+SLIDE HEADER
+============================================ */
+
+.slide-header {
+    position: absolute;
+    top: 60px;
+    left: 80px;
+    right: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(203, 161, 53, 0.5);
+    z-index: 5;
+}
+
+.slide-title {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 12px rgba(203, 161, 53, 0.3);
+}
+
+.slide-meta {
+    font-size: 18px;
+    color: var(--vm-muted);
+    text-align: right;
+    line-height: 1.4;
+}
+
+/* ============================================
+SLIDE CONTENT AREA
+============================================ */
+
+.slide-content {
+    position: absolute;
+    top: 180px;
+    left: 80px;
+    right: 80px;
+    bottom: 140px;
+    overflow: hidden;
+    z-index: 5;
+    padding-top: 30px;
+}
+
+/* ============================================
+COVER SLIDE
+============================================ */
+
+.slide-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-container {
+    margin-bottom: 50px;
+}
+
+.voxmill-logo {
+    width: 180px;
+    height: 180px;
+    filter: drop-shadow(0 8px 40px rgba(203, 161, 53, 0.9));
+}
+
+.cover-label {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--vm-bronze);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+}
+
+.cover-title {
+    font-family: var(--font-display);
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    letter-spacing: 0.02em;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 20px rgba(203, 161, 53, 0.4);
+}
+
+.cover-subtitle {
+    font-size: 22px;
+    color: var(--vm-text-body);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.cover-subtitle .location {
+    color: var(--vm-gold);
+    font-weight: 600;
+}
+
 .cover-tagline {
     font-size: 16px;
     color: var(--vm-muted);
@@ -16,6 +195,7 @@
     color: var(--vm-text);
     margin-top: 40px;
     line-height: 1.8;
+    text-align: center;
 }
 
 .cover-compiled strong {
@@ -33,7 +213,347 @@
     max-width: 700px;
 }
 
-/* FOOTER WITH BRANDING */
+/* ============================================
+KPI GRID — PERFECT CENTERING
+============================================ */
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 30px;
+    height: 460px;
+    margin-bottom: 40px;
+}
+
+.kpi-card {
+    background: linear-gradient(135deg,
+        rgba(12, 12, 12, 0.98) 0%,
+        rgba(23, 23, 23, 0.95) 100%);
+    border: 2px solid rgba(203, 161, 53, 0.4);
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 40px rgba(203, 161, 53, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.kpi-label {
+    font-size: 15px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 20px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.kpi-value {
+    font-family: var(--font-body);
+    font-size: 68px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    text-shadow:
+        0 3px 12px rgba(203, 161, 53, 0.5),
+        0 0 30px rgba(203, 161, 53, 0.2);
+}
+
+.kpi-change {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 18px;
+    line-height: 1.4;
+}
+
+.kpi-change.positive {
+    color: #4CAF50;
+}
+
+.kpi-change.negative {
+    color: #F44336;
+}
+
+/* ============================================
+CHART CONTAINERS WITH CONTEXT
+============================================ */
+
+.chart-section {
+    margin-top: 40px;
+}
+
+.chart-divider {
+    height: 3px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--vm-bronze) 15%,
+        var(--vm-gold) 50%,
+        var(--vm-bronze) 85%,
+        transparent 100%);
+    margin: 30px 0;
+    opacity: 0.6;
+}
+
+.chart-container {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.chart-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.chart-context {
+    font-size: 14px;
+    color: var(--vm-muted);
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* ============================================
+TWO-COLUMN LAYOUT
+============================================ */
+
+.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    height: 100%;
+}
+
+.chart-panel {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+INSIGHT CARDS
+============================================ */
+
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.insight-card {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.98) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(203, 161, 53, 0.5);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 10px;
+    padding: 28px 25px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow:
+        inset 0 0 20px rgba(203, 161, 53, 0.08),
+        0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.insight-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
+
+.insight-text {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+}
+
+/* ============================================
+INTELLIGENCE PANELS
+============================================ */
+
+.panel {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 28px 30px;
+    margin-bottom: 25px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 30px rgba(255, 255, 255, 0.02),
+        0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 18px;
+}
+
+.panel-divider {
+    height: 2px;
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        transparent 100%);
+    margin-bottom: 18px;
+    opacity: 0.5;
+}
+
+.panel-text {
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+}
+
+.bullet-list {
+    list-style: none;
+    margin-top: 15px;
+}
+
+.bullet-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+}
+
+.bullet-list li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* ============================================
+TABLE STYLING
+============================================ */
+
+.table-luxury {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.05);
+}
+
+.table-luxury thead {
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        var(--vm-gold) 100%);
+    height: 50px;
+}
+
+.table-luxury th {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 15px 12px;
+    text-align: left;
+}
+
+.table-luxury tbody tr {
+    border-bottom: 1px solid rgba(186, 149, 95, 0.2);
+}
+
+.table-luxury tbody tr:nth-child(odd) {
+    background: rgba(18, 18, 18, 0.8);
+}
+
+.table-luxury tbody tr:nth-child(even) {
+    background: rgba(23, 23, 23, 0.8);
+}
+
+.table-luxury td {
+    font-size: 14px;
+    color: var(--vm-text);
+    padding: 15px 12px;
+}
+
+.property-address {
+    font-weight: 500;
+    color: var(--vm-gold);
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.score-high {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.score-medium {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 1px solid #FFC107;
+}
+
+.score-low {
+    background: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+    border: 1px solid #F44336;
+}
+
+/* ============================================
+FOOTER WITH BRANDING
+============================================ */
+
 .slide-footer-branded {
     position: absolute;
     bottom: 30px;
@@ -72,7 +592,40 @@
     letter-spacing: 0.03em;
 }
 
-/* MARKET DEPTH ANALYSIS */
+.footer-page {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    background: rgba(186, 149, 95, 0.15);
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(203, 161, 53, 0.4);
+}
+
+/* ============================================
+WATERMARK
+============================================ */
+
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(203, 161, 53, 0.03);
+    letter-spacing: 0.1em;
+    z-index: 0;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* ============================================
+ELITE FEATURES — MARKET DEPTH
+============================================ */
+
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -124,7 +677,6 @@
     color: var(--vm-muted);
 }
 
-/* HEATMAP TABLE */
 .property-type-heatmap {
     margin-top: 30px;
 }
@@ -192,7 +744,10 @@
     font-weight: 500;
 }
 
-/* FORECAST GRID */
+/* ============================================
+ELITE FEATURES — FORECAST
+============================================ */
+
 .forecast-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -252,7 +807,6 @@
     margin-top: 10px;
 }
 
-/* CONE CHART */
 .cone-chart {
     padding: 20px 0;
 }
@@ -274,7 +828,6 @@
     font-size: 42px;
 }
 
-/* SENTIMENT METER */
 .sentiment-meter {
     padding: 20px 0;
 }
@@ -301,7 +854,6 @@
     background: rgba(244, 67, 54, 0.15);
 }
 
-/* VOXMILL INDEX DISPLAY */
 .voxmill-index-display {
     padding: 20px 0;
 }
@@ -335,7 +887,6 @@
     font-style: italic;
 }
 
-/* MACRO CONTEXT */
 .macro-context {
     margin-top: 30px;
     padding: 25px 30px;
@@ -356,7 +907,10 @@
     line-height: 1.8;
 }
 
-/* EXECUTIVE ACTIONS */
+/* ============================================
+ELITE FEATURES — EXECUTIVE ACTIONS
+============================================ */
+
 .executive-actions-grid {
     display: grid;
     gap: 20px;
@@ -400,7 +954,10 @@
     color: var(--vm-gold);
 }
 
-/* APPENDIX */
+/* ============================================
+ELITE FEATURES — APPENDIX
+============================================ */
+
 .appendix-section {
     margin-bottom: 40px;
 }
@@ -477,4 +1034,30 @@
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.8;
+}
+
+/* ============================================
+UTILITY CLASSES
+============================================ */
+
+.text-center { text-align: center; }
+.text-gold { color: var(--vm-gold); }
+.text-bronze { color: var(--vm-bronze); }
+.text-muted { color: var(--vm-muted); }
+.align-right { text-align: right; }
+.align-center { text-align: center; }
+
+/* ============================================
+PRINT OPTIMIZATION
+============================================ */
+
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .slide {
+        page-break-inside: avoid;
+    }
 }
