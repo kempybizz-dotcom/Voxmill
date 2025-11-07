@@ -5,10 +5,10 @@ Black & Gold Luxury Design — PIXEL-PERFECT + NEW SECTIONS
 ============================================ */
 
 :root {
-    --vm-bronze: #BA955F;
-    --vm-gold: #CBA135;
+    --vm-bronze: #B08D57;
+    --vm-gold: #B08D57;
     --vm-text: #EAEAEA;
-    --vm-text-body: rgba(234, 234, 234, 0.9);
+    --vm-text-body: rgba(234, 234, 234, 0.88);
     --vm-muted: #AFAFAF;
     --vm-dark: #0C0C0C;
     --vm-darker: #111111;
@@ -17,6 +17,49 @@ Black & Gold Luxury Design — PIXEL-PERFECT + NEW SECTIONS
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
     --grid: 40px;
+}
+
+/* ============================================
+EXPORT MODE: BOARDROOM (DEFAULT 16:9)
+============================================ */
+@page {
+    size: 1920px 1080px;
+    margin: 0;
+}
+
+/* ============================================
+EXPORT MODE: A4 PRINT (OPTIONAL CLASS)
+Usage: Add class="a4-export" to <body>
+============================================ */
+.a4-export {
+    font-size: 90%;
+}
+
+.a4-export @page {
+    size: A4;
+    margin: 8mm;
+}
+
+.a4-export .slide {
+    width: 210mm;
+    height: 297mm;
+    transform-origin: top left;
+}
+
+.a4-export .slide-title {
+    font-size: 42px;
+}
+
+.a4-export .kpi-value {
+    font-size: 56px;
+}
+
+.a4-export .chart-title {
+    font-size: 18px;
+}
+
+.a4-export * {
+    font-size: max(10pt, 1em);
 }
 
 * {
@@ -95,8 +138,29 @@ SLIDE HEADER
     justify-content: space-between;
     align-items: center;
     padding-bottom: 20px;
-    border-bottom: 2px solid rgba(203, 161, 53, 0.5);
+    border-bottom: 2px solid rgba(176, 141, 87, 0.5);
     z-index: 5;
+}
+
+.a4-export .slide-header {
+    top: 8mm;
+    left: 8mm;
+    right: 8mm;
+}
+
+.slide-header::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(176, 141, 87, 0.3) 20%,
+        rgba(176, 141, 87, 0.5) 50%,
+        rgba(176, 141, 87, 0.3) 80%,
+        transparent 100%);
 }
 
 .slide-title {
@@ -124,10 +188,18 @@ SLIDE CONTENT AREA
     top: 180px;
     left: 80px;
     right: 80px;
-    bottom: 150px;
+    bottom: 165px;
     overflow: hidden;
     z-index: 5;
-    padding: 30px 0 20px 0;
+    padding: 15px 0 15px 0;
+}
+
+.a4-export .slide-content {
+    top: 8mm;
+    left: 8mm;
+    right: 8mm;
+    bottom: 8mm;
+    padding: 8mm 0;
 }
 
 /* ============================================
@@ -262,9 +334,11 @@ KPI GRID
     line-height: 1;
     margin: 0;
     padding: 0;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
     text-shadow:
-        0 3px 12px rgba(203, 161, 53, 0.5),
-        0 0 30px rgba(203, 161, 53, 0.2);
+        0 3px 12px rgba(176, 141, 87, 0.5),
+        0 0 30px rgba(176, 141, 87, 0.2);
 }
 
 .kpi-change {
@@ -353,8 +427,9 @@ CHART AXIS LABELS
 
 .chart-axis-label {
     font-size: 13px;
-    color: var(--vm-muted);
+    color: rgba(176, 141, 87, 0.8);
     font-weight: 500;
+    letter-spacing: 0.05em;
 }
 
 .axis-x {
@@ -387,6 +462,9 @@ TWO-COLUMN LAYOUT
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
         0 6px 20px rgba(0, 0, 0, 0.5);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ============================================
@@ -455,7 +533,8 @@ INTELLIGENCE PANELS
     font-size: 26px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 18px;
+    margin-top: 15px;
+    margin-bottom: 12px;
 }
 
 .panel-divider {
@@ -532,6 +611,10 @@ TABLE STYLING
     border-bottom: 1px solid rgba(186, 149, 95, 0.2);
 }
 
+.a4-export .table-luxury tbody tr {
+    border-bottom: 1px solid rgba(176, 141, 87, 0.38);
+}
+
 .table-luxury tbody tr:nth-child(odd) {
     background: rgba(18, 18, 18, 0.8);
 }
@@ -544,6 +627,18 @@ TABLE STYLING
     font-size: 14px;
     color: var(--vm-text);
     padding: 15px 12px;
+    vertical-align: middle;
+}
+
+.table-luxury td.align-right {
+    text-align: right;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.table-luxury td.align-center {
+    text-align: center;
 }
 
 .property-address {
@@ -595,6 +690,7 @@ FOOTER — REFINED SPACING
     padding-top: 18px;
     border-top: 2px solid var(--vm-gold);
     z-index: 5;
+    height: 60px;
 }
 
 .footer-left {
@@ -635,6 +731,13 @@ FOOTER — REFINED SPACING
     padding: 8px 20px;
     border-radius: 6px;
     border: 2px solid rgba(203, 161, 53, 0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+.a4-export .slide-footer-branded {
+    bottom: 8mm;
+    left: 8mm;
+    right: 8mm;
 }
 
 /* ============================================
@@ -647,13 +750,18 @@ WATERMARK
     left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
     font-family: var(--font-display);
-    font-size: 120px;
+    font-size: 140px;
     font-weight: 700;
-    color: rgba(203, 161, 53, 0.01);
-    letter-spacing: 0.1em;
+    color: rgba(176, 141, 87, 0.04);
+    letter-spacing: 0.15em;
     z-index: 0;
     white-space: nowrap;
     pointer-events: none;
+    user-select: none;
+}
+
+.a4-export .watermark {
+    opacity: 0.7;
 }
 
 /* ============================================
@@ -691,6 +799,8 @@ MARKET DEPTH
     color: var(--vm-gold);
     margin-bottom: 20px;
     line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .depth-bar {
@@ -737,9 +847,14 @@ MARKET DEPTH
 
 .heatmap-table td {
     padding: 15px 12px;
-    border-bottom: 1px solid rgba(186, 149, 95, 0.2);
+    border-bottom: 1px solid rgba(186, 149, 95, 0.3);
     font-size: 14px;
     color: var(--vm-text);
+    vertical-align: middle;
+}
+
+.a4-export .heatmap-table td {
+    border-bottom: 1px solid rgba(176, 141, 87, 0.38);
 }
 
 .property-type-name {
@@ -748,7 +863,9 @@ MARKET DEPTH
 }
 
 .velocity-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 6px 12px;
     border-radius: 6px;
     font-family: var(--font-mono);
@@ -757,13 +874,13 @@ MARKET DEPTH
 }
 
 .velocity-high {
-    background: rgba(76, 175, 80, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(76, 175, 80, 0.25));
     color: #4CAF50;
     border: 1px solid #4CAF50;
 }
 
 .velocity-medium {
-    background: rgba(255, 193, 7, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(203, 161, 53, 0.2));
     color: #FFC107;
     border: 1px solid #FFC107;
 }
@@ -827,6 +944,8 @@ FORECAST
     font-size: 48px;
     font-weight: 700;
     color: var(--vm-gold);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .forecast-label {
@@ -886,8 +1005,9 @@ FORECAST
 }
 
 .sentiment-neutral {
-    color: #FFC107;
-    background: rgba(255, 193, 7, 0.15);
+    color: #CBA135;
+    background: rgba(18, 18, 18, 0.95);
+    border: 2px solid rgba(203, 161, 53, 0.4);
 }
 
 .sentiment-bearish {
@@ -905,6 +1025,8 @@ FORECAST
     color: var(--vm-gold);
     margin-bottom: 15px;
     line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .voxmill-index-bar {
@@ -1125,6 +1247,10 @@ NEW SECTION STYLES (ADDED)
     border-bottom: 1px solid rgba(186, 149, 95, 0.3);
 }
 
+.a4-export .benchmark-table tbody tr {
+    border-bottom: 1px solid rgba(176, 141, 87, 0.38);
+}
+
 .benchmark-table tbody tr:nth-child(odd) {
     background: rgba(18, 18, 18, 0.8);
 }
@@ -1137,6 +1263,7 @@ NEW SECTION STYLES (ADDED)
     font-size: 15px;
     color: var(--vm-text);
     padding: 18px;
+    font-variant-numeric: tabular-nums;
 }
 
 .benchmark-table .agency-name {
@@ -1361,21 +1488,31 @@ NEW SECTION STYLES (ADDED)
 .playbook-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+    gap: 25px;
     align-items: start;
+    margin-bottom: 25px;
+}
+
+.a4-export .playbook-grid {
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .playbook-column {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 2px solid rgba(203, 161, 53, 0.4);
+    border: 2px solid rgba(176, 141, 87, 0.4);
     border-radius: 12px;
-    padding: 30px;
+    padding: 0;
     box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         0 6px 20px rgba(0, 0, 0, 0.6);
-    height: 100%;
+    min-height: 320px;
     display: flex;
     flex-direction: column;
+}
+
+.a4-export .playbook-column {
+    min-height: 200px;
 }
 
 .playbook-column-title {
@@ -1383,13 +1520,26 @@ NEW SECTION STYLES (ADDED)
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid rgba(203, 161, 53, 0.3);
+    font-weight: 700;
+    text-align: center;
+    padding: 25px 20px 20px;
+    border-bottom: 2px solid rgba(176, 141, 87, 0.3);
+    background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), transparent);
+}
+
+.a4-export .playbook-column-title {
+    font-size: 14px;
+    padding: 15px 10px 12px;
 }
 
 .playbook-items {
     list-style: none;
+    padding: 25px;
+    flex: 1;
+}
+
+.a4-export .playbook-items {
+    padding: 15px;
 }
 
 .playbook-items li {
@@ -1401,6 +1551,13 @@ NEW SECTION STYLES (ADDED)
     line-height: 1.7;
 }
 
+.a4-export .playbook-items li {
+    padding: 8px 0;
+    padding-left: 20px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
 .playbook-items li::before {
     content: "→";
     position: absolute;
@@ -1410,76 +1567,114 @@ NEW SECTION STYLES (ADDED)
     font-size: 18px;
 }
 
+.a4-export .playbook-items li::before {
+    font-size: 14px;
+}
+
 /* Macro Pulse Strip */
 .macro-pulse-strip {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    background: rgba(203, 161, 53, 0.05);
-    border: 2px solid rgba(203, 161, 53, 0.3);
+    gap: 30px;
+    background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), rgba(176, 141, 87, 0.02));
+    border: 2px solid rgba(176, 141, 87, 0.3);
     border-radius: 12px;
-    padding: 30px;
-    margin: 0 auto 30px;
+    padding: 30px 40px;
+    margin: 0 auto;
     max-width: 100%;
     align-items: center;
-    justify-items: center;
+}
+
+.a4-export .macro-pulse-strip {
+    gap: 15px;
+    padding: 15px 20px;
 }
 
 .macro-pulse-item {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .macro-pulse-label {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--vm-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 10px;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.a4-export .macro-pulse-label {
+    font-size: 9px;
+    margin-bottom: 6px;
 }
 
 .macro-pulse-value {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
     color: var(--vm-gold);
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.a4-export .macro-pulse-value {
+    font-size: 24px;
+    margin-bottom: 4px;
 }
 
 .macro-pulse-sublabel {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--vm-text-body);
+    font-weight: 500;
+}
+
+.a4-export .macro-pulse-sublabel {
+    font-size: 9px;
 }
 
 .macro-pulse-analysis {
     grid-column: 1 / -1;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 2px solid rgba(203, 161, 53, 0.2);
-    font-size: 15px;
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(176, 141, 87, 0.2);
+    font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.8;
     text-align: center;
 }
 
+.a4-export .macro-pulse-analysis {
+    margin-top: 12px;
+    padding-top: 12px;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
 /* Data Integrity Footer */
 .data-integrity-footer {
-    background: rgba(203, 161, 53, 0.05);
-    border: 2px solid rgba(203, 161, 53, 0.3);
+    background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), rgba(176, 141, 87, 0.02));
+    border: 2px solid rgba(176, 141, 87, 0.3);
     border-radius: 10px;
-    padding: 25px;
-    margin-top: 30px;
+    padding: 25px 30px;
+    margin-top: 25px;
 }
 
 .data-integrity-title {
     font-size: 16px;
     color: var(--vm-gold);
-    margin-bottom: 12px;
-    font-weight: 600;
+    margin-bottom: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
 }
 
 .data-integrity-text {
     font-size: 13px;
     color: var(--vm-text-body);
-    line-height: 1.7;
+    line-height: 1.8;
 }
 
 /* ============================================
@@ -1506,4 +1701,20 @@ PRINT OPTIMIZATION
     .slide {
         page-break-inside: avoid;
     }
+    
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* A4 PRINT MODE - High Resolution */
+.a4-export {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.a4-export * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
