@@ -605,7 +605,7 @@ FOOTER WITH BRANDING — REFINED SPACING
 .footer-branding {
     display: flex;
     flex-direction: column;
-    gap: 4px; /* INCREASED from 2px for better separation */
+    gap: 8px; /* INCREASED from 4px for better separation */
 }
 
 .footer-company {
@@ -613,14 +613,16 @@ FOOTER WITH BRANDING — REFINED SPACING
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.05em;
-    margin-top: -3px; /* SLIGHT ADJUSTMENT UP */
+    margin-top: -5px; /* INCREASED adjustment up */
+    line-height: 1.2;
 }
 
 .footer-tagline {
     font-size: 11px;
     color: var(--vm-muted);
     letter-spacing: 0.03em;
-    margin-top: 2px; /* SLIGHT ADJUSTMENT DOWN */
+    margin-top: 4px; /* INCREASED adjustment down */
+    line-height: 1.2;
 }
 
 .footer-page {
@@ -646,7 +648,7 @@ WATERMARK
     font-family: var(--font-display);
     font-size: 120px;
     font-weight: 700;
-    color: rgba(203, 161, 53, 0.02); /* REDUCED from 0.03 to minimize interference */
+    color: rgba(203, 161, 53, 0.01); /* REDUCED from 0.02 to prevent bleed */
     letter-spacing: 0.1em;
     z-index: 0;
     white-space: nowrap;
@@ -868,6 +870,11 @@ ELITE FEATURES — FORECAST
     font-weight: 700;
     padding: 20px;
     border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
 }
 
 .sentiment-bullish {
