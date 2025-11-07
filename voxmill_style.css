@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — REFINED STYLES
+VOXMILL EXECUTIVE INTELLIGENCE DECK — ENHANCED STYLES
 16:9 Landscape Slide Format (1920×1080px)
-Black & Gold Luxury Design — PIXEL-PERFECT REFINEMENTS
+Black & Gold Luxury Design — PIXEL-PERFECT + NEW SECTIONS
 ============================================ */
 
 :root {
@@ -56,7 +56,7 @@ SLIDE CONTAINER
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.04; /* REDUCED from 0.06 to minimize background interference */
+    opacity: 0.04;
     z-index: 0;
     pointer-events: none;
     background-image:
@@ -146,8 +146,8 @@ COVER SLIDE — REFINED SPACING
 }
 
 .voxmill-logo {
-    width: 225px; /* INCREASED from 180px (+25%) */
-    height: 225px; /* INCREASED from 180px (+25%) */
+    width: 216px; /* INCREASED from 180px (+20%) */
+    height: 216px;
     filter: drop-shadow(0 8px 40px rgba(203, 161, 53, 0.9));
 }
 
@@ -191,9 +191,9 @@ COVER SLIDE — REFINED SPACING
 }
 
 .cover-compiled {
-    font-size: 11px; /* REDUCED from 16px (≈ 70%) */
+    font-size: 11px; /* REDUCED from 16px */
     color: var(--vm-text);
-    margin-top: 80px; /* INCREASED from 40px (+40px) */
+    margin-top: 80px; /* INCREASED from 40px */
     line-height: 1.8;
     text-align: center;
 }
@@ -214,7 +214,7 @@ COVER SLIDE — REFINED SPACING
 }
 
 /* ============================================
-KPI GRID — PERFECT CENTERING
+KPI GRID
 ============================================ */
 
 .kpi-grid {
@@ -223,7 +223,7 @@ KPI GRID — PERFECT CENTERING
     grid-template-rows: repeat(2, 1fr);
     gap: 30px;
     height: 460px;
-    margin-bottom: 45px; /* INCREASED from 40px for better section spacing */
+    margin-bottom: 45px;
 }
 
 .kpi-card {
@@ -288,7 +288,7 @@ CHART CONTAINERS WITH CONTEXT
 ============================================ */
 
 .chart-section {
-    margin-top: 45px; /* INCREASED from 40px */
+    margin-top: 45px;
 }
 
 .chart-divider {
@@ -299,7 +299,7 @@ CHART CONTAINERS WITH CONTEXT
         var(--vm-gold) 50%,
         var(--vm-bronze) 85%,
         transparent 100%);
-    margin: 35px 0; /* INCREASED from 30px */
+    margin: 35px 0;
     opacity: 0.6;
 }
 
@@ -322,17 +322,17 @@ CHART CONTAINERS WITH CONTEXT
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 8px; /* REDUCED from 10px to tighten with subtitle */
+    margin-bottom: 8px;
     text-align: center;
 }
 
 .chart-context {
-    font-size: 13px; /* SLIGHTLY REDUCED from 14px */
+    font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-bottom: 25px; /* INCREASED from 20px */
-    margin-left: 22px; /* CONSISTENT margin from edge */
-    margin-right: 22px; /* CONSISTENT margin from edge */
+    margin-bottom: 25px;
+    margin-left: 22px;
+    margin-right: 22px;
     font-style: italic;
     line-height: 1.5;
 }
@@ -395,7 +395,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
-    margin-top: 35px; /* INCREASED from 30px */
+    margin-top: 35px;
 }
 
 .insight-card {
@@ -441,7 +441,7 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 28px 30px;
-    margin-bottom: 30px; /* INCREASED from 25px */
+    margin-bottom: 30px;
     box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
@@ -495,7 +495,7 @@ INTELLIGENCE PANELS
 }
 
 /* ============================================
-TABLE STYLING — REFINED SCORE BADGES
+TABLE STYLING
 ============================================ */
 
 .table-luxury {
@@ -560,7 +560,6 @@ TABLE STYLING — REFINED SCORE BADGES
     font-weight: 600;
 }
 
-/* COLOR-CODED SCORE BADGES: GREEN (high), AMBER (medium), RED (low) */
 .score-high {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
@@ -580,7 +579,7 @@ TABLE STYLING — REFINED SCORE BADGES
 }
 
 /* ============================================
-FOOTER WITH BRANDING — REFINED SPACING
+FOOTER — REFINED SPACING
 ============================================ */
 
 .slide-footer-branded {
@@ -591,7 +590,7 @@ FOOTER WITH BRANDING — REFINED SPACING
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 18px; /* REDUCED from 20px to move content up slightly */
+    padding-top: 18px;
     border-top: 2px solid var(--vm-gold);
     z-index: 5;
 }
@@ -605,23 +604,23 @@ FOOTER WITH BRANDING — REFINED SPACING
 .footer-branding {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* INCREASED from 4px for better separation */
+    gap: 8px;
 }
 
 .footer-company {
-    font-size: 14px;
+    font-size: 13px; /* REDUCED by 10% from 14px */
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.05em;
-    margin-top: -5px; /* INCREASED adjustment up */
+    margin-top: -5px;
     line-height: 1.2;
 }
 
 .footer-tagline {
-    font-size: 11px;
+    font-size: 10px; /* REDUCED by 10% from 11px */
     color: var(--vm-muted);
     letter-spacing: 0.03em;
-    margin-top: 4px; /* INCREASED adjustment down */
+    margin-top: 4px;
     line-height: 1.2;
 }
 
@@ -648,7 +647,7 @@ WATERMARK
     font-family: var(--font-display);
     font-size: 120px;
     font-weight: 700;
-    color: rgba(203, 161, 53, 0.01); /* REDUCED from 0.02 to prevent bleed */
+    color: rgba(203, 161, 53, 0.01);
     letter-spacing: 0.1em;
     z-index: 0;
     white-space: nowrap;
@@ -656,14 +655,14 @@ WATERMARK
 }
 
 /* ============================================
-ELITE FEATURES — MARKET DEPTH
+MARKET DEPTH
 ============================================ */
 
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    margin-bottom: 45px; /* INCREASED from 40px */
+    margin-bottom: 45px;
 }
 
 .depth-card {
@@ -711,12 +710,12 @@ ELITE FEATURES — MARKET DEPTH
 }
 
 .property-type-heatmap {
-    margin-top: 35px; /* INCREASED from 30px */
+    margin-top: 35px;
 }
 
 .heatmap-table {
     width: 100%;
-    margin-top: 25px; /* INCREASED from 20px */
+    margin-top: 25px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
@@ -778,14 +777,14 @@ ELITE FEATURES — MARKET DEPTH
 }
 
 /* ============================================
-ELITE FEATURES — FORECAST
+FORECAST
 ============================================ */
 
 .forecast-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
-    margin-bottom: 35px; /* INCREASED from 30px */
+    margin-bottom: 35px;
 }
 
 .forecast-card {
@@ -926,7 +925,7 @@ ELITE FEATURES — FORECAST
 }
 
 .macro-context {
-    margin-top: 35px; /* INCREASED from 30px */
+    margin-top: 35px;
     padding: 25px 30px;
     background: rgba(203, 161, 53, 0.05);
     border-left: 4px solid var(--vm-gold);
@@ -946,12 +945,12 @@ ELITE FEATURES — FORECAST
 }
 
 /* ============================================
-ELITE FEATURES — EXECUTIVE ACTIONS
+EXECUTIVE ACTIONS
 ============================================ */
 
 .executive-actions-grid {
     display: grid;
-    gap: 22px; /* INCREASED from 20px */
+    gap: 22px;
 }
 
 .action-card {
@@ -982,7 +981,7 @@ ELITE FEATURES — EXECUTIVE ACTIONS
 }
 
 .review-notice {
-    margin-top: 45px; /* INCREASED from 40px */
+    margin-top: 45px;
     padding: 25px;
     background: rgba(203, 161, 53, 0.1);
     border: 2px solid var(--vm-gold);
@@ -993,11 +992,11 @@ ELITE FEATURES — EXECUTIVE ACTIONS
 }
 
 /* ============================================
-ELITE FEATURES — APPENDIX
+APPENDIX
 ============================================ */
 
 .appendix-section {
-    margin-bottom: 45px; /* INCREASED from 40px */
+    margin-bottom: 45px;
 }
 
 .appendix-title {
@@ -1055,7 +1054,7 @@ ELITE FEATURES — APPENDIX
 }
 
 .appendix-disclaimer {
-    margin-top: 45px; /* INCREASED from 40px */
+    margin-top: 45px;
     padding: 30px;
     background: rgba(203, 161, 53, 0.08);
     border: 2px solid rgba(203, 161, 53, 0.3);
@@ -1074,10 +1073,6 @@ ELITE FEATURES — APPENDIX
     line-height: 1.8;
 }
 
-/* ============================================
-TABLE SUBTITLE
-============================================ */
-
 .table-subtitle {
     font-size: 13px;
     color: var(--vm-muted);
@@ -1086,6 +1081,390 @@ TABLE SUBTITLE
     margin-left: 22px;
     margin-right: 22px;
     font-style: italic;
+}
+
+/* ============================================
+NEW SECTION STYLES (ADDED)
+============================================ */
+
+/* Competitive Benchmarking Table */
+.benchmark-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 30px;
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.05);
+}
+
+.benchmark-table thead {
+    background: linear-gradient(90deg, var(--vm-bronze) 0%, var(--vm-gold) 100%);
+    height: 50px;
+}
+
+.benchmark-table th {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 15px 18px;
+    text-align: left;
+}
+
+.benchmark-table tbody tr {
+    border-bottom: 1px solid rgba(186, 149, 95, 0.2);
+}
+
+.benchmark-table tbody tr:nth-child(odd) {
+    background: rgba(18, 18, 18, 0.8);
+}
+
+.benchmark-table tbody tr:nth-child(even) {
+    background: rgba(23, 23, 23, 0.8);
+}
+
+.benchmark-table td {
+    font-size: 15px;
+    color: var(--vm-text);
+    padding: 18px;
+}
+
+.benchmark-table .agency-name {
+    font-weight: 600;
+    color: var(--vm-gold);
+}
+
+.benchmark-table tr.market-average {
+    background: rgba(203, 161, 53, 0.08) !important;
+    border-top: 2px solid var(--vm-gold);
+    border-bottom: 2px solid var(--vm-gold);
+}
+
+.benchmark-table tr.market-average td {
+    font-weight: 600;
+    color: var(--vm-gold);
+}
+
+.benchmark-insight {
+    margin-top: 20px;
+    padding: 18px 25px;
+    background: rgba(203, 161, 53, 0.05);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+}
+
+/* Risk Index */
+.risk-index-container {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.risk-index-label {
+    font-size: 18px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+}
+
+.risk-index-value {
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    line-height: 1;
+}
+
+.risk-index-bar {
+    height: 20px;
+    background: rgba(186, 149, 95, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto 15px;
+    max-width: 600px;
+}
+
+.risk-index-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+    transition: width 0.3s ease;
+}
+
+.risk-index-status {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 15px;
+}
+
+.risk-low {
+    color: #4CAF50;
+}
+
+.risk-moderate {
+    color: #FFC107;
+}
+
+.risk-elevated {
+    color: #F44336;
+}
+
+/* Sub-Market Breakdown */
+.submarket-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.submarket-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(203, 161, 53, 0.4);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.submarket-title {
+    font-size: 20px;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.submarket-metric {
+    margin: 15px 0;
+}
+
+.submarket-metric-label {
+    font-size: 12px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+}
+
+.submarket-metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--vm-text);
+}
+
+.watchlist-box {
+    background: rgba(203, 161, 53, 0.05);
+    border: 2px solid rgba(203, 161, 53, 0.3);
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.watchlist-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.watchlist-items {
+    list-style: none;
+}
+
+.watchlist-items li {
+    padding: 10px 0;
+    padding-left: 25px;
+    position: relative;
+    font-size: 15px;
+    color: var(--vm-text);
+}
+
+.watchlist-items li::before {
+    content: "★";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-size: 18px;
+}
+
+/* Acquisition Signals */
+.signals-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.signal-card {
+    display: flex;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(203, 161, 53, 0.4);
+    border-left: 4px solid #4CAF50;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow:
+        inset 0 0 20px rgba(76, 175, 80, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.signal-icon {
+    font-size: 32px;
+    color: #4CAF50;
+    min-width: 40px;
+    text-align: center;
+}
+
+.signal-content {
+    flex: 1;
+}
+
+.signal-address {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 8px;
+}
+
+.signal-price {
+    font-size: 14px;
+    color: var(--vm-text);
+    margin-bottom: 10px;
+}
+
+.signal-reasoning {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    font-style: italic;
+}
+
+/* Strategic Playbook */
+.playbook-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.playbook-column {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(203, 161, 53, 0.4);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.05),
+        0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.playbook-column-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(203, 161, 53, 0.3);
+}
+
+.playbook-items {
+    list-style: none;
+}
+
+.playbook-items li {
+    padding: 12px 0;
+    padding-left: 25px;
+    position: relative;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+}
+
+.playbook-items li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* Macro Pulse Strip */
+.macro-pulse-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    background: rgba(203, 161, 53, 0.05);
+    border: 2px solid rgba(203, 161, 53, 0.3);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.macro-pulse-item {
+    text-align: center;
+}
+
+.macro-pulse-label {
+    font-size: 13px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.macro-pulse-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 5px;
+}
+
+.macro-pulse-sublabel {
+    font-size: 14px;
+    color: var(--vm-text-body);
+}
+
+.macro-pulse-analysis {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(203, 161, 53, 0.2);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* Data Integrity Footer */
+.data-integrity-footer {
+    background: rgba(203, 161, 53, 0.05);
+    border: 2px solid rgba(203, 161, 53, 0.3);
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.data-integrity-title {
+    font-size: 16px;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.data-integrity-text {
+    font-size: 13px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
 }
 
 /* ============================================
