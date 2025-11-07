@@ -188,18 +188,18 @@ SLIDE CONTENT AREA
     top: 180px;
     left: 80px;
     right: 80px;
-    bottom: 165px;
+    bottom: 190px;
     overflow: hidden;
     z-index: 5;
-    padding: 15px 0 15px 0;
+    padding: 10px 0 10px 0;
 }
 
 .a4-export .slide-content {
-    top: 8mm;
-    left: 8mm;
-    right: 8mm;
-    bottom: 8mm;
-    padding: 8mm 0;
+    top: 12mm;
+    left: 10mm;
+    right: 10mm;
+    bottom: 25mm;
+    padding: 5mm 0;
 }
 
 /* ============================================
@@ -336,9 +336,7 @@ KPI GRID
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
-    text-shadow:
-        0 3px 12px rgba(176, 141, 87, 0.5),
-        0 0 30px rgba(176, 141, 87, 0.2);
+    /* NO GLOWS - REMOVED FOR CRISP RENDERING */
 }
 
 .kpi-change {
@@ -681,16 +679,17 @@ FOOTER — REFINED SPACING
 
 .slide-footer-branded {
     position: absolute;
-    bottom: 30px;
+    bottom: 40px;
     left: 80px;
     right: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 18px;
+    padding-top: 20px;
     border-top: 2px solid var(--vm-gold);
-    z-index: 5;
-    height: 60px;
+    z-index: 15;
+    height: 65px;
+    background: var(--vm-dark);
 }
 
 .footer-left {
@@ -706,7 +705,7 @@ FOOTER — REFINED SPACING
 }
 
 .footer-company {
-    font-size: 13px; /* REDUCED by 10% from 14px */
+    font-size: 13px;
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.05em;
@@ -715,7 +714,7 @@ FOOTER — REFINED SPACING
 }
 
 .footer-tagline {
-    font-size: 10px; /* REDUCED by 10% from 11px */
+    font-size: 10px;
     color: var(--vm-muted);
     letter-spacing: 0.03em;
     margin-top: 4px;
@@ -735,9 +734,11 @@ FOOTER — REFINED SPACING
 }
 
 .a4-export .slide-footer-branded {
-    bottom: 8mm;
-    left: 8mm;
-    right: 8mm;
+    bottom: 10mm;
+    left: 10mm;
+    right: 10mm;
+    height: 50px;
+    padding-top: 15px;
 }
 
 /* ============================================
@@ -871,6 +872,7 @@ MARKET DEPTH
     font-family: var(--font-mono);
     font-weight: 600;
     font-size: 13px;
+    /* NO GLOWS - REMOVED */
 }
 
 .velocity-high {
@@ -889,6 +891,37 @@ MARKET DEPTH
     background: rgba(244, 67, 54, 0.2);
     color: #F44336;
     border: 1px solid #F44336;
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    min-width: 50px;
+    /* NO GLOWS - REMOVED */
+}
+
+.score-excellent {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.score-good {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 1px solid #FFC107;
+}
+
+.score-standard {
+    background: rgba(176, 141, 87, 0.2);
+    color: #B08D57;
+    border: 1px solid #B08D57;
 }
 
 .signal-text {
@@ -997,6 +1030,25 @@ FORECAST
     margin: 0 auto;
     width: fit-content;
     min-width: 200px;
+    /* NO GLOWS - REMOVED */
+}
+
+.sentiment-bullish {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+    border: 2px solid rgba(76, 175, 80, 0.4);
+}
+
+.sentiment-neutral {
+    color: #B08D57;
+    background: rgba(18, 18, 18, 0.95);
+    border: 2px solid rgba(176, 141, 87, 0.4);
+}
+
+.sentiment-bearish {
+    color: #F44336;
+    background: rgba(244, 67, 54, 0.15);
+    border: 2px solid rgba(244, 67, 54, 0.4);
 }
 
 .sentiment-bullish {
