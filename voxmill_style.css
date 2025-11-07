@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — COMPLETE STYLES
+VOXMILL EXECUTIVE INTELLIGENCE DECK — REFINED STYLES
 16:9 Landscape Slide Format (1920×1080px)
-Black & Gold Luxury Design
+Black & Gold Luxury Design — PIXEL-PERFECT REFINEMENTS
 ============================================ */
 
 :root {
@@ -56,7 +56,7 @@ SLIDE CONTAINER
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.06;
+    opacity: 0.04; /* REDUCED from 0.06 to minimize background interference */
     z-index: 0;
     pointer-events: none;
     background-image:
@@ -131,7 +131,7 @@ SLIDE CONTENT AREA
 }
 
 /* ============================================
-COVER SLIDE
+COVER SLIDE — REFINED SPACING
 ============================================ */
 
 .slide-cover {
@@ -146,8 +146,8 @@ COVER SLIDE
 }
 
 .voxmill-logo {
-    width: 180px;
-    height: 180px;
+    width: 225px; /* INCREASED from 180px (+25%) */
+    height: 225px; /* INCREASED from 180px (+25%) */
     filter: drop-shadow(0 8px 40px rgba(203, 161, 53, 0.9));
 }
 
@@ -191,9 +191,9 @@ COVER SLIDE
 }
 
 .cover-compiled {
-    font-size: 16px;
+    font-size: 11px; /* REDUCED from 16px (≈ 70%) */
     color: var(--vm-text);
-    margin-top: 40px;
+    margin-top: 80px; /* INCREASED from 40px (+40px) */
     line-height: 1.8;
     text-align: center;
 }
@@ -223,7 +223,7 @@ KPI GRID — PERFECT CENTERING
     grid-template-rows: repeat(2, 1fr);
     gap: 30px;
     height: 460px;
-    margin-bottom: 40px;
+    margin-bottom: 45px; /* INCREASED from 40px for better section spacing */
 }
 
 .kpi-card {
@@ -288,7 +288,7 @@ CHART CONTAINERS WITH CONTEXT
 ============================================ */
 
 .chart-section {
-    margin-top: 40px;
+    margin-top: 45px; /* INCREASED from 40px */
 }
 
 .chart-divider {
@@ -299,7 +299,7 @@ CHART CONTAINERS WITH CONTEXT
         var(--vm-gold) 50%,
         var(--vm-bronze) 85%,
         transparent 100%);
-    margin: 30px 0;
+    margin: 35px 0; /* INCREASED from 30px */
     opacity: 0.6;
 }
 
@@ -322,17 +322,45 @@ CHART CONTAINERS WITH CONTEXT
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* REDUCED from 10px to tighten with subtitle */
     text-align: center;
 }
 
 .chart-context {
-    font-size: 14px;
+    font-size: 13px; /* SLIGHTLY REDUCED from 14px */
     color: var(--vm-muted);
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px; /* INCREASED from 20px */
+    margin-left: 22px; /* CONSISTENT margin from edge */
+    margin-right: 22px; /* CONSISTENT margin from edge */
     font-style: italic;
     line-height: 1.5;
+}
+
+.chart-source {
+    font-size: 11px;
+    color: rgba(175, 175, 175, 0.7);
+    text-align: center;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+/* ============================================
+CHART AXIS LABELS
+============================================ */
+
+.chart-axis-label {
+    font-size: 13px;
+    color: var(--vm-muted);
+    font-weight: 500;
+}
+
+.axis-x {
+    text-anchor: middle;
+}
+
+.axis-y {
+    text-anchor: end;
 }
 
 /* ============================================
@@ -367,7 +395,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
-    margin-top: 30px;
+    margin-top: 35px; /* INCREASED from 30px */
 }
 
 .insight-card {
@@ -413,7 +441,7 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 28px 30px;
-    margin-bottom: 25px;
+    margin-bottom: 30px; /* INCREASED from 25px */
     box-shadow:
         inset 0 2px 0 rgba(255, 255, 255, 0.05),
         inset 0 0 30px rgba(255, 255, 255, 0.02),
@@ -467,7 +495,7 @@ INTELLIGENCE PANELS
 }
 
 /* ============================================
-TABLE STYLING
+TABLE STYLING — REFINED SCORE BADGES
 ============================================ */
 
 .table-luxury {
@@ -532,10 +560,11 @@ TABLE STYLING
     font-weight: 600;
 }
 
+/* REFINED: Gold gradient for high scores (no more red boxes) */
 .score-high {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4CAF50;
-    border: 1px solid #4CAF50;
+    background: linear-gradient(135deg, rgba(203, 161, 53, 0.3), rgba(186, 149, 95, 0.3));
+    color: #CBA135;
+    border: 1px solid #CBA135;
 }
 
 .score-medium {
@@ -545,13 +574,13 @@ TABLE STYLING
 }
 
 .score-low {
-    background: rgba(244, 67, 54, 0.2);
-    color: #F44336;
-    border: 1px solid #F44336;
+    background: rgba(175, 175, 175, 0.2);
+    color: #AFAFAF;
+    border: 1px solid #AFAFAF;
 }
 
 /* ============================================
-FOOTER WITH BRANDING
+FOOTER WITH BRANDING — REFINED SPACING
 ============================================ */
 
 .slide-footer-branded {
@@ -562,7 +591,7 @@ FOOTER WITH BRANDING
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 18px; /* REDUCED from 20px to move content up slightly */
     border-top: 2px solid var(--vm-gold);
     z-index: 5;
 }
@@ -576,7 +605,7 @@ FOOTER WITH BRANDING
 .footer-branding {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px; /* INCREASED from 2px for better separation */
 }
 
 .footer-company {
@@ -584,12 +613,14 @@ FOOTER WITH BRANDING
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.05em;
+    margin-top: -3px; /* SLIGHT ADJUSTMENT UP */
 }
 
 .footer-tagline {
     font-size: 11px;
     color: var(--vm-muted);
     letter-spacing: 0.03em;
+    margin-top: 2px; /* SLIGHT ADJUSTMENT DOWN */
 }
 
 .footer-page {
@@ -615,7 +646,7 @@ WATERMARK
     font-family: var(--font-display);
     font-size: 120px;
     font-weight: 700;
-    color: rgba(203, 161, 53, 0.03);
+    color: rgba(203, 161, 53, 0.02); /* REDUCED from 0.03 to minimize interference */
     letter-spacing: 0.1em;
     z-index: 0;
     white-space: nowrap;
@@ -630,7 +661,7 @@ ELITE FEATURES — MARKET DEPTH
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    margin-bottom: 40px;
+    margin-bottom: 45px; /* INCREASED from 40px */
 }
 
 .depth-card {
@@ -678,12 +709,12 @@ ELITE FEATURES — MARKET DEPTH
 }
 
 .property-type-heatmap {
-    margin-top: 30px;
+    margin-top: 35px; /* INCREASED from 30px */
 }
 
 .heatmap-table {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 25px; /* INCREASED from 20px */
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
@@ -752,7 +783,7 @@ ELITE FEATURES — FORECAST
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
-    margin-bottom: 30px;
+    margin-bottom: 35px; /* INCREASED from 30px */
 }
 
 .forecast-card {
@@ -888,7 +919,7 @@ ELITE FEATURES — FORECAST
 }
 
 .macro-context {
-    margin-top: 30px;
+    margin-top: 35px; /* INCREASED from 30px */
     padding: 25px 30px;
     background: rgba(203, 161, 53, 0.05);
     border-left: 4px solid var(--vm-gold);
@@ -913,7 +944,7 @@ ELITE FEATURES — EXECUTIVE ACTIONS
 
 .executive-actions-grid {
     display: grid;
-    gap: 20px;
+    gap: 22px; /* INCREASED from 20px */
 }
 
 .action-card {
@@ -944,7 +975,7 @@ ELITE FEATURES — EXECUTIVE ACTIONS
 }
 
 .review-notice {
-    margin-top: 40px;
+    margin-top: 45px; /* INCREASED from 40px */
     padding: 25px;
     background: rgba(203, 161, 53, 0.1);
     border: 2px solid var(--vm-gold);
@@ -959,7 +990,7 @@ ELITE FEATURES — APPENDIX
 ============================================ */
 
 .appendix-section {
-    margin-bottom: 40px;
+    margin-bottom: 45px; /* INCREASED from 40px */
 }
 
 .appendix-title {
@@ -1017,7 +1048,7 @@ ELITE FEATURES — APPENDIX
 }
 
 .appendix-disclaimer {
-    margin-top: 40px;
+    margin-top: 45px; /* INCREASED from 40px */
     padding: 30px;
     background: rgba(203, 161, 53, 0.08);
     border: 2px solid rgba(203, 161, 53, 0.3);
@@ -1034,6 +1065,20 @@ ELITE FEATURES — APPENDIX
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.8;
+}
+
+/* ============================================
+TABLE SUBTITLE
+============================================ */
+
+.table-subtitle {
+    font-size: 13px;
+    color: var(--vm-muted);
+    text-align: center;
+    margin-bottom: 20px;
+    margin-left: 22px;
+    margin-right: 22px;
+    font-style: italic;
 }
 
 /* ============================================
