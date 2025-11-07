@@ -560,11 +560,11 @@ TABLE STYLING — REFINED SCORE BADGES
     font-weight: 600;
 }
 
-/* REFINED: Gold gradient for high scores (no more red boxes) */
+/* COLOR-CODED SCORE BADGES: GREEN (high), AMBER (medium), RED (low) */
 .score-high {
-    background: linear-gradient(135deg, rgba(203, 161, 53, 0.3), rgba(186, 149, 95, 0.3));
-    color: #CBA135;
-    border: 1px solid #CBA135;
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
 }
 
 .score-medium {
@@ -574,9 +574,9 @@ TABLE STYLING — REFINED SCORE BADGES
 }
 
 .score-low {
-    background: rgba(175, 175, 175, 0.2);
-    color: #AFAFAF;
-    border: 1px solid #AFAFAF;
+    background: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+    border: 1px solid #F44336;
 }
 
 /* ============================================
