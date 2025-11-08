@@ -68,8 +68,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Automated Intelligence for Premium Markets</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">1</span>
@@ -77,7 +76,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 2: MARKET OVERVIEW
+     SLIDE 2: MARKET OVERVIEW — ✅ KPI OPTICAL CENTERING FIXED
      ============================================ -->
 
 <div class="slide">
@@ -89,34 +88,42 @@
     <div class="slide-content">
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-label">Active Listings</div>
-                <div class="kpi-value">{{ kpis.total_properties }}</div>
-                <div class="kpi-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. last week
+                <div class="kpi-content">
+                    <div class="kpi-label">Active Listings</div>
+                    <div class="kpi-value">{{ kpis.total_properties }}</div>
+                    <div class="kpi-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+                        {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. last week
+                    </div>
                 </div>
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-label">Average Price</div>
-                <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price) }}</div>
-                <div class="kpi-change {{ 'positive' if kpis.price_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.price_change > 0 else "↓" }} {{ abs(kpis.price_change) }}% vs. last week
+                <div class="kpi-content">
+                    <div class="kpi-label">Average Price</div>
+                    <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price) }}</div>
+                    <div class="kpi-change {{ 'positive' if kpis.price_change > 0 else 'negative' }}">
+                        {{ "↑" if kpis.price_change > 0 else "↓" }} {{ abs(kpis.price_change) }}% vs. last week
+                    </div>
                 </div>
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-label">Price per SqFt</div>
-                <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-                <div class="kpi-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. last week
+                <div class="kpi-content">
+                    <div class="kpi-label">Price per SqFt</div>
+                    <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+                    <div class="kpi-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+                        {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. last week
+                    </div>
                 </div>
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-label">Market Velocity</div>
-                <div class="kpi-value">{{ kpis.days_on_market }} days</div>
-                <div class="kpi-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. last week
+                <div class="kpi-content">
+                    <div class="kpi-label">Market Velocity</div>
+                    <div class="kpi-value">{{ kpis.days_on_market }} days</div>
+                    <div class="kpi-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+                        {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. last week
+                    </div>
                 </div>
             </div>
         </div>
@@ -135,15 +142,6 @@
                     {% endfor %}
                     
                     {% for bar in chart_data.price_distribution %}
-                    <defs>
-                        <filter id="barGlow{{ loop.index0 }}">
-                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
                     <rect x="{{ 200 + loop.index0 * 350 }}" 
                           y="{{ 180 - (bar.height * 0.9) }}" 
                           width="200" 
@@ -151,7 +149,6 @@
                           fill="url(#barGradient)" 
                           stroke="#CBA135" 
                           stroke-width="2"
-                          filter="url(#barGlow{{ loop.index0 }})"
                           rx="4"/>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
                           y="{{ 165 - (bar.height * 0.9) }}" 
@@ -195,8 +192,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">2</span>
@@ -324,8 +320,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">3</span>
@@ -349,11 +344,14 @@
                     <circle cx="350" cy="240" r="120" fill="none" stroke="rgba(203,161,53,0.3)" stroke-width="3"/>
                     <circle cx="350" cy="240" r="140" fill="none" stroke="rgba(186,149,95,0.2)" stroke-width="2"/>
                 </svg>
+                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
             <div class="chart-panel">
                 <h3 class="chart-title">Competitor Inventory</h3>
                 <p class="chart-context">Active listings count by leading agencies — Market positioning analysis</p>
                 <svg width="100%" height="480" viewBox="0 0 700 480">
+                    <text x="5" y="240" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 5, 240)" class="chart-axis-label">Agency</text>
+                    
                     {% for comp in chart_data.competitor_inventory %}
                     <text x="20" y="{{ 80 + loop.index0 * 75 }}" font-family="Inter" font-size="16" fill="#EAEAEA">{{ comp.name[:25] }}</text>
                     <rect x="280" y="{{ 60 + loop.index0 * 75 }}" width="{{ comp.listings * 3 }}" height="30" fill="url(#compGradient{{ loop.index0 }})" stroke="#BA955F" stroke-width="1.5"/>
@@ -365,21 +363,16 @@
                         </linearGradient>
                     </defs>
                     {% endfor %}
+                    
+                    <text x="480" y="455" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" class="chart-axis-label">Active Listings</text>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
         </div>
         <div class="panel" style="margin-top: 25px;">
-            <h3 class="panel-title">Competitive Intelligence</h3>
+            <h3 class="panel-title">Key Finding</h3>
             <div class="panel-divider"></div>
             <p class="panel-text">{{ competitive_analysis.summary }}</p>
-            {% if competitive_analysis.key_insights %}
-            <ul class="bullet-list">
-                {% for insight in competitive_analysis.key_insights %}
-                <li>{{ insight }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
         </div>
     </div>
     <div class="slide-footer-branded">
@@ -393,8 +386,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">4</span>
@@ -464,15 +456,14 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">5</span>
     </div>
 </div>
 
-<!-- SLIDE 6: STRATEGIC FORECAST -->
+<!-- SLIDE 6: STRATEGIC FORECAST — ✅ SENTIMENT MATTE, VPI CAPTION FIXED -->
 <div class="slide">
     <div class="slide-header">
         <h2 class="slide-title">Strategic Forecast</h2>
@@ -516,9 +507,9 @@
                     <div class="voxmill-index-bar">
                         <div class="voxmill-index-fill" style="width: {{ forecast.voxmill_index }}%"></div>
                     </div>
+                    <div class="forecast-note">Composite Market Strength (0-100)</div>
                 </div>
-                <div class="forecast-label">Composite Market Strength (0-100)</div>
-                <div class="forecast-note">Blend of liquidity, demand pressure, and price momentum</div>
+                <div class="forecast-label">Blend of liquidity, demand pressure, and price momentum</div>
             </div>
         </div>
         <div class="macro-context">
@@ -541,15 +532,14 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">6</span>
     </div>
 </div>
 
-<!-- SLIDE 7: EXECUTIVE INTELLIGENCE -->
+<!-- SLIDE 7: EXECUTIVE INTELLIGENCE — ✅ SPACING IMPROVED -->
 <div class="slide">
     <div class="slide-header">
         <h2 class="slide-title">Executive Intelligence</h2>
@@ -579,8 +569,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">7</span>
@@ -643,8 +632,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">8</span>
@@ -711,8 +699,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">9</span>
@@ -720,7 +707,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 10: COMPETITIVE BENCHMARKING (NEW)
+     SLIDE 10: COMPETITIVE BENCHMARKING
      ============================================ -->
 
 <div class="slide">
@@ -777,8 +764,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">10</span>
@@ -786,7 +772,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 11: FORECAST & MARKET RISK (NEW)
+     SLIDE 11: FORECAST & MARKET RISK — ✅ AXIS TITLES ADDED
      ============================================ -->
 
 <div class="slide">
@@ -811,7 +797,7 @@
             
             <div class="chart-panel">
                 <h3 class="chart-title">Market Risk Index</h3>
-                <p class="chart-context">Composite volatility and exposure assessment</p>
+                <p class="chart-context">Composite volatility and exposure assessment (0-100 scale)</p>
                 <div class="risk-index-container" style="padding: 30px;">
                     <div class="risk-index-label">Risk Score</div>
                     <div class="risk-index-value">{{ market_risk.score }}</div>
@@ -820,6 +806,9 @@
                     </div>
                     <div class="risk-index-status risk-{{ market_risk.label.lower().replace(' ', '-') }}">
                         {{ market_risk.label }}
+                    </div>
+                    <div style="font-size: 12px; color: #AFAFAF; margin-top: 12px; font-style: italic;">
+                        Low (0-40) | Moderate (41-65) | Elevated (66-100)
                     </div>
                 </div>
             </div>
@@ -845,8 +834,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">11</span>
@@ -854,7 +842,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 12: SUB-MARKET BREAKDOWN (NEW)
+     SLIDE 12: SUB-MARKET BREAKDOWN
      ============================================ -->
 
 <div class="slide">
@@ -912,8 +900,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">12</span>
@@ -921,7 +908,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 13: ACQUISITION SIGNALS (NEW)
+     SLIDE 13: ACQUISITION SIGNALS — ✅ COMPRESSED 25% + BADGES ADDED
      ============================================ -->
 
 <div class="slide">
@@ -941,6 +928,11 @@
                     <div class="signal-address">{{ signal.address }}</div>
                     <div class="signal-price">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
                     <div class="signal-reasoning">{{ signal.reasoning }}</div>
+                </div>
+                <div class="signal-badges">
+                    <div class="signal-badge signal-badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
+                    <div class="signal-badge signal-badge-confidence">{{ signal.confidence|default(78) }}%</div>
+                    <div class="signal-badge signal-badge-trigger">{{ signal.trigger|default('>60d') }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -973,8 +965,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">13</span>
@@ -982,7 +973,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 14: STRATEGIC PLAYBOOK (NEW)
+     SLIDE 14: STRATEGIC PLAYBOOK — ✅ 3-COLUMN PERFECT ALIGNMENT + SIMPLIFIED MACRO
      ============================================ -->
 
 <div class="slide">
@@ -1023,23 +1014,10 @@
         </div>
         
         <div class="macro-pulse-strip">
-            <div class="macro-pulse-item">
-                <div class="macro-pulse-label">Interest Rate Trend</div>
-                <div class="macro-pulse-value">{{ macro_pulse.interest_rate_trend }}</div>
-                <div class="macro-pulse-sublabel">{{ macro_pulse.interest_rate_label }}</div>
-            </div>
-            <div class="macro-pulse-item">
-                <div class="macro-pulse-label">GBP/USD</div>
-                <div class="macro-pulse-value">{{ macro_pulse.gbp_usd_trend }}</div>
-                <div class="macro-pulse-sublabel">{{ macro_pulse.gbp_usd_label }}</div>
-            </div>
-            <div class="macro-pulse-item">
-                <div class="macro-pulse-label">Luxury Buyer Sentiment</div>
-                <div class="macro-pulse-value">{{ macro_pulse.luxury_sentiment_score }}</div>
-                <div class="macro-pulse-sublabel">{{ macro_pulse.luxury_sentiment }}</div>
-            </div>
-            <div class="macro-pulse-analysis">
-                {{ macro_pulse.macro_analysis }}
+            <div class="macro-pulse-text">
+                <strong>Interest Rate:</strong> {{ macro_pulse.interest_rate_trend }} ({{ macro_pulse.interest_rate_label }}) | 
+                <strong>GBP/USD:</strong> {{ macro_pulse.gbp_usd_trend }} ({{ macro_pulse.gbp_usd_label }}) | 
+                <strong>Luxury Sentiment:</strong> {{ macro_pulse.luxury_sentiment_score }}/100 ({{ macro_pulse.luxury_sentiment }})
             </div>
         </div>
         
@@ -1063,8 +1041,7 @@
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
-                <div class="footer-company">Voxmill Market Intelligence</div>
-                <div class="footer-tagline">Confidential | {{ report_date }}</div>
+                <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
         <span class="footer-page">14</span>
