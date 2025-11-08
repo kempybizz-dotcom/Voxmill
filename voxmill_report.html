@@ -416,21 +416,6 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <div class="depth-metrics">
-            <div class="depth-card">
-                <div class="depth-label">Voxmill Liquidity Index</div>
-                <div class="depth-value">{{ market_depth.liquidity_index }}</div>
-                <div class="depth-bar">
-                    <div class="depth-bar-fill" style="width: {{ market_depth.liquidity_index }}%"></div>
-                </div>
-                <div class="depth-note">Higher = Faster Transaction Velocity</div>
-            </div>
-            <div class="depth-card">
-                <div class="depth-label">Demand Pressure Index</div>
-                <div class="depth-value">{{ market_depth.demand_pressure }}</div>
-                <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
-            </div>
-        </div>
         <div class="property-type-heatmap">
             <h3 class="chart-title">Property Type Performance Heatmap</h3>
             <p class="chart-context">Velocity score (0-100) — Higher scores indicate faster market absorption rates</p>
@@ -459,6 +444,22 @@
                 </tbody>
             </table>
             <p class="chart-source">Source: Voxmill Forecast Engine — Updated {{ report_date }}</p>
+        </div>
+        
+        <div class="depth-metrics">
+            <div class="depth-card">
+                <div class="depth-label">Voxmill Liquidity Index</div>
+                <div class="depth-value">{{ market_depth.liquidity_index }}</div>
+                <div class="depth-bar">
+                    <div class="depth-bar-fill" style="width: {{ market_depth.liquidity_index }}%"></div>
+                </div>
+                <div class="depth-note">Higher = Faster Transaction Velocity</div>
+            </div>
+            <div class="depth-card">
+                <div class="depth-label">Demand Pressure Index</div>
+                <div class="depth-value">{{ market_depth.demand_pressure }}</div>
+                <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
+            </div>
         </div>
     </div>
     <div class="slide-footer-branded">
