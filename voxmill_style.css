@@ -396,8 +396,8 @@ INSIGHT CARDS
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    margin-top: 32px;
+    gap: 15px;
+    margin-top: -32px;
 }
 
 .insight-card {
@@ -408,7 +408,7 @@ INSIGHT CARDS
     border-left: 4px solid #B08D57;
     border-radius: 10px;
     padding: 28px 25px;
-    min-height: 140px;
+    min-height: 85px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -958,7 +958,7 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 32px;
+    margin-top: 12px;
     padding: 25px 30px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 4px solid #B08D57;
@@ -1009,7 +1009,7 @@ PAGE 7: EXECUTIVE INTELLIGENCE — VERTICAL STACK REDESIGN
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-display);
+    font-family: var(--font-Inter);
     font-size: 20px;
     font-weight: 700;
     flex-shrink: 0;
@@ -1135,6 +1135,14 @@ BENCHMARK TABLE
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
+}
+
+.benchmark-table tbody td:nth-child(3),
+.benchmark-table tbody td:nth-child(4),
+.benchmark-table tbody td:nth-child(5),
+.benchmark-table tbody td:nth-child(6) {
+  position: relative;
+  left: -10px;   /* negative moves content left */
 }
 
 /* ============================================
@@ -1383,6 +1391,11 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
     font-size: 16px;
 }
 
+.submarket-metric-row {
+  position: relative;
+  left: 8px;  /* Adjust 6–12px until centered perfectly */
+}
+
 /* ============================================
 PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
 ============================================ */
@@ -1390,8 +1403,8 @@ PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-top: 48px;
+    gap: 10px;
+    margin-top: 28px;
 }
 
 .signal-card-v2 {
@@ -1461,7 +1474,7 @@ PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
     border-radius: 8px;
     padding: 32px;
     margin-top: 48px;
-    margin-bottom: 24px;
+    margin-bottom: 14px;
 }
 
 .acquisition-strategy-text {
