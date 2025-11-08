@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 280px;
+    height: 300px;
     page-break-inside: avoid;
 }
 
@@ -363,9 +363,14 @@ CHART CONTAINERS
     letter-spacing: 0.05em;
 }
 
-/* PERFORMANCE ANALYSIS CHART HEIGHT FIX */
 .two-column .chart-container {
-  height: 180px !important; /* try 180–200px until perfect */
+  height: 100px !important; /* try 180–200px until perfect */
+
+}
+
+.two-column {
+  gap: 48px;          /* reduce spacing between charts slightly */
+  margin-top: 20px;   /* bring section closer to top header if needed */
 }
 
 /* ============================================
@@ -402,7 +407,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    margin-top: 150px;
+    margin-top: -30px;
 }
 
 .insight-card {
@@ -445,7 +450,7 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 24px 26px;
-    margin-bottom: -24px;
+    margin-top: 34px;
 }
 
 .panel-title {
@@ -505,7 +510,7 @@ TABLE STYLING
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 .table-luxury thead {
@@ -1344,7 +1349,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
     margin-right: 20px 
     border-radius: 4px;
     overflow: hidden;
-    width: 60%;
+    width: 100%;
     margin: 4px 0;
 }
 
