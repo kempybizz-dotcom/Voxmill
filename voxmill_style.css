@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 350px;
+    height: 400px;
     page-break-inside: avoid;
 }
 
@@ -364,13 +364,13 @@ CHART CONTAINERS
 }
 
 .two-column .chart-container {
-  height: 100px !important; /* try 180–200px until perfect */
+  height: 50px !important; /* try 180–200px until perfect */
 
 }
 
 .two-column {
-  gap: 48px;          /* reduce spacing between charts slightly */
-  margin-top: 20px;   /* bring section closer to top header if needed */
+  gap: 28px;          /* reduce spacing between charts slightly */
+  margin-top: 30px;   /* bring section closer to top header if needed */
 }
 
 /* ============================================
@@ -381,7 +381,7 @@ TWO-COLUMN LAYOUT
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
-    height: 600%;
+    height: 50%;
     margin-top: 60px; 
 }
 
@@ -406,8 +406,8 @@ INSIGHT CARDS
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 40px;
+    gap: 30px;
+    margin-top: 60px;
 }
 
 .insight-card {
@@ -450,8 +450,8 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 24px 26px;
-    margin-top: 34px;
-   height: 100px;
+    margin-top: 54px;
+   height: 150px;
 
 }
 
@@ -460,8 +460,8 @@ INTELLIGENCE PANELS
     font-size: 26px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-top: 15px;
-    margin-bottom: 12px;
+    margin-top: 25px;
+    margin-bottom: 15px;
 }
 
 .panel-divider {
@@ -609,11 +609,12 @@ TABLE STYLING
     border: 1px solid #F44336;
 }
 
+/* Center-align data under Size, Price, £/SQFT, Days */
+.table-luxury td:nth-child(3),
 .table-luxury td:nth-child(4),
 .table-luxury td:nth-child(5),
 .table-luxury td:nth-child(6) {
-position: center;
-  
+  text-align: center;
 }
 
 /* ============================================
@@ -694,7 +695,7 @@ DEPTH METRICS — REPOSITIONED BELOW HEATMAP
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-top: 30px;
+    margin-top: 50px;
     margin-bottom: 0;
 }
 
@@ -825,16 +826,16 @@ PAGE 6: STRATEGIC FORECAST — 2×2 GRID REDESIGN
     grid-template-rows: repeat(2, 1fr);
     gap: 28px;
     height: 500px;
-    margin-top: 48px;
-    margin-bottom: 55px;
+    margin-top: 28px;
+    margin-bottom: -15px;
 }
 
 .forecast-card-v2 {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(176, 141, 87, 0.4);
     border-radius: 12px;
-    padding: 16px;
-    margin-top: -22px
+    padding: 6px;
+    margin-top: -32px
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -979,7 +980,7 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 55px;
+    margin-bottom: 15px;
     padding: 19px 29px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 2px solid #B08D57;
@@ -989,7 +990,7 @@ MACRO CONTEXT
 .macro-title {
     font-size: 18px;
     color: #B08D57;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .macro-text {
