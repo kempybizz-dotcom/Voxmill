@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 250px;
+    height: 175px;
     page-break-inside: avoid;
 }
 
@@ -372,6 +372,7 @@ TWO-COLUMN LAYOUT
     grid-template-columns: 1fr 1fr;
     gap: 80px;
     height: 100%;
+    margin-top: 60px; 
 }
 
 .chart-panel {
@@ -593,6 +594,14 @@ TABLE STYLING
     background: rgba(244, 67, 54, 0.2);
     color: #F44336;
     border: 1px solid #F44336;
+}
+
+.table-luxury td:nth-child(3),
+.table-luxury td:nth-child(4),
+.table-luxury td:nth-child(5),
+.table-luxury td:nth-child(6) {
+  position: relative;
+  left: 10px;
 }
 
 /* ============================================
@@ -958,7 +967,7 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 20px;
+    margin-top: 35px;
     padding: 13px 18px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 2px solid #B08D57;
@@ -1281,7 +1290,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
     font-size: 22px;
     color: #B08D57;
     margin-bottom: 32px;
-    margin-left: 10px
+    margin-right: 15px
     gap: 16px;    
     font-weight: 600;
     text-align: center;
@@ -1291,16 +1300,16 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .submarket-metrics {
     display: flex;
     flex-direction: column;
-    margin-left: 10px
-    gap: 16px;
+    margin-right: 15px
+    gap: 20px;
     width: 100%;
     flex: 1;
 }
 
 .submarket-metric-row {
     display: flex;
-    margin-left: 10px
-    gap: 16px;    
+    margin-right: 15px
+    gap: 20px;    
     flex-direction: column;
     align-items: center;
     gap: 8px;
@@ -1308,8 +1317,8 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-label {
     font-size: 11px;
-    margin-left: 10px
-    gap: 16px;     
+    margin-right: 15px
+    gap: 20px;     
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -1317,7 +1326,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-value {
     font-size: 32px;
-    margin-left: 10px 
+    margin-right: 20px 
     font-weight: 700;
     gap: 16px; 
     color: var(--vm-text);
@@ -1328,7 +1337,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .velocity-bar-container {
     height: 8px;
     background: rgba(186, 149, 95, 0.2); 
-    margin-left: 10px 
+    margin-right: 20px 
     border-radius: 4px;
     overflow: hidden;
     width: 60%;
@@ -1355,9 +1364,9 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .submarket-listing-count {
     font-size: 13px;
     color: var(--vm-muted);
-    gap: 16px; 
+    gap: 20px; 
     margin-top: 24px;
-    margin-left: 10px 
+    margin-right: 20px 
     text-align: center;
 }
 
@@ -1398,7 +1407,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-row {
   position: relative;
-  left: 12px;  /* Adjust 6–12px until centered perfectly */
+  right: 15px;  /* Adjust 6–12px until centered perfectly */
 }
 
 /* ============================================
