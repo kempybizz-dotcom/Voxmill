@@ -1,16 +1,16 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V1.3 FINAL
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V2.0 REDESIGN
 16:9 Landscape Slide Format (1920×1080px)
-Black & Gold Luxury Design — 10/10 EXECUTIVE STANDARD
-ALL SURGICAL FIXES APPLIED FOR BOARDROOM PERFECTION
+Black & Gold Luxury Design — FORTUNE-500 STANDARD
+PAGES 6, 7, 12, 13 REBUILT TO BOARDROOM SPECIFICATION
 ============================================ */
 
 :root {
     --vm-bronze: #B08D57;
-    --vm-gold: #B08D57;
+    --vm-gold: #D4AF37;
     --vm-text: #EAEAEA;
     --vm-text-body: rgba(234, 234, 234, 0.88);
-    --vm-muted: #AFAFAF;
+    --vm-muted: #B8B8B8;
     --vm-dark: #0C0C0C;
     --vm-darker: #111111;
     --vm-panel: #171717;
@@ -20,9 +20,6 @@ ALL SURGICAL FIXES APPLIED FOR BOARDROOM PERFECTION
     --grid: 8px;
 }
 
-/* ============================================
-EXPORT MODE: BOARDROOM (DEFAULT 16:9)
-============================================ */
 @page {
     size: 1920px 1080px;
     margin: 0;
@@ -54,7 +51,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
     page-break-inside: avoid;
     overflow: hidden;
     border: 3px solid var(--vm-gold);
-    padding: 56px 48px 72px 48px; /* Top/Sides/Bottom safe areas */
+    padding: 56px 48px 72px 48px;
 }
 
 .slide::after {
@@ -96,7 +93,7 @@ SLIDE HEADER
 
 .slide-header {
     position: absolute;
-    top: 56px; /* Aligned with top padding */
+    top: 56px;
     left: 48px;
     right: 48px;
     display: flex;
@@ -143,10 +140,10 @@ SLIDE CONTENT AREA
 
 .slide-content {
     position: absolute;
-    top: 144px; /* 56px + header height */
+    top: 144px;
     left: 48px;
     right: 48px;
-    bottom: 144px; /* 72px safe + 72px spacing to footer */
+    bottom: 144px;
     overflow: hidden;
     z-index: 5;
 }
@@ -222,7 +219,7 @@ COVER SLIDE
 }
 
 /* ============================================
-KPI GRID — OPTICAL CENTERING PERFECTED
+KPI GRID
 ============================================ */
 
 .kpi-grid {
@@ -263,7 +260,7 @@ KPI GRID — OPTICAL CENTERING PERFECTED
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    margin-bottom: 6px; /* 6px gap */
+    margin-bottom: 6px;
     font-weight: 500;
     line-height: 1.4;
 }
@@ -284,7 +281,7 @@ KPI GRID — OPTICAL CENTERING PERFECTED
     font-family: var(--font-mono);
     font-size: 16px;
     font-weight: 600;
-    margin-top: 8px; /* 8px gap */
+    margin-top: 8px;
     line-height: 1.4;
 }
 
@@ -297,7 +294,7 @@ KPI GRID — OPTICAL CENTERING PERFECTED
 }
 
 /* ============================================
-CHART CONTAINERS — FIXED HEIGHTS + MATTE
+CHART CONTAINERS
 ============================================ */
 
 .chart-section {
@@ -324,7 +321,7 @@ CHART CONTAINERS — FIXED HEIGHTS + MATTE
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 420px; /* Fixed height */
+    height: 420px;
     page-break-inside: avoid;
 }
 
@@ -342,7 +339,7 @@ CHART CONTAINERS — FIXED HEIGHTS + MATTE
     font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-bottom: 16px; /* 12-16px range */
+    margin-bottom: 16px;
     margin-left: auto;
     margin-right: auto;
     padding: 0 22px;
@@ -355,13 +352,9 @@ CHART CONTAINERS — FIXED HEIGHTS + MATTE
     font-size: 12px;
     color: var(--vm-muted);
     text-align: center;
-    margin-top: 12px; /* 12-16px range */
+    margin-top: 12px;
     font-style: italic;
 }
-
-/* ============================================
-CHART AXIS LABELS
-============================================ */
 
 .chart-axis-label {
     font-size: 13px;
@@ -387,10 +380,10 @@ TWO-COLUMN LAYOUT
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 24px; /* Reduced from 28px */
-    height: auto; /* Let content determine height */
-    min-height: 220px; /* REDUCED by 56% from 500px */
-    max-height: 380px; /* Reduced from 520px */
+    padding: 24px;
+    height: auto;
+    min-height: 220px;
+    max-height: 380px;
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -482,7 +475,7 @@ INTELLIGENCE PANELS
 .bullet-list li {
     position: relative;
     padding-left: 25px;
-    margin-bottom: 16px; /* 16px spacing */
+    margin-bottom: 16px;
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
@@ -507,7 +500,7 @@ TABLE STYLING
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    table-layout: fixed; /* Lock column widths */
+    table-layout: fixed;
 }
 
 .table-luxury thead {
@@ -528,7 +521,7 @@ TABLE STYLING
 }
 
 .table-luxury th:last-child {
-    text-align: right; /* Score column right-aligned */
+    text-align: right;
 }
 
 .table-luxury tbody tr {
@@ -562,7 +555,7 @@ TABLE STYLING
 }
 
 .table-luxury td:last-child {
-    text-align: right; /* Score column */
+    text-align: right;
 }
 
 .property-address {
@@ -581,31 +574,31 @@ TABLE STYLING
     font-weight: 600;
 }
 
-.score-high {
+.score-high, .score-excellent {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
     border: 1px solid #4CAF50;
 }
 
-.score-medium {
+.score-medium, .score-good {
     background: rgba(255, 193, 7, 0.2);
     color: #FFC107;
     border: 1px solid #FFC107;
 }
 
-.score-low {
+.score-low, .score-standard {
     background: rgba(244, 67, 54, 0.2);
     color: #F44336;
     border: 1px solid #F44336;
 }
 
 /* ============================================
-FOOTER — SINGLE PATTERN
+FOOTER
 ============================================ */
 
 .slide-footer-branded {
     position: absolute;
-    bottom: 14px; /* 14px above bottom safe zone */
+    bottom: 14px;
     left: 48px;
     right: 48px;
     display: flex;
@@ -635,10 +628,6 @@ FOOTER — SINGLE PATTERN
     color: var(--vm-gold);
     letter-spacing: 0.05em;
     line-height: 1;
-}
-
-.footer-tagline {
-    display: none; /* Hidden per brief */
 }
 
 .footer-page {
@@ -728,7 +717,7 @@ DEPTH METRICS
 }
 
 /* ============================================
-PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
+PROPERTY TYPE HEATMAP
 ============================================ */
 
 .property-type-heatmap {
@@ -747,7 +736,7 @@ PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
 .heatmap-table th {
     background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
     color: var(--vm-dark);
-    padding: 10px 8px; /* REDUCED from 12px */
+    padding: 10px 8px;
     text-transform: uppercase;
     font-size: 13px;
     font-weight: 600;
@@ -756,7 +745,7 @@ PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
 }
 
 .heatmap-table td {
-    padding: 10px 8px; /* REDUCED from 12px */
+    padding: 10px 8px;
     border-bottom: 1px solid rgba(186, 149, 95, 0.3);
     font-size: 14px;
     color: var(--vm-text);
@@ -797,140 +786,116 @@ PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
     border: 1px solid #F44336;
 }
 
-.score-excellent {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4CAF50;
-    border: 1px solid #4CAF50;
-}
-
-.score-good {
-    background: rgba(255, 193, 7, 0.2);
-    color: #FFC107;
-    border: 1px solid #FFC107;
-}
-
-.score-standard {
-    background: rgba(176, 141, 87, 0.2);
-    color: #B08D57;
-    border: 1px solid #B08D57;
-}
-
 .signal-text {
     font-weight: 500;
 }
 
 /* ============================================
-FORECAST GRID — 2×2 SYSTEM (PAGE 6 REBUILD)
+PAGE 6: STRATEGIC FORECAST — 2×2 GRID REDESIGN
 ============================================ */
 
-.forecast-grid {
+.forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
-    height: 600px; /* Fixed grid height */
+    height: 640px;
+    margin-top: 64px;
     margin-bottom: 32px;
 }
 
-.forecast-card {
+.forecast-card-v2 {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 32px; /* Fixed padding */
-    text-align: center;
+    padding: 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 0; /* Let grid control height */
+    justify-content: flex-start;
 }
 
 .forecast-card-highlight {
     border-color: var(--vm-gold);
-    background: linear-gradient(135deg, rgba(203, 161, 53, 0.1), rgba(18, 18, 18, 0.95));
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(18, 18, 18, 0.95));
 }
 
-.forecast-title {
-    font-size: 18px;
+.forecast-card-title {
+    font-family: var(--font-display);
+    font-size: 20px;
     color: var(--vm-bronze);
-    margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    margin-bottom: 32px;
+    text-align: center;
+    width: 100%;
 }
 
-.forecast-direction {
-    margin: 20px 0;
+.forecast-card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
 }
 
-.forecast-arrow {
-    font-size: 72px;
+.forecast-arrow-large {
+    font-size: 96px;
     color: var(--vm-gold);
-    display: block;
+    line-height: 1;
+    margin-bottom: 16px;
 }
 
-.forecast-percentage {
-    font-size: 48px;
+.forecast-percentage-large {
+    font-size: 64px;
     font-weight: 700;
     color: var(--vm-gold);
+    line-height: 1;
+    margin-bottom: 16px;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
 }
 
-.forecast-label {
+.forecast-label-text {
     font-size: 16px;
     color: var(--vm-text);
-    margin-top: 15px;
+    margin-top: 8px;
+    text-align: center;
 }
 
-.forecast-confidence {
+.forecast-confidence-text {
     font-size: 14px;
     color: var(--vm-muted);
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
-.cone-chart {
-    padding: 20px 0;
-}
-
-.cone-range {
+.cone-range-display {
     display: flex;
     flex-direction: column;
-    gap: 15px;
     align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
-.cone-high, .cone-mid, .cone-low {
-    font-size: 32px;
+.cone-value {
+    font-size: 40px;
     font-weight: 700;
     color: var(--vm-gold);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .cone-mid {
-    font-size: 42px;
+    font-size: 48px;
 }
 
-/* ============================================
-SENTIMENT METER — MATTE FLAT DESIGN (PAGE 6 REBUILD)
-============================================ */
-
-.sentiment-meter {
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-.sentiment-value {
-    font-size: 36px;
+.sentiment-display {
+    font-size: 40px;
     font-weight: 600;
-    padding: 20px 40px;
+    padding: 24px 48px;
     border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    /* MATTE - NO overlays, NO glows, NO shadows */
+    margin-bottom: 24px;
 }
 
 .sentiment-bullish {
@@ -940,8 +905,8 @@ SENTIMENT METER — MATTE FLAT DESIGN (PAGE 6 REBUILD)
 }
 
 .sentiment-neutral {
-    color: #0C0C0C; /* Dark text on gold background */
-    background: var(--vm-gold); /* Matte gold fill */
+    color: #0C0C0C;
+    background: var(--vm-gold);
     border: 2px solid rgba(176, 141, 87, 0.8);
 }
 
@@ -951,48 +916,35 @@ SENTIMENT METER — MATTE FLAT DESIGN (PAGE 6 REBUILD)
     border: 2px solid rgba(244, 67, 54, 0.5);
 }
 
-/* ============================================
-VOXMILL INDEX — REBUILT FOR 2×2 GRID
-============================================ */
-
-.voxmill-index-display {
-    padding: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.voxmill-index-value {
+.voxmill-index-number {
     font-size: 72px;
     font-weight: 700;
     color: var(--vm-gold);
-    margin-bottom: 24px; /* Space before bar */
     line-height: 1;
+    margin-bottom: 24px;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
 }
 
-.voxmill-index-bar {
+.voxmill-index-bar-container {
     height: 20px;
     background: rgba(186, 149, 95, 0.2);
     border-radius: 10px;
     overflow: hidden;
-    margin: 0 auto 16px; /* Space before legend */
-    width: 60%; /* 60% width for centering */
+    margin-bottom: 16px;
+    width: 70%;
 }
 
-.voxmill-index-fill {
+.voxmill-index-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
-.forecast-note {
-    font-size: 12px;
+.voxmill-index-caption {
+    font-size: 13px;
     color: var(--vm-muted);
-    margin-top: 12px; /* 12px spacing */
+    margin-bottom: 8px;
     font-style: italic;
 }
 
@@ -1021,131 +973,73 @@ MACRO CONTEXT
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — 24PX SPACING + FULL-WIDTH REVIEW
+PAGE 7: EXECUTIVE INTELLIGENCE — VERTICAL STACK REDESIGN
 ============================================ */
 
-.executive-actions-grid {
-    display: grid;
-    gap: 24px; /* 24px spacing between rows */
+.executive-brief-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 64px;
 }
 
-.action-card {
+.executive-brief-card {
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 24px;
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 22px;
+    padding: 24px 32px;
+    min-height: 120px;
 }
 
-.action-number {
-    font-size: 32px;
+.executive-brief-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--vm-gold);
+    color: var(--vm-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 20px;
     font-weight: 700;
-    color: var(--vm-gold);
-    min-width: 50px;
     flex-shrink: 0;
 }
 
-.action-text {
+.executive-brief-text {
     font-size: 16px;
     color: var(--vm-text-body);
     line-height: 1.7;
+    flex: 1;
 }
 
-.review-notice {
-    margin-top: 32px;
-    padding: 20px 25px;
-    background: rgba(203, 161, 53, 0.1);
-    border: 2px solid var(--vm-gold);
-    border-radius: 10px;
-    text-align: center;
-    font-size: 16px;
-    color: var(--vm-gold);
-    width: 100%; /* Full width */
-    /* Ensure ≥96px above footer */
+.executive-brief-divider {
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--vm-gold) 50%,
+        transparent 100%);
+    margin: 0;
 }
 
-/* ============================================
-APPENDIX
-============================================ */
-
-.appendix-section {
-    margin-bottom: 32px;
-}
-
-.appendix-title {
-    font-family: var(--font-display);
-    font-size: 24px;
-    color: var(--vm-gold);
-    margin-bottom: 20px;
-}
-
-.appendix-list {
-    list-style: none;
-}
-
-.appendix-list li {
-    padding: 12px 0;
-    padding-left: 25px;
-    position: relative;
-    font-size: 15px;
-    color: var(--vm-text);
-}
-
-.appendix-list li::before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-}
-
-.appendix-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-}
-
-.appendix-item {
-    background: rgba(18, 18, 18, 0.6);
-    padding: 20px;
+.review-banner {
+    margin-top: 64px;
+    background: var(--vm-gold);
     border-radius: 8px;
-    border: 1px solid rgba(186, 149, 95, 0.2);
+    padding: 32px;
+    text-align: center;
 }
 
-.appendix-label {
-    font-size: 13px;
-    color: var(--vm-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-}
-
-.appendix-value {
-    font-size: 18px;
-    color: var(--vm-gold);
+.review-banner-text {
+    font-family: var(--font-display);
+    font-size: 20px;
     font-weight: 600;
-}
-
-.appendix-disclaimer {
-    margin-top: 32px;
-    padding: 30px;
-    background: rgba(203, 161, 53, 0.08);
-    border: 2px solid rgba(203, 161, 53, 0.3);
-    border-radius: 10px;
-}
-
-.appendix-disclaimer h4 {
-    font-size: 18px;
-    color: var(--vm-gold);
-    margin-bottom: 15px;
-}
-
-.appendix-disclaimer p {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.8;
+    color: var(--vm-dark);
+    letter-spacing: 0.05em;
 }
 
 /* ============================================
@@ -1239,80 +1133,19 @@ BENCHMARK TABLE
 }
 
 /* ============================================
-RISK INDEX — LEGEND UNDER GAUGE
-============================================ */
-
-.risk-index-container {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 2px solid rgba(186, 149, 95, 0.4);
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
-}
-
-.risk-index-label {
-    font-size: 18px;
-    color: var(--vm-bronze);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 20px;
-}
-
-.risk-index-value {
-    font-size: 72px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 20px;
-    line-height: 1;
-}
-
-.risk-index-bar {
-    height: 20px;
-    background: rgba(186, 149, 95, 0.2);
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 0 auto 12px; /* 12px for legend */
-    max-width: 600px;
-}
-
-.risk-index-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
-    transition: width 0.3s ease;
-}
-
-.risk-index-status {
-    font-size: 24px;
-    font-weight: 600;
-    margin-top: 15px;
-}
-
-.risk-low {
-    color: #4CAF50;
-}
-
-.risk-moderate {
-    color: #FFC107;
-}
-
-.risk-elevated {
-    color: #F44336;
-}
-
-/* ============================================
-PAGE 11 REBUILD: EQUAL FLEX CARDS
+FORECAST & MARKET RISK (PAGE 11)
 ============================================ */
 
 .forecast-risk-grid {
     display: flex;
     gap: 40px;
-    align-items: stretch; /* Equal heights */
+    align-items: stretch;
     margin-bottom: 32px;
-    margin-top: 56px; /* Top spacing from title */
+    margin-top: 56px;
 }
 
 .forecast-risk-card {
-    flex: 1; /* Equal widths */
+    flex: 1;
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
@@ -1359,7 +1192,6 @@ PAGE 11 REBUILD: EQUAL FLEX CARDS
     color: var(--vm-muted);
 }
 
-/* Risk gauge specific styling */
 .risk-gauge-container {
     width: 100%;
     display: flex;
@@ -1381,7 +1213,7 @@ PAGE 11 REBUILD: EQUAL FLEX CARDS
     border-radius: 12px;
     overflow: hidden;
     margin: 0 auto 16px;
-    width: 60%; /* 60% width as specified */
+    width: 60%;
 }
 
 .risk-gauge-fill {
@@ -1395,6 +1227,18 @@ PAGE 11 REBUILD: EQUAL FLEX CARDS
     margin-bottom: 8px;
 }
 
+.risk-low {
+    color: #4CAF50;
+}
+
+.risk-moderate {
+    color: #FFC107;
+}
+
+.risk-elevated {
+    color: #F44336;
+}
+
 .risk-gauge-legend {
     font-size: 13px;
     color: var(--vm-muted);
@@ -1403,43 +1247,52 @@ PAGE 11 REBUILD: EQUAL FLEX CARDS
 }
 
 /* ============================================
-SUB-MARKET BREAKDOWN — PAGE 12 REBUILD
+PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 ============================================ */
 
-.submarket-grid {
+.submarket-grid-v2 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 48px; /* Top padding */
-    margin-bottom: 32px; /* Gap before watchlist */
+    margin-top: 48px;
+    margin-bottom: 32px;
 }
 
-.submarket-card {
+.submarket-card-v2 {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-radius: 12px;
     padding: 32px;
-    text-align: center;
-    min-height: 240px; /* Equal card heights */
+    min-height: 300px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: flex-start;
 }
 
-.submarket-title {
+.submarket-header {
+    font-family: var(--font-display);
     font-size: 22px;
     color: var(--vm-gold);
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     font-weight: 600;
-    line-height: 1.2;
+    text-align: center;
+    width: 100%;
 }
 
-.submarket-metric {
-    margin: 12px 0;
+.submarket-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    flex: 1;
+}
+
+.submarket-metric-row {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 8px;
 }
 
 .submarket-metric-label {
@@ -1447,7 +1300,6 @@ SUB-MARKET BREAKDOWN — PAGE 12 REBUILD
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: 6px;
 }
 
 .submarket-metric-value {
@@ -1458,41 +1310,67 @@ SUB-MARKET BREAKDOWN — PAGE 12 REBUILD
     font-variant-numeric: tabular-nums;
 }
 
-/* ============================================
-WATCHLIST BOX — ALIGN WITH CARDS
-============================================ */
+.velocity-bar-container {
+    height: 8px;
+    background: rgba(186, 149, 95, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    width: 60%;
+    margin: 4px 0;
+}
 
-.watchlist-box {
+.velocity-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.velocity-color-high {
+    background: #4CAF50;
+}
+
+.velocity-color-medium {
+    background: #FFC107;
+}
+
+.velocity-color-low {
+    background: #F44336;
+}
+
+.submarket-listing-count {
+    font-size: 13px;
+    color: var(--vm-muted);
+    margin-top: 24px;
+    text-align: center;
+}
+
+.momentum-streets-panel {
     background: rgba(203, 161, 53, 0.05);
     border: 2px solid rgba(203, 161, 53, 0.3);
     border-radius: 10px;
-    padding: 20px;
+    padding: 32px;
     margin-top: 24px;
-    margin-left: 0; /* Align with outer card edges */
-    margin-right: 0;
 }
 
-.watchlist-title {
+.momentum-title {
     font-size: 16px;
     color: var(--vm-gold);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     font-weight: 600;
 }
 
-.watchlist-items {
+.momentum-list {
     list-style: none;
 }
 
-.watchlist-items li {
-    padding: 8px 0;
-    padding-left: 22px;
+.momentum-list li {
+    padding: 8px 0 8px 24px;
     position: relative;
     font-size: 14px;
     color: var(--vm-text);
     line-height: 1.5;
 }
 
-.watchlist-items li::before {
+.momentum-list li::before {
     content: "★";
     position: absolute;
     left: 0;
@@ -1501,105 +1379,188 @@ WATCHLIST BOX — ALIGN WITH CARDS
 }
 
 /* ============================================
-ACQUISITION SIGNALS — EQUAL HEIGHTS + BADGES + 24PX GAPS
+PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
 ============================================ */
 
-.signals-grid {
-    display: grid;
-    gap: 24px; /* 24px vertical gaps */
-}
-
-.signal-card {
+.signal-board-v2 {
     display: flex;
-    gap: 15px;
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 2px solid rgba(203, 161, 53, 0.4);
-    border-left: 4px solid #4CAF50;
-    border-radius: 10px;
-    padding: 12px 18px;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 48px;
+}
+
+.signal-card-v2 {
+    display: flex;
     align-items: center;
-    min-height: 90px; /* Equal card heights */
-    position: relative;
+    justify-content: space-between;
+    gap: 24px;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid var(--vm-gold);
+    border-radius: 8px;
+    padding: 16px 24px;
+    min-height: 100px;
 }
 
-.signal-icon {
-    font-size: 28px;
-    color: #4CAF50;
-    min-width: 36px;
-    text-align: center;
-}
-
-.signal-content {
+.signal-content-v2 {
     flex: 1;
 }
 
-.signal-address {
-    font-size: 15px;
+.signal-property-title {
+    font-size: 16px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
-.signal-price {
+.signal-property-metrics {
     font-size: 13px;
-    color: var(--vm-text);
-    margin-bottom: 6px;
+    color: var(--vm-muted);
+    font-family: var(--font-mono);
 }
 
-.signal-reasoning {
-    font-size: 13px;
-    color: var(--vm-text-body);
-    font-style: italic;
-    line-height: 1.5;
-}
-
-/* BADGES ON RIGHT EDGE */
-.signal-badges {
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
+.signal-badges-v2 {
     display: flex;
     flex-direction: column;
     gap: 4px;
     align-items: flex-end;
 }
 
-.signal-badge {
+.signal-badge-v2 {
     font-size: 11px;
     font-weight: 600;
-    padding: 3px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
     white-space: nowrap;
 }
 
-.signal-badge-risk {
+.badge-risk {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
     border: 1px solid #4CAF50;
 }
 
-.signal-badge-confidence {
+.badge-confidence {
     background: rgba(176, 141, 87, 0.2);
     color: #B08D57;
     border: 1px solid #B08D57;
 }
 
-.signal-badge-trigger {
+.badge-trigger {
     background: rgba(255, 193, 7, 0.2);
     color: #FFC107;
     border: 1px solid #FFC107;
 }
 
+.acquisition-strategy-ribbon {
+    background: var(--vm-gold);
+    border-radius: 8px;
+    padding: 32px;
+    margin-top: 48px;
+    margin-bottom: 24px;
+}
+
+.acquisition-strategy-text {
+    font-size: 15px;
+    color: var(--vm-dark);
+    line-height: 1.8;
+    font-weight: 500;
+}
+
+.acquisition-strategy-text strong {
+    font-weight: 700;
+}
+
 /* ============================================
-STRATEGIC PLAYBOOK — 3-COLUMN EQUAL HEIGHTS
+APPENDIX
+============================================ */
+
+.appendix-section {
+    margin-bottom: 32px;
+}
+
+.appendix-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+}
+
+.appendix-list {
+    list-style: none;
+}
+
+.appendix-list li {
+    padding: 12px 0;
+    padding-left: 25px;
+    position: relative;
+    font-size: 15px;
+    color: var(--vm-text);
+}
+
+.appendix-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+}
+
+.appendix-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.appendix-item {
+    background: rgba(18, 18, 18, 0.6);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(186, 149, 95, 0.2);
+}
+
+.appendix-label {
+    font-size: 13px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+}
+
+.appendix-value {
+    font-size: 18px;
+    color: var(--vm-gold);
+    font-weight: 600;
+}
+
+.appendix-disclaimer {
+    margin-top: 32px;
+    padding: 30px;
+    background: rgba(203, 161, 53, 0.08);
+    border: 2px solid rgba(203, 161, 53, 0.3);
+    border-radius: 10px;
+}
+
+.appendix-disclaimer h4 {
+    font-size: 18px;
+    color: var(--vm-gold);
+    margin-bottom: 15px;
+}
+
+.appendix-disclaimer p {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+}
+
+/* ============================================
+PLAYBOOK GRID
 ============================================ */
 
 .playbook-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 48px;
-    align-items: stretch; /* Equal heights */
+    align-items: stretch;
     margin-bottom: 32px;
 }
 
@@ -1620,15 +1581,15 @@ STRATEGIC PLAYBOOK — 3-COLUMN EQUAL HEIGHTS
     letter-spacing: 0.1em;
     font-weight: 700;
     text-align: center;
-    padding: 24px 20px 20px; /* 24px internal padding */
+    padding: 24px 20px 20px;
     border-bottom: 2px solid rgba(176, 141, 87, 0.3);
     background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), transparent);
 }
 
 .playbook-items {
     list-style: none;
-    padding: 24px; /* 24px internal padding */
-    flex: 1; /* Equal heights */
+    padding: 24px;
+    flex: 1;
 }
 
 .playbook-items li {
@@ -1638,7 +1599,7 @@ STRATEGIC PLAYBOOK — 3-COLUMN EQUAL HEIGHTS
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.7;
-    margin-bottom: 16px; /* 16px bullet spacing */
+    margin-bottom: 16px;
 }
 
 .playbook-items li::before {
@@ -1650,10 +1611,8 @@ STRATEGIC PLAYBOOK — 3-COLUMN EQUAL HEIGHTS
     font-size: 18px;
 }
 
-/* Remove stray micro-labels (if any exist in markup, CSS can't help) */
-
 /* ============================================
-MACRO PULSE STRIP — SIMPLIFIED
+MACRO PULSE STRIP
 ============================================ */
 
 .macro-pulse-strip {
@@ -1731,11 +1690,10 @@ PRINT OPTIMIZATION
 }
 
 /* ============================================
-END VOXMILL V1.3 FINAL CSS
-10/10 EXECUTIVE STANDARD ✅
-ALL COMPONENT FIXES APPLIED ✅
+END VOXMILL V2.0 REDESIGN CSS
+FORTUNE-500 STANDARD ✅
+PAGES 6, 7, 12, 13 REBUILT ✅
 MATTE AESTHETIC ENFORCED ✅
 8PX GRID RHYTHM ✅
-SAFE AREAS 56/48/72 ✅
-ZERO SHADOWS, ONE FOOTER ✅
+SAFE AREAS MAINTAINED ✅
 ============================================ */
