@@ -93,7 +93,7 @@ SLIDE HEADER
 
 .slide-header {
     position: absolute;
-    top: 56px;
+    top: 36px;
     left: 48px;
     right: 48px;
     display: flex;
@@ -110,7 +110,7 @@ SLIDE HEADER
     top: -10px;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 3px;
     background: linear-gradient(90deg,
         transparent 0%,
         rgba(176, 141, 87, 0.3) 20%,
@@ -298,7 +298,7 @@ CHART CONTAINERS
 ============================================ */
 
 .chart-section {
-    margin-top: 32px;
+    margin-top: 42px;
     page-break-inside: avoid;
 }
 
@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 350px;
+    height: 150px;
     page-break-inside: avoid;
 }
 
@@ -339,7 +339,7 @@ CHART CONTAINERS
     font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-bottom: 16px;
+    margin-bottom: -16px;
     margin-left: auto;
     margin-right: auto;
     padding: 0 22px;
@@ -370,7 +370,7 @@ TWO-COLUMN LAYOUT
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    gap: 80px;
     height: 100%;
 }
 
@@ -381,8 +381,8 @@ TWO-COLUMN LAYOUT
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 24px;
-    margin-top: 60px
-    height: 250px;
+    margin-top: -60px
+    height: 150px;
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -396,7 +396,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    margin-top: 60px;
+    margin-top: 90px;
 }
 
 .insight-card {
@@ -439,7 +439,7 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 24px 26px;
-    margin-bottom: 24px;
+    margin-bottom: -24px;
 }
 
 .panel-title {
@@ -525,7 +525,7 @@ TABLE STYLING
 .table-luxury th:nth-child(4) { width: 14%; } /* Price */
 .table-luxury th:nth-child(5) { width: 12%; } /* £/sqft */
 .table-luxury th:nth-child(6) { width: 10%; } /* Days */
-.table-luxury th:nth-child(7) { width: 10%; text-align: right; } /* Score */
+.table-luxury th:nth-child(7) { width: 10%; text-align: left; } /* Score */
 
 .table-luxury tbody tr {
     border-bottom: 1px solid rgba(186, 149, 95, 0.2);
@@ -554,7 +554,7 @@ TABLE STYLING
 }
 
 .table-luxury td.align-center {
-    text-align: center;
+    text-align: left;
 }
 
 .table-luxury td:last-child {
@@ -672,8 +672,8 @@ DEPTH METRICS — REPOSITIONED BELOW HEATMAP
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    margin-top: 32px;
+    gap: 42px;
+    margin-top: -22px;
     margin-bottom: 0;
 }
 
@@ -725,7 +725,7 @@ PROPERTY TYPE HEATMAP
 ============================================ */
 
 .property-type-heatmap {
-    margin-top: 32px;
+    margin-top: -222px;
 }
 
 .heatmap-table {
@@ -802,10 +802,10 @@ PAGE 6: STRATEGIC FORECAST — 2×2 GRID REDESIGN
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 32px;
-    height: 540px;
-    margin-top: 44px;
-    margin-bottom: 52px;
+    gap: 28px;
+    height: 500px;
+    margin-top: 48px;
+    margin-bottom: 55px;
 }
 
 .forecast-card-v2 {
@@ -958,11 +958,11 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: -12px;
-    padding: 23px 28px;
+    margin-top: -15px;
+    padding: 13px 18px;
     background: rgba(176, 141, 87, 0.05);
-    border-left: 4px solid #B08D57;
-    border-radius: 8px;
+    border-left: 2px solid #B08D57;
+    border-radius: 6px;
 }
 
 .macro-title {
@@ -985,7 +985,7 @@ PAGE 7: EXECUTIVE INTELLIGENCE — VERTICAL STACK REDESIGN
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 32px;
+    margin-top: 48px;
 }
 
 .executive-brief-card {
@@ -1055,7 +1055,7 @@ TABLE SUBTITLE
     font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-top: 25px;
+    margin-top: 50px;
     margin-left: auto;
     margin-right: auto;
     padding: 0 30px;
@@ -1073,7 +1073,7 @@ BENCHMARK TABLE
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    margin-top: 24px;
+    margin-top: 54px;
 }
 
 .benchmark-table thead {
@@ -1088,7 +1088,7 @@ BENCHMARK TABLE
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 15px 18px;
-    text-align: center;
+    text-align: left;
 }
 
 .benchmark-table tbody tr {
@@ -1130,20 +1130,13 @@ BENCHMARK TABLE
     margin-top: 24px;
     padding: 18px 25px;
     background: rgba(176, 141, 87, 0.05);
-    border-left: 4px solid #B08D57;
+    border-left: 7px solid #B08D57;
     border-radius: 8px;
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
 }
 
-.benchmark-table tbody td:nth-child(3),
-.benchmark-table tbody td:nth-child(4),
-.benchmark-table tbody td:nth-child(5),
-.benchmark-table tbody td:nth-child(6) {
-  position: relative;
-  left: -10px;   /* negative moves content left */
-}
 
 /* ============================================
 FORECAST & MARKET RISK (PAGE 11)
@@ -1154,7 +1147,7 @@ FORECAST & MARKET RISK (PAGE 11)
     gap: 40px;
     align-items: stretch;
     margin-bottom: 32px;
-    margin-top: 56px;
+    margin-top: 66px;
 }
 
 .forecast-risk-card {
@@ -1274,7 +1267,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .submarket-card-v2 {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(176, 141, 87, 0.4);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 32px;
     min-height: 300px;
     display: flex;
@@ -1288,6 +1281,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
     font-size: 22px;
     color: #B08D57;
     margin-bottom: 32px;
+    margin-left: 10px
     font-weight: 600;
     text-align: center;
     width: 100%;
@@ -1296,6 +1290,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .submarket-metrics {
     display: flex;
     flex-direction: column;
+    margin-left: 10px
     gap: 16px;
     width: 100%;
     flex: 1;
@@ -1303,6 +1298,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-row {
     display: flex;
+    margin-left: 10px
     flex-direction: column;
     align-items: center;
     gap: 8px;
@@ -1310,6 +1306,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-label {
     font-size: 11px;
+    margin-left: 10px
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -1317,6 +1314,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 
 .submarket-metric-value {
     font-size: 32px;
+    margin-left: 10px 
     font-weight: 700;
     color: var(--vm-text);
     line-height: 1;
@@ -1326,6 +1324,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
 .velocity-bar-container {
     height: 8px;
     background: rgba(186, 149, 95, 0.2);
+    margin-left: 10px 
     border-radius: 4px;
     overflow: hidden;
     width: 60%;
@@ -1353,6 +1352,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID REDESIGN
     font-size: 13px;
     color: var(--vm-muted);
     margin-top: 24px;
+    margin-left: 10px 
     text-align: center;
 }
 
@@ -1403,8 +1403,8 @@ PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 28px;
+    gap: 12px;
+    margin-top: 23px;
 }
 
 .signal-card-v2 {
@@ -1416,7 +1416,7 @@ PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD REDESIGN
     border: 1px solid #B08D57;
     border-radius: 8px;
     padding: 16px 24px;
-    min-height: 100px;
+    height: 85px;
 }
 
 .signal-content-v2 {
