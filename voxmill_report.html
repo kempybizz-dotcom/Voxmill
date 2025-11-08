@@ -328,7 +328,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 4: COMPETITIVE LANDSCAPE — ✅ RESTRUCTURED: CHARTS FIRST, INSIGHTS BOTTOM
+     SLIDE 4: COMPETITIVE LANDSCAPE
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -336,7 +336,6 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <!-- CHARTS FIRST (TOP) -->
         <div class="two-column">
             <div class="chart-panel">
                 <h3 class="chart-title">Agency Market Share</h3>
@@ -373,7 +372,6 @@
             </div>
         </div>
         
-        <!-- INSIGHT CARDS AT BOTTOM -->
         <div class="insight-cards" style="margin-top: 24px;">
             <div class="insight-card">
                 <div class="insight-title">Market Momentum</div>
@@ -482,7 +480,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 6: STRATEGIC FORECAST
+     SLIDE 6: STRATEGIC FORECAST — ✅ REDESIGNED 2×2 GRID
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -490,48 +488,54 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <div class="forecast-grid">
-            <div class="forecast-card">
-                <h3 class="forecast-title">30-Day Price Momentum</h3>
-                <div class="forecast-direction">
-                    <span class="forecast-arrow">{{ forecast.day_30.arrow }}</span>
-                    <span class="forecast-percentage">{{ forecast.day_30.percentage }}%</span>
+        <div class="forecast-grid-2x2">
+            <!-- ROW 1: 30-DAY & 90-DAY -->
+            <div class="forecast-card-v2">
+                <h3 class="forecast-card-title">30-Day Price Momentum</h3>
+                <div class="forecast-card-body">
+                    <div class="forecast-arrow-large">{{ forecast.day_30.arrow }}</div>
+                    <div class="forecast-percentage-large">{{ forecast.day_30.percentage }}%</div>
+                    <div class="forecast-label-text">{{ forecast.day_30.direction }} Trajectory</div>
+                    <div class="forecast-confidence-text">Confidence: {{ forecast.day_30.confidence }}</div>
                 </div>
-                <div class="forecast-label">{{ forecast.day_30.direction }} Trajectory</div>
-                <div class="forecast-confidence">Confidence: {{ forecast.day_30.confidence }}</div>
             </div>
-            <div class="forecast-card">
-                <h3 class="forecast-title">90-Day Trend Cone</h3>
-                <div class="cone-chart">
-                    <div class="cone-range">
-                        <span class="cone-high">{{ forecast.day_90.high }}%</span>
-                        <span class="cone-mid">{{ forecast.day_90.mid }}%</span>
-                        <span class="cone-low">{{ forecast.day_90.low }}%</span>
+            
+            <div class="forecast-card-v2">
+                <h3 class="forecast-card-title">90-Day Trend Cone</h3>
+                <div class="forecast-card-body">
+                    <div class="cone-range-display">
+                        <span class="cone-value cone-high">{{ forecast.day_90.high }}%</span>
+                        <span class="cone-value cone-mid">{{ forecast.day_90.mid }}%</span>
+                        <span class="cone-value cone-low">{{ forecast.day_90.low }}%</span>
                     </div>
+                    <div class="forecast-label-text">Projected Range (Low-Mid-High)</div>
                 </div>
-                <div class="forecast-label">Projected Range (Low-Mid-High)</div>
             </div>
-            <div class="forecast-card forecast-card-highlight">
-                <h3 class="forecast-title">Market Sentiment</h3>
-                <div class="sentiment-meter">
-                    <div class="sentiment-value sentiment-{{ forecast.sentiment|lower }}">
+            
+            <!-- ROW 2: SENTIMENT & INDEX -->
+            <div class="forecast-card-v2 forecast-card-highlight">
+                <h3 class="forecast-card-title">Market Sentiment</h3>
+                <div class="forecast-card-body">
+                    <div class="sentiment-display sentiment-{{ forecast.sentiment|lower }}">
                         {{ forecast.sentiment }}
                     </div>
+                    <div class="forecast-label-text">AI-Derived Composite Signal</div>
                 </div>
-                <div class="forecast-label">AI-Derived Composite Signal</div>
             </div>
-            <div class="forecast-card forecast-card-highlight">
-                <h3 class="forecast-title">Voxmill Predictive Index</h3>
-                <div class="voxmill-index-display">
-                    <div class="voxmill-index-value">{{ forecast.voxmill_index }}</div>
-                    <div class="voxmill-index-bar">
-                        <div class="voxmill-index-fill" style="width: {{ forecast.voxmill_index }}%"></div>
+            
+            <div class="forecast-card-v2 forecast-card-highlight">
+                <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
+                <div class="forecast-card-body">
+                    <div class="voxmill-index-number">{{ forecast.voxmill_index }}</div>
+                    <div class="voxmill-index-bar-container">
+                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index }}%"></div>
                     </div>
-                    <div class="forecast-note">Composite Market Strength (0-100)</div>
+                    <div class="voxmill-index-caption">Composite Market Strength (0-100)</div>
+                    <div class="forecast-label-text">Blend of liquidity, demand pressure, and price momentum</div>
                 </div>
-                <div class="forecast-label">Blend of liquidity, demand pressure, and price momentum</div>
             </div>
         </div>
+        
         <div class="macro-context">
             <h4 class="macro-title">📊 Macro Context</h4>
             <p class="macro-text">
@@ -560,7 +564,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 7: EXECUTIVE INTELLIGENCE
+     SLIDE 7: EXECUTIVE INTELLIGENCE — ✅ REDESIGNED VERTICAL STACK
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -568,16 +572,20 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <div class="executive-actions-grid">
+        <div class="executive-brief-stack">
             {% for action in executive_actions %}
-            <div class="action-card">
-                <div class="action-number">{{ loop.index }}</div>
-                <div class="action-text">{{ action }}</div>
+            <div class="executive-brief-card">
+                <div class="executive-brief-number">{{ loop.index }}</div>
+                <div class="executive-brief-text">{{ action }}</div>
             </div>
+            {% if not loop.last %}
+            <div class="executive-brief-divider"></div>
+            {% endif %}
             {% endfor %}
         </div>
-        <div class="review-notice">
-            <strong>Next Review:</strong> 30 days from generation
+        
+        <div class="review-banner">
+            <span class="review-banner-text">Next Review: 30 days from generation</span>
         </div>
     </div>
     <div class="slide-footer-branded">
@@ -804,9 +812,7 @@
     <div class="slide-content">
         <p class="chart-context" style="margin-bottom: 30px;">30-day forward outlook with risk assessment — Predictive confidence analysis</p>
         
-        <!-- REBUILT: EQUAL FLEX CARDS -->
         <div class="forecast-risk-grid">
-            <!-- LEFT CARD: 30-DAY FORECAST -->
             <div class="forecast-risk-card">
                 <h3>30-Day Forecast</h3>
                 <div class="forecast-risk-arrow">{{ forecast.day_30.arrow }}</div>
@@ -815,7 +821,6 @@
                 <div class="forecast-risk-confidence">Confidence: <strong style="color: {{ '#4CAF50' if forecast.day_30.confidence == 'High' else '#FFC107' }}">{{ forecast.day_30.confidence }}</strong></div>
             </div>
             
-            <!-- RIGHT CARD: MARKET RISK INDEX -->
             <div class="forecast-risk-card">
                 <h3>Market Risk Index</h3>
                 <div class="risk-gauge-container">
@@ -861,7 +866,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 12: SUB-MARKET BREAKDOWN
+     SLIDE 12: SUB-MARKET BREAKDOWN — ✅ REDESIGNED 3-COLUMN GRID
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -871,34 +876,37 @@
     <div class="slide-content">
         <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
         
-        <div class="submarket-grid">
+        <div class="submarket-grid-v2">
             {% for submarket in submarket_breakdown %}
-            <div class="submarket-card">
-                <div class="submarket-title">{{ submarket.category }}</div>
-                <div class="submarket-metric">
-                    <div class="submarket-metric-label">Avg Price</div>
-                    <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
-                </div>
-                <div class="submarket-metric">
-                    <div class="submarket-metric-label">Price/Sqft</div>
-                    <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
-                </div>
-                <div class="submarket-metric">
-                    <div class="submarket-metric-label">Velocity Score</div>
-                    <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
-                        {{ submarket.velocity_score }}/100
+            <div class="submarket-card-v2">
+                <div class="submarket-header">{{ submarket.category }}</div>
+                <div class="submarket-metrics">
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Avg Price</div>
+                        <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
+                    </div>
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Price/Sqft</div>
+                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
+                    </div>
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Velocity Score</div>
+                        <div class="velocity-bar-container">
+                            <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
+                        </div>
+                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
+                            {{ submarket.velocity_score }}/100
+                        </div>
                     </div>
                 </div>
-                <div style="margin-top: 15px; font-size: 13px; color: #AFAFAF;">
-                    {{ submarket.count }} active listings
-                </div>
+                <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
             </div>
             {% endfor %}
         </div>
         
-        <div class="watchlist-box">
-            <div class="watchlist-title">🔍 High-Momentum Streets</div>
-            <ul class="watchlist-items">
+        <div class="momentum-streets-panel">
+            <div class="momentum-title">🔍 High-Momentum Streets</div>
+            <ul class="momentum-list">
                 <li>Sloane Street — Premium penthouses showing 22% faster turnover vs. area average</li>
                 <li>Eaton Square — Townhouse segment velocity +18% (avg 28 days on market)</li>
                 <li>Belgrave Square — Luxury apartments commanding £2,800/sqft with 12% price appreciation</li>
@@ -926,7 +934,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 13: ACQUISITION SIGNALS
+     SLIDE 13: ACQUISITION SIGNALS — ✅ REDESIGNED SIGNAL BOARD
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -937,19 +945,17 @@
         <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged properties showing value signals — Underpricing or extended listing periods</p>
         
         {% if acquisition_signals and acquisition_signals|length > 0 %}
-        <div class="signals-grid">
+        <div class="signal-board-v2">
             {% for signal in acquisition_signals %}
-            <div class="signal-card">
-                <div class="signal-icon">💎</div>
-                <div class="signal-content">
-                    <div class="signal-address">{{ signal.address }}</div>
-                    <div class="signal-price">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
-                    <div class="signal-reasoning">{{ signal.reasoning }}</div>
+            <div class="signal-card-v2">
+                <div class="signal-content-v2">
+                    <div class="signal-property-title">{{ signal.address }}</div>
+                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
                 </div>
-                <div class="signal-badges">
-                    <div class="signal-badge signal-badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
-                    <div class="signal-badge signal-badge-confidence">{{ signal.confidence|default(78) }}%</div>
-                    <div class="signal-badge signal-badge-trigger">{{ signal.trigger|default('>60d') }}</div>
+                <div class="signal-badges-v2">
+                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
+                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
+                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -960,13 +966,13 @@
         </div>
         {% endif %}
         
-        <div class="macro-context" style="margin-top: 30px;">
-            <h4 class="macro-title">Acquisition Strategy</h4>
-            <p class="macro-text">
+        <div class="acquisition-strategy-ribbon">
+            <div class="acquisition-strategy-text">
+                <strong>Acquisition Strategy:</strong> 
                 Flagged properties demonstrate {{ "significant value potential" if acquisition_signals and acquisition_signals|length >= 3 else "limited value signals" }}. 
                 Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if acquisition_signals and acquisition_signals|length >= 3 else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
                 Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if acquisition_signals and acquisition_signals|length >= 3 else "Standard acquisition protocols apply" }}.
-            </p>
+            </div>
         </div>
         
         <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
