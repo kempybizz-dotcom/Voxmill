@@ -820,13 +820,15 @@ PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
 }
 
 /* ============================================
-FORECAST GRID
+FORECAST GRID — 2×2 SYSTEM (PAGE 6 REBUILD)
 ============================================ */
 
 .forecast-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 32px;
+    height: 600px; /* Fixed grid height */
     margin-bottom: 32px;
 }
 
@@ -834,14 +836,18 @@ FORECAST GRID
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 35px;
+    padding: 32px; /* Fixed padding */
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0; /* Let grid control height */
 }
 
 .forecast-card-highlight {
     border-color: var(--vm-gold);
     background: linear-gradient(135deg, rgba(203, 161, 53, 0.1), rgba(18, 18, 18, 0.95));
-    padding: 40px;
 }
 
 .forecast-title {
@@ -904,76 +910,83 @@ FORECAST GRID
 }
 
 /* ============================================
-SENTIMENT METER — MATTE FLAT DESIGN
+SENTIMENT METER — MATTE FLAT DESIGN (PAGE 6 REBUILD)
 ============================================ */
 
 .sentiment-meter {
-    padding: 20px 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .sentiment-value {
-    font-size: 34px;
-    font-weight: 600; /* Changed to 600 */
-    padding: 16px 30px;
+    font-size: 36px;
+    font-weight: 600;
+    padding: 20px 40px;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    margin: 0 auto;
-    /* MATTE - NO overlays, NO glows */
+    /* MATTE - NO overlays, NO glows, NO shadows */
 }
 
 .sentiment-bullish {
     color: #4CAF50;
-    background: rgba(76, 175, 80, 0.15);
-    border: 2px solid rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.2);
+    border: 2px solid rgba(76, 175, 80, 0.5);
 }
 
 .sentiment-neutral {
-    color: #B08D57;
+    color: #0C0C0C; /* Dark text on gold background */
     background: var(--vm-gold); /* Matte gold fill */
-    border: 2px solid rgba(176, 141, 87, 0.6);
+    border: 2px solid rgba(176, 141, 87, 0.8);
 }
 
 .sentiment-bearish {
     color: #F44336;
-    background: rgba(244, 67, 54, 0.15);
-    border: 2px solid rgba(244, 67, 54, 0.4);
+    background: rgba(244, 67, 54, 0.2);
+    border: 2px solid rgba(244, 67, 54, 0.5);
 }
 
 /* ============================================
-VOXMILL INDEX
+VOXMILL INDEX — REBUILT FOR 2×2 GRID
 ============================================ */
 
 .voxmill-index-display {
-    padding: 20px 0;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .voxmill-index-value {
-    font-size: 64px;
+    font-size: 72px;
     font-weight: 700;
     color: var(--vm-gold);
-    margin-bottom: 15px;
+    margin-bottom: 24px; /* Space before bar */
     line-height: 1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
 }
 
 .voxmill-index-bar {
-    height: 16px;
+    height: 20px;
     background: rgba(186, 149, 95, 0.2);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    margin: 0 auto 12px; /* 12px caption spacing */
-    max-width: 400px;
-    padding: 0 10px;
+    margin: 0 auto 16px; /* Space before legend */
+    width: 60%; /* 60% width for centering */
 }
 
 .voxmill-index-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .forecast-note {
@@ -1287,47 +1300,162 @@ RISK INDEX — LEGEND UNDER GAUGE
 }
 
 /* ============================================
-SUB-MARKET BREAKDOWN
+PAGE 11 REBUILD: EQUAL FLEX CARDS
+============================================ */
+
+.forecast-risk-grid {
+    display: flex;
+    gap: 40px;
+    align-items: stretch; /* Equal heights */
+    margin-bottom: 32px;
+    margin-top: 56px; /* Top spacing from title */
+}
+
+.forecast-risk-card {
+    flex: 1; /* Equal widths */
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(186, 149, 95, 0.4);
+    border-radius: 12px;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.forecast-risk-card h3 {
+    font-size: 20px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+}
+
+.forecast-risk-arrow {
+    font-size: 96px;
+    color: var(--vm-gold);
+    margin-bottom: 24px;
+    line-height: 1;
+}
+
+.forecast-risk-percentage {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.forecast-risk-label {
+    font-size: 18px;
+    color: var(--vm-text);
+    margin-bottom: 8px;
+}
+
+.forecast-risk-confidence {
+    font-size: 15px;
+    color: var(--vm-muted);
+}
+
+/* Risk gauge specific styling */
+.risk-gauge-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.risk-gauge-value {
+    font-size: 96px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 32px;
+    line-height: 1;
+}
+
+.risk-gauge-bar {
+    height: 24px;
+    background: rgba(186, 149, 95, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto 16px;
+    width: 60%; /* 60% width as specified */
+}
+
+.risk-gauge-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+}
+
+.risk-gauge-status {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.risk-gauge-legend {
+    font-size: 13px;
+    color: var(--vm-muted);
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ============================================
+SUB-MARKET BREAKDOWN — PAGE 12 REBUILD
 ============================================ */
 
 .submarket-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 25px;
-    margin-bottom: 32px;
+    gap: 32px;
+    margin-top: 48px; /* Top padding */
+    margin-bottom: 32px; /* Gap before watchlist */
 }
 
 .submarket-card {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-radius: 12px;
-    padding: 30px;
+    padding: 32px;
     text-align: center;
+    min-height: 240px; /* Equal card heights */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .submarket-title {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--vm-gold);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .submarket-metric {
-    margin: 15px 0;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .submarket-metric-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--vm-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 5px;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
 }
 
 .submarket-metric-value {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--vm-text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ============================================
