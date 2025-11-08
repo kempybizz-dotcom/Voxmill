@@ -804,31 +804,29 @@
     <div class="slide-content">
         <p class="chart-context" style="margin-bottom: 30px;">30-day forward outlook with risk assessment — Predictive confidence analysis</p>
         
-        <div class="two-column">
-            <div class="chart-panel">
-                <h3 class="chart-title">30-Day Forecast</h3>
-                <p class="chart-context">Price movement projection with confidence band</p>
-                <div style="text-align: center; padding: 40px 0;">
-                    <div style="font-size: 96px; color: #CBA135; margin-bottom: 20px;">{{ forecast.day_30.arrow }}</div>
-                    <div style="font-size: 56px; font-weight: 700; color: #CBA135; margin-bottom: 15px;">{{ forecast.day_30.percentage }}%</div>
-                    <div style="font-size: 22px; color: #EAEAEA; margin-bottom: 10px;">{{ forecast.day_30.direction }} Movement</div>
-                    <div style="font-size: 18px; color: #AFAFAF;">Confidence: <strong style="color: {{ '#4CAF50' if forecast.day_30.confidence == 'High' else '#FFC107' }}">{{ forecast.day_30.confidence }}</strong></div>
-                </div>
+        <!-- REBUILT: EQUAL FLEX CARDS -->
+        <div class="forecast-risk-grid">
+            <!-- LEFT CARD: 30-DAY FORECAST -->
+            <div class="forecast-risk-card">
+                <h3>30-Day Forecast</h3>
+                <div class="forecast-risk-arrow">{{ forecast.day_30.arrow }}</div>
+                <div class="forecast-risk-percentage">{{ forecast.day_30.percentage }}%</div>
+                <div class="forecast-risk-label">{{ forecast.day_30.direction }} Movement</div>
+                <div class="forecast-risk-confidence">Confidence: <strong style="color: {{ '#4CAF50' if forecast.day_30.confidence == 'High' else '#FFC107' }}">{{ forecast.day_30.confidence }}</strong></div>
             </div>
             
-            <div class="chart-panel">
-                <h3 class="chart-title">Market Risk Index</h3>
-                <p class="chart-context">Composite volatility and exposure assessment (0-100 scale)</p>
-                <div class="risk-index-container" style="padding: 30px;">
-                    <div class="risk-index-label">Risk Score</div>
-                    <div class="risk-index-value">{{ market_risk.score }}</div>
-                    <div class="risk-index-bar">
-                        <div class="risk-index-fill" style="width: {{ market_risk.score }}%"></div>
+            <!-- RIGHT CARD: MARKET RISK INDEX -->
+            <div class="forecast-risk-card">
+                <h3>Market Risk Index</h3>
+                <div class="risk-gauge-container">
+                    <div class="risk-gauge-value">{{ market_risk.score }}</div>
+                    <div class="risk-gauge-bar">
+                        <div class="risk-gauge-fill" style="width: {{ market_risk.score }}%"></div>
                     </div>
-                    <div class="risk-index-status risk-{{ market_risk.label.lower().replace(' ', '-') }}">
+                    <div class="risk-gauge-status risk-{{ market_risk.label.lower().replace(' ', '-') }}">
                         {{ market_risk.label }}
                     </div>
-                    <div style="font-size: 12px; color: #AFAFAF; margin-top: 12px; font-style: italic;">
+                    <div class="risk-gauge-legend">
                         Low (0-40) | Moderate (41-65) | Elevated (66-100)
                     </div>
                 </div>
@@ -871,7 +869,7 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
+        <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
         
         <div class="submarket-grid">
             {% for submarket in submarket_breakdown %}
