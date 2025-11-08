@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 175px;
+    height: 280px;
     page-break-inside: avoid;
 }
 
@@ -363,6 +363,11 @@ CHART CONTAINERS
     letter-spacing: 0.05em;
 }
 
+/* PERFORMANCE ANALYSIS CHART HEIGHT FIX */
+.two-column .chart-container {
+  height: 180px !important; /* try 180–200px until perfect */
+}
+
 /* ============================================
 TWO-COLUMN LAYOUT
 ============================================ */
@@ -371,7 +376,7 @@ TWO-COLUMN LAYOUT
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
-    height: 100%;
+    height: 600%;
     margin-top: 60px; 
 }
 
@@ -397,7 +402,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    margin-top: -60px;
+    margin-top: 150px;
 }
 
 .insight-card {
@@ -596,12 +601,11 @@ TABLE STYLING
     border: 1px solid #F44336;
 }
 
-.table-luxury td:nth-child(3),
 .table-luxury td:nth-child(4),
 .table-luxury td:nth-child(5),
 .table-luxury td:nth-child(6) {
   position: relative;
-  left: 10px;
+  left: 30px;
 }
 
 /* ============================================
@@ -619,7 +623,7 @@ FOOTER
     padding-top: 15px;
     border-top: 2px solid #B08D57;
     z-index: 20;
-    height: 150px;
+    height: 70px;
     background: var(--vm-dark);
 }
 
