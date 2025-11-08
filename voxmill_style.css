@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 300px;
+    height: 350px;
     page-break-inside: avoid;
 }
 
@@ -406,8 +406,8 @@ INSIGHT CARDS
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: -30px;
+    gap: 10px;
+    margin-top: 40px;
 }
 
 .insight-card {
@@ -451,6 +451,8 @@ INTELLIGENCE PANELS
     border-radius: 12px;
     padding: 24px 26px;
     margin-top: 34px;
+   height: 100px;
+
 }
 
 .panel-title {
@@ -506,6 +508,7 @@ TABLE STYLING
 
 .table-luxury {
     width: 100%;
+    margin-top: 30px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
@@ -527,7 +530,7 @@ TABLE STYLING
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 15px 12px;
-    text-align: left;
+    text-align: center;
 }
 
 .table-luxury th:nth-child(1) { width: 30%; } /* Property */
@@ -536,7 +539,7 @@ TABLE STYLING
 .table-luxury th:nth-child(4) { width: 14%; } /* Price */
 .table-luxury th:nth-child(5) { width: 12%; } /* £/sqft */
 .table-luxury th:nth-child(6) { width: 10%; } /* Days */
-.table-luxury th:nth-child(7) { width: 10%; text-align: left; } /* Score */
+.table-luxury th:nth-child(7) { width: 10%; text-align: center; } /* Score */
 
 .table-luxury tbody tr {
     border-bottom: 1px solid rgba(186, 149, 95, 0.2);
@@ -554,7 +557,7 @@ TABLE STYLING
     font-size: 14px;
     color: var(--vm-text);
     padding: 15px 12px;
-    vertical-align: middle;
+    vertical-align: center;
 }
 
 .table-luxury td.align-right {
@@ -565,11 +568,11 @@ TABLE STYLING
 }
 
 .table-luxury td.align-center {
-    text-align: left;
+    text-align: center;
 }
 
 .table-luxury td:last-child {
-    text-align: right;
+    text-align: center;
 }
 
 .property-address {
@@ -609,8 +612,8 @@ TABLE STYLING
 .table-luxury td:nth-child(4),
 .table-luxury td:nth-child(5),
 .table-luxury td:nth-child(6) {
-  position: relative;
-  left: 30px;
+position: center;
+  
 }
 
 /* ============================================
@@ -690,8 +693,8 @@ DEPTH METRICS — REPOSITIONED BELOW HEATMAP
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 42px;
-    margin-top: -22px;
+    gap: 12px;
+    margin-top: 30px;
     margin-bottom: 0;
 }
 
@@ -725,7 +728,7 @@ DEPTH METRICS — REPOSITIONED BELOW HEATMAP
     background: rgba(176, 141, 87, 0.2);
     border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: -10px;
 }
 
 .depth-bar-fill {
@@ -743,7 +746,7 @@ PROPERTY TYPE HEATMAP
 ============================================ */
 
 .property-type-heatmap {
-    margin-top: -222px;
+    margin-top: 22px;
 }
 
 .heatmap-table {
@@ -952,10 +955,10 @@ PAGE 6: STRATEGIC FORECAST — 2×2 GRID REDESIGN
 .voxmill-index-bar-container {
     height: 20px;
     background: rgba(176, 141, 87, 0.2);
-    border-radius: 10px;
+    border-radius: 20px;
     overflow: hidden;
     margin-bottom: 16px;
-    width: 70%;
+    width: 100%;
 }
 
 .voxmill-index-bar-fill {
@@ -976,8 +979,8 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 35px;
-    padding: 13px 18px;
+    margin-top: 55px;
+    padding: 19px 29px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 2px solid #B08D57;
     border-radius: 6px;
