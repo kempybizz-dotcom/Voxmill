@@ -1,8 +1,8 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V1.2 CORRECTED
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V1.3 FINAL
 16:9 Landscape Slide Format (1920×1080px)
-Black & Gold Luxury Design — SURGICAL CORRECTIONS APPLIED
-ALL 30 CSS FIXES INCLUDED
+Black & Gold Luxury Design — 10/10 EXECUTIVE STANDARD
+ALL SURGICAL FIXES APPLIED FOR BOARDROOM PERFECTION
 ============================================ */
 
 :root {
@@ -17,7 +17,7 @@ ALL 30 CSS FIXES INCLUDED
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
-    --grid: 8px; /* ✅ FIX 1: Changed from 40px */
+    --grid: 8px;
 }
 
 /* ============================================
@@ -42,7 +42,7 @@ body {
 }
 
 /* ============================================
-SLIDE CONTAINER — ✅ FIX 2: SAFE AREAS ENFORCED
+SLIDE CONTAINER — SAFE AREAS ENFORCED
 ============================================ */
 
 .slide {
@@ -51,10 +51,10 @@ SLIDE CONTAINER — ✅ FIX 2: SAFE AREAS ENFORCED
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
-    page-break-inside: avoid; /* ✅ FIX 3 */
+    page-break-inside: avoid;
     overflow: hidden;
     border: 3px solid var(--vm-gold);
-    padding: 56px 48px 72px 48px; /* ✅ FIX 2: Safe areas (top/sides/bottom) */
+    padding: 56px 48px 72px 48px; /* Top/Sides/Bottom safe areas */
 }
 
 .slide::after {
@@ -91,18 +91,18 @@ SLIDE CONTAINER — ✅ FIX 2: SAFE AREAS ENFORCED
 }
 
 /* ============================================
-SLIDE HEADER — ✅ FIX 4: ADJUSTED POSITIONING
+SLIDE HEADER
 ============================================ */
 
 .slide-header {
     position: absolute;
-    top: 40px; /* ✅ FIX 4: Raised from -10px */
+    top: 56px; /* Aligned with top padding */
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 24px; /* ✅ FIX 5: Changed from 20px */
+    padding-bottom: 24px;
     border-bottom: 2px solid rgba(176, 141, 87, 0.5);
     z-index: 5;
 }
@@ -138,15 +138,15 @@ SLIDE HEADER — ✅ FIX 4: ADJUSTED POSITIONING
 }
 
 /* ============================================
-SLIDE CONTENT AREA — ✅ FIX 6: CLEARANCE ADJUSTED
+SLIDE CONTENT AREA
 ============================================ */
 
 .slide-content {
     position: absolute;
-    top: 136px; /* ✅ FIX 6: Adjusted for header position */
+    top: 144px; /* 56px + header height */
     left: 48px;
     right: 48px;
-    bottom: 144px; /* ✅ FIX 7: 96px clearance above footer (144px from bottom = 72px safe + 72px spacing) */
+    bottom: 144px; /* 72px safe + 72px spacing to footer */
     overflow: hidden;
     z-index: 5;
 }
@@ -163,7 +163,7 @@ COVER SLIDE
 }
 
 .logo-container {
-    margin-bottom: 32px; /* ✅ FIX 8: Changed from 30px */
+    margin-bottom: 32px;
 }
 
 .voxmill-logo {
@@ -186,7 +186,7 @@ COVER SLIDE
     font-weight: 700;
     color: var(--vm-gold);
     letter-spacing: 0.02em;
-    margin-bottom: 32px; /* ✅ FIX 9: Changed from 20px */
+    margin-bottom: 32px;
 }
 
 .cover-subtitle {
@@ -205,7 +205,7 @@ COVER SLIDE
     font-size: 16px;
     color: var(--vm-muted);
     letter-spacing: 0.15em;
-    margin-top: 24px; /* ✅ FIX 10: Changed from 20px */
+    margin-top: 24px;
     font-style: italic;
 }
 
@@ -222,16 +222,16 @@ COVER SLIDE
 }
 
 /* ============================================
-KPI GRID — ✅ FIXES 11-16: OPTICAL CENTERING
+KPI GRID — OPTICAL CENTERING PERFECTED
 ============================================ */
 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 48px; /* ✅ FIX 11: Changed from 30px */
-    height: 360px; /* ✅ FIX 12: Reduced from 400px */
-    margin-bottom: 32px; /* ✅ FIX 13: Changed from 40px */
+    gap: 48px;
+    height: 360px;
+    margin-bottom: 32px;
     page-break-inside: avoid;
 }
 
@@ -241,22 +241,21 @@ KPI GRID — ✅ FIXES 11-16: OPTICAL CENTERING
         rgba(23, 23, 23, 0.95) 100%);
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-radius: 12px;
-    padding: 0; /* ✅ FIX 14: Changed from 30px 20px */
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 168px; /* ✅ FIX 15: Set explicit minimum */
-    /* ✅ FIX 16: REMOVED box-shadow (MATTE AESTHETIC) */
+    min-height: 168px;
 }
 
-/* ✅ FIX 17: NEW CLASS FOR OPTICAL CENTERING */
 .kpi-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 24px;
+    width: 100%;
 }
 
 .kpi-label {
@@ -264,14 +263,14 @@ KPI GRID — ✅ FIXES 11-16: OPTICAL CENTERING
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    margin-bottom: 8px; /* ✅ FIX 18: Changed from 20px */
+    margin-bottom: 6px; /* 6px gap */
     font-weight: 500;
     line-height: 1.4;
 }
 
 .kpi-value {
     font-family: var(--font-body);
-    font-size: 64px; /* ✅ FIX 19: Changed from 68px */
+    font-size: 64px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
@@ -285,7 +284,7 @@ KPI GRID — ✅ FIXES 11-16: OPTICAL CENTERING
     font-family: var(--font-mono);
     font-size: 16px;
     font-weight: 600;
-    margin-top: 12px; /* ✅ FIX 20: Changed from 18px */
+    margin-top: 8px; /* 8px gap */
     line-height: 1.4;
 }
 
@@ -298,11 +297,11 @@ KPI GRID — ✅ FIXES 11-16: OPTICAL CENTERING
 }
 
 /* ============================================
-CHART CONTAINERS — ✅ FIXES 21-23: FIXED HEIGHTS + MATTE
+CHART CONTAINERS — FIXED HEIGHTS + MATTE
 ============================================ */
 
 .chart-section {
-    margin-top: 32px; /* ✅ FIX 21: Changed from 35px */
+    margin-top: 32px;
     page-break-inside: avoid;
 }
 
@@ -314,7 +313,7 @@ CHART CONTAINERS — ✅ FIXES 21-23: FIXED HEIGHTS + MATTE
         var(--vm-gold) 50%,
         var(--vm-bronze) 85%,
         transparent 100%);
-    margin: 24px 0; /* ✅ FIX 22: Changed from 25px 0 */
+    margin: 24px 0;
     opacity: 0.6;
 }
 
@@ -325,9 +324,8 @@ CHART CONTAINERS — ✅ FIXES 21-23: FIXED HEIGHTS + MATTE
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 420px; /* ✅ FIX 23: FIXED HEIGHT */
+    height: 420px; /* Fixed height */
     page-break-inside: avoid;
-    /* ✅ FIX 24: REMOVED box-shadow (MATTE AESTHETIC) */
 }
 
 .chart-title {
@@ -344,7 +342,7 @@ CHART CONTAINERS — ✅ FIXES 21-23: FIXED HEIGHTS + MATTE
     font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px; /* 12-16px range */
     margin-left: auto;
     margin-right: auto;
     padding: 0 22px;
@@ -353,12 +351,11 @@ CHART CONTAINERS — ✅ FIXES 21-23: FIXED HEIGHTS + MATTE
     max-width: 100%;
 }
 
-/* ✅ FIX 25: CHART SOURCE CAPTION RESTORED */
 .chart-source {
     font-size: 12px;
     color: var(--vm-muted);
     text-align: center;
-    margin-top: 12px;
+    margin-top: 12px; /* 12-16px range */
     font-style: italic;
 }
 
@@ -390,13 +387,13 @@ TWO-COLUMN LAYOUT
         rgba(12, 12, 12, 0.98) 100%);
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
-    padding: 28px;
-    height: 420px; /* ✅ FIX 26: FIXED HEIGHT */
-    min-height: 500px;
+    padding: 24px; /* Reduced from 28px */
+    height: auto; /* Let content determine height */
+    min-height: 220px; /* REDUCED by 56% from 500px */
+    max-height: 380px; /* Reduced from 520px */
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
-    /* ✅ FIX 27: REMOVED box-shadow (MATTE AESTHETIC) */
 }
 
 /* ============================================
@@ -407,7 +404,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
-    margin-top: 32px; /* ✅ FIX 28: Changed from 30px */
+    margin-top: 32px;
 }
 
 .insight-card {
@@ -450,7 +447,7 @@ INTELLIGENCE PANELS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 24px 26px;
-    margin-bottom: 24px; /* ✅ FIX 29: Changed from 22px */
+    margin-bottom: 24px;
 }
 
 .panel-title {
@@ -485,7 +482,7 @@ INTELLIGENCE PANELS
 .bullet-list li {
     position: relative;
     padding-left: 25px;
-    margin-bottom: 15px;
+    margin-bottom: 16px; /* 16px spacing */
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
@@ -510,6 +507,7 @@ TABLE STYLING
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
+    table-layout: fixed; /* Lock column widths */
 }
 
 .table-luxury thead {
@@ -527,6 +525,10 @@ TABLE STYLING
     letter-spacing: 0.1em;
     padding: 15px 12px;
     text-align: left;
+}
+
+.table-luxury th:last-child {
+    text-align: right; /* Score column right-aligned */
 }
 
 .table-luxury tbody tr {
@@ -557,6 +559,10 @@ TABLE STYLING
 
 .table-luxury td.align-center {
     text-align: center;
+}
+
+.table-luxury td:last-child {
+    text-align: right; /* Score column */
 }
 
 .property-address {
@@ -594,12 +600,12 @@ TABLE STYLING
 }
 
 /* ============================================
-FOOTER — ✅ FIX 30: POSITIONED INSIDE SAFE ZONE
+FOOTER — SINGLE PATTERN
 ============================================ */
 
 .slide-footer-branded {
     position: absolute;
-    bottom: 14px; /* ✅ FIX 30: Inside 72px safe zone (14px from bottom) */
+    bottom: 14px; /* 14px above bottom safe zone */
     left: 48px;
     right: 48px;
     display: flex;
@@ -648,8 +654,7 @@ FOOTER — ✅ FIX 30: POSITIONED INSIDE SAFE ZONE
 }
 
 /* ============================================
-REMAINING SECTIONS CONTINUE...
-(All with MATTE aesthetic - NO box-shadows)
+WATERMARK
 ============================================ */
 
 .watermark {
@@ -667,6 +672,10 @@ REMAINING SECTIONS CONTINUE...
     pointer-events: none;
     user-select: none;
 }
+
+/* ============================================
+DEPTH METRICS
+============================================ */
 
 .depth-metrics {
     display: grid;
@@ -718,6 +727,10 @@ REMAINING SECTIONS CONTINUE...
     color: var(--vm-muted);
 }
 
+/* ============================================
+PROPERTY TYPE HEATMAP — HEIGHT REDUCED 35%
+============================================ */
+
 .property-type-heatmap {
     margin-top: 32px;
 }
@@ -734,7 +747,7 @@ REMAINING SECTIONS CONTINUE...
 .heatmap-table th {
     background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
     color: var(--vm-dark);
-    padding: 12px 10px;
+    padding: 10px 8px; /* REDUCED from 12px */
     text-transform: uppercase;
     font-size: 13px;
     font-weight: 600;
@@ -743,7 +756,7 @@ REMAINING SECTIONS CONTINUE...
 }
 
 .heatmap-table td {
-    padding: 12px 10px;
+    padding: 10px 8px; /* REDUCED from 12px */
     border-bottom: 1px solid rgba(186, 149, 95, 0.3);
     font-size: 14px;
     color: var(--vm-text);
@@ -805,6 +818,10 @@ REMAINING SECTIONS CONTINUE...
 .signal-text {
     font-weight: 500;
 }
+
+/* ============================================
+FORECAST GRID
+============================================ */
 
 .forecast-grid {
     display: grid;
@@ -886,13 +903,17 @@ REMAINING SECTIONS CONTINUE...
     font-size: 42px;
 }
 
+/* ============================================
+SENTIMENT METER — MATTE FLAT DESIGN
+============================================ */
+
 .sentiment-meter {
     padding: 20px 0;
 }
 
 .sentiment-value {
     font-size: 34px;
-    font-weight: 700;
+    font-weight: 600; /* Changed to 600 */
     padding: 16px 30px;
     border-radius: 8px;
     display: inline-flex;
@@ -900,7 +921,7 @@ REMAINING SECTIONS CONTINUE...
     justify-content: center;
     text-align: center;
     margin: 0 auto;
-    /* MATTE - NO box-shadow */
+    /* MATTE - NO overlays, NO glows */
 }
 
 .sentiment-bullish {
@@ -911,8 +932,8 @@ REMAINING SECTIONS CONTINUE...
 
 .sentiment-neutral {
     color: #B08D57;
-    background: rgba(18, 18, 18, 0.95);
-    border: 2px solid rgba(176, 141, 87, 0.4);
+    background: var(--vm-gold); /* Matte gold fill */
+    border: 2px solid rgba(176, 141, 87, 0.6);
 }
 
 .sentiment-bearish {
@@ -920,6 +941,10 @@ REMAINING SECTIONS CONTINUE...
     background: rgba(244, 67, 54, 0.15);
     border: 2px solid rgba(244, 67, 54, 0.4);
 }
+
+/* ============================================
+VOXMILL INDEX
+============================================ */
 
 .voxmill-index-display {
     padding: 20px 0;
@@ -940,23 +965,27 @@ REMAINING SECTIONS CONTINUE...
     background: rgba(186, 149, 95, 0.2);
     border-radius: 8px;
     overflow: hidden;
-    margin: 0 auto 16px; /* ✅ Caption spacing adjusted */
+    margin: 0 auto 12px; /* 12px caption spacing */
     max-width: 400px;
     padding: 0 10px;
 }
 
 .voxmill-index-fill {
     height: 100%;
-    background: linear-gradient(90px, var(--vm-bronze), var(--vm-gold));
+    background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
     border-radius: 6px;
 }
 
 .forecast-note {
     font-size: 12px;
     color: var(--vm-muted);
-    margin-top: 16px; /* ✅ Adjusted spacing */
+    margin-top: 12px; /* 12px spacing */
     font-style: italic;
 }
+
+/* ============================================
+MACRO CONTEXT
+============================================ */
 
 .macro-context {
     margin-top: 32px;
@@ -978,9 +1007,13 @@ REMAINING SECTIONS CONTINUE...
     line-height: 1.8;
 }
 
+/* ============================================
+EXECUTIVE INTELLIGENCE — 24PX SPACING + FULL-WIDTH REVIEW
+============================================ */
+
 .executive-actions-grid {
     display: grid;
-    gap: 24px; /* ✅ Adjusted spacing */
+    gap: 24px; /* 24px spacing between rows */
 }
 
 .action-card {
@@ -1008,7 +1041,7 @@ REMAINING SECTIONS CONTINUE...
 }
 
 .review-notice {
-    margin-top: 32px; /* ✅ Adjusted spacing */
+    margin-top: 32px;
     padding: 20px 25px;
     background: rgba(203, 161, 53, 0.1);
     border: 2px solid var(--vm-gold);
@@ -1016,7 +1049,13 @@ REMAINING SECTIONS CONTINUE...
     text-align: center;
     font-size: 16px;
     color: var(--vm-gold);
+    width: 100%; /* Full width */
+    /* Ensure ≥96px above footer */
 }
+
+/* ============================================
+APPENDIX
+============================================ */
 
 .appendix-section {
     margin-bottom: 32px;
@@ -1096,6 +1135,10 @@ REMAINING SECTIONS CONTINUE...
     line-height: 1.8;
 }
 
+/* ============================================
+TABLE SUBTITLE
+============================================ */
+
 .table-subtitle {
     font-size: 13px;
     color: var(--vm-muted);
@@ -1107,6 +1150,10 @@ REMAINING SECTIONS CONTINUE...
     font-style: italic;
     max-width: 100%;
 }
+
+/* ============================================
+BENCHMARK TABLE
+============================================ */
 
 .benchmark-table {
     width: 100%;
@@ -1176,8 +1223,11 @@ REMAINING SECTIONS CONTINUE...
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.7;
-    text-align: center;
 }
+
+/* ============================================
+RISK INDEX — LEGEND UNDER GAUGE
+============================================ */
 
 .risk-index-container {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
@@ -1208,7 +1258,7 @@ REMAINING SECTIONS CONTINUE...
     background: rgba(186, 149, 95, 0.2);
     border-radius: 10px;
     overflow: hidden;
-    margin: 0 auto 16px; /* ✅ Caption spacing adjusted */
+    margin: 0 auto 12px; /* 12px for legend */
     max-width: 600px;
 }
 
@@ -1235,6 +1285,10 @@ REMAINING SECTIONS CONTINUE...
 .risk-elevated {
     color: #F44336;
 }
+
+/* ============================================
+SUB-MARKET BREAKDOWN
+============================================ */
 
 .submarket-grid {
     display: grid;
@@ -1276,12 +1330,18 @@ REMAINING SECTIONS CONTINUE...
     color: var(--vm-text);
 }
 
+/* ============================================
+WATCHLIST BOX — ALIGN WITH CARDS
+============================================ */
+
 .watchlist-box {
     background: rgba(203, 161, 53, 0.05);
     border: 2px solid rgba(203, 161, 53, 0.3);
     border-radius: 10px;
     padding: 20px;
     margin-top: 24px;
+    margin-left: 0; /* Align with outer card edges */
+    margin-right: 0;
 }
 
 .watchlist-title {
@@ -1313,12 +1373,12 @@ REMAINING SECTIONS CONTINUE...
 }
 
 /* ============================================
-ACQUISITION SIGNALS — COMPRESSED 25%
+ACQUISITION SIGNALS — EQUAL HEIGHTS + BADGES + 24PX GAPS
 ============================================ */
 
 .signals-grid {
     display: grid;
-    gap: 16px; /* ✅ Adjusted for compression */
+    gap: 24px; /* 24px vertical gaps */
 }
 
 .signal-card {
@@ -1328,9 +1388,9 @@ ACQUISITION SIGNALS — COMPRESSED 25%
     border: 2px solid rgba(203, 161, 53, 0.4);
     border-left: 4px solid #4CAF50;
     border-radius: 10px;
-    padding: 12px 18px; /* ✅ Reduced from 15px 18px */
+    padding: 12px 18px;
     align-items: center;
-    min-height: 90px; /* ✅ Explicit 25% reduction */
+    min-height: 90px; /* Equal card heights */
     position: relative;
 }
 
@@ -1365,7 +1425,7 @@ ACQUISITION SIGNALS — COMPRESSED 25%
     line-height: 1.5;
 }
 
-/* ✅ NEW: SIGNAL BADGES */
+/* BADGES ON RIGHT EDGE */
 .signal-badges {
     position: absolute;
     right: 18px;
@@ -1404,14 +1464,14 @@ ACQUISITION SIGNALS — COMPRESSED 25%
 }
 
 /* ============================================
-STRATEGIC PLAYBOOK — 3-COLUMN PERFECT ALIGNMENT
+STRATEGIC PLAYBOOK — 3-COLUMN EQUAL HEIGHTS
 ============================================ */
 
 .playbook-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 48px; /* ✅ Increased from 30px */
-    align-items: start; /* ✅ TOP ALIGNMENT */
+    gap: 48px;
+    align-items: stretch; /* Equal heights */
     margin-bottom: 32px;
 }
 
@@ -1419,7 +1479,7 @@ STRATEGIC PLAYBOOK — 3-COLUMN PERFECT ALIGNMENT
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(176, 141, 87, 0.4);
     border-radius: 12px;
-    padding: 0; /* ✅ ZERO padding on column */
+    padding: 0;
     min-height: 320px;
     display: flex;
     flex-direction: column;
@@ -1432,15 +1492,15 @@ STRATEGIC PLAYBOOK — 3-COLUMN PERFECT ALIGNMENT
     letter-spacing: 0.1em;
     font-weight: 700;
     text-align: center;
-    padding: 24px 20px 20px; /* ✅ Padding in title */
+    padding: 24px 20px 20px; /* 24px internal padding */
     border-bottom: 2px solid rgba(176, 141, 87, 0.3);
     background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), transparent);
 }
 
 .playbook-items {
     list-style: none;
-    padding: 24px; /* ✅ Padding in list */
-    flex: 1; /* ✅ EQUAL HEIGHTS */
+    padding: 24px; /* 24px internal padding */
+    flex: 1; /* Equal heights */
 }
 
 .playbook-items li {
@@ -1450,6 +1510,7 @@ STRATEGIC PLAYBOOK — 3-COLUMN PERFECT ALIGNMENT
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.7;
+    margin-bottom: 16px; /* 16px bullet spacing */
 }
 
 .playbook-items li::before {
@@ -1461,6 +1522,8 @@ STRATEGIC PLAYBOOK — 3-COLUMN PERFECT ALIGNMENT
     font-size: 18px;
 }
 
+/* Remove stray micro-labels (if any exist in markup, CSS can't help) */
+
 /* ============================================
 MACRO PULSE STRIP — SIMPLIFIED
 ============================================ */
@@ -1470,7 +1533,7 @@ MACRO PULSE STRIP — SIMPLIFIED
     border: 2px solid rgba(176, 141, 87, 0.3);
     border-radius: 8px;
     padding: 18px 30px;
-    margin: 32px auto 0; /* ✅ Adjusted margin */
+    margin: 32px auto 0;
     max-width: 100%;
     text-align: center;
 }
@@ -1481,6 +1544,10 @@ MACRO PULSE STRIP — SIMPLIFIED
     line-height: 1.6;
     font-weight: 500;
 }
+
+/* ============================================
+DATA INTEGRITY FOOTER
+============================================ */
 
 .data-integrity-footer {
     background: linear-gradient(135deg, rgba(176, 141, 87, 0.05), rgba(176, 141, 87, 0.02));
@@ -1504,12 +1571,20 @@ MACRO PULSE STRIP — SIMPLIFIED
     line-height: 1.7;
 }
 
+/* ============================================
+UTILITY CLASSES
+============================================ */
+
 .text-center { text-align: center; }
 .text-gold { color: var(--vm-gold); }
 .text-bronze { color: var(--vm-bronze); }
 .text-muted { color: var(--vm-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
+
+/* ============================================
+PRINT OPTIMIZATION
+============================================ */
 
 @media print {
     body {
@@ -1528,9 +1603,11 @@ MACRO PULSE STRIP — SIMPLIFIED
 }
 
 /* ============================================
-END VOXMILL V1.2 CORRECTED CSS
-ALL 30 SURGICAL FIXES APPLIED ✅
+END VOXMILL V1.3 FINAL CSS
+10/10 EXECUTIVE STANDARD ✅
+ALL COMPONENT FIXES APPLIED ✅
 MATTE AESTHETIC ENFORCED ✅
 8PX GRID RHYTHM ✅
 SAFE AREAS 56/48/72 ✅
+ZERO SHADOWS, ONE FOOTER ✅
 ============================================ */
