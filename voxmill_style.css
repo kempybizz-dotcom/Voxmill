@@ -321,7 +321,7 @@ CHART CONTAINERS
     border: 2px solid rgba(186, 149, 95, 0.4);
     border-radius: 12px;
     padding: 25px;
-    height: 375px;
+    height: 350px;
     page-break-inside: avoid;
 }
 
@@ -407,7 +407,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
-    margin-top: -20px;
+    margin-top: 110px;
 }
 
 .insight-card {
@@ -980,7 +980,7 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-bottom: -20px;
+    margin-top: 120px;
     padding: 5px 10px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 2px solid #B08D57;
