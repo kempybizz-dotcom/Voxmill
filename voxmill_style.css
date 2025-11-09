@@ -407,7 +407,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
-    margin-top: 90px;
+    margin-top: -20px;
 }
 
 .insight-card {
@@ -980,8 +980,8 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-bottom: 50px;
-    padding: 19px 29px;
+    margin-bottom: -20px;
+    padding: 5px 10px;
     background: rgba(176, 141, 87, 0.05);
     border-left: 2px solid #B08D57;
     border-radius: 6px;
