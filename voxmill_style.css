@@ -6,7 +6,7 @@ PAGES 6, 7, 12, 13 REBUILT TO BOARDROOM SPECIFICATION
 ============================================ */
 
 :root {
-    --vm-bronze: #B08D57;
+    --vm-bronze: #A77B3A;
     --vm-gold: #A77B3A;
     --vm-text: #EAEAEA;
     --vm-text-body: rgba(234, 234, 234, 0.88);
@@ -407,7 +407,7 @@ INSIGHT CARDS
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
-    margin-top: 160px;
+    margin-top: 150px;
 }
 
 .insight-card {
@@ -632,7 +632,7 @@ FOOTER
     padding-top: 15px;
     border-top: 2px solid #B08D57;
     z-index: 20;
-    height: 75px;
+    height: 55px;
     background: var(--vm-dark);
 }
 
@@ -648,7 +648,7 @@ FOOTER
 }
 
 .footer-company {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
     color: #B08D57;
     letter-spacing: 0.05em;
