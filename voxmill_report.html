@@ -19,11 +19,11 @@
     <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; z-index: 0;" width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <pattern id="luxuryPattern" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
-                <path d="M75,20 L95,50 L75,80 L55,50 Z" fill="#CBA135" opacity="0.5"/>
+                <path d="M75,20 L95,50 L75,80 L55,50 Z" fill="#A77B3A" opacity="0.5"/>
                 <path d="M75,22 L93,50 L75,78 L57,50 Z" fill="#0C0C0C" opacity="0.3"/>
-                <circle cx="75" cy="75" r="3" fill="#CBA135" opacity="0.4"/>
-                <line x1="0" y1="75" x2="150" y2="75" stroke="#CBA135" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="0" x2="75" y2="150" stroke="#CBA135" stroke-width="1" opacity="0.3"/>
+                <circle cx="75" cy="75" r="3" fill="#A77B3A" opacity="0.4"/>
+                <line x1="0" y1="75" x2="150" y2="75" stroke="#A77B3A" stroke-width="1" opacity="0.3"/>
+                <line x1="75" y1="0" x2="75" y2="150" stroke="#A77B3A" stroke-width="1" opacity="0.3"/>
             </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#luxuryPattern)"/>
@@ -31,14 +31,14 @@
 
     <div style="position: relative; z-index: 1;">
         <div class="logo-container">
-            <img src="voxmill_logo.png" alt="Voxmill" style="width: 216px; height: auto; max-height: 216px; filter: drop-shadow(0 8px 40px rgba(203, 161, 53, 0.9));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="voxmill_logo.png" alt="Voxmill" style="width: 216px; height: auto; max-height: 216px; filter: drop-shadow(0 8px 40px rgba(167, 123, 58, 0.9));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <svg class="voxmill-logo" width="216" height="216" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#CBA135" stroke-width="3"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#A77B3A" stroke-width="3"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="42" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs>
                     <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                        <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                     </linearGradient>
                 </defs>
             </svg>
@@ -60,11 +60,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold1)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold1)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -80,6 +80,7 @@
      ============================================ -->
 
 <div class="slide">
+    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
         <h2 class="slide-title">Market Overview</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
@@ -132,7 +133,7 @@
             <div class="chart-divider"></div>
             <div class="chart-container">
                 <h3 class="chart-title">Price Distribution by Range</h3>
-                <p class="chart-context">Number of properties in each price bracket — Market concentration analysis (Sample: {{ kpis.total_properties }} listings)</p>
+                <p class="chart-context">Market concentration analysis showing inventory distribution across price bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} listings)</p>
                 <svg width="100%" height="240" viewBox="0 0 1700 240" preserveAspectRatio="xMidYMid meet">
                     <text x="35" y="110" font-family="Inter" font-size="14" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 35, 110)" class="chart-axis-label">Count</text>
                     <line x1="80" y1="40" x2="80" y2="180" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
@@ -147,7 +148,7 @@
                           width="200" 
                           height="{{ bar.height * 0.9 }}" 
                           fill="url(#barGradient)" 
-                          stroke="#CBA135" 
+                          stroke="#A77B3A" 
                           stroke-width="2"
                           rx="4"/>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
@@ -155,7 +156,7 @@
                           font-family="Inter" 
                           font-size="22" 
                           font-weight="700"
-                          fill="#CBA135" 
+                          fill="#A77B3A" 
                           text-anchor="middle">{{ bar.count }}</text>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
                           y="205" 
@@ -170,8 +171,8 @@
                     
                     <defs>
                         <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#CBA135;stop-opacity:0.95" />
-                            <stop offset="50%" style="stop-color:#BA955F;stop-opacity:0.85" />
+                            <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:0.95" />
+                            <stop offset="50%" style="stop-color:#9E7B47;stop-opacity:0.85" />
                             <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.65" />
                         </linearGradient>
                     </defs>
@@ -184,11 +185,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold2)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold2)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -213,7 +214,7 @@
         <div class="two-column">
             <div class="chart-panel">
                 <h3 class="chart-title">Price Range Distribution</h3>
-                <p class="chart-context">Percentage of inventory by price bracket — Portfolio composition (Sample: {{ kpis.total_properties }} listings)</p>
+                <p class="chart-context">Portfolio composition by price bracket — strategic positioning across market segments (Based on {{ kpis.total_properties }} listings)</p>
                 <svg width="100%" height="380" viewBox="0 0 700 380">
                     <line x1="280" y1="40" x2="280" y2="320" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
                     <line x1="350" y1="40" x2="350" y2="320" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
@@ -231,22 +232,22 @@
                           width="{{ item.percentage * 3.5 }}" 
                           height="28" 
                           fill="url(#horizontalGradient)" 
-                          stroke="#BA955F" 
+                          stroke="#9E7B47" 
                           stroke-width="2"/>
                     <text x="{{ 290 + item.percentage * 3.5 }}" 
                           y="{{ 75 + loop.index0 * 70 }}" 
                           font-family="Inter" 
                           font-size="16" 
                           font-weight="600"
-                          fill="#CBA135">{{ item.percentage }}%</text>
+                          fill="#A77B3A">{{ item.percentage }}%</text>
                     {% endfor %}
                     
                     <text x="480" y="365" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
                     
                     <defs>
                         <linearGradient id="horizontalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#BA955F;stop-opacity:0.7" />
-                            <stop offset="100%" style="stop-color:#CBA135;stop-opacity:0.95" />
+                            <stop offset="0%" style="stop-color:#9E7B47;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#A77B3A;stop-opacity:0.95" />
                         </linearGradient>
                     </defs>
                 </svg>
@@ -255,7 +256,7 @@
             
             <div class="chart-panel">
                 <h3 class="chart-title">Weekly Trend: Price per SqFt</h3>
-                <p class="chart-context">Average £/sqft movement over past week (7-day rolling sample)</p>
+                <p class="chart-context">7-day rolling average of price-per-square-foot — micro-trend velocity indicator</p>
                 <svg width="100%" height="380" viewBox="0 0 700 380">
                     <text x="10" y="195" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 10, 195)" class="chart-axis-label">£/sqft</text>
                     
@@ -266,14 +267,14 @@
                     <polyline 
                         points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 350 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
                         fill="none" 
-                        stroke="#CBA135" 
+                        stroke="#A77B3A" 
                         stroke-width="4"/>
                     
                     {% for point in chart_data.weekly_trend %}
                     <circle cx="{{ 80 + loop.index0 * 120 }}" 
                             cy="{{ 350 - point.value }}" 
                             r="8" 
-                            fill="#CBA135" 
+                            fill="#A77B3A" 
                             stroke="#0C0C0C" 
                             stroke-width="3"/>
                     <text x="{{ 80 + loop.index0 * 120 }}" 
@@ -312,11 +313,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold3)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold3)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold3" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -331,6 +332,7 @@
      SLIDE 4: COMPETITIVE LANDSCAPE
      ============================================ -->
 <div class="slide">
+    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
         <h2 class="slide-title">Competitive Landscape</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
@@ -339,29 +341,29 @@
         <div class="two-column">
             <div class="chart-panel">
                 <h3 class="chart-title">Agency Market Share</h3>
-                <p class="chart-context">Distribution of active listings by agency — Top 5 competitors</p>
+                <p class="chart-context">Competitive landscape visualization — market leader concentration analysis</p>
                 <svg width="100%" height="320" viewBox="0 0 700 320">
-                    <text x="350" y="160" font-family="Playfair Display" font-size="48" font-weight="700" fill="#CBA135" text-anchor="middle">{{ chart_data.market_share|length }}</text>
+                    <text x="350" y="160" font-family="Playfair Display" font-size="48" font-weight="700" fill="#A77B3A" text-anchor="middle">{{ chart_data.market_share|length }}</text>
                     <text x="350" y="190" font-family="Inter" font-size="16" fill="#AFAFAF" text-anchor="middle">Agencies</text>
-                    <circle cx="350" cy="160" r="100" fill="none" stroke="rgba(203,161,53,0.3)" stroke-width="3"/>
-                    <circle cx="350" cy="160" r="120" fill="none" stroke="rgba(186,149,95,0.2)" stroke-width="2"/>
+                    <circle cx="350" cy="160" r="100" fill="none" stroke="rgba(167, 123, 58, 0.3)" stroke-width="3"/>
+                    <circle cx="350" cy="160" r="120" fill="none" stroke="rgba(158, 123, 71, 0.2)" stroke-width="2"/>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
             <div class="chart-panel">
                 <h3 class="chart-title">Competitor Inventory</h3>
-                <p class="chart-context">Active listings count by leading agencies — Market positioning analysis</p>
+                <p class="chart-context">Active listing volumes by premium agency — competitive positioning benchmark</p>
                 <svg width="100%" height="320" viewBox="0 0 700 320">
                     <text x="5" y="160" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 5, 160)" class="chart-axis-label">Agency</text>
                     
                     {% for comp in chart_data.competitor_inventory %}
                     <text x="20" y="{{ 60 + loop.index0 * 55 }}" font-family="Inter" font-size="14" fill="#EAEAEA">{{ comp.name[:25] }}</text>
-                    <rect x="280" y="{{ 45 + loop.index0 * 55 }}" width="{{ comp.listings * 3 }}" height="24" fill="url(#compGradient{{ loop.index0 }})" stroke="#BA955F" stroke-width="1.5"/>
-                    <text x="{{ 290 + comp.listings * 3 }}" y="{{ 62 + loop.index0 * 55 }}" font-family="IBM Plex Mono" font-size="15" font-weight="600" fill="#CBA135">{{ comp.listings }}</text>
+                    <rect x="280" y="{{ 45 + loop.index0 * 55 }}" width="{{ comp.listings * 3 }}" height="24" fill="url(#compGradient{{ loop.index0 }})" stroke="#9E7B47" stroke-width="1.5"/>
+                    <text x="{{ 290 + comp.listings * 3 }}" y="{{ 62 + loop.index0 * 55 }}" font-family="IBM Plex Mono" font-size="15" font-weight="600" fill="#A77B3A">{{ comp.listings }}</text>
                     <defs>
                         <linearGradient id="compGradient{{ loop.index0 }}" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#8B7045;stop-opacity:0.7" />
-                            <stop offset="100%" style="stop-color:#CBA135;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#A77B3A;stop-opacity:0.9" />
                         </linearGradient>
                     </defs>
                     {% endfor %}
@@ -375,11 +377,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold4)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold4)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold4" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -401,7 +403,7 @@
     <div class="slide-content">
         <div class="property-type-heatmap">
             <h3 class="chart-title">Property Type Performance Heatmap</h3>
-            <p class="chart-context">Velocity score (0-100) — Higher scores indicate faster market absorption rates</p>
+            <p class="chart-context">Velocity scoring (0-100 scale) measures market absorption speed — higher scores indicate stronger demand signals</p>
             <table class="heatmap-table">
                 <thead>
                     <tr>
@@ -448,11 +450,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold5)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold5)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold5" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -464,9 +466,10 @@
 </div>
 
 <!-- ============================================
-     SLIDE 6: STRATEGIC FORECAST — ✅ REDESIGNED 2×2 GRID
+     SLIDE 6: STRATEGIC FORECAST
      ============================================ -->
 <div class="slide">
+    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
         <h2 class="slide-title">Strategic Forecast</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
@@ -532,11 +535,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold6)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold6)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold6" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -548,7 +551,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 7: EXECUTIVE INTELLIGENCE — ✅ REDESIGNED VERTICAL STACK
+     SLIDE 7: EXECUTIVE INTELLIGENCE
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -575,11 +578,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold7)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold7)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold7" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -640,11 +643,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold8)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold8)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold8" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -659,11 +662,11 @@
      SLIDE 9: APPENDIX
      ============================================ -->
 <div class="slide">
+    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
         <h2 class="slide-title">Appendix — Data Integrity</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
-    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-content">
         <div class="appendix-section">
             <h3 class="appendix-title">Data Sources</h3>
@@ -706,11 +709,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold9)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold9)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold9" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -770,11 +773,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold10)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold10)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold10" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -834,11 +837,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold11)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold11)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold11" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -850,7 +853,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 12: SUB-MARKET BREAKDOWN — ✅ REDESIGNED 3-COLUMN GRID
+     SLIDE 12: SUB-MARKET BREAKDOWN
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -902,11 +905,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold12)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold12)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold12" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -918,7 +921,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 13: ACQUISITION SIGNALS — ✅ REDESIGNED SIGNAL BOARD
+     SLIDE 13: ACQUISITION SIGNALS
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -964,11 +967,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold13)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold13)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold13" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
@@ -1039,11 +1042,11 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold14)" stroke="#CBA135" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold14)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
                 <defs><linearGradient id="footerGold14" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CBA135;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#BA955F;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
             </svg>
             <div class="footer-branding">
