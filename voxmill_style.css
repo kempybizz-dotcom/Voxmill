@@ -1,6 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V3.0 FINAL PRODUCTION
-FORTUNE-500 POLISH + ELITE DEPTH ENHANCEMENTS
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V3.1 COMPLETE FINAL
+GOLDMAN SACHS × KNIGHT FRANK × MCKINSEY GRADE
+ELITE ANALYTICAL DEPTH + BOARDROOM POLISH
 ============================================ */
 
 :root {
@@ -225,7 +226,7 @@ COVER SLIDE
 }
 
 /* ============================================
-NEW: EXECUTIVE SUMMARY SLIDE
+EXECUTIVE SUMMARY SLIDE
 ============================================ */
 
 .executive-summary-bullets {
@@ -262,8 +263,73 @@ NEW: EXECUTIVE SUMMARY SLIDE
     font-weight: 500;
 }
 
+.killer-insight {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(167, 123, 58, 0.3);
+    letter-spacing: 0.02em;
+}
+
 /* ============================================
-NEW: CROSS-VERTICAL INTELLIGENCE SLIDE
+WEEKLY MOVEMENT DASHBOARD
+============================================ */
+
+.weekly-movement-dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+    padding: 28px;
+    background: rgba(167, 123, 58, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(167, 123, 58, 0.2);
+}
+
+.movement-mini-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(167, 123, 58, 0.3);
+    border-radius: 8px;
+    padding: 18px 16px;
+    text-align: center;
+}
+
+.movement-label {
+    font-size: 11px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.movement-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+.movement-change {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.movement-change.positive {
+    color: #4CAF50;
+}
+
+.movement-change.negative {
+    color: #F44336;
+}
+
+/* ============================================
+CROSS-VERTICAL INTELLIGENCE SLIDE
 ============================================ */
 
 .cross-vertical-grid {
@@ -307,8 +373,33 @@ NEW: CROSS-VERTICAL INTELLIGENCE SLIDE
     line-height: 1.75;
 }
 
+.cross-vertical-bullets {
+    list-style: none;
+    margin-top: 16px;
+    padding-left: 0;
+    width: 100%;
+}
+
+.cross-vertical-bullets li {
+    font-size: 13px;
+    color: var(--vm-text-body);
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+    text-align: left;
+}
+
+.cross-vertical-bullets li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-weight: 700;
+    font-size: 16px;
+}
+
 /* ============================================
-NEW: METHODOLOGY & MODEL ARCHITECTURE SLIDE
+METHODOLOGY & MODEL ARCHITECTURE SLIDE
 ============================================ */
 
 .methodology-grid {
@@ -413,7 +504,7 @@ NEW: METHODOLOGY & MODEL ARCHITECTURE SLIDE
 }
 
 /* ============================================
-CHART ENHANCEMENTS — ANNOTATIONS & MICRO-INSIGHTS
+CHART ENHANCEMENTS — ANALYTICAL DEPTH
 ============================================ */
 
 .chart-annotation {
@@ -433,6 +524,35 @@ CHART ENHANCEMENTS — ANNOTATIONS & MICRO-INSIGHTS
     font-size: 13px;
     color: var(--vm-text-body);
     line-height: 1.6;
+}
+
+.chart-callout {
+    font-size: 11px;
+    color: var(--vm-gold);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.chart-baseline {
+    stroke: rgba(167, 123, 58, 0.4);
+    stroke-width: 2;
+    stroke-dasharray: 4 4;
+}
+
+.chart-confidence-band {
+    fill: rgba(167, 123, 58, 0.08);
+    stroke: none;
+}
+
+.chart-trend-arrow {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.chart-percent-marker {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--vm-gold);
 }
 
 /* ============================================
@@ -871,7 +991,7 @@ FOOTER
 }
 
 /* ============================================
-MICRO-FOOTER NOTES (NEW)
+MICRO-FOOTER NOTES
 ============================================ */
 
 .slide-micro-footer-note {
@@ -1039,7 +1159,7 @@ PROPERTY TYPE HEATMAP
 }
 
 /* ============================================
-PAGE 6: STRATEGIC FORECAST — 2×2 GRID
+STRATEGIC FORECAST — 2×2 GRID
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1221,7 +1341,7 @@ MACRO CONTEXT
 }
 
 /* ============================================
-PAGE 7: EXECUTIVE INTELLIGENCE — VERTICAL STACK
+EXECUTIVE INTELLIGENCE — VERTICAL STACK
 ============================================ */
 
 .executive-brief-stack {
@@ -1378,7 +1498,35 @@ BENCHMARK TABLE
 }
 
 /* ============================================
-FORECAST & MARKET RISK (PAGE 11) — ENHANCED
+AGENCY TREND INDICATORS
+============================================ */
+
+.agency-trend-indicator {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.trend-up {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+}
+
+.trend-down {
+    background: rgba(244, 67, 54, 0.15);
+    color: #F44336;
+}
+
+.trend-stable {
+    background: rgba(167, 123, 58, 0.15);
+    color: var(--vm-gold);
+}
+
+/* ============================================
+FORECAST & MARKET RISK — ENHANCED
 ============================================ */
 
 .forecast-risk-grid {
@@ -1501,7 +1649,82 @@ FORECAST & MARKET RISK (PAGE 11) — ENHANCED
 }
 
 /* ============================================
-PAGE 12: SUB-MARKET BREAKDOWN — IMPROVED SPACING
+MACRO RISK DASHBOARD
+============================================ */
+
+.macro-risk-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+}
+
+.risk-dial-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(167, 123, 58, 0.4);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+}
+
+.risk-dial-title {
+    font-size: 16px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.risk-dial-container {
+    width: 180px;
+    height: 90px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+.risk-dial-value {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+}
+
+.risk-dial-status {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    font-weight: 500;
+}
+
+.risk-bar-simple {
+    height: 12px;
+    background: rgba(167, 123, 58, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px auto 16px;
+    width: 80%;
+}
+
+.risk-bar-fill-simple {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.risk-low-fill {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+}
+
+.risk-medium-fill {
+    background: linear-gradient(90deg, #FFC107, #FFD54F);
+}
+
+.risk-high-fill {
+    background: linear-gradient(90deg, #FF9800, #F44336);
+}
+
+/* ============================================
+SUB-MARKET BREAKDOWN — IMPROVED SPACING
 ============================================ */
 
 .submarket-grid-v2 {
@@ -1562,6 +1785,13 @@ PAGE 12: SUB-MARKET BREAKDOWN — IMPROVED SPACING
     font-variant-numeric: tabular-nums;
 }
 
+.submarket-micro-label {
+    font-size: 10px;
+    color: var(--vm-muted);
+    margin-top: 6px;
+    font-style: italic;
+}
+
 .velocity-bar-container {
     height: 10px;
     background: rgba(167, 123, 58, 0.2);
@@ -1574,6 +1804,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — IMPROVED SPACING
 .velocity-bar-fill {
     height: 100%;
     border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(167, 123, 58, 0.3);
 }
 
 .velocity-color-high {
@@ -1631,7 +1862,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — IMPROVED SPACING
 }
 
 /* ============================================
-PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD
+ACQUISITION SIGNALS — SIGNAL BOARD
 ============================================ */
 
 .signal-board-v2 {
@@ -1668,6 +1899,16 @@ PAGE 13: ACQUISITION SIGNALS — SIGNAL BOARD
     font-size: 13px;
     color: var(--vm-muted);
     font-family: var(--font-mono);
+}
+
+.ai-flag-reason {
+    font-size: 11px;
+    color: var(--vm-muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding-left: 4px;
+    border-left: 2px solid rgba(167, 123, 58, 0.3);
+    padding-left: 10px;
 }
 
 .signal-badges-v2 {
@@ -1952,7 +2193,8 @@ SLIDE-SPECIFIC WATERMARKS
 }
 
 /* ============================================
-END VOXMILL V3.0 FINAL PRODUCTION
-ALL ENHANCEMENTS COMPLETE ✅
+END VOXMILL V3.1 COMPLETE FINAL
+GOLDMAN SACHS × KNIGHT FRANK × MCKINSEY GRADE ✅
+ELITE ANALYTICAL DEPTH ✅
 BOARDROOM-READY EXECUTIVE INTELLIGENCE ✅
 ============================================ */
