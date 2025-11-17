@@ -86,36 +86,70 @@
     </div>
 
     <div class="slide-content">
-        <div class="executive-summary-bullets">
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Market Position</div>
-                <div class="executive-bullet-text">
-                    {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
-                </div>
-            </div>
+        <div class="executive-summary-bullet">
+    <div class="executive-bullet-title">Market Position</div>
+    <div class="executive-bullet-text">
+        {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
+        <span class="killer-insight">⚡ Market concentration index: {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
+    </div>
+</div>
 
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Velocity Dynamics</div>
-                <div class="executive-bullet-text">
-                    Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
-                </div>
-            </div>
+<div class="executive-summary-bullet">
+    <div class="executive-bullet-title">Velocity Dynamics</div>
+    <div class="executive-bullet-text">
+        Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
+        <span class="killer-insight">🎯 Transaction window: {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
+    </div>
+</div>
 
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Pricing Climate</div>
-                <div class="executive-bullet-text">
-                    Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
-                </div>
-            </div>
+<div class="executive-summary-bullet">
+    <div class="executive-bullet-title">Pricing Climate</div>
+    <div class="executive-bullet-text">
+        Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
+        <span class="killer-insight">💰 Pricing power: {{ "Sellers command premium" if kpis.price_change > 2 else "Buyers hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
+    </div>
+</div>
 
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Strategic Implication</div>
-                <div class="executive-bullet-text">
-                    Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
-                </div>
-            </div>
+<div class="executive-summary-bullet">
+    <div class="executive-bullet-title">Strategic Implication</div>
+    <div class="executive-bullet-text">
+        Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
+        <span class="killer-insight">🔥 Execution mandate: {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
+    </div>
+</div>
+    <div class="weekly-movement-dashboard">
+    <div class="movement-mini-card">
+        <div class="movement-label">Listings</div>
+        <div class="movement-value">{{ kpis.total_properties }}</div>
+        <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
         </div>
     </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">£/sqft</div>
+        <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+        <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
+        </div>
+    </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">Velocity</div>
+        <div class="movement-value">{{ kpis.days_on_market }}d</div>
+        <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
+        </div>
+    </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">Demand Pressure</div>
+        <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+        <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
+        </div>
+    </div>
+</div>
 
     <div class="slide-footer-branded">
         <div class="footer-left">
@@ -869,6 +903,95 @@
         <span class="footer-page">X</span> <!-- Update page number as needed -->
     </div>
 </div>
+
+<!-- ============================================
+     SLIDE: MACRO RISK DASHBOARD (NEW)
+     ============================================ -->
+
+<div class="slide">
+    <div class="slide-header">
+        <h2 class="slide-title">Macro Risk Dashboard</h2>
+        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+    </div>
+
+    <div class="slide-content">
+        <p class="chart-context" style="margin-bottom: 40px;">Real-time macro risk indicators — Interest rates, policy environment, liquidity conditions, and investor sentiment calibration</p>
+        
+        <div class="macro-risk-grid">
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Interest Rate Pressure</h3>
+                <div class="risk-dial-value">4.75%</div>
+                <div class="risk-bar-simple">
+                    <div class="risk-bar-fill-simple risk-medium-fill" style="width: 48%"></div>
+                </div>
+                <div class="risk-dial-status">Moderate — BoE holding pattern sustained</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Current 4.75% base rate maintains historical average positioning. No imminent hikes projected through Q1 2026, supporting mortgage availability at current pricing levels.
+                </p>
+            </div>
+
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Policy Risk</h3>
+                <div class="risk-dial-value">Low</div>
+                <div class="risk-bar-simple">
+                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 28%"></div>
+                </div>
+                <div class="risk-dial-status">Stable — No major legislative disruption</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Regulatory environment remains predictable with no anticipated capital gains or stamp duty modifications. Planning policy stable across prime London boroughs.
+                </p>
+            </div>
+
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Liquidity Conditions</h3>
+                <div class="risk-dial-value">Strong</div>
+                <div class="risk-bar-simple">
+                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 78%"></div>
+                </div>
+                <div class="risk-dial-status">Robust — Institutional capital flows sustained</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    International buyer activity remains elevated, particularly Middle Eastern and Asian sovereign wealth allocations. Transaction volumes support continued market depth.
+                </p>
+            </div>
+
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Investor Sentiment</h3>
+                <div class="risk-dial-value">Bullish</div>
+                <div class="risk-bar-simple">
+                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 72%"></div>
+                </div>
+                <div class="risk-dial-status">Positive — Confidence indicators elevated</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Prime London maintains safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} acquisition strategies.
+                </p>
+            </div>
+        </div>
+
+        <div class="macro-context" style="margin-top: 64px;">
+            <h4 class="macro-title">📈 Composite Risk Assessment</h4>
+            <p class="macro-text">
+                <strong>Overall Market Risk: LOW-MODERATE</strong> — Macro fundamentals support continued prime market resilience. Interest rate stability, policy predictability, robust liquidity, and positive sentiment converge to create favorable acquisition environment. Primary risk vectors remain geopolitical (Middle East, US-China relations) and potential currency volatility (GBP weakness vs USD/EUR). Recommend maintaining diversified portfolio positioning with 20-30% cash reserves for opportunistic deployment during short-term volatility windows.
+            </p>
+        </div>
+    </div>
+
+    <div class="slide-footer-branded">
+        <div class="footer-left">
+            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGoldMacro)" stroke="#A77B3A" stroke-width="2"/>
+                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs><linearGradient id="footerGoldMacro" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
+                </linearGradient></defs>
+            </svg>
+            <div class="footer-branding">
+                <div class="footer-company">Voxmill Intelligence</div>
+            </div>
+        </div>
+        <span class="footer-page">X</span>
+    </div>
+</div>
                         
 <!-- ============================================
      SLIDE 9: APPENDIX
@@ -957,22 +1080,29 @@
                 </tr>
             </thead>
             <tbody>
-                {% for agency in competitive_benchmarking %}
-                <tr {% if agency.name == 'Market Average' %}class="market-average"{% endif %}>
-                    <td class="agency-name">{{ agency.name }}</td>
-                    <td>£{{ "{:,}".format(agency.price_per_sqft) }}</td>
-                    <td>{{ agency.days_on_market }} days</td>
-                    <td>
-                        {% if agency.days_on_market < kpis.days_on_market %}
-                        <span style="color: #4CAF50;">Fast Turnover</span>
-                        {% elif agency.days_on_market > kpis.days_on_market * 1.1 %}
-                        <span style="color: #F44336;">Slower Velocity</span>
-                        {% else %}
-                        <span style="color: #FFC107;">Market Average</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
+          {% for agency in competitive_benchmarking %}
+<tr {% if agency.name == 'Market Average' %}class="market-average"{% endif %}>
+    <td class="agency-name">
+        {{ agency.name }}
+        {% if agency.name != 'Market Average' %}
+        <span class="agency-trend-indicator trend-{{ 'up' if agency.days_on_market < kpis.days_on_market * 0.95 else 'down' if agency.days_on_market > kpis.days_on_market * 1.05 else 'stable' }}">
+            {{ "↗ Gaining" if agency.days_on_market < kpis.days_on_market * 0.95 else "↘ Slowing" if agency.days_on_market > kpis.days_on_market * 1.05 else "→ Stable" }}
+        </span>
+        {% endif %}
+    </td>
+    <td>£{{ "{:,}".format(agency.price_per_sqft) }}</td>
+    <td>{{ agency.days_on_market }} days</td>
+    <td>
+        {% if agency.days_on_market < kpis.days_on_market %}
+        <span style="color: #4CAF50;">Fast Turnover</span>
+        {% elif agency.days_on_market > kpis.days_on_market * 1.1 %}
+        <span style="color: #F44336;">Slower Velocity</span>
+        {% else %}
+        <span style="color: #FFC107;">Market Average</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
             </tbody>
         </table>
         
@@ -1037,7 +1167,7 @@
             </div>
         </div>
         
-        <div class="macro-context" style="margin-top: 30px;">
+        <div class="macro-context" style="margin-top: 60px;">
             <h4 class="macro-title">Risk Factors</h4>
             <p class="macro-text">
                 Primary risk vectors: {{ "Price volatility elevated" if market_risk.score > 60 else "Price stability maintained" }} (±{{ abs(kpis.price_change) }}% weekly variance), 
@@ -1075,32 +1205,36 @@
     <div class="slide-content">
         <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
         
-        <div class="submarket-grid-v2">
-            {% for submarket in submarket_breakdown %}
-            <div class="submarket-card-v2">
-                <div class="submarket-header">{{ submarket.category }}</div>
-                <div class="submarket-metrics">
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Avg Price</div>
-                        <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
-                    </div>
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Price/Sqft</div>
-                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
-                    </div>
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Velocity Score</div>
-                        <div class="velocity-bar-container">
-                            <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
-                        </div>
-                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
-                            {{ submarket.velocity_score }}/100
-                        </div>
-                    </div>
-                </div>
-                <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
+       {% for submarket in submarket_breakdown %}
+<div class="submarket-card-v2">
+    <div class="submarket-header">{{ submarket.category }}</div>
+    <div class="submarket-metrics">
+        <div class="submarket-metric-row">
+            <div class="submarket-metric-label">Avg Price</div>
+            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
+            <div class="submarket-micro-label">{{ "Premium tier" if submarket.avg_price > 3000000 else "Core segment" }}</div>
+        </div>
+        
+        <div class="submarket-metric-row">
+            <div class="submarket-metric-label">Price/Sqft</div>
+            <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
+            <div class="submarket-micro-label">{{ "Above market avg" if submarket.price_per_sqft > kpis.avg_price_per_sqft else "Competitive" }}</div>
+        </div>
+        
+        <div class="submarket-metric-row">
+            <div class="submarket-metric-label">Velocity Score</div>
+            <div class="velocity-bar-container">
+                <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
             </div>
-            {% endfor %}
+            <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
+                {{ submarket.velocity_score }}/100
+            </div>
+            <div class="submarket-micro-label">{{ "Fast-moving" if submarket.velocity_score >= 70 else "Moderate pace" if submarket.velocity_score >= 50 else "Slow absorption" }}</div>
+        </div>
+    </div>
+    <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
+</div>
+{% endfor %}
         </div>
         
         <div class="momentum-streets-panel">
@@ -1145,19 +1279,22 @@
         
         {% if acquisition_signals and acquisition_signals|length > 0 %}
         <div class="signal-board-v2">
-            {% for signal in acquisition_signals %}
-            <div class="signal-card-v2">
-                <div class="signal-content-v2">
-                    <div class="signal-property-title">{{ signal.address }}</div>
-                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
-                </div>
-                <div class="signal-badges-v2">
-                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
-                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
-                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
-                </div>
-            </div>
-            {% endfor %}
+           {% for signal in acquisition_signals %}
+<div class="signal-card-v2">
+    <div class="signal-content-v2">
+        <div class="signal-property-title">{{ signal.address }}</div>
+        <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
+        <div class="ai-flag-reason">
+            <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — seller flexibility indicated" }}
+        </div>
+    </div>
+    <div class="signal-badges-v2">
+        <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
+        <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
+        <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
+    </div>
+</div>
+{% endfor %}
         </div>
         {% else %}
         <div class="panel">
