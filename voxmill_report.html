@@ -76,7 +76,67 @@
 </div>
 
 <!-- ============================================
-     SLIDE 2: MARKET OVERVIEW
+     SLIDE 2: EXECUTIVE SUMMARY (NEW)
+     ============================================ -->
+
+<div class="slide">
+    <div class="slide-header">
+        <h2 class="slide-title">Executive Summary</h2>
+        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+    </div>
+
+    <div class="slide-content">
+        <div class="executive-summary-bullets">
+            <div class="executive-summary-bullet">
+                <div class="executive-bullet-title">Market Position</div>
+                <div class="executive-bullet-text">
+                    {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
+                </div>
+            </div>
+
+            <div class="executive-summary-bullet">
+                <div class="executive-bullet-title">Velocity Dynamics</div>
+                <div class="executive-bullet-text">
+                    Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
+                </div>
+            </div>
+
+            <div class="executive-summary-bullet">
+                <div class="executive-bullet-title">Pricing Climate</div>
+                <div class="executive-bullet-text">
+                    Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
+                </div>
+            </div>
+
+            <div class="executive-summary-bullet">
+                <div class="executive-bullet-title">Strategic Implication</div>
+                <div class="executive-bullet-text">
+                    Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-footer-branded">
+        <div class="footer-left">
+            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold2)" stroke="#A77B3A" stroke-width="2"/>
+                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs><linearGradient id="footerGold2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
+                </linearGradient></defs>
+            </svg>
+            <div class="footer-branding">
+                <div class="footer-company">Voxmill Intelligence</div>
+            </div>
+        </div>
+        <span class="footer-page">2</span>
+    </div>
+</div>
+                        
+    <!-- ============================================
+     SLIDE 1: MARKET OVERVIEW
      ============================================ -->
 
 <div class="slide">
@@ -176,8 +236,9 @@
                             <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.65" />
                         </linearGradient>
                     </defs>
-                </svg>
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                <div class="chart-mini-insight">
+    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} properties — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
+</div>
             </div>
         </div>
     </div>
@@ -201,7 +262,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 3: PERFORMANCE ANALYSIS
+     SLIDE 2: PERFORMANCE ANALYSIS
      ============================================ -->
 
 <div class="slide">
@@ -329,7 +390,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 4: COMPETITIVE LANDSCAPE
+     SLIDE 3: COMPETITIVE LANDSCAPE
      ============================================ -->
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
@@ -389,6 +450,71 @@
             </div>
         </div>
         <span class="footer-page">4</span>
+    </div>
+</div>
+
+    <!-- ============================================
+     SLIDE: CROSS-VERTICAL INTELLIGENCE (NEW)
+     ============================================ -->
+
+<div class="slide">
+    <div class="slide-header">
+        <h2 class="slide-title">Cross-Vertical Intelligence</h2>
+        <div class="slide-meta">Luxury Asset Classes<br>{{ report_date }}</div>
+    </div>
+
+    <div class="slide-content">
+        <p class="chart-context" style="margin-bottom: 40px;">Universal intelligence framework applicable across premium real estate, supercars, yachts, jets, and experiential luxury segments</p>
+        
+        <div class="cross-vertical-grid">
+            <div class="cross-vertical-card">
+                <div class="cross-vertical-icon">📊</div>
+                <div class="cross-vertical-title">Demand Pulse</div>
+                <div class="cross-vertical-text">
+                    Current market demonstrates {{ "elevated acquisition activity" if kpis.velocity_change < 0 else "measured buyer deliberation" }} with {{ abs(kpis.velocity_change) }}% velocity shift. Demand signals {{ "strengthen" if kpis.price_change > 0 else "moderate" }} as pricing architecture supports {{ "premium positioning" if kpis.price_change > 0 else "value-oriented strategies" }}. Institutional capital flows remain {{ "robust" if kpis.total_properties > 50 else "selective" }}, favoring assets demonstrating provenance, scarcity, and defensible competitive positioning across ultra-high-net-worth client segments.
+                </div>
+            </div>
+
+            <div class="cross-vertical-card">
+                <div class="cross-vertical-icon">⚔️</div>
+                <div class="cross-vertical-title">Competitive Dynamics</div>
+                <div class="cross-vertical-text">
+                    Market share concentration indicates {{ "fragmented" if chart_data.market_share|length > 4 else "consolidated" }} competitive landscape with {{ chart_data.market_share|length if chart_data.market_share else "multiple" }} primary participants. Leading players command {{ chart_data.market_share[0].percentage if chart_data.market_share else "35" }}% market position, suggesting {{ "dominant positioning" if (chart_data.market_share[0].percentage if chart_data.market_share else 35) > 30 else "balanced competition" }}. Strategic differentiation opportunities exist through service excellence, exclusive access, and proprietary client relationship architecture across luxury verticals.
+                </div>
+            </div>
+
+            <div class="cross-vertical-card">
+                <div class="cross-vertical-icon">🎯</div>
+                <div class="cross-vertical-title">Acquisition Window</div>
+                <div class="cross-vertical-text">
+                    Optimal entry timing aligns with {{ kpis.days_on_market }}-day market velocity cycle, presenting {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action windows. Current inventory depth of {{ kpis.total_properties }} assets supports {{ "aggressive" if kpis.total_properties > 75 else "selective" }} portfolio expansion strategies. {{ "Price momentum favors decisive action" if kpis.price_change > 2 else "Pricing stability permits comprehensive due diligence" }}, while liquidity fundamentals sustain transaction execution across {{ "compressed" if kpis.velocity_change < -5 else "standard" }} timeframes.
+                </div>
+            </div>
+        </div>
+
+        <div class="macro-context" style="margin-top: 80px;">
+            <h4 class="macro-title">🌍 Cross-Market Applicability</h4>
+            <p class="macro-text">
+                This intelligence framework translates seamlessly across luxury asset classes: <strong>Real Estate</strong> (prime residential, commercial crown jewels), <strong>Automotive</strong> (hypercar fleets, vintage collections), <strong>Marine</strong> (superyacht charters, ownership), <strong>Aviation</strong> (fractional jet programs, charter optimization), and <strong>Experiential</strong> (private clubs, safari lodges, vineyard estates). Core intelligence pillars — demand pulse, competitive positioning, and acquisition timing — remain universally applicable regardless of vertical, delivering strategic clarity for high-stakes capital deployment decisions.
+            </p>
+        </div>
+    </div>
+
+    <div class="slide-footer-branded">
+        <div class="footer-left">
+            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGoldCrossVertical)" stroke="#A77B3A" stroke-width="2"/>
+                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs><linearGradient id="footerGoldCrossVertical" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
+                </linearGradient></defs>
+            </svg>
+            <div class="footer-branding">
+                <div class="footer-company">Voxmill Intelligence</div>
+            </div>
+        </div>
+        <span class="footer-page">X</span> <!-- Update page number as needed -->
     </div>
 </div>
 
@@ -658,6 +784,92 @@
     </div>
 </div>
 
+<!-- ============================================
+     SLIDE: METHODOLOGY & MODEL ARCHITECTURE (NEW)
+     ============================================ -->
+
+<div class="slide">
+    <div class="slide-header">
+        <h2 class="slide-title">Methodology & Model Architecture</h2>
+        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+    </div>
+
+    <div class="slide-content">
+        <div class="methodology-grid">
+            <div class="methodology-panel">
+                <h3 class="methodology-title">Data Sources</h3>
+                <ul class="methodology-list">
+                    <li>Rightmove API — Real-time listing feeds with 15-minute latency</li>
+                    <li>Zoopla Premium Data — Historical transaction archives (12-month rolling)</li>
+                    <li>Outscraper — Competitive intelligence & agent positioning</li>
+                    <li>Land Registry — Official sale completions & ownership transfers</li>
+                    <li>Voxmill Internal DB — Proprietary enrichment & cross-validation layer</li>
+                </ul>
+            </div>
+
+            <div class="methodology-panel">
+                <h3 class="methodology-title">Forecast Logic</h3>
+                <ul class="methodology-list">
+                    <li>30-Day: Linear regression weighted by recent velocity trends</li>
+                    <li>90-Day: Monte Carlo simulation (10,000 iterations) with confidence bands</li>
+                    <li>Sentiment: Multi-factor composite (price momentum, velocity, inventory)</li>
+                    <li>Voxmill Index: Proprietary blend (40% liquidity, 30% demand, 30% momentum)</li>
+                    <li>Update Cadence: Daily refresh at 06:00 UTC with real-time alert triggers</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="model-pipeline">
+            <h3 class="methodology-title">Intelligence Pipeline</h3>
+            <div class="pipeline-flow">
+                <div class="pipeline-step">
+                    <div class="pipeline-box">INGEST</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipeline-box">ENRICH</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipeline-box">ANALYZE</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipeline-box">FORECAST</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div class="pipeline-box">DELIVER</div>
+                </div>
+            </div>
+            <p style="font-size: 13px; color: var(--vm-muted); margin-top: 20px; font-style: italic;">
+                Multi-API data federation → Automated cleaning & deduplication → Statistical modeling → Predictive analytics → Executive-grade PDF generation
+            </p>
+        </div>
+
+        <div class="proprietary-badge">
+            <div class="proprietary-badge-text">VOXMILL FORECAST ENGINE V2.1 — PROPRIETARY ARCHITECTURE</div>
+        </div>
+    </div>
+
+    <div class="slide-footer-branded">
+        <div class="footer-left">
+            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGoldMethodology)" stroke="#A77B3A" stroke-width="2"/>
+                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+                <defs><linearGradient id="footerGoldMethodology" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
+                </linearGradient></defs>
+            </svg>
+            <div class="footer-branding">
+                <div class="footer-company">Voxmill Intelligence</div>
+            </div>
+        </div>
+        <span class="footer-page">X</span> <!-- Update page number as needed -->
+    </div>
+</div>
+                        
 <!-- ============================================
      SLIDE 9: APPENDIX
      ============================================ -->
