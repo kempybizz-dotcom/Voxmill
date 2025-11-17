@@ -76,7 +76,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 2: EXECUTIVE SUMMARY (NEW)
+     SLIDE 2: EXECUTIVE SUMMARY
      ============================================ -->
 
 <div class="slide">
@@ -87,69 +87,71 @@
 
     <div class="slide-content">
         <div class="executive-summary-bullet">
-    <div class="executive-bullet-title">Market Position</div>
-    <div class="executive-bullet-text">
-        {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
-        <span class="killer-insight">⚡ Market concentration index: {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
-    </div>
-</div>
+            <div class="executive-bullet-title">Market Position</div>
+            <div class="executive-bullet-text">
+                {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
+                <span class="killer-insight">⚡ Market concentration index: {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
+            </div>
+        </div>
 
-<div class="executive-summary-bullet">
-    <div class="executive-bullet-title">Velocity Dynamics</div>
-    <div class="executive-bullet-text">
-        Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
-        <span class="killer-insight">🎯 Transaction window: {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
-    </div>
-</div>
+        <div class="executive-summary-bullet">
+            <div class="executive-bullet-title">Velocity Dynamics</div>
+            <div class="executive-bullet-text">
+                Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
+                <span class="killer-insight">🎯 Transaction window: {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
+            </div>
+        </div>
 
-<div class="executive-summary-bullet">
-    <div class="executive-bullet-title">Pricing Climate</div>
-    <div class="executive-bullet-text">
-        Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
-        <span class="killer-insight">💰 Pricing power: {{ "Sellers command premium" if kpis.price_change > 2 else "Buyers hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
-    </div>
-</div>
+        <div class="executive-summary-bullet">
+            <div class="executive-bullet-title">Pricing Climate</div>
+            <div class="executive-bullet-text">
+                Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
+                <span class="killer-insight">💰 Pricing power: {{ "Sellers command premium" if kpis.price_change > 2 else "Buyers hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
+            </div>
+        </div>
 
-<div class="executive-summary-bullet">
-    <div class="executive-bullet-title">Strategic Implication</div>
-    <div class="executive-bullet-text">
-        Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
-        <span class="killer-insight">🔥 Execution mandate: {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
-    </div>
-</div>
-    <div class="weekly-movement-dashboard">
-    <div class="movement-mini-card">
-        <div class="movement-label">Listings</div>
-        <div class="movement-value">{{ kpis.total_properties }}</div>
-        <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+        <div class="executive-summary-bullet">
+            <div class="executive-bullet-title">Strategic Implication</div>
+            <div class="executive-bullet-text">
+                Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
+                <span class="killer-insight">🔥 Execution mandate: {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
+            </div>
+        </div>
+
+        <div class="weekly-movement-dashboard">
+            <div class="movement-mini-card">
+                <div class="movement-label">Listings</div>
+                <div class="movement-value">{{ kpis.total_properties }}</div>
+                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">£/sqft</div>
+                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Velocity</div>
+                <div class="movement-value">{{ kpis.days_on_market }}d</div>
+                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Demand Pressure</div>
+                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">£/sqft</div>
-        <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-        <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Velocity</div>
-        <div class="movement-value">{{ kpis.days_on_market }}d</div>
-        <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Demand Pressure</div>
-        <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-        <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-        </div>
-    </div>
-</div>
 
     <div class="slide-footer-branded">
         <div class="footer-left">
@@ -168,9 +170,9 @@
         <span class="footer-page">2</span>
     </div>
 </div>
-                        
-    <!-- ============================================
-     SLIDE 1: MARKET OVERVIEW
+
+<!-- ============================================
+     SLIDE 3: MARKET OVERVIEW
      ============================================ -->
 
 <div class="slide">
@@ -270,9 +272,10 @@
                             <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.65" />
                         </linearGradient>
                     </defs>
+                </svg>
                 <div class="chart-mini-insight">
-    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} properties — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
-</div>
+                    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} properties — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
+                </div>
             </div>
         </div>
     </div>
@@ -280,9 +283,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold2)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold3)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold3" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -291,12 +294,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">2</span>
+        <span class="footer-page">3</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 2: PERFORMANCE ANALYSIS
+     SLIDE 4: PERFORMANCE ANALYSIS
      ============================================ -->
 
 <div class="slide">
@@ -408,9 +411,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold3)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold4)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold4" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -419,12 +422,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">3</span>
+        <span class="footer-page">4</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 3: COMPETITIVE LANDSCAPE
+     SLIDE 5: COMPETITIVE LANDSCAPE
      ============================================ -->
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
@@ -472,9 +475,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold4)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold5)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold5" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -483,12 +486,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">4</span>
+        <span class="footer-page">5</span>
     </div>
 </div>
 
-    <!-- ============================================
-     SLIDE: CROSS-VERTICAL INTELLIGENCE (NEW)
+<!-- ============================================
+     SLIDE 6: CROSS-VERTICAL INTELLIGENCE
      ============================================ -->
 
 <div class="slide">
@@ -548,12 +551,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">X</span> <!-- Update page number as needed -->
+        <span class="footer-page">6</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 5: MARKET DEPTH ANALYSIS
+     SLIDE 7: MARKET DEPTH ANALYSIS
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -610,9 +613,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold5)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold7)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold5" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold7" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -621,12 +624,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">5</span>
+        <span class="footer-page">7</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 6: STRATEGIC FORECAST
+     SLIDE 8: STRATEGIC FORECAST
      ============================================ -->
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
@@ -636,7 +639,6 @@
     </div>
     <div class="slide-content">
         <div class="forecast-grid-2x2">
-            <!-- ROW 1: 30-DAY & 90-DAY -->
             <div class="forecast-card-v2">
                 <h3 class="forecast-card-title">30-Day Price Momentum</h3>
                 <div class="forecast-card-body">
@@ -659,7 +661,6 @@
                 </div>
             </div>
             
-            <!-- ROW 2: SENTIMENT & INDEX -->
             <div class="forecast-card-v2 forecast-card-highlight">
                 <h3 class="forecast-card-title">Market Sentiment</h3>
                 <div class="forecast-card-body">
@@ -695,9 +696,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold6)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold8)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold6" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold8" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -706,12 +707,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">6</span>
+        <span class="footer-page">8</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 7: EXECUTIVE INTELLIGENCE
+     SLIDE 9: EXECUTIVE INTELLIGENCE
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -738,9 +739,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold7)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold9)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold7" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold9" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -749,12 +750,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">7</span>
+        <span class="footer-page">9</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 8: TOP OPPORTUNITIES
+     SLIDE 10: TOP OPPORTUNITIES
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -803,9 +804,9 @@
     <div class="slide-footer-branded">
         <div class="footer-left">
             <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold8)" stroke="#A77B3A" stroke-width="2"/>
+                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold10)" stroke="#A77B3A" stroke-width="2"/>
                 <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold8" x1="0%" y1="0%" x2="100%" y2="100%">
+                <defs><linearGradient id="footerGold10" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
                 </linearGradient></defs>
@@ -814,12 +815,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">8</span>
+        <span class="footer-page">10</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE: METHODOLOGY & MODEL ARCHITECTURE (NEW)
+     SLIDE 11: METHODOLOGY & MODEL ARCHITECTURE
      ============================================ -->
 
 <div class="slide">
@@ -900,12 +901,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">X</span> <!-- Update page number as needed -->
+        <span class="footer-page">11</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE: MACRO RISK DASHBOARD (NEW)
+     SLIDE 12: MACRO RISK DASHBOARD
      ============================================ -->
 
 <div class="slide">
@@ -989,213 +990,12 @@
                 <div class="footer-company">Voxmill Intelligence</div>
             </div>
         </div>
-        <span class="footer-page">X</span>
-    </div>
-</div>
-                        
-<!-- ============================================
-     SLIDE 9: APPENDIX
-     ============================================ -->
-<div class="slide">
-    <div class="watermark">VOXMILL INTELLIGENCE</div>
-    <div class="slide-header">
-        <h2 class="slide-title">Appendix — Data Integrity</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <div class="appendix-section">
-            <h3 class="appendix-title">Data Sources</h3>
-            <ul class="appendix-list">
-                {% for source in appendix.data_sources %}
-                <li>{{ source }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="appendix-section">
-            <h3 class="appendix-title">Model Information</h3>
-            <div class="appendix-grid">
-                <div class="appendix-item">
-                    <div class="appendix-label">Engine Version</div>
-                    <div class="appendix-value">{{ appendix.model_version }}</div>
-                </div>
-                <div class="appendix-item">
-                    <div class="appendix-label">Training Dataset</div>
-                    <div class="appendix-value">{{ appendix.transactions_trained }}</div>
-                </div>
-                <div class="appendix-item">
-                    <div class="appendix-label">Generated At</div>
-                    <div class="appendix-value">{{ appendix.generated_at }}</div>
-                </div>
-                <div class="appendix-item">
-                    <div class="appendix-label">Update Frequency</div>
-                    <div class="appendix-value">{{ appendix.update_frequency }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="appendix-disclaimer">
-            <h4>Confidentiality & Distribution</h4>
-            <p>This report contains proprietary intelligence compiled exclusively for the named recipient. 
-            Unauthorized distribution, reproduction, or disclosure is strictly prohibited. All data derived 
-            from verified public sources and processed through Voxmill's proprietary analytical framework. 
-            Forecasts and projections represent statistical models and should not be construed as guarantees 
-            of future performance.</p>
-        </div>
-    </div>
-    <div class="slide-footer-branded">
-        <div class="footer-left">
-            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold9)" stroke="#A77B3A" stroke-width="2"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold9" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
-                </linearGradient></defs>
-            </svg>
-            <div class="footer-branding">
-                <div class="footer-company">Voxmill Intelligence</div>
-            </div>
-        </div>
-        <span class="footer-page">9</span>
+        <span class="footer-page">12</span>
     </div>
 </div>
 
 <!-- ============================================
-     SLIDE 10: COMPETITIVE BENCHMARKING
-     ============================================ -->
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">Competitive Benchmarking</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Premium agency performance metrics — Comparative analysis of market leaders</p>
-        
-        <table class="benchmark-table">
-            <thead>
-                <tr>
-                    <th>Agency</th>
-                    <th>Avg £/sqft</th>
-                    <th>Days on Market</th>
-                    <th>Market Position</th>
-                </tr>
-            </thead>
-            <tbody>
-          {% for agency in competitive_benchmarking %}
-<tr {% if agency.name == 'Market Average' %}class="market-average"{% endif %}>
-    <td class="agency-name">
-        {{ agency.name }}
-        {% if agency.name != 'Market Average' %}
-        <span class="agency-trend-indicator trend-{{ 'up' if agency.days_on_market < kpis.days_on_market * 0.95 else 'down' if agency.days_on_market > kpis.days_on_market * 1.05 else 'stable' }}">
-            {{ "↗ Gaining" if agency.days_on_market < kpis.days_on_market * 0.95 else "↘ Slowing" if agency.days_on_market > kpis.days_on_market * 1.05 else "→ Stable" }}
-        </span>
-        {% endif %}
-    </td>
-    <td>£{{ "{:,}".format(agency.price_per_sqft) }}</td>
-    <td>{{ agency.days_on_market }} days</td>
-    <td>
-        {% if agency.days_on_market < kpis.days_on_market %}
-        <span style="color: #4CAF50;">Fast Turnover</span>
-        {% elif agency.days_on_market > kpis.days_on_market * 1.1 %}
-        <span style="color: #F44336;">Slower Velocity</span>
-        {% else %}
-        <span style="color: #FFC107;">Market Average</span>
-        {% endif %}
-    </td>
-</tr>
-{% endfor %}
-            </tbody>
-        </table>
-        
-        <div class="benchmark-insight">
-            <strong>Key Finding:</strong> Knight Frank maintains fastest turnover in the £3–5M price band with average velocity 15% faster than market average. Savills commands premium pricing (+8% vs market) while maintaining competitive transaction timelines.
-        </div>
-        
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Competitive Intelligence — Updated {{ report_date }}</p>
-    </div>
-    <div class="slide-footer-branded">
-        <div class="footer-left">
-            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold10)" stroke="#A77B3A" stroke-width="2"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold10" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
-                </linearGradient></defs>
-            </svg>
-            <div class="footer-branding">
-                <div class="footer-company">Voxmill Intelligence</div>
-            </div>
-        </div>
-        <span class="footer-page">10</span>
-    </div>
-</div>
-
-<!-- ============================================
-     SLIDE 11: FORECAST & MARKET RISK
-     ============================================ -->
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">Forecast Confidence & Market Risk</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">30-day forward outlook with risk assessment — Predictive confidence analysis</p>
-        
-        <div class="forecast-risk-grid">
-            <div class="forecast-risk-card">
-                <h3>30-Day Forecast</h3>
-                <div class="forecast-risk-arrow">{{ forecast.day_30.arrow }}</div>
-                <div class="forecast-risk-percentage">{{ forecast.day_30.percentage }}%</div>
-                <div class="forecast-risk-label">{{ forecast.day_30.direction }} Movement</div>
-                <div class="forecast-risk-confidence">Confidence: <strong style="color: {{ '#4CAF50' if forecast.day_30.confidence == 'High' else '#FFC107' }}">{{ forecast.day_30.confidence }}</strong></div>
-            </div>
-            
-            <div class="forecast-risk-card">
-                <h3>Market Risk Index</h3>
-                <div class="risk-gauge-container">
-                    <div class="risk-gauge-value">{{ market_risk.score }}</div>
-                    <div class="risk-gauge-bar">
-                        <div class="risk-gauge-fill" style="width: {{ market_risk.score }}%"></div>
-                    </div>
-                    <div class="risk-gauge-status risk-{{ market_risk.label.lower().replace(' ', '-') }}">
-                        {{ market_risk.label }}
-                    </div>
-                    <div class="risk-gauge-legend">
-                        Low (0-40) | Moderate (41-65) | Elevated (66-100)
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="macro-context" style="margin-top: 60px;">
-            <h4 class="macro-title">Risk Factors</h4>
-            <p class="macro-text">
-                Primary risk vectors: {{ "Price volatility elevated" if market_risk.score > 60 else "Price stability maintained" }} (±{{ abs(kpis.price_change) }}% weekly variance), 
-                velocity {{ "extending" if kpis.velocity_change > 5 else "stable" }} ({{ kpis.days_on_market }} days average), 
-                inventory {{ "expanding rapidly" if kpis.property_change > 10 else "balanced" }} ({{ abs(kpis.property_change) }}% week-over-week change).
-            </p>
-        </div>
-    </div>
-    <div class="slide-footer-branded">
-        <div class="footer-left">
-            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold11)" stroke="#A77B3A" stroke-width="2"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold11" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
-                </linearGradient></defs>
-            </svg>
-            <div class="footer-branding">
-                <div class="footer-company">Voxmill Intelligence</div>
-            </div>
-        </div>
-        <span class="footer-page">11</span>
-    </div>
-</div>
-
-<!-- ============================================
-     SLIDE 12: SUB-MARKET BREAKDOWN
+     SLIDE 13: SUB-MARKET BREAKDOWN
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
@@ -1205,36 +1005,37 @@
     <div class="slide-content">
         <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
         
-       {% for submarket in submarket_breakdown %}
-<div class="submarket-card-v2">
-    <div class="submarket-header">{{ submarket.category }}</div>
-    <div class="submarket-metrics">
-        <div class="submarket-metric-row">
-            <div class="submarket-metric-label">Avg Price</div>
-            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
-            <div class="submarket-micro-label">{{ "Premium tier" if submarket.avg_price > 3000000 else "Core segment" }}</div>
-        </div>
-        
-        <div class="submarket-metric-row">
-            <div class="submarket-metric-label">Price/Sqft</div>
-            <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
-            <div class="submarket-micro-label">{{ "Above market avg" if submarket.price_per_sqft > kpis.avg_price_per_sqft else "Competitive" }}</div>
-        </div>
-        
-        <div class="submarket-metric-row">
-            <div class="submarket-metric-label">Velocity Score</div>
-            <div class="velocity-bar-container">
-                <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
+        <div class="submarket-grid-v2">
+            {% for submarket in submarket_breakdown %}
+            <div class="submarket-card-v2">
+                <div class="submarket-header">{{ submarket.category }}</div>
+                <div class="submarket-metrics">
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Avg Price</div>
+                        <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
+                        <div class="submarket-micro-label">{{ "Premium tier" if submarket.avg_price > 3000000 else "Core segment" }}</div>
+                    </div>
+                    
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Price/Sqft</div>
+                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
+                        <div class="submarket-micro-label">{{ "Above market avg" if submarket.price_per_sqft > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                    </div>
+                    
+                    <div class="submarket-metric-row">
+                        <div class="submarket-metric-label">Velocity Score</div>
+                        <div class="velocity-bar-container">
+                            <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
+                        </div>
+                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
+                            {{ submarket.velocity_score }}/100
+                        </div>
+                        <div class="submarket-micro-label">{{ "Fast-moving" if submarket.velocity_score >= 70 else "Moderate pace" if submarket.velocity_score >= 50 else "Slow absorption" }}</div>
+                    </div>
+                </div>
+                <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
             </div>
-            <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
-                {{ submarket.velocity_score }}/100
-            </div>
-            <div class="submarket-micro-label">{{ "Fast-moving" if submarket.velocity_score >= 70 else "Moderate pace" if submarket.velocity_score >= 50 else "Slow absorption" }}</div>
-        </div>
-    </div>
-    <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
-</div>
-{% endfor %}
+            {% endfor %}
         </div>
         
         <div class="momentum-streets-panel">
@@ -1247,71 +1048,6 @@
         </div>
         
         <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Sub-Market Intelligence — Updated {{ report_date }}</p>
-    </div>
-    <div class="slide-footer-branded">
-        <div class="footer-left">
-            <svg width="40" height="40" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.7;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#footerGold12)" stroke="#A77B3A" stroke-width="2"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="32" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs><linearGradient id="footerGold12" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:1" />
-                </linearGradient></defs>
-            </svg>
-            <div class="footer-branding">
-                <div class="footer-company">Voxmill Intelligence</div>
-            </div>
-        </div>
-        <span class="footer-page">12</span>
-    </div>
-</div>
-
-<!-- ============================================
-     SLIDE 13: ACQUISITION SIGNALS
-     ============================================ -->
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">AI-Identified Buying Opportunities</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged properties showing value signals — Underpricing or extended listing periods</p>
-        
-        {% if acquisition_signals and acquisition_signals|length > 0 %}
-        <div class="signal-board-v2">
-           {% for signal in acquisition_signals %}
-<div class="signal-card-v2">
-    <div class="signal-content-v2">
-        <div class="signal-property-title">{{ signal.address }}</div>
-        <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
-        <div class="ai-flag-reason">
-            <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — seller flexibility indicated" }}
-        </div>
-    </div>
-    <div class="signal-badges-v2">
-        <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
-        <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
-        <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
-    </div>
-</div>
-{% endfor %}
-        </div>
-        {% else %}
-        <div class="panel">
-            <p class="panel-text">No acquisition signals detected in current market scan. Market pricing appears efficient with minimal arbitrage opportunities. Consider expanding search radius or adjusting criteria parameters.</p>
-        </div>
-        {% endif %}
-        
-        <div class="acquisition-strategy-ribbon">
-            <div class="acquisition-strategy-text">
-                <strong>Acquisition Strategy:</strong> 
-                Flagged properties demonstrate {{ "significant value potential" if acquisition_signals and acquisition_signals|length >= 3 else "limited value signals" }}. 
-                Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if acquisition_signals and acquisition_signals|length >= 3 else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
-                Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if acquisition_signals and acquisition_signals|length >= 3 else "Standard acquisition protocols apply" }}.
-            </div>
-        </div>
-        
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
     <div class="slide-footer-branded">
         <div class="footer-left">
@@ -1332,61 +1068,51 @@
 </div>
 
 <!-- ============================================
-     SLIDE 14: STRATEGIC PLAYBOOK
+     SLIDE 14: ACQUISITION SIGNALS
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Strategic Playbook</h2>
+        <h2 class="slide-title">AI-Identified Buying Opportunities</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Actionable recommendations across tactical, strategic, and operational horizons</p>
+        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged properties showing value signals — Underpricing or extended listing periods</p>
         
-        <div class="playbook-grid">
-            <div class="playbook-column">
-                <div class="playbook-column-title">Tactical (30 Days)</div>
-                <ul class="playbook-items">
-                    {% for item in strategic_playbook.tactical %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+        {% if acquisition_signals and acquisition_signals|length > 0 %}
+        <div class="signal-board-v2">
+            {% for signal in acquisition_signals %}
+            <div class="signal-card-v2">
+                <div class="signal-content-v2">
+                    <div class="signal-property-title">{{ signal.address }}</div>
+                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
+                    <div class="ai-flag-reason">
+                        <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — seller flexibility indicated" }}
+                    </div>
+                </div>
+                <div class="signal-badges-v2">
+                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
+                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
+                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
+                </div>
             </div>
-            
-            <div class="playbook-column">
-                <div class="playbook-column-title">Strategic (90 Days)</div>
-                <ul class="playbook-items">
-                    {% for item in strategic_playbook.strategic %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            
-            <div class="playbook-column">
-                <div class="playbook-column-title">Operational</div>
-                <ul class="playbook-items">
-                    {% for item in strategic_playbook.operational %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="panel">
+            <p class="panel-text">No acquisition signals detected in current market scan. Market pricing appears efficient with minimal arbitrage opportunities. Consider expanding search radius or adjusting criteria parameters.</p>
+        </div>
+        {% endif %}
+        
+        <div class="acquisition-strategy-ribbon">
+            <div class="acquisition-strategy-text">
+                <strong>Acquisition Strategy:</strong> 
+                Flagged properties demonstrate {{ "significant value potential" if acquisition_signals and acquisition_signals|length >= 3 else "limited value signals" }}. 
+                Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if acquisition_signals and acquisition_signals|length >= 3 else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
+                Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if acquisition_signals and acquisition_signals|length >= 3 else "Standard acquisition protocols apply" }}.
             </div>
         </div>
         
-        <div class="macro-pulse-strip">
-            <div class="macro-pulse-text">
-                <strong>Interest Rate:</strong> {{ macro_pulse.interest_rate_trend }} ({{ macro_pulse.interest_rate_label }}) | 
-                <strong>GBP/USD:</strong> {{ macro_pulse.gbp_usd_trend }} ({{ macro_pulse.gbp_usd_label }}) | 
-                <strong>Luxury Sentiment:</strong> {{ macro_pulse.luxury_sentiment_score }}/100 ({{ macro_pulse.luxury_sentiment }})
-            </div>
-        </div>
-        
-        <div class="data-integrity-footer">
-            <div class="data-integrity-title">📊 Data Integrity</div>
-            <div class="data-integrity-text">
-                <strong>Sources:</strong> Rightmove API, Outscraper, Voxmill Forecast Engine v2.1<br>
-                <strong>Refreshed:</strong> Daily via automated market pipeline<br>
-                <strong>Confidential:</strong> © Voxmill Automations 2025
-            </div>
-        </div>
+        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
     <div class="slide-footer-branded">
         <div class="footer-left">
