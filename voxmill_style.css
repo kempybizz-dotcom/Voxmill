@@ -1,6 +1,6 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V2.0 FINAL
-FORTUNE-500 POLISH PASS — LUXURY-GRADE REFINEMENT
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V3.0 FINAL PRODUCTION
+FORTUNE-500 POLISH + ELITE DEPTH ENHANCEMENTS
 ============================================ */
 
 :root {
@@ -222,6 +222,217 @@ COVER SLIDE
 
 .cover-compiled strong {
     color: var(--vm-gold);
+}
+
+/* ============================================
+NEW: EXECUTIVE SUMMARY SLIDE
+============================================ */
+
+.executive-summary-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-top: 20px;
+}
+
+.executive-summary-bullet {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border-left: 6px solid var(--vm-gold);
+    border-radius: 8px;
+    padding: 28px 36px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.executive-bullet-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+}
+
+.executive-bullet-text {
+    font-size: 16px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+/* ============================================
+NEW: CROSS-VERTICAL INTELLIGENCE SLIDE
+============================================ */
+
+.cross-vertical-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.cross-vertical-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(167, 123, 58, 0.5);
+    border-top: 5px solid var(--vm-gold);
+    border-radius: 12px;
+    padding: 40px 32px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cross-vertical-icon {
+    font-size: 56px;
+    margin-bottom: 24px;
+    line-height: 1;
+}
+
+.cross-vertical-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+}
+
+.cross-vertical-text {
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.75;
+}
+
+/* ============================================
+NEW: METHODOLOGY & MODEL ARCHITECTURE SLIDE
+============================================ */
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.methodology-panel {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid rgba(167, 123, 58, 0.4);
+    border-radius: 12px;
+    padding: 32px;
+}
+
+.methodology-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+}
+
+.methodology-list {
+    list-style: none;
+}
+
+.methodology-list li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+}
+
+.methodology-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.model-pipeline {
+    background: rgba(167, 123, 58, 0.05);
+    border: 2px solid rgba(167, 123, 58, 0.3);
+    border-radius: 10px;
+    padding: 32px;
+    margin-top: 40px;
+    text-align: center;
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 24px 0;
+}
+
+.pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.pipeline-box {
+    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-light));
+    color: var(--vm-dark);
+    padding: 18px 28px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    min-width: 160px;
+}
+
+.pipeline-arrow {
+    font-size: 32px;
+    color: var(--vm-gold);
+    margin: 0 8px;
+}
+
+.proprietary-badge {
+    background: var(--vm-gold);
+    color: var(--vm-dark);
+    padding: 20px 32px;
+    border-radius: 8px;
+    margin-top: 32px;
+    text-align: center;
+}
+
+.proprietary-badge-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+/* ============================================
+CHART ENHANCEMENTS — ANNOTATIONS & MICRO-INSIGHTS
+============================================ */
+
+.chart-annotation {
+    font-size: 11px;
+    color: var(--vm-muted);
+    font-style: italic;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.chart-mini-insight {
+    background: rgba(167, 123, 58, 0.08);
+    border-left: 3px solid var(--vm-gold);
+    padding: 12px 20px;
+    margin-top: 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--vm-text-body);
+    line-height: 1.6;
 }
 
 /* ============================================
@@ -657,6 +868,25 @@ FOOTER
     border-radius: 6px;
     border: 2px solid rgba(167, 123, 58, 0.4);
     font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+MICRO-FOOTER NOTES (NEW)
+============================================ */
+
+.slide-micro-footer-note {
+    position: absolute;
+    bottom: 110px;
+    left: 48px;
+    right: 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--vm-muted);
+    font-style: italic;
+    padding: 12px 24px;
+    background: rgba(167, 123, 58, 0.03);
+    border-radius: 6px;
+    border-top: 1px solid rgba(167, 123, 58, 0.2);
 }
 
 /* ============================================
@@ -1148,7 +1378,7 @@ BENCHMARK TABLE
 }
 
 /* ============================================
-FORECAST & MARKET RISK (PAGE 11)
+FORECAST & MARKET RISK (PAGE 11) — ENHANCED
 ============================================ */
 
 .forecast-risk-grid {
@@ -1164,7 +1394,7 @@ FORECAST & MARKET RISK (PAGE 11)
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(167, 123, 58, 0.4);
     border-radius: 12px;
-    padding: 48px;
+    padding: 40px 48px 32px 48px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1177,7 +1407,7 @@ FORECAST & MARKET RISK (PAGE 11)
     color: var(--vm-bronze);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
 }
 
 .forecast-risk-arrow {
@@ -1205,6 +1435,15 @@ FORECAST & MARKET RISK (PAGE 11)
 .forecast-risk-confidence {
     font-size: 15px;
     color: var(--vm-muted);
+}
+
+.risk-context-note {
+    font-size: 12px;
+    color: var(--vm-muted);
+    margin-top: 16px;
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 90%;
 }
 
 .risk-gauge-container {
@@ -1262,7 +1501,7 @@ FORECAST & MARKET RISK (PAGE 11)
 }
 
 /* ============================================
-PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
+PAGE 12: SUB-MARKET BREAKDOWN — IMPROVED SPACING
 ============================================ */
 
 .submarket-grid-v2 {
@@ -1276,8 +1515,8 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 2px solid rgba(167, 123, 58, 0.4);
     border-radius: 10px;
-    padding: 32px 28px;
-    min-height: 320px;
+    padding: 40px 28px 32px 28px;
+    min-height: 340px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -1287,7 +1526,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
     font-family: var(--font-display);
     font-size: 22px;
     color: var(--vm-gold);
-    margin-bottom: 32px;
+    margin-bottom: 40px;
     font-weight: 600;
     text-align: right;
     width: 100%;
@@ -1296,7 +1535,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
 .submarket-metrics {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 32px;
     width: 100%;
     flex: 1;
 }
@@ -1305,7 +1544,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: 10px;
 }
 
 .submarket-metric-label {
@@ -1319,7 +1558,7 @@ PAGE 12: SUB-MARKET BREAKDOWN — 3-COLUMN GRID
     font-size: 32px;
     font-weight: 700;
     color: var(--vm-text);
-    line-height: 1;
+    line-height: 1.1;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1713,8 +1952,7 @@ SLIDE-SPECIFIC WATERMARKS
 }
 
 /* ============================================
-END VOXMILL V2.0 FINAL — FORTUNE-500 POLISH
-ALL COLORS CORRECTED ✅
-SPACING HARMONIZED ✅
-OPTICAL ALIGNMENT PERFECTED ✅
+END VOXMILL V3.0 FINAL PRODUCTION
+ALL ENHANCEMENTS COMPLETE ✅
+BOARDROOM-READY EXECUTIVE INTELLIGENCE ✅
 ============================================ */
