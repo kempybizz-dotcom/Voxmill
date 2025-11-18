@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, initial-scale=1.0">
     <title>Voxmill Executive Intelligence Deck</title>
-    <link rel="stylesheet" href="voxmill_style.css">
+    <link rel="stylesheet" href="COMPLETE_voxmill_style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -49,7 +49,7 @@
         <div class="cover-subtitle">
             <span class="location">{{ location }}</span> · {{ report_date }}
         </div>
-        <div class="cover-tagline">Private Data. Strategic Foresight. Competitive Clarity.</div>
+        <div class="cover-tagline">Precision Intelligence. Strategic Foresight. Capital Deployment Clarity.</div>
         
         <div class="cover-compiled">
             Compiled by <strong>Voxmill Market Intelligence</strong><br>
@@ -186,10 +186,10 @@
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-content">
-                    <div class="kpi-label">Active Listings</div>
+                    <div class="kpi-label">Active Inventory</div>
                     <div class="kpi-value">{{ kpis.total_properties }}</div>
                     <div class="kpi-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. last week
+                        {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
                     </div>
                 </div>
             </div>
@@ -199,27 +199,27 @@
                     <div class="kpi-label">Average Price</div>
                     <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price) }}</div>
                     <div class="kpi-change {{ 'positive' if kpis.price_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.price_change > 0 else "↓" }} {{ abs(kpis.price_change) }}% vs. last week
+                        {{ "↑" if kpis.price_change > 0 else "↓" }} {{ abs(kpis.price_change) }}% vs. prior week
                     </div>
                 </div>
             </div>
             
             <div class="kpi-card">
                 <div class="kpi-content">
-                    <div class="kpi-label">Price per SqFt</div>
+                    <div class="kpi-label">Unit Economics (£/sqft)</div>
                     <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
                     <div class="kpi-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. last week
+                        {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. prior week
                     </div>
                 </div>
             </div>
             
             <div class="kpi-card">
                 <div class="kpi-content">
-                    <div class="kpi-label">Market Velocity</div>
+                    <div class="kpi-label">Absorption Rate (Days)</div>
                     <div class="kpi-value">{{ kpis.days_on_market }} days</div>
                     <div class="kpi-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                        {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. last week
+                        {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. prior week
                     </div>
                 </div>
             </div>
@@ -355,7 +355,7 @@
             </div>
             
             <div class="chart-panel">
-                <h3 class="chart-title">Weekly Trend: Price per SqFt</h3>
+                <h3 class="chart-title">Weekly Trend: Unit Economics (£/sqft)</h3>
                 <p class="chart-context">7-day rolling average of price-per-square-foot — micro-trend velocity indicator</p>
                 <svg width="100%" height="380" viewBox="0 0 700 380">
                     <text x="10" y="195" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 10, 195)" class="chart-axis-label">£/sqft</text>
@@ -468,7 +468,7 @@
                     </defs>
                     {% endfor %}
                     
-                    <text x="480" y="305" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" class="chart-axis-label">Active Listings</text>
+                    <text x="480" y="305" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" class="chart-axis-label">Active Inventory</text>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
