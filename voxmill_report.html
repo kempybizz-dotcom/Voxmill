@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, initial-scale=1.0">
-    <title>Voxmill Executive Action Protocol Deck</title>
-    <link rel="stylesheet" href="COMPLETE_voxmill_style.css">
+    <title>Voxmill Executive Intelligence Deck</title>
+    <link rel="stylesheet" href="COMPLETE_voxmill_style_ENHANCED.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -90,7 +90,7 @@
             <div class="executive-bullet-title">Market Position</div>
             <div class="executive-bullet-text">
                 {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} active listings across premium segments. Average pricing of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/sqft pricing indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable luxury markets.
-                <span class="killer-insight">⚡ <strong>Concentration Index:</strong> {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
+                <span class="killer-insight">⚡ <strong>Market concentration index:</strong> {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
             </div>
         </div>
 
@@ -98,7 +98,7 @@
             <div class="executive-bullet-title">Velocity Dynamics</div>
             <div class="executive-bullet-text">
                 Market velocity currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This velocity profile suggests {{ "accelerating buyer confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted property segments.
-                <span class="killer-insight">🎯 <strong>Execution Window:</strong> {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
+                <span class="killer-insight">🎯 <strong>Transaction window:</strong> {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
             </div>
         </div>
 
@@ -106,7 +106,7 @@
             <div class="executive-bullet-title">Pricing Climate</div>
             <div class="executive-bullet-text">
                 Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "seller confidence" if kpis.price_change > 2 else "buyer leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} active listings provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
-                <span class="killer-insight">💰 <strong>Pricing Leverage:</strong> {{ "Sellers command premium" if kpis.price_change > 2 else "Buyers hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
+                <span class="killer-insight">💰 <strong>Pricing power:</strong> {{ "Sellers command premium" if kpis.price_change > 2 else "Buyers hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
             </div>
         </div>
 
@@ -114,7 +114,7 @@
             <div class="executive-bullet-title">Strategic Implication</div>
             <div class="executive-bullet-text">
                 Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as velocity and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal acquisition window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
-                <span class="killer-insight">🔥 <strong>Deployment Mandate:</strong> {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
+                <span class="killer-insight">🔥 <strong>Execution mandate:</strong> {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
             </div>
         </div>
 
@@ -229,7 +229,7 @@
             <div class="chart-divider"></div>
             <div class="chart-container">
                 <h3 class="chart-title">Price Distribution by Range</h3>
-                <p class="chart-context">Inventory stratification signals concentration dynamics across price bands—critical for deployment strategy across price bands — signals premium segment depth (n= {{ kpis.total_properties }} listings)</p>
+                <p class="chart-context">Market concentration analysis showing inventory distribution across price bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} listings)</p>
                 <svg width="100%" height="240" viewBox="0 0 1700 240" preserveAspectRatio="xMidYMid meet">
                     <text x="35" y="110" font-family="Inter" font-size="14" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 35, 110)" class="chart-axis-label">Count</text>
                     <line x1="80" y1="40" x2="80" y2="180" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
@@ -306,7 +306,7 @@
 
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Performance Analysis — Velocity & Pricing Dynamics</h2>
+        <h2 class="slide-title">Performance Analysis</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
 
@@ -314,7 +314,7 @@
         <div class="two-column">
             <div class="chart-panel">
                 <h3 class="chart-title">Price Range Distribution</h3>
-                <p class="chart-context">Price bracket composition indicates market positioning depth—informs tier-specific allocation strategy — strategic positioning across market segments (Analysis: {{ kpis.total_properties }} listings)</p>
+                <p class="chart-context">Portfolio composition by price bracket — strategic positioning across market segments (Based on {{ kpis.total_properties }} listings)</p>
                 <svg width="100%" height="380" viewBox="0 0 700 380">
                     <line x1="280" y1="40" x2="280" y2="320" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
                     <line x1="350" y1="40" x2="350" y2="320" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
@@ -356,7 +356,7 @@
             
             <div class="chart-panel">
                 <h3 class="chart-title">Weekly Trend: Unit Economics (£/sqft)</h3>
-                <p class="chart-context">Intraweek unit economics evolution—micro-trend velocity indicator for short-term positioning — micro-trend velocity indicator</p>
+                <p class="chart-context">7-day rolling average of price-per-square-foot — micro-trend velocity indicator</p>
                 <svg width="100%" height="380" viewBox="0 0 700 380">
                     <text x="10" y="195" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 10, 195)" class="chart-axis-label">£/sqft</text>
                     
@@ -434,16 +434,16 @@
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
-        <h2 class="slide-title">Competitive Landscape — Agency Positioning</h2>
+        <h2 class="slide-title">Competitive Landscape</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
         <div class="two-column">
             <div class="chart-panel">
                 <h3 class="chart-title">Agency Market Share</h3>
-                <p class="chart-context">Agency market share distribution—competitive intensity measurement across primary participants — market leader concentration analysis</p>
+                <p class="chart-context">Competitive landscape visualization — market leader concentration analysis</p>
                 <svg width="100%" height="320" viewBox="0 0 700 320">
-                    <text x="350" y="160" font-family="Playfair Display" font-size="48" font-weight="700" fill="#A77B3A" text-anchor="middle">{{ chart_data.market_share|length }}</text>
+                    <text x="350" y="160" font-family="Playfair Display" font-size="48" font-weight="700" fill="#A77B3A" text-anchor="middle">{{ chart_data.market_share|length if chart_data.market_share else 0 }}</text>
                     <text x="350" y="190" font-family="Inter" font-size="16" fill="#AFAFAF" text-anchor="middle">Agencies</text>
                     <circle cx="350" cy="160" r="100" fill="none" stroke="rgba(167, 123, 58, 0.3)" stroke-width="3"/>
                     <circle cx="350" cy="160" r="120" fill="none" stroke="rgba(158, 123, 71, 0.2)" stroke-width="2"/>
@@ -452,14 +452,15 @@
             </div>
             <div class="chart-panel">
                 <h3 class="chart-title">Competitor Inventory</h3>
-                <p class="chart-context">Competitor inventory depth analysis—relative positioning benchmark for market share assessment — competitive positioning benchmark</p>
+                <p class="chart-context">Active listing volumes by premium agency — competitive positioning benchmark</p>
                 <svg width="100%" height="320" viewBox="0 0 700 320">
                     <text x="5" y="160" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" transform="rotate(-90, 5, 160)" class="chart-axis-label">Agency</text>
                     
+                    {% if chart_data.competitor_inventory %}
                     {% for comp in chart_data.competitor_inventory %}
-                    <text x="20" y="{{ 60 + loop.index0 * 55 }}" font-family="Inter" font-size="14" fill="#EAEAEA">{{ comp.name[:25] }}</text>
-                    <rect x="280" y="{{ 45 + loop.index0 * 55 }}" width="{{ comp.listings * 3 }}" height="24" fill="url(#compGradient{{ loop.index0 }})" stroke="#9E7B47" stroke-width="1.5"/>
-                    <text x="{{ 290 + comp.listings * 3 }}" y="{{ 62 + loop.index0 * 55 }}" font-family="IBM Plex Mono" font-size="15" font-weight="600" fill="#A77B3A">{{ comp.listings }}</text>
+                    <text x="20" y="{{ 60 + loop.index0 * 55 }}" font-family="Inter" font-size="14" fill="#EAEAEA">{{ (comp.name or "Unknown Agency")[:25] }}</text>
+                    <rect x="280" y="{{ 45 + loop.index0 * 55 }}" width="{{ (comp.listings or 0) * 3 }}" height="24" fill="url(#compGradient{{ loop.index0 }})" stroke="#9E7B47" stroke-width="1.5"/>
+                    <text x="{{ 290 + (comp.listings or 0) * 3 }}" y="{{ 62 + loop.index0 * 55 }}" font-family="IBM Plex Mono" font-size="15" font-weight="600" fill="#A77B3A">{{ comp.listings or 0 }}</text>
                     <defs>
                         <linearGradient id="compGradient{{ loop.index0 }}" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#8B7045;stop-opacity:0.7" />
@@ -467,6 +468,7 @@
                         </linearGradient>
                     </defs>
                     {% endfor %}
+                    {% endif %}
                     
                     <text x="480" y="305" font-family="Inter" font-size="13" fill="#AFAFAF" text-anchor="middle" class="chart-axis-label">Active Inventory</text>
                 </svg>
@@ -498,12 +500,12 @@
 
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Cross-Vertical Intelligence Framework</h2>
+        <h2 class="slide-title">Cross-Vertical Intelligence</h2>
         <div class="slide-meta">Luxury Asset Classes<br>{{ report_date }}</div>
     </div>
 
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 40px;">Universal intelligence framework—applicable across ultra-prime real estate, hypercar fleets, superyacht charter, fractional aviation, and experiential luxury asset classes</p>
+        <p class="chart-context" style="margin-bottom: 40px;">Universal intelligence framework applicable across premium real estate, supercars, yachts, jets, and experiential luxury segments</p>
         
         <div class="cross-vertical-grid">
             <div class="cross-vertical-card">
@@ -518,7 +520,7 @@
                 <div class="cross-vertical-icon">⚔️</div>
                 <div class="cross-vertical-title">Competitive Dynamics</div>
                 <div class="cross-vertical-text">
-                    Market share concentration indicates {{ "fragmented" if chart_data.market_share|length > 4 else "consolidated" }} competitive landscape with {{ chart_data.market_share|length if chart_data.market_share else "multiple" }} primary participants. Leading players command {{ chart_data.market_share[0].percentage if chart_data.market_share else "35" }}% market position, suggesting {{ "dominant positioning" if (chart_data.market_share[0].percentage if chart_data.market_share else 35) > 30 else "balanced competition" }}. Strategic differentiation opportunities exist through service excellence, exclusive access, and proprietary client relationship architecture across luxury verticals.
+                    Market share concentration indicates {{ "fragmented" if (chart_data.market_share|length if chart_data.market_share else 0) > 4 else "consolidated" }} competitive landscape with {{ chart_data.market_share|length if chart_data.market_share else "multiple" }} primary participants. Leading players command {{ chart_data.market_share[0].percentage if (chart_data.market_share and chart_data.market_share|length > 0) else "35" }}% market position, suggesting {{ "dominant positioning" if ((chart_data.market_share[0].percentage if (chart_data.market_share and chart_data.market_share|length > 0) else 35)|int) > 30 else "balanced competition" }}. Strategic differentiation opportunities exist through service excellence, exclusive access, and proprietary client relationship architecture across luxury verticals.
                 </div>
             </div>
 
@@ -562,35 +564,37 @@
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Market Depth Analysis — Property Segmentation</h2>
+        <h2 class="slide-title">Market Depth Analysis</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
         <div class="property-type-heatmap">
             <h3 class="chart-title">Property Type Performance Heatmap</h3>
-            <p class="chart-context">Absorption velocity index (0-100 scale)—demand-side stress indicator across property categories — higher scores indicate stronger demand signals</p>
+            <p class="chart-context">Velocity scoring (0-100 scale) measures market absorption speed — higher scores indicate stronger demand signals</p>
             <table class="heatmap-table">
                 <thead>
                     <tr>
                         <th>Property Type</th>
                         <th>Avg Price</th>
                         <th>Velocity Score</th>
-                        <th>Demand Signal</th>
+                        <th>Market Signal</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% if market_depth.property_type_performance %}
                     {% for ptype in market_depth.property_type_performance %}
                     <tr>
-                        <td class="property-type-name">{{ ptype.type }}</td>
-                        <td>£{{ "{:,.0f}".format(ptype.avg_price) }}</td>
+                        <td class="property-type-name">{{ ptype.type or "Unknown" }}</td>
+                        <td>£{{ "{:,.0f}".format(ptype.avg_price or 0) }}</td>
                         <td>
-                            <span class="velocity-badge velocity-{{ 'high' if ptype.velocity_score >= 70 else 'medium' if ptype.velocity_score >= 50 else 'low' }}">
-                                {{ ptype.velocity_score }}
+                            <span class="velocity-badge velocity-{{ 'high' if (ptype.velocity_score or 0) >= 70 else 'medium' if (ptype.velocity_score or 0) >= 50 else 'low' }}">
+                                {{ ptype.velocity_score or 0 }}
                             </span>
                         </td>
-                        <td class="signal-text">{{ "Strong Demand" if ptype.velocity_score >= 70 else "Moderate" if ptype.velocity_score >= 50 else "Weak" }}</td>
+                        <td class="signal-text">{{ "Strong Demand" if (ptype.velocity_score or 0) >= 70 else "Moderate" if (ptype.velocity_score or 0) >= 50 else "Weak" }}</td>
                     </tr>
                     {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
             <p class="chart-source">Source: Voxmill Forecast Engine — Updated {{ report_date }}</p>
@@ -598,7 +602,7 @@
         
         <div class="depth-metrics">
             <div class="depth-card">
-                <div class="depth-label">Liquidity Regime Index</div>
+                <div class="depth-label">Voxmill Liquidity Index</div>
                 <div class="depth-value">{{ market_depth.liquidity_index }}</div>
                 <div class="depth-bar">
                     <div class="depth-bar-fill" style="width: {{ market_depth.liquidity_index }}%"></div>
@@ -606,7 +610,7 @@
                 <div class="depth-note">Higher = Faster Transaction Velocity</div>
             </div>
             <div class="depth-card">
-                <div class="depth-label">Demand-Supply Imbalance Ratio</div>
+                <div class="depth-label">Demand Pressure Index</div>
                 <div class="depth-value">{{ market_depth.demand_pressure }}</div>
                 <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
             </div>
@@ -636,7 +640,7 @@
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
-        <h2 class="slide-title">Strategic Forecast — Predictive Intelligence</h2>
+        <h2 class="slide-title">Strategic Forecast</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
@@ -644,10 +648,10 @@
             <div class="forecast-card-v2">
                 <h3 class="forecast-card-title">30-Day Price Momentum</h3>
                 <div class="forecast-card-body">
-                    <div class="forecast-arrow-large">{{ forecast.day_30.arrow }}</div>
-                    <div class="forecast-percentage-large">{{ forecast.day_30.percentage }}%</div>
-                    <div class="forecast-label-text">{{ forecast.day_30.direction }} Trajectory</div>
-                    <div class="forecast-confidence-text">Confidence: {{ forecast.day_30.confidence }}</div>
+                    <div class="forecast-arrow-large">{{ forecast.day_30.arrow if forecast.day_30 else "→" }}</div>
+                    <div class="forecast-percentage-large">{{ forecast.day_30.percentage if forecast.day_30 else "0" }}%</div>
+                    <div class="forecast-label-text">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
+                    <div class="forecast-confidence-text">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
                 </div>
             </div>
             
@@ -655,30 +659,30 @@
                 <h3 class="forecast-card-title">90-Day Trend Cone</h3>
                 <div class="forecast-card-body">
                     <div class="cone-range-display">
-                        <span class="cone-value cone-high">{{ forecast.day_90.high }}%</span>
-                        <span class="cone-value cone-mid">{{ forecast.day_90.mid }}%</span>
-                        <span class="cone-value cone-low">{{ forecast.day_90.low }}%</span>
+                        <span class="cone-value cone-high">{{ forecast.day_90.high if forecast.day_90 else "0" }}%</span>
+                        <span class="cone-value cone-mid">{{ forecast.day_90.mid if forecast.day_90 else "0" }}%</span>
+                        <span class="cone-value cone-low">{{ forecast.day_90.low if forecast.day_90 else "0" }}%</span>
                     </div>
                     <div class="forecast-label-text">Projected Range (Low-Mid-High)</div>
                 </div>
             </div>
             
             <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Aggregate Sentiment Signal</h3>
+                <h3 class="forecast-card-title">Market Sentiment</h3>
                 <div class="forecast-card-body">
-                    <div class="sentiment-display sentiment-{{ forecast.sentiment|lower }}">
-                        {{ forecast.sentiment }}
+                    <div class="sentiment-display sentiment-{{ (forecast.sentiment|lower) if forecast.sentiment else 'neutral' }}">
+                        {{ forecast.sentiment or "Neutral" }}
                     </div>
                     <div class="forecast-label-text">AI-Derived Composite Signal</div>
                 </div>
             </div>
             
             <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Composite Forecast Index</h3>
+                <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
                 <div class="forecast-card-body">
-                    <div class="voxmill-index-number">{{ forecast.voxmill_index }}</div>
+                    <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
                     <div class="voxmill-index-bar-container">
-                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index }}%"></div>
+                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
                     </div>
                     <div class="voxmill-index-caption">Composite Market Strength (0-100)</div>
                     <div class="forecast-label-text">Blend of liquidity, demand pressure, and price momentum</div>
@@ -718,11 +722,12 @@
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Executive Action Protocol</h2>
+        <h2 class="slide-title">Executive Intelligence</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
         <div class="executive-brief-stack">
+            {% if executive_actions %}
             {% for action in executive_actions %}
             <div class="executive-brief-card">
                 <div class="executive-brief-number">{{ loop.index }}</div>
@@ -732,10 +737,11 @@
             <div class="executive-brief-divider"></div>
             {% endif %}
             {% endfor %}
+            {% endif %}
         </div>
         
         <div class="review-banner">
-            <span class="review-banner-text">Intelligence Refresh: T+30 Days from Issue Date</span>
+            <span class="review-banner-text">Next Review: 30 days from generation</span>
         </div>
     </div>
     <div class="slide-footer-branded">
@@ -761,7 +767,7 @@
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Ranked Acquisition Targets</h2>
+        <h2 class="slide-title">Top Market Opportunities</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
@@ -783,14 +789,14 @@
             <tbody>
                 {% for opportunity in top_opportunities[:8] %}
                 <tr>
-                    <td class="property-address">{{ opportunity.address[:45] }}</td>
-                    <td>{{ opportunity.property_type }}</td>
-                    <td class="align-right">{{ "{:,}".format(opportunity.size) }} sqft</td>
-                    <td class="align-right">£{{ "{:,.0f}".format(opportunity.price) }}</td>
-                    <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft) }}</td>
-                    <td class="align-center">{{ opportunity.days_listed }}</td>
+                    <td class="property-address">{{ (opportunity.address or "Address not available")[:45] }}</td>
+                    <td>{{ opportunity.property_type or "N/A" }}</td>
+                    <td class="align-right">{{ "{:,}".format(opportunity.size or 0) }} sqft</td>
+                    <td class="align-right">£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
+                    <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
+                    <td class="align-center">{{ opportunity.days_listed or 0 }}</td>
                     <td class="align-right">
-                        <span class="score-badge score-{{ opportunity.score_class }}">{{ opportunity.score }}</span>
+                        <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">{{ opportunity.score or 0 }}</span>
                     </td>
                 </tr>
                 {% endfor %}
@@ -827,7 +833,7 @@
 
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Intelligence Architecture & Forecast Methodology</h2>
+        <h2 class="slide-title">Methodology & Model Architecture</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
 
@@ -847,11 +853,11 @@
             <div class="methodology-panel">
                 <h3 class="methodology-title">Forecast Logic</h3>
                 <ul class="methodology-list">
-                    <li>30-Day: Multi-variate regression with recency-weighted velocity factors and volatility-adjusted confidence bands</li>
-                    <li>90-Day: Monte Carlo simulation (10⁴ iterations) with bootstrapped confidence intervals and tail-risk adjustment</li>
-                    <li>Sentiment: Multi-factor sentiment composite: price momentum (40%), velocity gradient (30%), inventory pressure (30%)</li>
-                    <li>Voxmill Index: Proprietary composite: liquidity regime (40%), demand-supply imbalance (30%), momentum persistence (30%)</li>
-                    <li>Update Cadence: Daily refresh at 06:00 UTC with event-driven alert architecture and anomaly detection protocols</li>
+                    <li>30-Day: Linear regression weighted by recent velocity trends</li>
+                    <li>90-Day: Monte Carlo simulation (10,000 iterations) with confidence bands</li>
+                    <li>Sentiment: Multi-factor composite (price momentum, velocity, inventory)</li>
+                    <li>Voxmill Index: Proprietary blend (40% liquidity, 30% demand, 30% momentum)</li>
+                    <li>Update Cadence: Daily refresh at 06:00 UTC with real-time alert triggers</li>
                 </ul>
             </div>
         </div>
@@ -913,7 +919,7 @@
 
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Macro Risk Dashboard — Systemic Indicators</h2>
+        <h2 class="slide-title">Macro Risk Dashboard</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
 
@@ -922,7 +928,7 @@
         
         <div class="macro-risk-grid">
             <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Monetary Policy Environment</h3>
+                <h3 class="risk-dial-title">Interest Rate Pressure</h3>
                 <div class="risk-dial-value">4.75%</div>
                 <div class="risk-bar-simple">
                     <div class="risk-bar-fill-simple risk-medium-fill" style="width: 48%"></div>
@@ -934,7 +940,7 @@
             </div>
 
             <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Regulatory Horizon Risk</h3>
+                <h3 class="risk-dial-title">Policy Risk</h3>
                 <div class="risk-dial-value">Low</div>
                 <div class="risk-bar-simple">
                     <div class="risk-bar-fill-simple risk-low-fill" style="width: 28%"></div>
@@ -946,7 +952,7 @@
             </div>
 
             <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Capital Availability Regime</h3>
+                <h3 class="risk-dial-title">Liquidity Conditions</h3>
                 <div class="risk-dial-value">Strong</div>
                 <div class="risk-bar-simple">
                     <div class="risk-bar-fill-simple risk-low-fill" style="width: 78%"></div>
@@ -958,7 +964,7 @@
             </div>
 
             <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Institutional Allocation Behavior</h3>
+                <h3 class="risk-dial-title">Investor Sentiment</h3>
                 <div class="risk-dial-value">Bullish</div>
                 <div class="risk-bar-simple">
                     <div class="risk-bar-fill-simple risk-low-fill" style="width: 72%"></div>
@@ -1001,43 +1007,45 @@
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Sub-Market Breakdown — Category Performance</h2>
+        <h2 class="slide-title">Sub-Market Breakdown</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
         <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
         
         <div class="submarket-grid-v2">
+            {% if submarket_breakdown %}
             {% for submarket in submarket_breakdown %}
             <div class="submarket-card-v2">
-                <div class="submarket-header">{{ submarket.category }}</div>
+                <div class="submarket-header">{{ submarket.category or "Unknown" }}</div>
                 <div class="submarket-metrics">
                     <div class="submarket-metric-row">
                         <div class="submarket-metric-label">Avg Price</div>
-                        <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.avg_price / 1000) }}K</div>
-                        <div class="submarket-micro-label">{{ "Premium tier" if submarket.avg_price > 3000000 else "Core segment" }}</div>
+                        <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket.avg_price or 0) / 1000) }}K</div>
+                        <div class="submarket-micro-label">{{ "Premium tier" if (submarket.avg_price or 0) > 3000000 else "Core segment" }}</div>
                     </div>
                     
                     <div class="submarket-metric-row">
                         <div class="submarket-metric-label">Price/Sqft</div>
-                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft) }}</div>
-                        <div class="submarket-micro-label">{{ "Above market avg" if submarket.price_per_sqft > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft or 0) }}</div>
+                        <div class="submarket-micro-label">{{ "Above market avg" if (submarket.price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
                     </div>
                     
                     <div class="submarket-metric-row">
                         <div class="submarket-metric-label">Velocity Score</div>
                         <div class="velocity-bar-container">
-                            <div class="velocity-bar-fill velocity-color-{{ 'high' if submarket.velocity_score >= 70 else 'medium' if submarket.velocity_score >= 50 else 'low' }}" style="width: {{ submarket.velocity_score }}%"></div>
+                            <div class="velocity-bar-fill velocity-color-{{ 'high' if (submarket.velocity_score or 0) >= 70 else 'medium' if (submarket.velocity_score or 0) >= 50 else 'low' }}" style="width: {{ submarket.velocity_score or 0 }}%"></div>
                         </div>
-                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if submarket.velocity_score >= 70 else '#FFC107' if submarket.velocity_score >= 50 else '#F44336' }}">
-                            {{ submarket.velocity_score }}/100
+                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket.velocity_score or 0) >= 70 else '#FFC107' if (submarket.velocity_score or 0) >= 50 else '#F44336' }}">
+                            {{ submarket.velocity_score or 0 }}/100
                         </div>
-                        <div class="submarket-micro-label">{{ "Fast-moving" if submarket.velocity_score >= 70 else "Moderate pace" if submarket.velocity_score >= 50 else "Slow absorption" }}</div>
+                        <div class="submarket-micro-label">{{ "Fast-moving" if (submarket.velocity_score or 0) >= 70 else "Moderate pace" if (submarket.velocity_score or 0) >= 50 else "Slow absorption" }}</div>
                     </div>
                 </div>
-                <div class="submarket-listing-count">{{ submarket.count }} active listings</div>
+                <div class="submarket-listing-count">{{ submarket.count or 0 }} active listings</div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
         
         <div class="momentum-streets-panel">
@@ -1074,27 +1082,27 @@
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Algorithm-Flagged Acquisition Signals</h2>
+        <h2 class="slide-title">AI-Identified Buying Opportunities</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Multi-factor algorithmic screening identifies pricing dislocations and temporal arbitrage opportunities — Underpricing or extended listing periods</p>
+        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged properties showing value signals — Underpricing or extended listing periods</p>
         
         {% if acquisition_signals and acquisition_signals|length > 0 %}
         <div class="signal-board-v2">
             {% for signal in acquisition_signals %}
             <div class="signal-card-v2">
                 <div class="signal-content-v2">
-                    <div class="signal-property-title">{{ signal.address }}</div>
-                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price) }} | £{{ "{:,}".format(signal.price_per_sqft) }}/sqft</div>
+                    <div class="signal-property-title">{{ signal.address or "Address not available" }}</div>
+                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price or 0) }} | £{{ "{:,}".format(signal.price_per_sqft or 0) }}/sqft</div>
                     <div class="ai-flag-reason">
                         <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — seller flexibility indicated" }}
                     </div>
                 </div>
                 <div class="signal-badges-v2">
-                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk|default('Low') }}</div>
-                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence|default(78) }}%</div>
-                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger|default('>60d') }}</div>
+                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk if signal.risk else 'Low' }}</div>
+                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence if signal.confidence else 78 }}%</div>
+                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger if signal.trigger else '>60d' }}</div>
                 </div>
             </div>
             {% endfor %}
@@ -1108,9 +1116,9 @@
         <div class="acquisition-strategy-ribbon">
             <div class="acquisition-strategy-text">
                 <strong>Acquisition Strategy:</strong> 
-                Flagged properties demonstrate {{ "significant value potential" if acquisition_signals and acquisition_signals|length >= 3 else "limited value signals" }}. 
-                Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if acquisition_signals and acquisition_signals|length >= 3 else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
-                Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if acquisition_signals and acquisition_signals|length >= 3 else "Standard acquisition protocols apply" }}.
+                Flagged properties demonstrate {{ "significant value potential" if (acquisition_signals and acquisition_signals|length >= 3) else "limited value signals" }}. 
+                Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if (acquisition_signals and acquisition_signals|length >= 3) else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
+                Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if (acquisition_signals and acquisition_signals|length >= 3) else "Standard acquisition protocols apply" }}.
             </div>
         </div>
         
