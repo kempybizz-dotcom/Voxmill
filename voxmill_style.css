@@ -44,11 +44,13 @@ DESIGN PRINCIPLES:
     --font-body: 'Inter', 'Open Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
     
-    /* REFINEMENT 3: Unified Spacing System */
-    --spacing-section: 48px; /* Space between sections */
-    --spacing-title: 32px; /* Space below titles */
+    /* REFINEMENT 2: Unified Vertical Rhythm System */
+    --spacing-section: 56px; /* Space between sections */
+    --spacing-title-top: 0px; /* Space above titles */
+    --spacing-title-bottom: 36px; /* Space below titles */
     --spacing-card: 28px; /* Space between cards */
     --spacing-content: 24px; /* General content spacing */
+    --spacing-chart-title: 20px; /* Space between chart and title */
     
     /* Typography Scale */
     --h1-size: 50px;
@@ -62,11 +64,15 @@ DESIGN PRINCIPLES:
     --bar-color: #C6A15B;
     --bar-radius: 2px;
     
-    /* Chart Standards - REFINEMENT 2: Unified */
+    /* Chart Standards - REFINEMENT 1: Universal Luxury Theme */
     --chart-line-thickness: 3px;
     --chart-point-radius: 4px;
     --chart-gridline: rgba(255,255,255,0.03);
-    --chart-axis-color: rgba(255,255,255,0.15);
+    --chart-axis-color: rgba(198, 161, 91, 0.20);
+    --chart-axis-thickness: 1.5px;
+    --chart-padding: 32px;
+    --chart-label-size: 12px;
+    --chart-label-weight: 500;
 }
 
 @page {
@@ -268,7 +274,7 @@ HEADER & FOOTER — POLISH 2: ABSOLUTE UNIFICATION
 }
 
 /* ============================================
-SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
+SECTION TITLES — REFINEMENT 5: STANDARDISED UNDERLINES
 ============================================ */
 
 .chart-title,
@@ -285,29 +291,30 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
     font-weight: 600;
     color: #C6A15B;
     letter-spacing: 0.02em;
-    margin-bottom: var(--spacing-title);
-    padding-bottom: 12px;
+    margin-top: var(--spacing-title-top);
+    margin-bottom: var(--spacing-title-bottom);
+    padding-bottom: 14px; /* REFINEMENT 5: Consistent distance to underline */
     border-bottom: 1px solid #C6A15B;
-    width: 48%;
+    width: 50%; /* REFINEMENT 5: Standardised to 50% */
     text-transform: none;
 }
 
 /* ============================================
-2. EXECUTIVE SUMMARY — REFINEMENT 5: IMPROVED READABILITY
+2. EXECUTIVE SUMMARY — REFINEMENT 2 & 4: RHYTHM + READABILITY
 ============================================ */
 
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-card);
-    margin-top: var(--spacing-title);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .executive-summary-bullet {
     background: rgba(18, 18, 18, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.15);
     border-radius: 4px;
-    padding: 36px 44px;
+    padding: 40px 48px; /* REFINEMENT 4: Increased padding */
     min-height: 100px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -315,7 +322,7 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
 .executive-bullet-title {
     font-size: var(--h3-size);
     font-weight: 600;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     margin-bottom: 18px;
@@ -326,7 +333,7 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
 .executive-bullet-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.75;
+    line-height: 1.85; /* REFINEMENT 4: Increased from 1.75 (+5.7%) */
     font-weight: 400;
 }
 
@@ -334,11 +341,11 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
     display: block;
     font-size: var(--body-size);
     font-weight: 600;
-    color: var(--vm-gold-bright);
-    margin-top: 18px;
-    padding-top: 18px;
+    color: #C6A15B;
+    margin-top: 20px; /* REFINEMENT 4: Increased spacing */
+    padding-top: 20px; /* REFINEMENT 4: Increased spacing */
     border-top: 1px solid rgba(198, 161, 91, 0.2);
-    line-height: 1.65;
+    line-height: 1.75; /* REFINEMENT 4: Increased line spacing */
 }
 
 .weekly-movement-dashboard {
@@ -368,7 +375,7 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
 .movement-value {
     font-size: 32px;
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 8px;
     font-variant-numeric: tabular-nums;
@@ -423,7 +430,7 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
     font-family: var(--font-body);
     font-size: 60px;
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 12px;
     font-variant-numeric: tabular-nums;
@@ -440,7 +447,7 @@ SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
 .kpi-change.negative { color: #F44336; }
 
 /* ============================================
-CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
+CHART SECTION — REFINEMENT 1 & 2: UNIFIED LUXURY THEME + VERTICAL RHYTHM
 ============================================ */
 
 .chart-section {
@@ -449,7 +456,7 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
 
 .chart-divider {
     height: 1px;
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     opacity: 0.25;
     border: none;
     margin: var(--spacing-content) 0;
@@ -459,16 +466,16 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
     background: rgba(11, 11, 11, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 32px;
+    padding: var(--chart-padding);
     height: 360px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .chart-context {
-    font-size: 12px;
+    font-size: var(--chart-label-size);
     color: rgba(255, 255, 255, 0.70);
-    font-weight: 500;
-    margin-bottom: 20px;
+    font-weight: var(--chart-label-weight);
+    margin-bottom: var(--spacing-chart-title);
     font-style: italic;
     line-height: 1.5;
 }
@@ -483,7 +490,7 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
 
 .chart-mini-insight {
     background: rgba(198, 161, 91, 0.08);
-    border: 1px solid var(--vm-gold-bright);
+    border: 1px solid #C6A15B;
     padding: 12px 18px;
     margin-top: 16px;
     border-radius: 4px;
@@ -492,15 +499,16 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
     line-height: 1.5;
 }
 
-/* Chart axis styling - REFINEMENT 2 */
+/* Chart axis styling - REFINEMENT 1: Universal theme */
 .chart-axis-label {
-    font-size: 12px;
-    fill: rgba(255,255,255,0.5);
+    font-size: var(--chart-label-size);
+    fill: var(--chart-axis-color);
     font-family: var(--font-body);
+    font-weight: var(--chart-label-weight);
 }
 
 /* ============================================
-4. PERFORMANCE ANALYSIS — UNIFIED CHARTS
+4. PERFORMANCE ANALYSIS — REFINEMENT 1 & 2: UNIFIED CHARTS + RHYTHM
 ============================================ */
 
 .two-column {
@@ -513,7 +521,7 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
     background: rgba(11, 11, 11, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 32px;
+    padding: var(--chart-padding);
     height: 420px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -537,7 +545,7 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
 .insight-title {
     font-size: var(--body-size);
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 12px;
@@ -557,7 +565,7 @@ CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-card);
-    margin-top: var(--spacing-title);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .cross-vertical-card {
@@ -617,7 +625,7 @@ METHODOLOGY PANELS
     content: "→";
     position: absolute;
     left: 0;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     font-weight: 600;
 }
 
@@ -638,7 +646,7 @@ METHODOLOGY PANELS
 }
 
 .pipeline-box {
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     color: var(--vm-dark);
     padding: 14px 28px;
     border-radius: 4px;
@@ -651,12 +659,12 @@ METHODOLOGY PANELS
 
 .pipeline-arrow {
     font-size: 28px;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     margin: 0 8px;
 }
 
 .proprietary-badge {
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     color: var(--vm-dark);
     padding: 18px 32px;
     border-radius: 6px;
@@ -672,7 +680,7 @@ METHODOLOGY PANELS
 }
 
 /* ============================================
-7. MARKET DEPTH — EXECUTIVE HEATMAP
+7. MARKET DEPTH — REFINEMENT 3: REFINED TABLE
 ============================================ */
 
 .property-type-heatmap {
@@ -683,7 +691,8 @@ METHODOLOGY PANELS
 .table-luxury {
     width: 100%;
     margin-top: var(--spacing-content);
-    border-collapse: collapse;
+    border-collapse: separate; /* REFINEMENT 3: Changed for better spacing */
+    border-spacing: 8px 0; /* REFINEMENT 3: Horizontal column spacing */
     background: rgba(18, 18, 18, 0.6);
     border-radius: 8px;
     overflow: hidden;
@@ -693,7 +702,7 @@ METHODOLOGY PANELS
 .table-luxury th {
     background: linear-gradient(90deg, rgba(198, 161, 91, 0.35) 0%, rgba(198, 161, 91, 0.25) 100%);
     color: var(--vm-text);
-    padding: 18px 14px;
+    padding: 18px 16px; /* REFINEMENT 3: Increased padding */
     text-transform: uppercase;
     font-size: 12px;
     font-weight: 600;
@@ -703,7 +712,7 @@ METHODOLOGY PANELS
 
 .heatmap-table td,
 .table-luxury td {
-    padding: 20px 14px; /* REFINEMENT 6: Increased row height */
+    padding: 24px 16px; /* REFINEMENT 3: Increased row height by 12% (20px -> 24px) */
     border-bottom: 1px solid rgba(255,255,255,0.07);
     font-size: var(--body-size);
     color: var(--vm-text-soft);
@@ -717,7 +726,7 @@ METHODOLOGY PANELS
 .property-type-name,
 .property-address {
     font-weight: 500;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
 }
 
 .table-luxury td.align-right {
@@ -739,7 +748,7 @@ METHODOLOGY PANELS
 }
 
 /* ============================================
-SCORE & VELOCITY BADGES — REFINEMENT 6: MINIMAL LUXURY
+SCORE & VELOCITY BADGES — REFINEMENT 3: REFINED MINIMAL LUXURY PILLS
 ============================================ */
 
 .score-badge,
@@ -747,14 +756,14 @@ SCORE & VELOCITY BADGES — REFINEMENT 6: MINIMAL LUXURY
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 14px;
-    border-radius: 3px;
+    padding: 5px 12px; /* REFINEMENT 3: Consistent padding */
+    border-radius: 2px; /* REFINEMENT 3: Smaller radius */
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 600;
     background: transparent;
-    border: 1px solid var(--vm-gold-bright);
-    color: var(--vm-gold-bright);
+    border: 0.5px solid #C6A15B; /* REFINEMENT 3: Thinner border */
+    color: #C6A15B;
 }
 
 .score-high,
@@ -851,7 +860,7 @@ DEPTH METRICS
 .depth-value {
     font-size: 42px;
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     margin-bottom: 16px;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -876,7 +885,7 @@ DEPTH METRICS
     grid-template-rows: repeat(2, 1fr);
     gap: var(--spacing-card);
     height: 480px;
-    margin-top: var(--spacing-content);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .forecast-card-v2 {
@@ -898,7 +907,7 @@ DEPTH METRICS
 
 .forecast-arrow-large {
     font-size: 64px;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 12px;
     font-weight: 300;
@@ -909,7 +918,7 @@ DEPTH METRICS
 .risk-dial-value {
     font-size: 56px;
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 12px;
     font-variant-numeric: tabular-nums;
@@ -938,7 +947,7 @@ DEPTH METRICS
 .cone-value {
     font-size: 36px;
     font-weight: 700;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
@@ -988,7 +997,7 @@ MACRO CONTEXT
     margin-top: var(--spacing-section);
     padding: 24px 28px;
     background: rgba(198, 161, 91, 0.08);
-    border: 1px solid var(--vm-gold-bright);
+    border: 1px solid #C6A15B;
     border-radius: 6px;
 }
 
@@ -1006,7 +1015,7 @@ MACRO CONTEXT
     display: flex;
     flex-direction: column;
     gap: 18px;
-    margin-top: var(--spacing-content);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .executive-brief-card {
@@ -1025,7 +1034,7 @@ MACRO CONTEXT
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     color: var(--vm-dark);
     display: flex;
     align-items: center;
@@ -1044,7 +1053,7 @@ MACRO CONTEXT
 
 .executive-brief-divider {
     height: 1px;
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     opacity: 0.25;
     border: none;
 }
@@ -1052,7 +1061,7 @@ MACRO CONTEXT
 .review-banner {
     margin-top: var(--spacing-section);
     background: transparent;
-    border: 1px solid var(--vm-gold-bright);
+    border: 1px solid #C6A15B;
     border-radius: 6px;
     padding: 20px;
     text-align: center;
@@ -1062,7 +1071,7 @@ MACRO CONTEXT
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     letter-spacing: 0.04em;
 }
 
@@ -1074,7 +1083,7 @@ MACRO RISK DASHBOARD
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-card);
-    margin-top: var(--spacing-title);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .risk-dial-card {
@@ -1088,7 +1097,7 @@ MACRO RISK DASHBOARD
 
 .risk-dial-status {
     font-size: var(--body-size);
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     font-weight: 600;
 }
 
@@ -1105,7 +1114,7 @@ SUB-MARKET BREAKDOWN
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-card);
-    margin-top: var(--spacing-content);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .submarket-card-v2 {
@@ -1192,7 +1201,7 @@ SUB-MARKET BREAKDOWN
     content: "★";
     position: absolute;
     left: 0;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     font-size: 14px;
 }
 
@@ -1204,7 +1213,7 @@ SUB-MARKET BREAKDOWN
     display: flex;
     flex-direction: column;
     gap: 14px;
-    margin-top: var(--spacing-content);
+    margin-top: var(--spacing-title-bottom);
 }
 
 .signal-card-v2 {
@@ -1231,7 +1240,7 @@ SUB-MARKET BREAKDOWN
 .signal-property-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     margin-bottom: 6px;
 }
 
@@ -1267,15 +1276,15 @@ SUB-MARKET BREAKDOWN
 
 .badge-risk {
     background: #1E3A1D;
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
     border: 2px solid #C6A15B;
     font-size: 10px;
 }
 
 .badge-confidence {
     background: rgba(198, 161, 91, 0.12);
-    color: var(--vm-gold-bright);
-    border: 1px solid var(--vm-gold-bright);
+    color: #C6A15B;
+    border: 1px solid #C6A15B;
 }
 
 .badge-trigger {
@@ -1286,7 +1295,7 @@ SUB-MARKET BREAKDOWN
 
 .acquisition-strategy-ribbon {
     background: transparent;
-    border: 1px solid var(--vm-gold-bright);
+    border: 1px solid #C6A15B;
     border-radius: 6px;
     padding: 24px 32px;
     margin-top: var(--spacing-section);
@@ -1300,7 +1309,7 @@ SUB-MARKET BREAKDOWN
 }
 
 .acquisition-strategy-text strong {
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
 }
 
 /* ============================================
@@ -1308,7 +1317,7 @@ UTILITY CLASSES
 ============================================ */
 
 .text-center { text-align: center; }
-.text-gold { color: var(--vm-gold-bright); }
+.text-gold { color: #C6A15B; }
 .text-muted { color: var(--vm-text-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
@@ -1328,7 +1337,7 @@ PANEL SYSTEM
 
 .panel-divider {
     height: 1px;
-    background: var(--vm-gold-bright);
+    background: #C6A15B;
     opacity: 0.25;
     border: none;
     margin-bottom: 20px;
