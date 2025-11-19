@@ -79,7 +79,7 @@ DESIGN PRINCIPLES:
 }
 
 @page {
-    size: 1920px 1080px;
+    size: 1920px 1220px; /* FIX 1: Extended by +140px (was 1080px) */
     margin: 0;
 }
 
@@ -98,18 +98,25 @@ body {
 }
 
 /* ============================================
-SLIDE CONTAINER + ALIGNMENT FIX 1: UNIVERSAL LEFT-GRID ANCHOR
+SLIDE CONTAINER + FIX 1: EXTENDED PAGE HEIGHT
 ============================================ */
 
 .slide {
     width: 1920px;
-    height: 1080px;
+    height: 1220px; /* FIX 1: Extended by +140px */
     background: var(--vm-dark);
     position: relative;
     page-break-after: always;
     page-break-inside: avoid;
     overflow: hidden;
-    padding: 48px; /* ALIGNMENT FIX 1: Master left margin */
+    padding: 48px;
+    padding-top: 140px; /* FIX 1: Additional top padding for breathing room */
+    padding-bottom: 60px; /* FIX 1: Bottom padding */
+}
+
+.slide:first-child {
+    height: 1080px; /* FIX 1: Page 1 (cover) remains original height */
+    padding-top: 48px; /* FIX 1: Cover page normal padding */
 }
 
 .slide:last-child {
@@ -307,7 +314,7 @@ HEADER & FOOTER — POLISH 2: ABSOLUTE UNIFICATION
 }
 
 /* ============================================
-SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
+SECTION TITLES — FIX 2: GLOBAL VERTICAL SPACING
 ============================================ */
 
 .chart-title,
@@ -324,9 +331,9 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     font-weight: 600;
     color: #C6A15B;
     letter-spacing: 0.02em;
-    margin-top: 80px; /* ALIGNMENT FIX 2: Universal top spacing */
-    margin-bottom: 32px; /* ALIGNMENT FIX 2: Universal bottom spacing */
-    padding-bottom: 12px; /* POLISH 2: Spacing above underline */
+    margin-top: 120px; /* FIX 2: Global vertical spacing */
+    margin-bottom: 40px; /* FIX 2: Consistent bottom spacing */
+    padding-bottom: 12px;
     border-bottom: 1px solid #C6A15B;
     width: 50%;
     text-transform: none;
@@ -347,7 +354,7 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     background: rgba(18, 18, 18, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.15);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     min-height: 160px; /* ALIGNMENT FIX 3 */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -392,7 +399,7 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 26px; /* ALIGNMENT FIX 3 */
+    padding: 40px 40px 50px 40px; /* FIX 3 */
     text-align: center;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     min-height: 140px; /* ALIGNMENT FIX 3: Fixed card height */
@@ -446,7 +453,8 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     justify-content: center;
     text-align: center;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-    padding: 26px; /* ALIGNMENT FIX 3: Standardised card padding */
+    padding: 35px 40px; /* FIX 5: Consistent vertical centering */
+    min-height: 165px; /* FIX 5: Equal card heights */
 }
 
 .kpi-content {
@@ -458,7 +466,7 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     color: var(--vm-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: 12px;
+    margin-bottom: 16px; /* FIX 5: Reduce excessive whitespace */
 }
 
 .kpi-value {
@@ -467,7 +475,7 @@ SECTION TITLES — ALIGNMENT FIX 2: STANDARDISED HEADER SPACING
     font-weight: 700;
     color: #C6A15B;
     line-height: 1;
-    margin-bottom: 12px;
+    margin-bottom: 16px; /* FIX 5: Reduce excessive whitespace */
     font-variant-numeric: tabular-nums;
 }
 
@@ -501,7 +509,7 @@ CHART SECTION — REFINEMENT 1 & 2: UNIFIED LUXURY THEME + VERTICAL RHYTHM
     background: rgba(11, 11, 11, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: var(--chart-padding);
+    padding: 40px; /* FIX 4: Chart symmetrical spacing */
     height: 360px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -556,7 +564,7 @@ CHART SECTION — REFINEMENT 1 & 2: UNIFIED LUXURY THEME + VERTICAL RHYTHM
     background: rgba(11, 11, 11, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: var(--chart-padding);
+    padding: 40px; /* FIX 4: Symmetrical chart padding */
     height: 420px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -572,7 +580,7 @@ CHART SECTION — REFINEMENT 1 & 2: UNIFIED LUXURY THEME + VERTICAL RHYTHM
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     min-height: 160px; /* ALIGNMENT FIX 3 */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -607,7 +615,7 @@ CHART SECTION — REFINEMENT 1 & 2: UNIFIED LUXURY THEME + VERTICAL RHYTHM
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.15);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     min-height: 280px;
     text-align: center;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -640,7 +648,7 @@ METHODOLOGY PANELS
     background: rgba(18, 18, 18, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -668,7 +676,7 @@ METHODOLOGY PANELS
     background: rgba(198, 161, 91, 0.05);
     border: 1px solid rgba(198, 161, 91, 0.2);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     margin-top: var(--spacing-title);
     text-align: center;
 }
@@ -737,7 +745,7 @@ METHODOLOGY PANELS
 .table-luxury th {
     background: linear-gradient(90deg, rgba(198, 161, 91, 0.35) 0%, rgba(198, 161, 91, 0.25) 100%);
     color: var(--vm-text);
-    padding: 26px; /* ALIGNMENT FIX 3 */ /* REFINEMENT 3: Increased padding */
+    padding: 40px 40px 50px 40px; /* FIX 3 */ /* REFINEMENT 3: Increased padding */
     text-transform: uppercase;
     font-size: 12px;
     font-weight: 600;
@@ -747,7 +755,7 @@ METHODOLOGY PANELS
 
 .heatmap-table td,
 .table-luxury td {
-    padding: 26px; /* ALIGNMENT FIX 3 */ /* REFINEMENT 3: Increased row height by 12% (20px -> 24px) */
+    padding: 40px 40px 50px 40px; /* FIX 3 */ /* REFINEMENT 3: Increased row height by 12% (20px -> 24px) */
     border-bottom: 1px solid rgba(255,255,255,0.07);
     font-size: var(--body-size);
     color: var(--vm-text-soft);
@@ -880,7 +888,7 @@ DEPTH METRICS
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -927,7 +935,7 @@ DEPTH METRICS
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1030,7 +1038,7 @@ MACRO CONTEXT
 
 .macro-context {
     margin-top: var(--spacing-section);
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     background: rgba(198, 161, 91, 0.08);
     border: 1px solid #C6A15B;
     border-radius: 8px; /* POLISH 1: Standardised */
@@ -1060,7 +1068,7 @@ MACRO CONTEXT
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     min-height: 80px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -1098,7 +1106,7 @@ MACRO CONTEXT
     background: transparent;
     border: 1px solid #C6A15B;
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 26px; /* ALIGNMENT FIX 3 */
+    padding: 40px 40px 50px 40px; /* FIX 3 */
     text-align: center;
 }
 
@@ -1125,9 +1133,13 @@ MACRO RISK DASHBOARD
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px; /* FIX 6: Equal padding */
     text-align: center;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    min-height: 280px; /* FIX 6: Equal card heights */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* FIX 6: Vertical centering */
 }
 
 .risk-dial-status {
@@ -1156,8 +1168,8 @@ SUB-MARKET BREAKDOWN
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
-    min-height: 320px;
+    padding: 40px; /* FIX 7: Consistent padding */
+    min-height: 340px; /* FIX 7: Equal card heights */
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -1216,7 +1228,7 @@ SUB-MARKET BREAKDOWN
     background: rgba(198, 161, 91, 0.05);
     border: 1px solid rgba(198, 161, 91, 0.2);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     margin-top: var(--spacing-section);
 }
 
@@ -1259,8 +1271,9 @@ SUB-MARKET BREAKDOWN
     background: rgba(18, 18, 18, 0.8);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
-    height: 80px;
+    padding: 20px 26px; /* FIX 8: Vertical padding for readability */
+    height: 90px; /* FIX 8: Increased height */
+    margin-bottom: 14px; /* FIX 8: Consistent spacing */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
@@ -1299,6 +1312,7 @@ SUB-MARKET BREAKDOWN
     flex-direction: column;
     gap: 6px;
     align-items: flex-end;
+    justify-content: center; /* FIX 8: Vertical alignment */
 }
 
 .signal-badge-v2 {
@@ -1365,7 +1379,7 @@ PANEL SYSTEM
     background: rgba(18, 18, 18, 0.6);
     border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px; /* POLISH 1: Standardised */
-    padding: 22px; /* POLISH 4: Standardised internal padding */
+    padding: 40px 40px 50px 40px; /* FIX 3: Inner-card spacing */
     margin-top: var(--spacing-section);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
