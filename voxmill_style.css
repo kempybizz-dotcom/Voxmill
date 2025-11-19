@@ -1,62 +1,62 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V4 EXECUTIVE SIGNATURE
-PHASE 3: INSTITUTIONAL £10K/MONTH FINISHING LAYER
-PHASE 4: EXECUTIVE SIGNATURE — INSTITUTIONAL MARKERS
-APPEARANCE REPAIR PASS #1: MINIMAL LUXURY GOLD RESET
-APPEARANCE ONLY — ZERO POSITIONAL CHANGES
+VOXMILL INTELLIGENCE — FINAL PRODUCTION STYLESHEET
+BOARDROOM-GRADE LUXURY INTELLIGENCE BRIEFING
+COMPLETE DESIGN MANDATE IMPLEMENTATION
 ============================================
 
-REPAIR PASS #1 CHANGES:
-✅ Gold reset to flat #B08D57 (no gradients)
-✅ All bars reduced to 4-6px (KPI, macro, velocity, index)
-✅ All glows/shadows removed
-✅ Score badges: darker green #3FAF47 with thin gold outline
-✅ Chart accents reduced 40% thickness
-✅ Chart axis labels hidden (will harmonize later)
-✅ Footer minimal - no background, thin border
-✅ Luxury = subtle contrast, minimal gold
+DESIGN PRINCIPLES:
+✅ Luxury = Restraint (no loud gradients, oversized bars, neon colors)
+✅ Consistency beats creativity (uniform visual rules)
+✅ Everything looks expensive (minimal, elegant, executive)
+✅ Readability > decoration (Goldman Sachs + Knight Frank + McKinsey)
 
+CORE FOUNDATION:
+- Background: #0D0D0D
+- Gold: #B08D57
+- Soft Gold Text: #C4A56A
+- Subtle Grey: rgba(255,255,255,0.55)
+- Muted Grey: rgba(255,255,255,0.35)
+- All bars: 4px height, #B08D57, 2px radius
+- NO shadows, NO glows, NO gradients
 ============================================ */
 
 :root {
+    /* Core Colors */
     --vm-bronze: #A77B3A;
-    --vm-gold: #B08D57; /* REPAIR: Flat gold only */
-    --vm-gold-gradient-top: #B08D57; /* REPAIR: No gradients */
-    --vm-gold-gradient-bottom: #B08D57; /* REPAIR: No gradients */
-    --vm-gold-transparent: rgba(176, 141, 87, 0.90); /* REPAIR: 90% opacity */
-    --vm-gold-light: #B08D57;
-    --vm-bronze-dark: #9E7B47;
+    --vm-gold: #B08D57;
+    --vm-gold-soft: #C4A56A;
     --vm-text: #EAEAEA;
-    --vm-text-body: rgba(234, 234, 234, 0.85);
-    --vm-muted: #B8B8B8;
+    --vm-text-soft: rgba(255,255,255,0.55);
+    --vm-text-muted: rgba(255,255,255,0.35);
     --vm-dark: #0D0D0D;
-    --vm-darker: #111111;
-    --vm-panel: #171717;
+    --vm-darker: #0A0A0A;
+    --vm-panel: #121212;
+    --vm-divider: rgba(255,255,255,0.07);
+    
+    /* Typography */
     --font-display: 'Playfair Display', serif;
-    --font-body: 'Inter', sans-serif;
+    --font-body: 'Inter', 'Open Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
+    
+    /* Spacing Grid */
     --grid: 8px;
     
-    /* Typography System */
-    --h1-title-size: 22px;
-    --h1-title-color: #B08D57;
-    --h1-title-spacing: 0.02em;
-    --h2-section-size: 18px;
-    --h2-section-color: #B08D57;
-    --h2-section-spacing: 0.02em;
-    --h3-label-size: 13px;
-    --h3-label-color: rgba(255,255,255,0.60);
+    /* Typography Scale */
+    --h1-size: 50px;
+    --h2-size: 22px;
+    --h3-size: 18px;
     --body-size: 13px;
-    --body-color: rgba(255,255,255,0.45);
-    --body-line-height: 1.45;
+    --small-size: 11px;
     
-    /* Chart Aesthetics */
-    --chart-line-thickness: 1.5px; /* REPAIR: Reduced by 40% */
-    --chart-gridline-micro: rgba(255,255,255,0.03);
-    --chart-gridline-major: rgba(255,255,255,0.08);
-    --chart-tick-color: #9A9A9A;
-    --chart-axis-weight: 600;
-    --chart-plot-background: #0B0B0B;
+    /* Bar Standards */
+    --bar-height: 4px;
+    --bar-color: #B08D57;
+    --bar-radius: 2px;
+    
+    /* Chart Standards */
+    --chart-line-thickness: 2px;
+    --chart-point-radius: 3px;
+    --chart-gridline: rgba(255,255,255,0.05);
 }
 
 @page {
@@ -71,32 +71,15 @@ REPAIR PASS #1 CHANGES:
 }
 
 /* ============================================
-SECTION 1 — SUBTLE MATTE TEXTURE (Background)
-Ultra-fine grain for printed premium stock feel
+GLOBAL BASE
 ============================================ */
 
 body {
     font-family: var(--font-body);
     color: var(--vm-text);
-    background: #000000;
-    overflow-x: hidden;
-    position: relative;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px),
-        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
-    opacity: 0.03; /* ENHANCED: 3% matte noise texture */
-    mix-blend-mode: overlay;
-    pointer-events: none;
-    z-index: 9999;
+    background: var(--vm-dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
@@ -106,50 +89,95 @@ SLIDE CONTAINER
 .slide {
     width: 1920px;
     height: 1080px;
-    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
+    background: var(--vm-dark);
     position: relative;
     page-break-after: always;
     page-break-inside: avoid;
     overflow: hidden;
-    border: 3px solid var(--vm-gold);
-    padding: 64px 48px 64px 48px;
-}
-
-.slide::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    opacity: 0.28;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(176, 141, 87, 0.15) 80px, rgba(176, 141, 87, 0.15) 82px),
-        repeating-linear-gradient(-45deg, transparent, transparent 80px, rgba(176, 141, 87, 0.12) 80px, rgba(176, 141, 87, 0.12) 82px);
+    padding: 48px;
 }
 
 .slide:last-child {
     page-break-after: auto;
 }
 
-.slide::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg,
-        var(--vm-bronze) 0%,
-        var(--vm-gold) 50%,
-        var(--vm-bronze) 100%);
-    z-index: 10;
+/* ============================================
+1. COVER PAGE — £10K LUXURY BRIEFING
+============================================ */
+
+.slide-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0A0A0A 0%, #0D0D0D 100%);
+}
+
+.logo-container {
+    margin-bottom: 40px;
+}
+
+.voxmill-logo {
+    width: 180px;
+    height: 180px;
+    opacity: 0.95;
+}
+
+.cover-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold-soft);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.cover-title {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    letter-spacing: 0.02em;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.cover-subtitle {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.cover-subtitle .location {
+    color: var(--vm-gold);
+    font-weight: 600;
+}
+
+.cover-tagline {
+    font-size: 14px;
+    color: var(--vm-text-muted);
+    letter-spacing: 0.12em;
+    margin-top: 24px;
+    font-style: italic;
+    text-align: center;
+}
+
+.cover-compiled {
+    font-size: var(--small-size);
+    color: var(--vm-text-soft);
+    margin-top: 80px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.cover-compiled strong {
+    color: var(--vm-gold-soft);
 }
 
 /* ============================================
-SECTION 7 — HEADER LUXURY POLISH
+HEADER & FOOTER — CONSISTENT LUXURY
 ============================================ */
 
 .slide-header {
@@ -160,885 +188,37 @@ SECTION 7 — HEADER LUXURY POLISH
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 20px;
-    border-bottom: 3px solid rgba(176, 141, 87, 0.8);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--vm-gold);
     z-index: 5;
-    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.07); /* ENHANCED: Ultra-faint underline */
-}
-
-.slide-header::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(176, 141, 87, 0.4) 20%,
-        rgba(176, 141, 87, 0.6) 50%,
-        rgba(176, 141, 87, 0.4) 80%,
-        transparent 100%);
 }
 
 .slide-title {
     font-family: var(--font-display);
-    font-size: 50px;
+    font-size: var(--h1-size);
     font-weight: 700;
-    color: #B08D57; /* ENHANCED: Gold micro-gradient */
-    
-    
-    
-    letter-spacing: 0.02em;
-    
+    color: var(--vm-gold);
+    letter-spacing: 0.01em;
+    border-left: 2px solid var(--vm-gold);
+    padding-left: 12px;
 }
 
 .slide-meta {
-    font-size: var(--h2-section-size);
-    color: var(--h3-label-color);
+    font-size: 14px;
+    color: var(--vm-text-muted);
     text-align: right;
-    line-height: var(--body-line-height);
+    line-height: 1.4;
 }
-
-/* ============================================
-SLIDE CONTENT AREA
-============================================ */
 
 .slide-content {
     position: absolute;
-    top: 140px;
+    top: 120px;
     left: 48px;
     right: 48px;
-    bottom: 140px;
+    bottom: 120px;
     overflow: hidden;
     z-index: 5;
 }
-
-/* ============================================
-SECTION 4 — COVER SLIDE EXECUTIVE HEFT
-============================================ */
-
-.slide-cover {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.slide-cover::after {
-    background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(176, 141, 87, 0.05) 60px, rgba(176, 141, 87, 0.05) 62px),
-        radial-gradient(circle at 50% 50%, rgba(201, 165, 90, 0.04) 0%, transparent 60%);
-}
-
-.logo-container {
-    margin-bottom: 32px;
-    filter: brightness(1.03); /* ENHANCED: Logo luminance lift */
-}
-
-.voxmill-logo {
-    width: 216px;
-    height: 216px;
-}
-
-.cover-label {
-    font-size: 20px;
-    font-weight: 700;
-    color: #B08D57; /* REPAIR: Flat gold */
-    letter-spacing: 0.21em;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-}
-
-.cover-title {
-    font-family: var(--font-display);
-    font-size: 72px;
-    font-weight: 800; /* ENHANCED: Bold for institutional weight */
-    background: linear-gradient(180deg, 
-        #D4B474 0%, /* ENHANCED: 3% gradient strength */
-        #AD8350 100%);
-    
-    
-    
-    letter-spacing: 0.03em; /* ENHANCED: +1px letter-spacing */
-    margin-bottom: 32px;
-    
-}
-
-.cover-subtitle {
-    font-size: var(--h1-title-size);
-    color: rgba(255, 255, 255, 0.70);
-    letter-spacing: 0.11em; /* ENHANCED: +1px letter-spacing */
-    text-transform: uppercase;
-}
-
-.cover-subtitle .location {
-    color: #B08D57; /* REPAIR: Flat gold */
-    font-weight: 700;
-}
-
-.cover-tagline {
-    font-size: 16px;
-    color: var(--vm-muted);
-    letter-spacing: 0.16em; /* ENHANCED: +1px letter-spacing */
-    margin-top: 24px;
-    font-style: italic;
-}
-
-.cover-compiled {
-    font-size: 11px;
-    color: var(--vm-text);
-    margin-top: 80px;
-    line-height: 1.8;
-    text-align: center;
-}
-
-.cover-compiled strong {
-    color: #B08D57; /* REPAIR: Flat gold */
-}
-
-/* ============================================
-SECTION 4 — EXECUTIVE SUMMARY PAGE HEFT
-============================================ */
-
-.executive-summary-bullets {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    margin-top: 20px;
-}
-
-.executive-summary-bullet {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(13, 13, 13, 1));
-    border-left: 6px solid var(--vm-gold);
-    border-top: 1px solid rgba(176, 141, 87, 0.2);
-    border-radius: 8px;
-    padding: 28px 36px;
-    min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.executive-bullet-title {
-    font-size: var(--h2-section-size);
-    font-weight: 800;
-    color: #B08D57; /* REPAIR: Flat gold */
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-bottom: 16px;
-}
-
-.executive-bullet-text {
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-    font-weight: 500;
-}
-
-.killer-insight {
-    display: block;
-    font-size: var(--body-size);
-    font-weight: 700;
-    color: #B08D57;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 2px solid rgba(176, 141, 87, 0.6);
-    letter-spacing: 0.03em;
-    
-}
-
-/* ============================================
-SECTION 3 — CARD LAYERING (Executive Finish)
-============================================ */
-
-.weekly-movement-dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 40px;
-    padding: 28px;
-    background: rgba(176, 141, 87, 0.04);
-    border-radius: 10px;
-    border: 1px solid rgba(176, 141, 87, 0.25);
-}
-
-.movement-mini-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 1), rgba(13, 13, 13, 1));
-    border: 1px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 8px;
-    padding: 18px 16px;
-    text-align: center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.movement-label {
-    font-size: 12px;
-    color: var(--h3-label-color);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.movement-value {
-    font-size: 34px;
-    font-weight: 700;
-    color: #B08D57; /* REPAIR: Flat gold */
-    line-height: 1;
-    margin-bottom: 8px;
-    font-variant-numeric: tabular-nums;
-    text-shadow: none; /* REPAIR: Remove glow */
-}
-
-.movement-change {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-}
-
-.movement-change.positive {
-    color: #4CAF50;
-}
-
-.movement-change.negative {
-    color: #F44336;
-}
-
-/* ============================================
-CROSS-VERTICAL INTELLIGENCE SLIDE
-============================================ */
-
-.cross-vertical-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    margin-top: 40px;
-}
-
-.cross-vertical-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-top: 5px solid var(--vm-gold);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 12px;
-    padding: 38px 32px;
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.cross-vertical-icon {
-    font-size: 56px;
-    margin-bottom: 24px;
-    line-height: 1;
-}
-
-.cross-vertical-title {
-    font-family: var(--font-display);
-    font-size: var(--h1-title-size);
-    font-weight: 600;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 20px;
-    letter-spacing: var(--h1-title-spacing);
-}
-
-.cross-vertical-text {
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-}
-
-/* ============================================
-METHODOLOGY & MODEL ARCHITECTURE SLIDE
-============================================ */
-
-.methodology-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-top: 20px;
-}
-
-.methodology-panel {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid rgba(176, 141, 87, 0.5);
-    border-radius: 12px;
-    padding: 32px;
-}
-
-.methodology-title {
-    font-size: var(--h2-section-size);
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: var(--h2-section-spacing);
-    margin-bottom: 20px;
-}
-
-.methodology-list {
-    list-style: none;
-}
-
-.methodology-list li {
-    padding: 10px 0 10px 28px;
-    position: relative;
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-}
-
-.methodology-list li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.model-pipeline {
-    background: rgba(176, 141, 87, 0.06);
-    border: 2px solid rgba(176, 141, 87, 0.4);
-    border-radius: 10px;
-    padding: 32px;
-    margin-top: 40px;
-    text-align: center;
-}
-
-.pipeline-flow {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin: 24px 0;
-}
-
-.pipeline-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-}
-
-.pipeline-box {
-    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-light));
-    color: var(--vm-dark);
-    padding: 18px 28px;
-    border-radius: 8px;
-    font-size: var(--h3-label-size);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    min-width: 160px;
-}
-
-.pipeline-arrow {
-    font-size: 32px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin: 0 8px;
-}
-
-.proprietary-badge {
-    background: var(--vm-gold);
-    color: var(--vm-dark);
-    padding: 20px 32px;
-    border-radius: 8px;
-    margin-top: 32px;
-    text-align: center;
-}
-
-.proprietary-badge-text {
-    font-family: var(--font-display);
-    font-size: var(--h2-section-size);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-}
-
-/* ============================================
-SECTION 5 — CHART INTEGRATION POLISH
-============================================ */
-
-.chart-annotation {
-    font-size: 11px;
-    color: var(--vm-muted);
-    font-style: italic;
-    text-align: center;
-    margin-top: 8px;
-}
-
-.chart-mini-insight {
-    background: rgba(176, 141, 87, 0.12);
-    border-left: 4px solid var(--vm-gold);
-    padding: 12px 20px;
-    margin-top: 12px;
-    border-radius: 6px;
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-    font-weight: 500;
-    box-shadow: inset 0 1px 3px rgba(176, 141, 87, 0.3);
-}
-
-.chart-callout {
-    font-size: 11px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    font-weight: 600;
-    letter-spacing: 0.05em;
-}
-
-.chart-baseline {
-    stroke: url(#goldGradient); /* ENHANCED: Gold gradient stroke */
-    stroke-width: var(--chart-line-thickness);
-    stroke-dasharray: 4 4;
-}
-
-.chart-confidence-band {
-    fill: rgba(176, 141, 87, 0.1);
-    stroke: none;
-}
-
-.chart-trend-arrow {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.chart-percent-marker {
-    font-size: 12px;
-    font-weight: 600;
-    fill: var(--vm-gold);
-}
-
-/* ============================================
-SECTION 3 — KPI GRID LUXURY FINISHING
-============================================ */
-
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 32px;
-    height: 360px;
-    margin-bottom: 64px;
-    page-break-inside: avoid;
-}
-
-.kpi-card {
-    background: linear-gradient(135deg,
-        rgba(13, 13, 13, 0.98) 0%,
-        rgba(23, 23, 23, 0.95) 100%);
-    border: 1px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 12px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 164px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.kpi-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-    width: 100%;
-}
-
-.kpi-label {
-    font-size: 16px;
-    color: var(--h3-label-color);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: 10px;
-    font-weight: 600;
-    line-height: 1.4;
-}
-
-.kpi-value {
-    font-family: var(--font-body);
-    font-size: 68px;
-    font-weight: 700;
-    color: #B08D57; /* REPAIR: Flat gold */
-    line-height: 1.2;
-    margin: 0;
-    padding: 0;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    filter: none; /* REPAIR: Remove glow */
-}
-
-.kpi-change {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 12px;
-    line-height: 1.4;
-    color: var(--h3-label-color);
-}
-
-.kpi-change.positive {
-    color: #4CAF50;
-}
-
-.kpi-change.negative {
-    color: #F44336;
-}
-
-/* ============================================
-SECTION 5 — CHART CONTAINERS
-============================================ */
-
-.chart-section {
-    margin-top: 0;
-    page-break-inside: avoid;
-}
-
-.chart-divider {
-    height: 4px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(158, 123, 71, 0.8) 15%,
-        rgba(176, 141, 87, 1) 50%,
-        rgba(158, 123, 71, 0.8) 85%,
-        transparent 100%);
-    margin: 32px 0;
-    opacity: 1;
-}
-
-.chart-container {
-    background: var(--chart-plot-background); /* ENHANCED: Darker plot area */
-    border: 2px solid rgba(176, 141, 87, 0.5);
-    border-radius: 12px;
-    padding: 28px;
-    height: 380px;
-    page-break-inside: avoid;
-    display: flex;
-    flex-direction: column;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); /* ENHANCED: Faint inner border */
-}
-
-.chart-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #B08D57; /* REPAIR: Flat gold text */
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 6px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    text-align: left;
-    filter: none; /* REPAIR: Remove effects */
-}
-
-.chart-context {
-    font-size: var(--h3-label-size);
-    color: var(--h3-label-color);
-    text-align: left;
-    margin-bottom: 20px;
-    font-style: italic;
-    line-height: var(--body-line-height);
-    max-width: 100%;
-    font-weight: 400;
-}
-
-.chart-source {
-    font-size: 12px;
-    color: var(--vm-muted);
-    text-align: center;
-    margin-top: auto;
-    font-style: italic;
-    padding-top: 12px;
-}
-
-.chart-axis-label {
-    font-size: var(--h3-label-size);
-    font-family: 'Inter', sans-serif;
-    color: var(--chart-tick-color);
-    font-weight: var(--chart-axis-weight);
-    letter-spacing: 0.08em;
-    display: none; /* REPAIR: Hide for now - will add back harmonized */
-}
-
-/* ============================================
-SVG CHART GRIDLINES
-============================================ */
-
-svg line[stroke*="rgba(255,255,255,0.05)"] {
-    stroke: var(--chart-gridline-micro);
-}
-
-svg line[stroke*="rgba(255,255,255,0.12)"] {
-    stroke: var(--chart-gridline-major);
-}
-
-/* ============================================
-TWO-COLUMN LAYOUT
-============================================ */
-
-.two-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    height: auto;
-    margin-top: 0;
-}
-
-.chart-panel {
-    background: var(--chart-plot-background); /* ENHANCED: Darker plot area */
-    border: 2px solid rgba(176, 141, 87, 0.5);
-    border-radius: 12px;
-    padding: 28px;
-    height: 480px;
-    display: flex;
-    flex-direction: column;
-    page-break-inside: avoid;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); /* ENHANCED: Faint inner border */
-}
-
-/* ============================================
-SECTION 3 — INSIGHT CARDS LUXURY FINISHING
-============================================ */
-
-.insight-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 64px;
-}
-
-.insight-card {
-    background: linear-gradient(135deg,
-        rgba(18, 18, 18, 0.98) 0%,
-        rgba(13, 13, 13, 0.98) 100%);
-    border: 2px solid var(--vm-gold-transparent);
-    border-left: 5px solid var(--vm-gold);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 10px;
-    padding: 26px 25px;
-    min-height: 110px;
-    height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-shadow: -3px 0 12px rgba(176, 141, 87, 0.4), 0 2px 12px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.insight-title {
-    font-size: var(--body-size);
-    font-weight: 700;
-    color: #B08D57;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
-}
-
-.insight-text {
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-}
-
-/* ============================================
-INTELLIGENCE PANELS
-============================================ */
-
-.panel {
-    background: linear-gradient(135deg,
-        rgba(18, 18, 18, 0.98) 0%,
-        rgba(13, 13, 13, 1) 100%);
-    border: 2px solid rgba(176, 141, 87, 0.5);
-    border-radius: 12px;
-    padding: 32px 28px;
-    margin-top: 64px;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03);
-}
-
-.panel-title {
-    font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 600;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 16px;
-}
-
-.panel-divider {
-    height: 2px;
-    background: linear-gradient(90deg,
-        var(--vm-bronze) 0%,
-        transparent 100%);
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.panel-text {
-    font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
-}
-
-/* ============================================
-SECTION 6 — TABLE LUXURY FINISH
-============================================ */
-
-.table-luxury {
-    width: 100%;
-    margin-top: 32px;
-    border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    table-layout: auto;
-}
-
-.table-luxury thead {
-    background: linear-gradient(90deg,
-        rgba(180, 136, 84, 1) 0%, /* ENHANCED: 2% darker */
-        rgba(189, 149, 78, 1) 50%,
-        rgba(180, 136, 84, 1) 100%);
-    height: 56px;
-}
-
-.table-luxury th {
-    font-size: var(--h3-label-size);
-    font-weight: 700;
-    color: var(--vm-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    padding: 18px 12px;
-    text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.table-luxury th:nth-child(1) { width: 30%; }
-.table-luxury th:nth-child(2) { width: 12%; }
-.table-luxury th:nth-child(3) { width: 12%; text-align: right; }
-.table-luxury th:nth-child(4) { width: 14%; text-align: right; }
-.table-luxury th:nth-child(5) { width: 12%; text-align: right; }
-.table-luxury th:nth-child(6) { width: 10%; }
-.table-luxury th:nth-child(7) { width: 10%; text-align: center; }
-
-.table-luxury tbody tr {
-    border-bottom: 1px solid rgba(255,255,255,0.10); /* ENHANCED: Increased separator */
-}
-
-.table-luxury tbody tr:nth-child(odd) {
-    background: rgba(18, 18, 18, 0.8);
-}
-
-.table-luxury tbody tr:nth-child(even) {
-    background: rgba(23, 23, 23, 0.8);
-}
-
-.table-luxury td {
-    font-size: var(--body-size);
-    color: var(--body-color);
-    padding: 16px 12px;
-    vertical-align: middle;
-}
-
-.table-luxury td.align-right {
-    text-align: right;
-    font-family: var(--font-mono);
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    color: rgba(176, 141, 87, 0.65); /* ENHANCED: 2-3% gold tint */
-}
-
-.table-luxury td.align-center {
-    text-align: center;
-}
-
-.table-luxury td:last-child {
-    text-align: center;
-}
-
-.table-luxury td:nth-child(3),
-.table-luxury td:nth-child(4),
-.table-luxury td:nth-child(5) {
-    text-align: right;
-    color: rgba(176, 141, 87, 0.65); /* ENHANCED: Gold tint numeric */
-}
-
-.property-address {
-    font-weight: 500;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-}
-
-.score-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 16px;
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-size: var(--body-size);
-    font-weight: 700;
-    background: #0C0C0C; /* REPAIR: Flat dark background */
-    border: 1px solid #B08D57; /* REPAIR: Thin gold outline */
-    color: #B08D57;
-    box-shadow: none; /* REPAIR: Remove shadows */
-}
-
-.score-high, .score-excellent {
-    background: rgba(63, 175, 71, 0.15); /* REPAIR: Darker green */
-    color: #3FAF47;
-    border: 1px solid #3FAF47;
-}
-
-.score-medium, .score-good {
-    background: #0C0C0C;
-    color: #B08D57;
-    border: 1px solid #B08D57;
-}
-
-.score-low, .score-standard {
-    background: #0C0C0C;
-    color: #B08D57;
-    border: 1px solid #B08D57;
-}
-
-/* ============================================
-SECTION 7 — FOOTER LUXURY POLISH
-============================================ */
 
 .slide-footer-branded {
     position: absolute;
@@ -1048,13 +228,10 @@ SECTION 7 — FOOTER LUXURY POLISH
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 18px;
-    border-top: 3px solid rgba(176, 141, 87, 0.7);
+    padding-top: 16px;
+    border-top: 1px solid rgba(176, 141, 87, 0.5);
     z-index: 20;
-    height: 72px;
-    background: var(--vm-dark);
-    box-shadow: 0 -2px 12px rgba(176, 141, 87, 0.2),
-                inset 0 1px 0 rgba(255,255,255,0.07); /* ENHANCED: Ultra-faint separator */
+    height: 60px;
 }
 
 .footer-left {
@@ -1063,292 +240,681 @@ SECTION 7 — FOOTER LUXURY POLISH
     gap: 12px;
 }
 
-.footer-left svg {
-    filter: brightness(1.04); /* ENHANCED: Logo brightness lift */
-}
-
-.footer-branding {
-    display: flex;
-    align-items: center;
-}
-
 .footer-company {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    letter-spacing: 0.05em;
-    line-height: 1;
+    color: var(--vm-gold);
+    letter-spacing: 0.04em;
 }
 
 .footer-page {
     font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    padding: 8px 16px;
+    border: 1px solid rgba(176, 141, 87, 0.5);
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+2. EXECUTIVE SUMMARY — ELITE NARRATIVE
+============================================ */
+
+.executive-summary-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.executive-summary-bullet {
+    background: rgba(18, 18, 18, 0.6);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: 4px;
+    padding: 24px 32px;
+    min-height: 100px;
+}
+
+.executive-bullet-title {
+    font-size: var(--h3-size);
+    font-weight: 700;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(176, 141, 87, 0.15);
+}
+
+.executive-bullet-text {
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.killer-insight {
+    display: block;
+    font-size: var(--body-size);
+    font-weight: 600;
+    color: var(--vm-gold-soft);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(176, 141, 87, 0.2);
+}
+
+.weekly-movement-dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+}
+
+.movement-mini-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 6px;
+    padding: 20px 16px;
+    text-align: center;
+}
+
+.movement-label {
+    font-size: 11px;
+    color: var(--vm-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.movement-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+}
+
+.movement-change {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+}
+
+.movement-change.positive { color: #3FAF47; }
+.movement-change.negative { color: #F44336; }
+
+/* ============================================
+3. MARKET OVERVIEW — CONSISTENT KPI CARDS
+============================================ */
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 24px;
+    height: 340px;
+    margin-bottom: 48px;
+}
+
+.kpi-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid var(--vm-gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.kpi-content {
+    padding: 20px;
+}
+
+.kpi-label {
+    font-size: 14px;
+    color: var(--vm-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+}
+
+.kpi-value {
+    font-family: var(--font-body);
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin-bottom: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-change {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-text-muted);
+}
+
+.kpi-change.positive { color: #3FAF47; }
+.kpi-change.negative { color: #F44336; }
+
+/* ============================================
+CHART SECTION — THIN GOLD DIVIDERS
+============================================ */
+
+.chart-section {
+    margin-top: 24px;
+}
+
+.chart-divider {
+    height: 1px;
+    background: var(--vm-gold);
+    margin: 24px 0;
+    opacity: 0.4;
+}
+
+.chart-container {
+    background: rgba(11, 11, 11, 0.6);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 24px;
+    height: 360px;
+}
+
+.chart-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.chart-context {
+    font-size: 12px;
+    color: var(--vm-text-muted);
+    margin-bottom: 16px;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+.chart-source {
+    font-size: 11px;
+    color: var(--vm-text-muted);
+    text-align: center;
+    margin-top: 16px;
+    font-style: italic;
+}
+
+.chart-mini-insight {
+    background: rgba(176, 141, 87, 0.08);
+    border-left: 2px solid var(--vm-gold);
+    padding: 10px 16px;
+    margin-top: 12px;
+    border-radius: 4px;
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.4;
+}
+
+/* ============================================
+4. PERFORMANCE ANALYSIS — MODERN CHARTS
+============================================ */
+
+.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.chart-panel {
+    background: rgba(11, 11, 11, 0.6);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 24px;
+    height: 420px;
+}
+
+/* ============================================
+INSIGHT CARDS — UNIFORM LUXURY
+============================================ */
+
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+}
+
+.insight-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: 6px;
+    padding: 20px;
+    min-height: 100px;
+}
+
+.insight-title {
+    font-size: var(--body-size);
+    font-weight: 700;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+}
+
+.insight-text {
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.4;
+}
+
+/* ============================================
+5. COMPETITIVE LANDSCAPE — MODERNIZED
+============================================ */
+
+.cross-vertical-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 32px;
+}
+
+.cross-vertical-card {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid var(--vm-gold);
+    border-radius: 8px;
+    padding: 32px 24px;
+    min-height: 280px;
+    text-align: center;
+}
+
+.cross-vertical-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    line-height: 1;
+}
+
+.cross-vertical-title {
+    font-family: var(--font-display);
+    font-size: var(--h3-size);
+    font-weight: 600;
+    color: var(--vm-gold-soft);
+    margin-bottom: 16px;
+}
+
+.cross-vertical-text {
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
+}
+
+/* ============================================
+METHODOLOGY PANELS
+============================================ */
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 20px;
+}
+
+.methodology-panel {
+    background: rgba(18, 18, 18, 0.6);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 28px;
+}
+
+.methodology-title {
+    font-size: var(--h3-size);
+    color: var(--vm-gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+}
+
+.methodology-list {
+    list-style: none;
+}
+
+.methodology-list li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
+}
+
+.methodology-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-weight: 600;
+}
+
+.model-pipeline {
+    background: rgba(176, 141, 87, 0.05);
+    border: 1px solid rgba(176, 141, 87, 0.2);
+    border-radius: 8px;
+    padding: 28px;
+    margin-top: 32px;
+    text-align: center;
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.pipeline-box {
+    background: var(--vm-gold);
+    color: var(--vm-dark);
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 140px;
+}
+
+.pipeline-arrow {
+    font-size: 28px;
+    color: var(--vm-gold);
+    margin: 0 8px;
+}
+
+.proprietary-badge {
+    background: var(--vm-gold);
+    color: var(--vm-dark);
+    padding: 16px 28px;
+    border-radius: 6px;
+    margin-top: 28px;
+    text-align: center;
+}
+
+.proprietary-badge-text {
+    font-family: var(--font-display);
     font-size: 16px;
     font-weight: 700;
-    color: #B08D57;
-    background-color: transparent; /* REPAIR: Remove gold background */
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: 1px solid rgba(176, 141, 87, 0.60); /* REPAIR: Thinner border */
-    font-variant-numeric: tabular-nums;
-    box-shadow: none; /* REPAIR: Remove shadow */
     letter-spacing: 0.06em;
 }
 
 /* ============================================
-WATERMARK
+7. MARKET DEPTH — EXECUTIVE HEATMAP
 ============================================ */
 
-.watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-family: var(--font-display);
-    font-size: 140px;
-    font-weight: 700;
-    color: rgba(176, 141, 87, 0.03);
-    letter-spacing: 0.15em;
-    z-index: 1;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    display: none;
+.property-type-heatmap {
+    margin-top: 20px;
+}
+
+.heatmap-table,
+.table-luxury {
+    width: 100%;
+    margin-top: 24px;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.6);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.heatmap-table th,
+.table-luxury th {
+    background: linear-gradient(90deg, rgba(176, 141, 87, 0.3) 0%, rgba(176, 141, 87, 0.2) 100%);
+    color: var(--vm-text);
+    padding: 14px 12px;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: left;
+}
+
+.heatmap-table td,
+.table-luxury td {
+    padding: 14px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+}
+
+.property-type-name,
+.property-address {
+    font-weight: 500;
+    color: var(--vm-gold-soft);
+}
+
+.table-luxury td.align-right {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.table-luxury td.align-center {
+    text-align: center;
+}
+
+.table-subtitle {
+    font-size: 12px;
+    color: var(--vm-text-muted);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
 }
 
 /* ============================================
-SECTION 3 — DEPTH METRICS LUXURY FINISHING
+SCORE & VELOCITY BADGES — MINIMAL PILLS
+============================================ */
+
+.score-badge,
+.velocity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.score-badge {
+    background: rgba(18, 18, 18, 0.9);
+    border: 1px solid var(--vm-gold);
+    color: var(--vm-gold);
+}
+
+.score-high,
+.score-excellent,
+.velocity-high {
+    background: rgba(63, 175, 71, 0.12);
+    color: #3FAF47;
+    border: 1px solid #3FAF47;
+}
+
+.score-medium,
+.score-good,
+.velocity-medium {
+    background: rgba(255, 193, 7, 0.12);
+    color: #FFC107;
+    border: 1px solid #FFC107;
+}
+
+.score-low,
+.score-standard,
+.velocity-low {
+    background: rgba(244, 67, 54, 0.12);
+    color: #F44336;
+    border: 1px solid #F44336;
+}
+
+/* ============================================
+BARS — UNIVERSAL 4PX STANDARD
+============================================ */
+
+.depth-bar,
+.risk-bar-simple,
+.velocity-bar-container,
+.voxmill-index-bar-container {
+    height: var(--bar-height);
+    background: rgba(176, 141, 87, 0.2);
+    border-radius: var(--bar-radius);
+    overflow: hidden;
+}
+
+.depth-bar-fill,
+.risk-bar-fill-simple,
+.velocity-bar-fill,
+.voxmill-index-bar-fill {
+    height: 100%;
+    border-radius: var(--bar-radius);
+}
+
+.depth-bar-fill,
+.voxmill-index-bar-fill {
+    background: var(--bar-color);
+}
+
+.velocity-bar-fill.velocity-color-high,
+.risk-low-fill {
+    background: #3FAF47;
+}
+
+.velocity-bar-fill.velocity-color-medium,
+.risk-medium-fill {
+    background: #FFC107;
+}
+
+.velocity-bar-fill.velocity-color-low,
+.risk-high-fill {
+    background: #FF9800;
+}
+
+/* ============================================
+DEPTH METRICS
 ============================================ */
 
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    margin-top: 64px;
+    gap: 28px;
+    margin-top: 48px;
 }
 
 .depth-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 12px;
-    padding: 30px 32px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 28px;
 }
 
 .depth-label {
     font-size: var(--body-size);
-    color: var(--vm-bronze);
+    color: var(--vm-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 16px;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
 }
 
 .depth-value {
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 700;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 20px;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
     line-height: 1;
-    letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
 }
 
 .depth-bar {
-    height: 5px; /* REPAIR: Reduced to 5px */
-    background: rgba(176, 141, 87, 0.25);
-    border-radius: 2px; /* REPAIR: Soft edges */
-    overflow: hidden;
-    margin-bottom: 12px;
-}
-
-.depth-bar-fill {
-    height: 100%;
-    background: #B08D57; /* REPAIR: Flat gold, no gradient */
-    opacity: 0.90; /* REPAIR: 90% opacity */
+    margin-bottom: 10px;
 }
 
 .depth-note {
     font-size: var(--body-size);
-    color: var(--vm-muted);
+    color: var(--vm-text-muted);
 }
 
 /* ============================================
-PROPERTY TYPE HEATMAP
-============================================ */
-
-.property-type-heatmap {
-    margin-top: 0;
-}
-
-.heatmap-table {
-    width: 100%;
-    margin-top: 32px;
-    border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.heatmap-table th {
-    background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
-    color: var(--vm-dark);
-    padding: 16px 12px;
-    text-transform: uppercase;
-    font-size: var(--h3-label-size);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-align: left;
-}
-
-.heatmap-table td {
-    padding: 16px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.10); /* ENHANCED: Increased separator */
-    font-size: var(--body-size);
-    color: var(--body-color);
-    vertical-align: middle;
-}
-
-.property-type-name {
-    font-weight: 500;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-}
-
-.velocity-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: var(--h3-label-size);
-}
-
-.velocity-high {
-    background: rgba(63, 175, 71, 0.15); /* REPAIR: Darker green */
-    color: #3FAF47;
-    border: 1px solid #3FAF47;
-}
-
-.velocity-medium {
-    background: rgba(255, 193, 7, 0.15);
-    color: #FFC107;
-    border: 1px solid #FFC107;
-}
-
-.velocity-low {
-    background: rgba(244, 67, 54, 0.15);
-    color: #F44336;
-    border: 1px solid #F44336;
-}
-
-.signal-text {
-    font-weight: 500;
-}
-
-/* ============================================
-SECTION 3 — STRATEGIC FORECAST LUXURY FINISHING
+8. STRATEGIC FORECAST — SIMPLIFIED BOXES
 ============================================ */
 
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 32px;
-    height: 520px;
-    margin-top: 0;
+    gap: 24px;
+    height: 480px;
+    margin-top: 20px;
 }
 
 .forecast-card-v2 {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 12px;
-    padding: 26px 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
-}
-
-.forecast-card-highlight {
-    border-color: #B08D57;
-    background: linear-gradient(135deg, rgba(176, 141, 87, 0.1), rgba(18, 18, 18, 0.95));
-    box-shadow: 0 4px 20px rgba(176, 141, 87, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07),
-                inset 0 -1px 0 rgba(0,0,0,0.55),
-                inset 0 0 0 1px rgba(255,255,255,0.03);
-}
-
-.forecast-card-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--vm-bronze);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 24px;
-    text-align: center;
-    width: 100%;
-}
-
-.forecast-card-body {
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
-    width: 100%;
+}
+
+.forecast-card-highlight {
+    border-color: var(--vm-gold);
+    background: rgba(176, 141, 87, 0.08);
+}
+
+.forecast-card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--vm-gold-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .forecast-arrow-large {
-    font-size: 96px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
+    font-size: 72px;
+    color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
-.forecast-percentage-large {
-    font-size: 64px;
+.forecast-percentage-large,
+.voxmill-index-number,
+.risk-dial-value {
+    font-size: 52px;
     font-weight: 700;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
+    color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 16px;
-    letter-spacing: 0.02em;
+    margin-bottom: 12px;
     font-variant-numeric: tabular-nums;
-    
 }
 
 .forecast-label-text {
-    font-size: 16px;
-    color: var(--vm-text);
+    font-size: 14px;
+    color: var(--vm-text-soft);
     margin-top: 8px;
     text-align: center;
 }
 
 .forecast-confidence-text {
-    font-size: var(--body-size);
-    color: var(--vm-muted);
+    font-size: 12px;
+    color: var(--vm-text-muted);
     margin-top: 8px;
 }
 
@@ -1356,84 +922,50 @@ SECTION 3 — STRATEGIC FORECAST LUXURY FINISHING
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
 }
 
 .cone-value {
-    font-size: 40px;
+    font-size: 36px;
     font-weight: 700;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
+    color: var(--vm-gold);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .cone-mid {
-    font-size: 48px;
+    font-size: 42px;
 }
 
 .sentiment-display {
-    font-size: 40px;
+    font-size: 34px;
     font-weight: 600;
-    padding: 24px 48px;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    padding: 20px 40px;
+    border-radius: 6px;
+    margin-bottom: 20px;
 }
 
 .sentiment-bullish {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.2);
-    border: 2px solid rgba(76, 175, 80, 0.5);
+    color: #3FAF47;
+    background: rgba(63, 175, 71, 0.15);
+    border: 1px solid #3FAF47;
 }
 
 .sentiment-neutral {
     color: var(--vm-dark);
     background: var(--vm-gold);
-    border: 2px solid rgba(176, 141, 87, 0.9);
+    border: 1px solid var(--vm-gold);
 }
 
 .sentiment-bearish {
     color: #F44336;
-    background: rgba(244, 67, 54, 0.2);
-    border: 2px solid rgba(244, 67, 54, 0.5);
-}
-
-.voxmill-index-number {
-    font-size: 72px;
-    font-weight: 700;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    line-height: 1;
-    margin-bottom: 24px;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    
-}
-
-.voxmill-index-bar-container {
-    height: 6px; /* REPAIR: Reduced */
-    background: rgba(176, 141, 87, 0.25);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-.voxmill-index-bar-fill {
-    height: 100%;
-    background: #B08D57; /* REPAIR: Flat gold */
-    border-radius: 2px;
-    opacity: 0.90;
+    background: rgba(244, 67, 54, 0.15);
+    border: 1px solid #F44336;
 }
 
 .voxmill-index-caption {
-    font-size: var(--h3-label-size);
-    color: var(--vm-muted);
+    font-size: 12px;
+    color: var(--vm-text-muted);
     margin-bottom: 8px;
     font-style: italic;
 }
@@ -1443,326 +975,223 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 64px;
+    margin-top: 48px;
     padding: 20px 24px;
-    background: rgba(176, 141, 87, 0.1);
-    border-left: 4px solid #B08D57;
+    background: rgba(176, 141, 87, 0.08);
+    border-left: 2px solid var(--vm-gold);
     border-radius: 6px;
-    box-shadow: inset 0 1px 2px rgba(176, 141, 87, 0.3);
 }
 
 .macro-title {
-    font-size: 19px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 12px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-size: 16px;
+    color: var(--vm-gold);
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
 }
 
 .macro-text {
     font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
 }
 
 /* ============================================
-SECTION 3 — EXECUTIVE INTELLIGENCE LUXURY FINISHING
+9. EXECUTIVE INTELLIGENCE — UNIFORM NUMBERED ITEMS
 ============================================ */
 
 .executive-brief-stack {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 0;
+    margin-top: 20px;
 }
 
 .executive-brief-card {
     display: flex;
     align-items: center;
-    gap: 24px;
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-left: 5px solid var(--vm-gold);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 10px;
-    padding: 20px 28px;
-    min-height: 88px;
-    box-shadow: -4px 0 16px rgba(176, 141, 87, 0.3), 0 2px 12px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
+    gap: 20px;
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: 6px;
+    padding: 20px 24px;
+    min-height: 80px;
 }
 
 .executive-brief-number {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: var(--vm-gold);
     color: var(--vm-dark);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-body);
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(176, 141, 87, 0.6);
 }
 
 .executive-brief-text {
     font-size: var(--body-size);
-    color: var(--body-color);
-    line-height: var(--body-line-height);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
     flex: 1;
 }
 
 .executive-brief-divider {
     height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.05) 50%, /* ENHANCED: Silent separator */
-        transparent 100%);
-    margin: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
 }
 
 .review-banner {
-    margin-top: 64px;
-    background: var(--vm-gold);
-    border-radius: 8px;
-    padding: 28px;
+    margin-top: 48px;
+    background: transparent;
+    border: 1px solid var(--vm-gold);
+    border-radius: 6px;
+    padding: 20px;
     text-align: center;
 }
 
 .review-banner-text {
-    font-family: var(--font-display);
-    font-size: 20px;
+    font-family: var(--font-body);
+    font-size: 14px;
     font-weight: 600;
-    color: var(--vm-dark);
-    letter-spacing: 0.05em;
+    color: var(--vm-gold-soft);
+    letter-spacing: 0.04em;
 }
 
 /* ============================================
-TABLE SUBTITLE
-============================================ */
-
-.table-subtitle {
-    font-size: var(--h3-label-size);
-    color: var(--vm-muted);
-    text-align: center;
-    margin-top: 8px;
-    margin-bottom: 0;
-    font-style: italic;
-}
-
-/* ============================================
-SECTION 3 — MACRO RISK DASHBOARD LUXURY FINISHING
+MACRO RISK DASHBOARD
 ============================================ */
 
 .macro-risk-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
-    margin-top: 40px;
+    gap: 28px;
+    margin-top: 32px;
 }
 
 .risk-dial-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 12px;
-    padding: 30px 32px;
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 28px;
     text-align: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
 }
 
 .risk-dial-title {
-    font-size: 16px;
-    color: var(--vm-bronze);
+    font-size: 14px;
+    color: var(--vm-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 24px;
-    font-weight: 600;
-}
-
-.risk-dial-value {
-    font-size: 52px;
-    font-weight: 800;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 12px;
-    
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
 }
 
 .risk-dial-status {
     font-size: var(--body-size);
-    color: #B08D57;
+    color: var(--vm-gold-soft);
     font-weight: 600;
 }
 
 .risk-bar-simple {
-    height: 5px; /* REPAIR: Reduced to 5px */
-    background: rgba(176, 141, 87, 0.25);
-    border-radius: 2px; /* REPAIR: Soft edges */
-    overflow: hidden;
-    margin: 20px auto 16px;
+    margin: 16px auto 12px;
     width: 80%;
 }
 
-.risk-bar-fill-simple {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-    opacity: 0.90; /* REPAIR: 90% opacity */
-}
-
-.risk-low-fill {
-    background: #3FAF47; /* REPAIR: Flat darker green */
-}
-
-.risk-medium-fill {
-    background: #FFC107; /* REPAIR: Flat gold */
-}
-
-.risk-high-fill {
-    background: #FF9800; /* REPAIR: Flat orange */
-}
-
 /* ============================================
-SECTION 3 — SUB-MARKET BREAKDOWN LUXURY FINISHING
+SUB-MARKET BREAKDOWN
 ============================================ */
 
 .submarket-grid-v2 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 0;
+    gap: 28px;
+    margin-top: 20px;
 }
 
 .submarket-card-v2 {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 10px;
-    padding: 38px 28px 32px 28px;
-    min-height: 340px;
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 32px 24px;
+    min-height: 320px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
 }
 
 .submarket-header {
     font-family: var(--font-display);
-    font-size: 24px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 40px;
+    font-size: 20px;
+    color: var(--vm-gold);
+    margin-bottom: 32px;
     font-weight: 700;
     text-align: right;
     width: 100%;
-    
 }
 
 .submarket-metrics {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 28px;
     width: 100%;
-    flex: 1;
 }
 
 .submarket-metric-row {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 10px;
+    gap: 8px;
 }
 
 .submarket-metric-label {
-    font-size: 11px;
-    color: var(--vm-muted);
+    font-size: 10px;
+    color: var(--vm-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
 }
 
 .submarket-metric-value {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--vm-text);
-    line-height: 1.1;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .submarket-micro-label {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.45);
-    margin-top: 6px;
+    color: var(--vm-text-muted);
+    margin-top: 4px;
     font-style: italic;
 }
 
 .velocity-bar-container {
-    height: 5px; /* REPAIR: Reduced to 5px */
-    background: rgba(176, 141, 87, 0.25);
-    border-radius: 2px;
-    overflow: hidden;
     width: 100%;
     margin: 8px 0;
 }
 
-.velocity-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    box-shadow: none; /* REPAIR: Remove glow */
-    opacity: 0.90; /* REPAIR: 90% opacity */
-}
-
-.velocity-color-high {
-    background: #3FAF47; /* REPAIR: Flat darker green */
-}
-
-.velocity-color-medium {
-    background: #FFC107;
-}
-
-.velocity-color-low {
-    background: #F44336;
-}
-
 .submarket-listing-count {
-    font-size: var(--h3-label-size);
-    color: var(--vm-muted);
-    margin-top: 20px;
+    font-size: 12px;
+    color: var(--vm-text-muted);
+    margin-top: 16px;
     text-align: right;
 }
 
 .momentum-streets-panel {
-    background: rgba(176, 141, 87, 0.06);
-    border: 2px solid rgba(176, 141, 87, 0.35);
-    border-radius: 10px;
-    padding: 28px 32px;
-    margin-top: 64px;
+    background: rgba(176, 141, 87, 0.05);
+    border: 1px solid rgba(176, 141, 87, 0.2);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-top: 48px;
 }
 
 .momentum-title {
-    font-size: 16px;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--vm-gold);
+    margin-bottom: 14px;
     font-weight: 600;
 }
 
@@ -1771,10 +1200,10 @@ SECTION 3 — SUB-MARKET BREAKDOWN LUXURY FINISHING
 }
 
 .momentum-list li {
-    padding: 10px 0 10px 24px;
+    padding: 8px 0 8px 20px;
     position: relative;
     font-size: var(--body-size);
-    color: var(--vm-text);
+    color: var(--vm-text-soft);
     line-height: 1.5;
 }
 
@@ -1782,39 +1211,31 @@ SECTION 3 — SUB-MARKET BREAKDOWN LUXURY FINISHING
     content: "★";
     position: absolute;
     left: 0;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    font-size: 16px;
+    color: var(--vm-gold);
+    font-size: 14px;
 }
 
 /* ============================================
-SECTION 3 — ACQUISITION SIGNALS LUXURY FINISHING
+11. AI OPPORTUNITIES — ACQUISITION SHORTLIST
 ============================================ */
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 0;
+    margin-top: 20px;
 }
 
 .signal-card-v2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(13, 13, 13, 0.98));
-    border: 2px solid var(--vm-gold-transparent);
-    border-bottom: 1px solid rgba(0,0,0,0.6);
-    border-radius: 8px;
-    padding: 16px 28px;
-    height: 88px;
-    box-shadow: 0 2px 12px rgba(176, 141, 87, 0.25),
-                inset 0 1px 0 rgba(255,255,255,0.07), /* ENHANCED: Top-light */
-                inset 0 -1px 0 rgba(0,0,0,0.55), /* ENHANCED: Bottom-shadow */
-                inset 0 0 0 1px rgba(255,255,255,0.03); /* ENHANCED: Ambient edge */
+    gap: 20px;
+    background: rgba(18, 18, 18, 0.8);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 6px;
+    padding: 16px 24px;
+    height: 80px;
 }
 
 .signal-content-v2 {
@@ -1822,29 +1243,25 @@ SECTION 3 — ACQUISITION SIGNALS LUXURY FINISHING
 }
 
 .signal-property-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
-    color: #B08D57; /* ENHANCED: Gold gradient */
-    
-    
-    
-    margin-bottom: 8px;
+    color: var(--vm-gold-soft);
+    margin-bottom: 6px;
 }
 
 .signal-property-metrics {
-    font-size: var(--h3-label-size);
-    color: var(--vm-muted);
+    font-size: 12px;
+    color: var(--vm-text-muted);
     font-family: var(--font-mono);
 }
 
 .ai-flag-reason {
     font-size: 11px;
-    color: var(--vm-muted);
+    color: var(--vm-text-muted);
     font-style: italic;
-    margin-top: 6px;
-    padding-left: 4px;
-    border-left: 2px solid rgba(176, 141, 87, 0.4);
-    padding-left: 10px;
+    margin-top: 4px;
+    padding-left: 8px;
+    border-left: 1px solid rgba(176, 141, 87, 0.3);
 }
 
 .signal-badges-v2 {
@@ -1855,48 +1272,48 @@ SECTION 3 — ACQUISITION SIGNALS LUXURY FINISHING
 }
 
 .signal-badge-v2 {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     padding: 4px 10px;
-    border-radius: 999px;
+    border-radius: 12px;
     white-space: nowrap;
-    border: 1px solid #B08D57;
 }
 
 .badge-risk {
-    background: rgba(76, 175, 80, 0.15);
-    color: #4CAF50;
-    border: 1px solid #4CAF50;
+    background: rgba(63, 175, 71, 0.12);
+    color: #3FAF47;
+    border: 1px solid #3FAF47;
 }
 
 .badge-confidence {
-    background: rgba(176, 141, 87, 0.15);
+    background: rgba(176, 141, 87, 0.12);
     color: var(--vm-gold);
     border: 1px solid var(--vm-gold);
 }
 
 .badge-trigger {
-    background: rgba(255, 193, 7, 0.15);
+    background: rgba(255, 193, 7, 0.12);
     color: #FFC107;
     border: 1px solid #FFC107;
 }
 
 .acquisition-strategy-ribbon {
-    background: var(--vm-gold);
-    border-radius: 8px;
-    padding: 28px 32px;
-    margin-top: 64px;
+    background: transparent;
+    border: 1px solid var(--vm-gold);
+    border-radius: 6px;
+    padding: 20px 28px;
+    margin-top: 48px;
 }
 
 .acquisition-strategy-text {
     font-size: var(--body-size);
-    color: var(--vm-dark);
-    line-height: var(--body-line-height);
-    font-weight: 500;
+    color: var(--vm-text-soft);
+    line-height: 1.5;
+    font-weight: 400;
 }
 
 .acquisition-strategy-text strong {
-    font-weight: 700;
+    color: var(--vm-gold-soft);
 }
 
 /* ============================================
@@ -1904,16 +1321,71 @@ UTILITY CLASSES
 ============================================ */
 
 .text-center { text-align: center; }
-.text-gold { 
-    color: #B08D57;
-    
-    
-    
-}
-.text-bronze { color: var(--vm-bronze); }
-.text-muted { color: var(--vm-muted); }
+.text-gold { color: var(--vm-gold); }
+.text-muted { color: var(--vm-text-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
+
+/* ============================================
+PANEL SYSTEM
+============================================ */
+
+.panel {
+    background: rgba(18, 18, 18, 0.6);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+    border-radius: 8px;
+    padding: 28px;
+    margin-top: 48px;
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+}
+
+.panel-divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--vm-gold) 0%, transparent 100%);
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+
+.panel-text {
+    font-size: var(--body-size);
+    color: var(--vm-text-soft);
+    line-height: 1.5;
+}
+
+/* ============================================
+WATERMARK SYSTEM
+============================================ */
+
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(176, 141, 87, 0.02);
+    letter-spacing: 0.12em;
+    z-index: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    display: none;
+}
+
+.slide:nth-child(2) .watermark,
+.slide:nth-child(4) .watermark,
+.slide:nth-child(6) .watermark,
+.slide:nth-child(9) .watermark {
+    display: block;
+}
 
 /* ============================================
 PRINT OPTIMIZATION
@@ -1924,7 +1396,7 @@ PRINT OPTIMIZATION
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-
+    
     .slide {
         page-break-inside: avoid;
     }
@@ -1936,228 +1408,7 @@ PRINT OPTIMIZATION
 }
 
 /* ============================================
-SLIDE-SPECIFIC WATERMARKS
-============================================ */
-
-.slide:nth-child(2) .watermark,
-.slide:nth-child(4) .watermark,
-.slide:nth-child(6) .watermark,
-.slide:nth-child(9) .watermark {
-    display: block;
-}
-
-/* ============================================
-V4 EXECUTIVE SIGNATURE PASS — INSTITUTIONAL MARKERS
-============================================ */
-
-/* SECTION 1 — CONFIDENTIALITY SYSTEM */
-
-.slide::after {
-    content: 'CONFIDENTIAL — INTERNAL USE ONLY';
-    position: absolute;
-    bottom: 32px;
-    right: 200px;
-    font-family: var(--font-body);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    color: rgba(255, 255, 255, 0.05);
-    z-index: 25;
-    pointer-events: none;
-    text-transform: uppercase;
-}
-
-/* Micro watermark overlay */
-.slide .watermark {
-    content: 'VOXMILL PRIVATE INTELLIGENCE';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-25deg);
-    font-family: var(--font-display);
-    font-size: 140px;
-    font-weight: 700;
-    color: rgba(176, 141, 87, 0.015);
-    letter-spacing: 0.15em;
-    z-index: 1;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    mix-blend-mode: soft-light;
-}
-
-/* SECTION 2 — INSTITUTIONAL METADATA BAR */
-
-.slide::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg,
-        var(--vm-bronze) 0%,
-        var(--vm-gold) 50%,
-        var(--vm-bronze) 100%);
-    z-index: 10;
-}
-
-.slide-header::after {
-    content: 'Voxmill Intelligence — Market Briefing';
-    position: absolute;
-    top: -28px;
-    left: 0;
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.40);
-    letter-spacing: 0.06em;
-}
-
-/* SECTION 3 — PAGE NUMBERING ENHANCEMENT */
-
-.footer-page {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: #B08D57;
-    
-    
-    
-    background-color: rgba(176, 141, 87, 0.3);
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: 2px solid rgba(176, 141, 87, 0.7);
-    font-variant-numeric: tabular-nums;
-    box-shadow: 0 2px 8px rgba(176, 141, 87, 0.4);
-    letter-spacing: 0.06em;
-}
-
-/* SECTION 4 — SECTION HEADER SIGNATURE MARK */
-
-.slide-title {
-    font-family: var(--font-display);
-    font-size: 50px;
-    font-weight: 700;
-    color: #B08D57; /* REPAIR: Flat gold instead of gradient */
-    letter-spacing: 0.02em;
-    filter: none; /* REPAIR: Remove glow */
-    border-left: 3px solid rgba(176, 141, 87, 0.88);
-    padding-left: 14px;
-}
-
-/* SECTION 5 — EXECUTIVE SUMMARY HERO TREATMENT */
-
-.executive-bullet-title {
-    font-size: var(--h2-section-size);
-    font-weight: 800;
-    background: linear-gradient(180deg, 
-        #D4B474 0%,
-        #AD8350 100%);
-    
-    
-    
-    text-transform: uppercase;
-    letter-spacing: 0.04em; /* ENHANCED: +0.01em */
-    margin-bottom: 16px;
-    
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(176, 141, 87, 0.20);
-}
-
-.cover-title {
-    font-family: var(--font-display);
-    font-size: 72px;
-    font-weight: 800;
-    color: #B08D57; /* REPAIR: Flat gold */
-    letter-spacing: 0.04em;
-    margin-bottom: 32px;
-    filter: none; /* REPAIR: Remove glow */
-    text-shadow: none; /* REPAIR: Remove shadow */
-}
-
-.cover-subtitle {
-    font-size: var(--h1-title-size);
-    color: rgba(255, 255, 255, 0.78); /* ENHANCED: Brightened */
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-}
-
-/* SECTION 6 — LUXURY PAGE TRANSITION SYSTEM */
-
-.slide-content::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.015));
-    pointer-events: none;
-    z-index: 2;
-}
-
-/* SECTION 7 — GOLD SIGNATURE MICRO-GLEAM */
-
-.footer-left svg,
-.logo-container img,
-.logo-container svg {
-    filter: brightness(1.05);
-    position: relative;
-}
-
-.footer-left svg::after,
-.logo-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        120deg,
-        transparent 0%,
-        rgba(176, 141, 87, 0.06) 45%,
-        transparent 100%
-    );
-    
-    
-    pointer-events: none;
-}
-
-/* SECTION 8 — INTERNAL DOCUMENT TAGGING SYSTEM */
-
-.slide-footer-branded::after {
-    content: 'Document ID: VX-2025-INTEL';
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-body);
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.35);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-/* ============================================
-END VOXMILL V3 LUXURY DETAILING PASS COMPLETE
-PHASE 3: INSTITUTIONAL £10K/MONTH FINISHING LAYER ✅
-MATTE TEXTURE OVERLAY ✅
-GOLD MICRO-GRADIENTS ✅
-CARD MACHINED METAL EDGES ✅
-EXECUTIVE SUMMARY HEFT ✅
-CHART INTEGRATION POLISH ✅
-TABLE LUXURY FINISH ✅
-HEADER/FOOTER POLISH ✅
-SECTION TRANSITION MICRO-CUES ✅
-ZERO POSITIONAL CHANGES ✅
-
-PHASE 4: EXECUTIVE SIGNATURE PASS COMPLETE ✅
-CONFIDENTIALITY SYSTEM ✅
-INSTITUTIONAL METADATA BAR ✅
-PAGE NUMBERING ENHANCEMENT ✅
-SECTION HEADER SIGNATURE ✅
-EXECUTIVE SUMMARY HERO ✅
-LUXURY PAGE TRANSITIONS ✅
-GOLD MICRO-GLEAM ✅
-DOCUMENT TAGGING ✅
+END VOXMILL FINAL PRODUCTION STYLESHEET
+BOARDROOM-GRADE LUXURY INTELLIGENCE BRIEFING
+ALL DESIGN MANDATE REQUIREMENTS IMPLEMENTED ✅
 ============================================ */
