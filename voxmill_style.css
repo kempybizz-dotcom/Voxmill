@@ -1,75 +1,54 @@
 /* ============================================
-VOXMILL INTELLIGENCE — FINAL PRODUCTION STYLESHEET
-BOARDROOM-GRADE LUXURY INTELLIGENCE BRIEFING
-COMPLETE DESIGN MANDATE + LUXURY HIERARCHY + FINAL POLISH
+VOXMILL INTELLIGENCE — ULTRA-LUXURY FINAL VERSION
+ENTERPRISE-GRADE INTELLIGENCE BRIEFING
+FINAL POLISH PASS: 7 CRITICAL REFINEMENTS APPLIED
 ============================================
 
+REFINEMENTS APPLIED:
+✅ 1. All section title boxes removed (clean gold text + thin underline)
+✅ 2. All charts unified into luxury theme
+✅ 3. Consistent vertical spacing system established
+✅ 4. Subtle luxury depth added to all cards
+✅ 5. Executive Summary readability improved
+✅ 6. Top Market Opportunities table refined
+✅ 7. Header + Footer standardised across all pages
+
 DESIGN PRINCIPLES:
-✅ Luxury = Restraint (no loud gradients, oversized bars, neon colors)
-✅ Consistency beats creativity (uniform visual rules)
-✅ Everything looks expensive (minimal, elegant, executive)
-✅ Readability > decoration (Goldman Sachs + Knight Frank + McKinsey)
+✅ Luxury = Restraint
+✅ Consistency beats creativity
+✅ Everything looks expensive
+✅ Readability > decoration
+✅ Goldman Sachs × Knight Frank × UBS Wealth Report
 
-LUXURY HIERARCHY PASS APPLIED:
-✅ Titles: Brighter gold (#C7A26A), weight 600, +1px letter-spacing
-✅ Sub-headers: rgba(255,255,255,0.75), weight 500, 90-95% size
-✅ KPI cards: Larger brighter values, dimmer smaller labels, softened borders
-✅ Tables: 0.08 row separators, alternate 0.02 tint, brighter headers
-✅ Competitive landscape: 2px stroke, brighter center number, 4px bars
-✅ Charts: LineWidth 2, PointRadius 3, quieter overall
-✅ AI Opportunities: Row tint, dark green BUY tags with gold outline
-✅ Cross-vertical: -10% icon size, softer borders, more breathing room
-✅ Strategic forecast: Larger values, thinner arrows, subtle gradients
-✅ Cover: Sovereign-fund level, brighter gold, subtle 1px frame
-
-FINAL POLISH PASS COMPLETED:
-✅ Divider standardization: 1px, #B08D57, 0.25 opacity (all pages)
-✅ Hierarchy refinement: Titles +8% larger, sub-headers 92-93% size, weight 500
-✅ Green velocity bars: #3FAF47, 0.85 opacity, 4px, 2px radius (luxury tone)
-✅ Card padding: +6-8px (Risk Dashboard, Cross-Vertical, Forecast cards)
-✅ Table cleanup: 0.07 separators, 0.015 alternating rows (subtle luxury)
-✅ Global consistency: Unified gold tones, border thickness, text opacity
-✅ Vertical rhythm: Consistent spacing title→content throughout
-
-CORE FOUNDATION:
-- Background: #0D0D0D
-- Gold Bright (titles): #C7A26A
-- Gold Standard (bars/borders): #B08D57
-- Soft Gold Text: #C4A56A
-- Subtle Grey: rgba(255,255,255,0.55)
-- Muted Grey (labels): rgba(255,255,255,0.45)
-- Sub-header Grey: rgba(255,255,255,0.70)
-- All bars: 4px height, #B08D57, 2px radius
-- All dividers: 1px, #B08D57, 0.25 opacity
-- NO shadows, NO glows, minimal gradients (sentiment only)
-
-ULTRA-LUXURY GRADE — PRODUCTION READY
 ============================================ */
 
 :root {
     /* Core Colors */
     --vm-bronze: #A77B3A;
     --vm-gold: #B08D57;
-    --vm-gold-bright: #C7A26A; /* HIERARCHY: Brighter gold for titles */
+    --vm-gold-bright: #C6A15B; /* UNIFIED: Primary gold accent */
     --vm-gold-soft: #C4A56A;
     --vm-text: #EAEAEA;
     --vm-text-soft: rgba(255,255,255,0.55);
-    --vm-text-subheader: rgba(255,255,255,0.75); /* HIERARCHY: Sub-headers */
-    --vm-text-muted: rgba(255,255,255,0.45); /* HIERARCHY: Dimmer labels */
+    --vm-text-subheader: rgba(255,255,255,0.75);
+    --vm-text-muted: rgba(255,255,255,0.45);
     --vm-dark: #0D0D0D;
     --vm-darker: #0A0A0A;
     --vm-panel: #121212;
     --vm-divider: rgba(255,255,255,0.07);
-    --vm-row-tint: rgba(255,255,255,0.02); /* HIERARCHY: Table alternating rows */
-    --vm-row-separator: rgba(255,255,255,0.08); /* HIERARCHY: Row separators */
+    --vm-row-tint: rgba(255,255,255,0.02);
+    --vm-row-separator: rgba(255,255,255,0.08);
     
     /* Typography */
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', 'Open Sans', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
     
-    /* Spacing Grid */
-    --grid: 8px;
+    /* REFINEMENT 3: Unified Spacing System */
+    --spacing-section: 48px; /* Space between sections */
+    --spacing-title: 32px; /* Space below titles */
+    --spacing-card: 28px; /* Space between cards */
+    --spacing-content: 24px; /* General content spacing */
     
     /* Typography Scale */
     --h1-size: 50px;
@@ -80,13 +59,14 @@ ULTRA-LUXURY GRADE — PRODUCTION READY
     
     /* Bar Standards */
     --bar-height: 4px;
-    --bar-color: #B08D57;
+    --bar-color: #C6A15B;
     --bar-radius: 2px;
     
-    /* Chart Standards */
-    --chart-line-thickness: 2px;
-    --chart-point-radius: 3px;
-    --chart-gridline: rgba(255,255,255,0.05);
+    /* Chart Standards - REFINEMENT 2: Unified */
+    --chart-line-thickness: 3px;
+    --chart-point-radius: 4px;
+    --chart-gridline: rgba(255,255,255,0.03);
+    --chart-axis-color: rgba(255,255,255,0.15);
 }
 
 @page {
@@ -99,10 +79,6 @@ ULTRA-LUXURY GRADE — PRODUCTION READY
     padding: 0;
     box-sizing: border-box;
 }
-
-/* ============================================
-GLOBAL BASE
-============================================ */
 
 body {
     font-family: var(--font-body);
@@ -132,7 +108,7 @@ SLIDE CONTAINER
 }
 
 /* ============================================
-1. COVER PAGE — £10K LUXURY BRIEFING
+1. COVER PAGE — POLISH 3: SOVEREIGN-FUND FINAL ENHANCEMENT
 ============================================ */
 
 .slide-cover {
@@ -141,7 +117,7 @@ SLIDE CONTAINER
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #0A0A0A 0%, #0D0D0D 100%);
-    border: 1px solid rgba(199, 162, 106, 0.4); /* HIERARCHY: Subtle gold frame */
+    border: 1px solid rgba(198, 161, 91, 0.4);
 }
 
 .logo-container {
@@ -149,16 +125,16 @@ SLIDE CONTAINER
 }
 
 .voxmill-logo {
-    width: 180px;
-    height: 180px;
+    width: 194px; /* POLISH 3: +8% from 180px */
+    height: 194px; /* POLISH 3: +8% from 180px */
     opacity: 0.95;
 }
 
 .cover-label {
     font-size: 16px;
     font-weight: 600;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
-    letter-spacing: 0.16em; /* HIERARCHY: +1px */
+    color: #C6A15B;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     margin-bottom: 24px;
 }
@@ -167,22 +143,22 @@ SLIDE CONTAINER
     font-family: var(--font-display);
     font-size: 64px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
-    letter-spacing: 0.02em;
-    margin-bottom: 32px;
+    color: #C6A15B;
+    letter-spacing: 0.03em; /* POLISH 3: +1px from 0.02em */
+    margin-bottom: 38px; /* POLISH 3: +6px from 32px */
     text-align: center;
 }
 
 .cover-subtitle {
     font-size: 18px;
-    color: rgba(255, 255, 255, 0.75); /* HIERARCHY: Brighter */
-    letter-spacing: 0.09em; /* HIERARCHY: +1px */
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.09em;
     text-transform: uppercase;
     text-align: center;
 }
 
 .cover-subtitle .location {
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: #C6A15B;
     font-weight: 600;
 }
 
@@ -204,41 +180,39 @@ SLIDE CONTAINER
 }
 
 .cover-compiled strong {
-    color: var(--vm-gold-bright);
+    color: #C6A15B;
 }
 
 /* ============================================
-HEADER & FOOTER — CONSISTENT LUXURY
+HEADER & FOOTER — POLISH 2: ABSOLUTE UNIFICATION
 ============================================ */
 
 .slide-header {
     position: absolute;
-    top: 40px;
+    top: 48px;
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
-    border: 1px solid #B08D57;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(198, 161, 91, 0.25);
     z-index: 5;
 }
 
 .slide-title {
     font-family: var(--font-display);
-    font-size: 54px; /* POLISH: +8% larger (was 50px) */
+    font-size: 48px;
     font-weight: 600;
-    color: var(--vm-gold-bright);
-    letter-spacing: 0.03em; /* POLISH: +1px spacing */
-    border: 2px solid #C7A26A;
-    padding-left: 12px;
+    color: #C6A15B;
+    letter-spacing: 0.02em;
 }
 
 .slide-meta {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--vm-text-muted);
     text-align: right;
-    line-height: 1.4;
+    line-height: 1.6;
 }
 
 .slide-content {
@@ -251,16 +225,17 @@ HEADER & FOOTER — CONSISTENT LUXURY
     z-index: 5;
 }
 
+/* POLISH 2: Footer - Absolute unification across all pages */
 .slide-footer-branded {
     position: absolute;
-    bottom: 24px;
+    bottom: 32px;
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid rgba(176, 141, 87, 0.5);
+    padding-top: 20px;
+    border-top: 1px solid rgba(198, 161, 91, 0.25);
     z-index: 20;
     height: 60px;
 }
@@ -274,55 +249,84 @@ HEADER & FOOTER — CONSISTENT LUXURY
 .footer-company {
     font-size: 15px;
     font-weight: 600;
-    color: #B08D57;
+    color: #C6A15B;
     letter-spacing: 0.04em;
+    opacity: 1;
 }
 
 .footer-page {
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 600;
-    color: #B08D57;
+    color: #C6A15B;
     padding: 8px 16px;
-    border: 1px solid rgba(176, 141, 87, 0.5);
+    border: 1px solid rgba(198, 161, 91, 0.4);
     border-radius: 4px;
     font-variant-numeric: tabular-nums;
+    opacity: 1;
+    letter-spacing: 0.02em;
 }
 
 /* ============================================
-2. EXECUTIVE SUMMARY — ELITE NARRATIVE
+SECTION TITLES — POLISH 1: 48% UNDERLINE STANDARDISATION
+============================================ */
+
+.chart-title,
+.methodology-title,
+.macro-title,
+.momentum-title,
+.panel-title,
+.risk-dial-title,
+.forecast-card-title,
+.submarket-header,
+.cross-vertical-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: #C6A15B;
+    letter-spacing: 0.02em;
+    margin-bottom: var(--spacing-title);
+    padding-bottom: 12px;
+    border-bottom: 1px solid #C6A15B;
+    width: 48%;
+    text-transform: none;
+}
+
+/* ============================================
+2. EXECUTIVE SUMMARY — REFINEMENT 5: IMPROVED READABILITY
 ============================================ */
 
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-top: 20px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-title);
 }
 
 .executive-summary-bullet {
     background: rgba(18, 18, 18, 0.6);
-    border: 1px solid #B08D57;
+    border: 1px solid rgba(198, 161, 91, 0.15);
     border-radius: 4px;
-    padding: 24px 32px;
+    padding: 36px 44px;
     min-height: 100px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .executive-bullet-title {
     font-size: var(--h3-size);
-    font-weight: 600; /* HIERARCHY: Refined weight */
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    font-weight: 600;
+    color: var(--vm-gold-bright);
     text-transform: uppercase;
-    letter-spacing: 0.03em; /* HIERARCHY: +1px */
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(199, 162, 106, 0.15);
+    letter-spacing: 0.03em;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(198, 161, 91, 0.15);
 }
 
 .executive-bullet-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.75;
     font-weight: 400;
 }
 
@@ -331,24 +335,26 @@ HEADER & FOOTER — CONSISTENT LUXURY
     font-size: var(--body-size);
     font-weight: 600;
     color: var(--vm-gold-bright);
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(176, 141, 87, 0.2);
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(198, 161, 91, 0.2);
+    line-height: 1.65;
 }
 
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 32px;
+    gap: 24px;
+    margin-top: var(--spacing-section);
 }
 
 .movement-mini-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 6px;
     padding: 20px 16px;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .movement-label {
@@ -362,7 +368,7 @@ HEADER & FOOTER — CONSISTENT LUXURY
 .movement-value {
     font-size: 32px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: var(--vm-gold-bright);
     line-height: 1;
     margin-bottom: 8px;
     font-variant-numeric: tabular-nums;
@@ -378,26 +384,27 @@ HEADER & FOOTER — CONSISTENT LUXURY
 .movement-change.negative { color: #F44336; }
 
 /* ============================================
-3. MARKET OVERVIEW — CONSISTENT KPI CARDS
+3. MARKET OVERVIEW — REFINEMENT 4: LUXURY DEPTH
 ============================================ */
 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 24px;
+    gap: var(--spacing-card);
     height: 340px;
-    margin-bottom: 48px;
+    margin-bottom: var(--spacing-section);
 }
 
 .kpi-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(199, 162, 106, 0.6); /* HIERARCHY: Softened border */
+    border: 1px solid rgba(198, 161, 91, 0.5);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .kpi-content {
@@ -405,8 +412,8 @@ HEADER & FOOTER — CONSISTENT LUXURY
 }
 
 .kpi-label {
-    font-size: 13px; /* HIERARCHY: Slightly smaller */
-    color: var(--vm-text-muted); /* HIERARCHY: Dimmer */
+    font-size: 13px;
+    color: var(--vm-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 12px;
@@ -414,9 +421,9 @@ HEADER & FOOTER — CONSISTENT LUXURY
 
 .kpi-value {
     font-family: var(--font-body);
-    font-size: 60px; /* HIERARCHY: Slightly larger */
+    font-size: 60px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Bright gold */
+    color: var(--vm-gold-bright);
     line-height: 1;
     margin-bottom: 12px;
     font-variant-numeric: tabular-nums;
@@ -433,48 +440,37 @@ HEADER & FOOTER — CONSISTENT LUXURY
 .kpi-change.negative { color: #F44336; }
 
 /* ============================================
-CHART SECTION — THIN GOLD DIVIDERS
+CHART SECTION — REFINEMENT 2: UNIFIED LUXURY THEME
 ============================================ */
 
 .chart-section {
-    margin-top: 24px;
+    margin-top: var(--spacing-content);
 }
 
 .chart-divider {
-    height: 1px; /* POLISH: Standardized */
-    background: #B08D57; /* POLISH: Flat gold */
-    opacity: 0.25; /* POLISH: Unified opacity */
+    height: 1px;
+    background: var(--vm-gold-bright);
+    opacity: 0.25;
     border: none;
-    margin: 24px 0;
+    margin: var(--spacing-content) 0;
 }
 
 .chart-container {
     background: rgba(11, 11, 11, 0.6);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 24px;
+    padding: 32px;
     height: 360px;
-}
-
-.chart-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 600; /* HIERARCHY: Refined weight */
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
-    text-transform: uppercase;
-    letter-spacing: 0.09em; /* HIERARCHY: +1px */
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .chart-context {
-    font-size: 11px; /* POLISH: ~92% of 12px */
-    color: rgba(255, 255, 255, 0.70); /* POLISH: Sub-header tone */
-    font-weight: 500; /* POLISH: Refined weight */
-    margin-bottom: 16px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.70);
+    font-weight: 500;
+    margin-bottom: 20px;
     font-style: italic;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .chart-source {
@@ -486,108 +482,104 @@ CHART SECTION — THIN GOLD DIVIDERS
 }
 
 .chart-mini-insight {
-    background: rgba(176, 141, 87, 0.08);
-    border: 1px solid #B08D57;
-    padding: 10px 16px;
-    margin-top: 12px;
+    background: rgba(198, 161, 91, 0.08);
+    border: 1px solid var(--vm-gold-bright);
+    padding: 12px 18px;
+    margin-top: 16px;
     border-radius: 4px;
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.4;
+    line-height: 1.5;
+}
+
+/* Chart axis styling - REFINEMENT 2 */
+.chart-axis-label {
+    font-size: 12px;
+    fill: rgba(255,255,255,0.5);
+    font-family: var(--font-body);
 }
 
 /* ============================================
-4. PERFORMANCE ANALYSIS — MODERN CHARTS
+4. PERFORMANCE ANALYSIS — UNIFIED CHARTS
 ============================================ */
 
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: var(--spacing-card);
 }
 
 .chart-panel {
     background: rgba(11, 11, 11, 0.6);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 24px;
+    padding: 32px;
     height: 420px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
-
-/* ============================================
-INSIGHT CARDS — UNIFORM LUXURY
-============================================ */
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-top: 48px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-section);
 }
 
 .insight-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
-    border: 1px solid #B08D57;
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 6px;
-    padding: 20px;
+    padding: 24px;
     min-height: 100px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .insight-title {
     font-size: var(--body-size);
     font-weight: 700;
-    color: #B08D57;
+    color: var(--vm-gold-bright);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .insight-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* ============================================
-5. COMPETITIVE LANDSCAPE — MODERNIZED
+5. COMPETITIVE LANDSCAPE
 ============================================ */
 
 .cross-vertical-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 32px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-title);
 }
 
 .cross-vertical-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.05); /* HIERARCHY: Softer border (0.5 -> 0.05) */
-    border: 2px solid #C7A26A;
+    border: 1px solid rgba(198, 161, 91, 0.15);
     border-radius: 8px;
-    padding: 38px 30px; /* HIERARCHY: +6px internal padding */
+    padding: 40px 32px;
     min-height: 280px;
     text-align: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .cross-vertical-icon {
-    font-size: 42px; /* HIERARCHY: -10% size */
+    font-size: 42px;
     margin-bottom: 20px;
     line-height: 1;
-}
-
-.cross-vertical-title {
-    font-family: var(--font-display);
-    font-size: var(--h3-size);
-    font-weight: 600;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter */
-    margin-bottom: 16px;
 }
 
 .cross-vertical-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* ============================================
@@ -597,24 +589,16 @@ METHODOLOGY PANELS
 .methodology-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    margin-top: 20px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-content);
 }
 
 .methodology-panel {
     background: rgba(18, 18, 18, 0.6);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 28px;
-}
-
-.methodology-title {
-    font-size: var(--h3-size);
-    color: #B08D57;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 16px;
+    padding: 32px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .methodology-list {
@@ -622,27 +606,27 @@ METHODOLOGY PANELS
 }
 
 .methodology-list li {
-    padding: 8px 0 8px 24px;
+    padding: 10px 0 10px 24px;
     position: relative;
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .methodology-list li::before {
     content: "→";
     position: absolute;
     left: 0;
-    color: #B08D57;
+    color: var(--vm-gold-bright);
     font-weight: 600;
 }
 
 .model-pipeline {
-    background: rgba(176, 141, 87, 0.05);
-    border: 1px solid rgba(176, 141, 87, 0.2);
+    background: rgba(198, 161, 91, 0.05);
+    border: 1px solid rgba(198, 161, 91, 0.2);
     border-radius: 8px;
-    padding: 28px;
-    margin-top: 32px;
+    padding: 32px;
+    margin-top: var(--spacing-title);
     text-align: center;
 }
 
@@ -650,13 +634,13 @@ METHODOLOGY PANELS
     display: flex;
     align-items: center;
     justify-content: space-around;
-    margin: 20px 0;
+    margin: 24px 0;
 }
 
 .pipeline-box {
-    background: var(--vm-gold);
+    background: var(--vm-gold-bright);
     color: var(--vm-dark);
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
@@ -667,16 +651,16 @@ METHODOLOGY PANELS
 
 .pipeline-arrow {
     font-size: 28px;
-    color: #B08D57;
+    color: var(--vm-gold-bright);
     margin: 0 8px;
 }
 
 .proprietary-badge {
-    background: var(--vm-gold);
+    background: var(--vm-gold-bright);
     color: var(--vm-dark);
-    padding: 16px 28px;
+    padding: 18px 32px;
     border-radius: 6px;
-    margin-top: 28px;
+    margin-top: 32px;
     text-align: center;
 }
 
@@ -692,13 +676,13 @@ METHODOLOGY PANELS
 ============================================ */
 
 .property-type-heatmap {
-    margin-top: 20px;
+    margin-top: var(--spacing-content);
 }
 
 .heatmap-table,
 .table-luxury {
     width: 100%;
-    margin-top: 24px;
+    margin-top: var(--spacing-content);
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.6);
     border-radius: 8px;
@@ -707,9 +691,9 @@ METHODOLOGY PANELS
 
 .heatmap-table th,
 .table-luxury th {
-    background: linear-gradient(90deg, rgba(199, 162, 106, 0.35) 0%, rgba(199, 162, 106, 0.25) 100%); /* HIERARCHY: Slightly brighter */
+    background: linear-gradient(90deg, rgba(198, 161, 91, 0.35) 0%, rgba(198, 161, 91, 0.25) 100%);
     color: var(--vm-text);
-    padding: 14px 12px;
+    padding: 18px 14px;
     text-transform: uppercase;
     font-size: 12px;
     font-weight: 600;
@@ -719,15 +703,15 @@ METHODOLOGY PANELS
 
 .heatmap-table td,
 .table-luxury td {
-    padding: 14px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.07); /* POLISH: Subtle separator (was 0.08) */
+    padding: 20px 14px; /* REFINEMENT 6: Increased row height */
+    border-bottom: 1px solid rgba(255,255,255,0.07);
     font-size: var(--body-size);
     color: var(--vm-text-soft);
 }
 
 .heatmap-table tbody tr:nth-child(odd),
 .table-luxury tbody tr:nth-child(odd) {
-    background: rgba(255,255,255,0.015); /* POLISH: Very subtle alternating (was 0.02) */
+    background: rgba(255,255,255,0.015);
 }
 
 .property-type-name,
@@ -750,12 +734,12 @@ METHODOLOGY PANELS
     font-size: 12px;
     color: var(--vm-text-muted);
     text-align: center;
-    margin-top: 8px;
+    margin-top: 12px;
     font-style: italic;
 }
 
 /* ============================================
-SCORE & VELOCITY BADGES — MINIMAL PILLS
+SCORE & VELOCITY BADGES — REFINEMENT 6: MINIMAL LUXURY
 ============================================ */
 
 .score-badge,
@@ -763,45 +747,39 @@ SCORE & VELOCITY BADGES — MINIMAL PILLS
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 12px;
-    border-radius: 12px;
+    padding: 6px 14px;
+    border-radius: 3px;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 600;
-}
-
-.score-badge {
-    background: rgba(18, 18, 18, 0.9);
-    border: 1px solid #B08D57;
-    color: #B08D57;
+    background: transparent;
+    border: 1px solid var(--vm-gold-bright);
+    color: var(--vm-gold-bright);
 }
 
 .score-high,
 .score-excellent,
 .velocity-high {
-    background: rgba(63, 175, 71, 0.12);
+    border-color: #3FAF47;
     color: #3FAF47;
-    border: 1px solid #3FAF47;
 }
 
 .score-medium,
 .score-good,
 .velocity-medium {
-    background: rgba(255, 193, 7, 0.12);
+    border-color: #FFC107;
     color: #FFC107;
-    border: 1px solid #FFC107;
 }
 
 .score-low,
 .score-standard,
 .velocity-low {
-    background: rgba(244, 67, 54, 0.12);
+    border-color: #F44336;
     color: #F44336;
-    border: 1px solid #F44336;
 }
 
 /* ============================================
-BARS — UNIVERSAL 4PX STANDARD
+BARS — UNIVERSAL STANDARD
 ============================================ */
 
 .depth-bar,
@@ -809,7 +787,7 @@ BARS — UNIVERSAL 4PX STANDARD
 .velocity-bar-container,
 .voxmill-index-bar-container {
     height: var(--bar-height);
-    background: rgba(176, 141, 87, 0.2);
+    background: rgba(198, 161, 91, 0.2);
     border-radius: var(--bar-radius);
     overflow: hidden;
 }
@@ -829,14 +807,8 @@ BARS — UNIVERSAL 4PX STANDARD
 
 .velocity-bar-fill.velocity-color-high,
 .risk-low-fill {
-    background: #3FAF47; /* POLISH: Luxury green tone */
-    opacity: 0.85; /* POLISH: Refined opacity */
-}
-
-.velocity-bar-container,
-.risk-bar-simple {
-    height: 4px; /* POLISH: Standardized */
-    border-radius: 2px; /* POLISH: Soft edges */
+    background: #3FAF47;
+    opacity: 0.85;
 }
 
 .velocity-bar-fill.velocity-color-medium,
@@ -856,15 +828,16 @@ DEPTH METRICS
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    margin-top: 48px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-section);
 }
 
 .depth-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 28px;
+    padding: 32px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .depth-label {
@@ -878,14 +851,14 @@ DEPTH METRICS
 .depth-value {
     font-size: 42px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: var(--vm-gold-bright);
     margin-bottom: 16px;
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
 
 .depth-bar {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .depth-note {
@@ -894,58 +867,49 @@ DEPTH METRICS
 }
 
 /* ============================================
-8. STRATEGIC FORECAST — SIMPLIFIED BOXES
+8. STRATEGIC FORECAST — DASHBOARD CARDS
 ============================================ */
 
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 24px;
+    gap: var(--spacing-card);
     height: 480px;
-    margin-top: 20px;
+    margin-top: var(--spacing-content);
 }
 
 .forecast-card-v2 {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 32px; /* POLISH: +8px padding (was 24px) */
+    padding: 36px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .forecast-card-highlight {
-    border-color: #B08D57;
-    background: rgba(176, 141, 87, 0.08);
-}
-
-.forecast-card-title {
-    font-family: var(--font-display);
-    font-size: 18px;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
-    text-transform: uppercase;
-    letter-spacing: 0.07em; /* HIERARCHY: +1px */
-    margin-bottom: 20px;
-    text-align: center;
+    border-color: var(--vm-gold-bright);
+    background: rgba(198, 161, 91, 0.08);
 }
 
 .forecast-arrow-large {
-    font-size: 64px; /* HIERARCHY: Thinner */
+    font-size: 64px;
     color: var(--vm-gold-bright);
     line-height: 1;
     margin-bottom: 12px;
-    font-weight: 300; /* HIERARCHY: Thinner weight */
+    font-weight: 300;
 }
 
 .forecast-percentage-large,
 .voxmill-index-number,
 .risk-dial-value {
-    font-size: 56px; /* HIERARCHY: Slightly larger */
+    font-size: 56px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: var(--vm-gold-bright);
     line-height: 1;
     margin-bottom: 12px;
     font-variant-numeric: tabular-nums;
@@ -974,7 +938,7 @@ DEPTH METRICS
 .cone-value {
     font-size: 36px;
     font-weight: 700;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: var(--vm-gold-bright);
     line-height: 1;
     font-variant-numeric: tabular-nums;
 }
@@ -993,19 +957,19 @@ DEPTH METRICS
 
 .sentiment-bullish {
     color: #3FAF47;
-    background: linear-gradient(135deg, rgba(63, 175, 71, 0.18) 0%, rgba(63, 175, 71, 0.12) 100%); /* HIERARCHY: Subtle gradient */
+    background: linear-gradient(135deg, rgba(63, 175, 71, 0.18) 0%, rgba(63, 175, 71, 0.12) 100%);
     border: 1px solid #3FAF47;
 }
 
 .sentiment-neutral {
     color: var(--vm-dark);
-    background: linear-gradient(135deg, #C7A26A 0%, #B08D57 100%); /* HIERARCHY: Subtle gradient */
-    border: 2px solid #C7A26A;
+    background: linear-gradient(135deg, #C6A15B 0%, #B08D57 100%);
+    border: 2px solid #C6A15B;
 }
 
 .sentiment-bearish {
     color: #F44336;
-    background: linear-gradient(135deg, rgba(244, 67, 54, 0.18) 0%, rgba(244, 67, 54, 0.12) 100%); /* HIERARCHY: Subtle gradient */
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.18) 0%, rgba(244, 67, 54, 0.12) 100%);
     border: 1px solid #F44336;
 }
 
@@ -1021,36 +985,28 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 48px;
-    padding: 20px 24px;
-    background: rgba(176, 141, 87, 0.08);
-    border: 1px solid #B08D57;
+    margin-top: var(--spacing-section);
+    padding: 24px 28px;
+    background: rgba(198, 161, 91, 0.08);
+    border: 1px solid var(--vm-gold-bright);
     border-radius: 6px;
-}
-
-.macro-title {
-    font-size: 16px;
-    color: #B08D57;
-    margin-bottom: 10px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
 }
 
 .macro-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* ============================================
-9. EXECUTIVE INTELLIGENCE — UNIFORM NUMBERED ITEMS
+9. EXECUTIVE INTELLIGENCE — NUMBERED ITEMS
 ============================================ */
 
 .executive-brief-stack {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-top: 20px;
+    gap: 18px;
+    margin-top: var(--spacing-content);
 }
 
 .executive-brief-card {
@@ -1058,18 +1014,18 @@ MACRO CONTEXT
     align-items: center;
     gap: 20px;
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
-    border: 1px solid #B08D57;
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 6px;
-    padding: 20px 24px;
+    padding: 24px 28px;
     min-height: 80px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .executive-brief-number {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--vm-gold);
+    background: var(--vm-gold-bright);
     color: var(--vm-dark);
     display: flex;
     align-items: center;
@@ -1082,21 +1038,21 @@ MACRO CONTEXT
 .executive-brief-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
     flex: 1;
 }
 
 .executive-brief-divider {
-    height: 1px; /* POLISH: Standardized */
-    background: #B08D57; /* POLISH: Flat gold */
-    opacity: 0.25; /* POLISH: Unified opacity */
+    height: 1px;
+    background: var(--vm-gold-bright);
+    opacity: 0.25;
     border: none;
 }
 
 .review-banner {
-    margin-top: 48px;
+    margin-top: var(--spacing-section);
     background: transparent;
-    border: 1px solid #B08D57;
+    border: 1px solid var(--vm-gold-bright);
     border-radius: 6px;
     padding: 20px;
     text-align: center;
@@ -1117,24 +1073,17 @@ MACRO RISK DASHBOARD
 .macro-risk-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 28px;
-    margin-top: 32px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-title);
 }
 
 .risk-dial-card {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 36px; /* POLISH: +8px padding (was 28px) */
+    padding: 40px;
     text-align: center;
-}
-
-.risk-dial-title {
-    font-size: 14px;
-    color: var(--vm-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .risk-dial-status {
@@ -1155,35 +1104,26 @@ SUB-MARKET BREAKDOWN
 .submarket-grid-v2 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-    margin-top: 20px;
+    gap: var(--spacing-card);
+    margin-top: var(--spacing-content);
 }
 
 .submarket-card-v2 {
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 32px 24px;
+    padding: 36px 28px;
     min-height: 320px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-}
-
-.submarket-header {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
-    margin-bottom: 32px;
-    font-weight: 700;
-    text-align: right;
-    width: 100%;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .submarket-metrics {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 32px;
     width: 100%;
 }
 
@@ -1191,7 +1131,7 @@ SUB-MARKET BREAKDOWN
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 8px;
+    gap: 10px;
 }
 
 .submarket-metric-label {
@@ -1229,18 +1169,11 @@ SUB-MARKET BREAKDOWN
 }
 
 .momentum-streets-panel {
-    background: rgba(176, 141, 87, 0.05);
-    border: 1px solid rgba(176, 141, 87, 0.2);
+    background: rgba(198, 161, 91, 0.05);
+    border: 1px solid rgba(198, 161, 91, 0.2);
     border-radius: 8px;
-    padding: 24px 28px;
-    margin-top: 48px;
-}
-
-.momentum-title {
-    font-size: 14px;
-    color: #B08D57;
-    margin-bottom: 14px;
-    font-weight: 600;
+    padding: 28px 32px;
+    margin-top: var(--spacing-section);
 }
 
 .momentum-list {
@@ -1248,18 +1181,18 @@ SUB-MARKET BREAKDOWN
 }
 
 .momentum-list li {
-    padding: 8px 0 8px 20px;
+    padding: 10px 0 10px 20px;
     position: relative;
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .momentum-list li::before {
     content: "★";
     position: absolute;
     left: 0;
-    color: #B08D57;
+    color: var(--vm-gold-bright);
     font-size: 14px;
 }
 
@@ -1270,8 +1203,8 @@ SUB-MARKET BREAKDOWN
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 14px;
+    margin-top: var(--spacing-content);
 }
 
 .signal-card-v2 {
@@ -1280,14 +1213,15 @@ SUB-MARKET BREAKDOWN
     justify-content: space-between;
     gap: 20px;
     background: rgba(18, 18, 18, 0.8);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 6px;
-    padding: 16px 24px;
+    padding: 18px 26px;
     height: 80px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .signal-card-v2:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.02); /* HIERARCHY: Slight row tint */
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .signal-content-v2 {
@@ -1297,7 +1231,7 @@ SUB-MARKET BREAKDOWN
 .signal-property-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--vm-gold-bright); /* HIERARCHY: Brighter gold */
+    color: var(--vm-gold-bright);
     margin-bottom: 6px;
 }
 
@@ -1313,35 +1247,35 @@ SUB-MARKET BREAKDOWN
     font-style: italic;
     margin-top: 4px;
     padding-left: 8px;
-    border-left: 1px solid rgba(176, 141, 87, 0.3);
+    border-left: 1px solid rgba(198, 161, 91, 0.3);
 }
 
 .signal-badges-v2 {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     align-items: flex-end;
 }
 
 .signal-badge-v2 {
     font-size: 10px;
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 5px 11px;
     border-radius: 12px;
     white-space: nowrap;
 }
 
 .badge-risk {
-    background: #1E3A1D; /* HIERARCHY: Dark green background */
-    color: var(--vm-gold-bright); /* HIERARCHY: Gold text */
-    border: 2px solid #C7A26A; /* HIERARCHY: Gold outline */
-    font-size: 10px; /* HIERARCHY: Small refined */
+    background: #1E3A1D;
+    color: var(--vm-gold-bright);
+    border: 2px solid #C6A15B;
+    font-size: 10px;
 }
 
 .badge-confidence {
-    background: rgba(176, 141, 87, 0.12);
-    color: #B08D57;
-    border: 1px solid #B08D57;
+    background: rgba(198, 161, 91, 0.12);
+    color: var(--vm-gold-bright);
+    border: 1px solid var(--vm-gold-bright);
 }
 
 .badge-trigger {
@@ -1352,16 +1286,16 @@ SUB-MARKET BREAKDOWN
 
 .acquisition-strategy-ribbon {
     background: transparent;
-    border: 1px solid #B08D57;
+    border: 1px solid var(--vm-gold-bright);
     border-radius: 6px;
-    padding: 20px 28px;
-    margin-top: 48px;
+    padding: 24px 32px;
+    margin-top: var(--spacing-section);
 }
 
 .acquisition-strategy-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
     font-weight: 400;
 }
 
@@ -1374,7 +1308,7 @@ UTILITY CLASSES
 ============================================ */
 
 .text-center { text-align: center; }
-.text-gold { color: #B08D57; }
+.text-gold { color: var(--vm-gold-bright); }
 .text-muted { color: var(--vm-text-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
@@ -1385,32 +1319,25 @@ PANEL SYSTEM
 
 .panel {
     background: rgba(18, 18, 18, 0.6);
-    border: 1px solid rgba(176, 141, 87, 0.3);
+    border: 1px solid rgba(198, 161, 91, 0.25);
     border-radius: 8px;
-    padding: 28px;
-    margin-top: 48px;
-}
-
-.panel-title {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 600;
-    color: #B08D57;
-    margin-bottom: 12px;
+    padding: 32px;
+    margin-top: var(--spacing-section);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .panel-divider {
-    height: 1px; /* POLISH: Standardized */
-    background: #B08D57; /* POLISH: Flat gold */
-    opacity: 0.25; /* POLISH: Unified opacity */
+    height: 1px;
+    background: var(--vm-gold-bright);
+    opacity: 0.25;
     border: none;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .panel-text {
     font-size: var(--body-size);
     color: var(--vm-text-soft);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* ============================================
@@ -1425,7 +1352,7 @@ WATERMARK SYSTEM
     font-family: var(--font-display);
     font-size: 120px;
     font-weight: 700;
-    color: rgba(176, 141, 87, 0.02);
+    color: rgba(198, 161, 91, 0.02);
     letter-spacing: 0.12em;
     z-index: 1;
     white-space: nowrap;
@@ -1462,66 +1389,7 @@ PRINT OPTIMIZATION
 }
 
 /* ============================================
-END VOXMILL FINAL PRODUCTION STYLESHEET
-BOARDROOM-GRADE LUXURY INTELLIGENCE BRIEFING
-ALL DESIGN MANDATE REQUIREMENTS IMPLEMENTED ✅
-============================================ */
-
-/* ============================================
-VOXMILL LUXURY HIERARCHY PASS — COMPLETE ✅
-
-FINAL POLISH APPLIED:
-- Tiered visual hierarchy (titles → sub-headers → body)
-- Premium contrast levels (bright gold → soft text → muted labels)
-- Executive table formatting (separators + alternating tint)
-- Modernized competitive landscape (thin strokes, flat bars)
-- Quieter charts (reduced visual weight)
-- Private equity grade AI opportunities (dark green BUY tags)
-- Balanced cross-vertical boxes (breathe space)
-- Dashboard-feel forecast cards (subtle gradients allowed)
-- Sovereign-fund cover page (subtle gold frame)
-
-PRODUCTION READY FOR:
-✅ Boardroom presentations (1920x1080)
-✅ A4 print output
-✅ £1,000/month luxury intelligence briefings
-✅ Knight Frank / McKinsey / Goldman Sachs aesthetic
-
-NO LAYOUT CHANGES - PURE HIERARCHY ENHANCEMENT
-============================================ */
-
-/* ============================================
-VOXMILL LUXURY POLISH PASS — COMPLETE ✅
-
-FINAL UNIFICATION APPLIED:
-✅ All dividers standardized (1px, #B08D57, 0.25 opacity)
-✅ Hierarchy refined (titles +8%, sub-headers 92-93%, weight 500)
-✅ Green velocity bars luxury-toned (#3FAF47, 0.85 opacity)
-✅ Card padding improved (+6-8px for breathability)
-✅ Tables ultra-subtle (0.07 separators, 0.015 alternating)
-✅ Global consistency enforced (gold tones, borders, text opacity)
-✅ Vertical rhythm unified (consistent spacing throughout)
-
-COMPETITIVE LANDSCAPE INSTITUTIONAL:
-- Radial chart: 2px stroke, #B08D57
-- Center number: #C7A26A, slightly larger
-- Center label: dimmer grey
-- Agency bars: 4px height, #B08D57, perfect alignment
-- Clean equal spacing, zero glow
-
-QUIET, EXPENSIVE HIERARCHY:
-- Main titles: Stand out with size + brighter gold
-- Sub-headers: Support with subtle color + refined weight
-- Body: Recede with appropriate opacity
-- No bold paragraphs under any header
-- Everything intentional and calm
-
-PRODUCTION STATUS:
-✅ Ultra-luxury grade achieved
-✅ Knight Frank / McKinsey / Goldman Sachs aesthetic
-✅ £1,000/month intelligence briefing quality
-✅ Boardroom (1920x1080) + A4 ready
-✅ Zero layout changes - pure visual refinement
-
-READY FOR DATA PIPELINE EXECUTION
+END VOXMILL ULTRA-LUXURY FINAL VERSION
+ALL 7 REFINEMENTS IMPLEMENTED ✅
+ENTERPRISE-GRADE INTELLIGENCE BRIEFING READY
 ============================================ */
