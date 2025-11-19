@@ -1952,6 +1952,206 @@ SLIDE-SPECIFIC WATERMARKS
 }
 
 /* ============================================
+V4 EXECUTIVE SIGNATURE PASS — INSTITUTIONAL MARKERS
+============================================ */
+
+/* SECTION 1 — CONFIDENTIALITY SYSTEM */
+
+.slide::after {
+    content: 'CONFIDENTIAL — INTERNAL USE ONLY';
+    position: absolute;
+    bottom: 32px;
+    right: 200px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.05);
+    z-index: 25;
+    pointer-events: none;
+    text-transform: uppercase;
+}
+
+/* Micro watermark overlay */
+.slide .watermark {
+    content: 'VOXMILL PRIVATE INTELLIGENCE';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-family: var(--font-display);
+    font-size: 140px;
+    font-weight: 700;
+    color: rgba(194, 154, 96, 0.015);
+    letter-spacing: 0.15em;
+    z-index: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    mix-blend-mode: soft-light;
+}
+
+/* SECTION 2 — INSTITUTIONAL METADATA BAR */
+
+.slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        var(--vm-gold) 50%,
+        var(--vm-bronze) 100%);
+    z-index: 10;
+}
+
+.slide-header::after {
+    content: 'Voxmill Intelligence — Market Briefing';
+    position: absolute;
+    top: -28px;
+    left: 0;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.40);
+    letter-spacing: 0.06em;
+}
+
+/* SECTION 3 — PAGE NUMBERING ENHANCEMENT */
+
+.footer-page {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(180deg, var(--vm-gold-gradient-top) 0%, var(--vm-gold-gradient-bottom) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-color: rgba(194, 154, 96, 0.3);
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(194, 154, 96, 0.7);
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 8px rgba(194, 154, 96, 0.4);
+    letter-spacing: 0.06em;
+}
+
+/* SECTION 4 — SECTION HEADER SIGNATURE MARK */
+
+.slide-title {
+    font-family: var(--font-display);
+    font-size: 50px;
+    font-weight: 700;
+    background: linear-gradient(180deg, var(--vm-gold-gradient-top) 0%, var(--vm-gold-gradient-bottom) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.02em;
+    filter: drop-shadow(0 2px 6px rgba(194, 154, 96, 0.5));
+    border-left: 3px solid rgba(194, 154, 96, 0.88);
+    padding-left: 14px;
+}
+
+/* SECTION 5 — EXECUTIVE SUMMARY HERO TREATMENT */
+
+.executive-bullet-title {
+    font-size: var(--h2-section-size);
+    font-weight: 800;
+    background: linear-gradient(180deg, 
+        #D4B474 0%,
+        #AD8350 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 0.04em; /* ENHANCED: +0.01em */
+    margin-bottom: 16px;
+    text-shadow: 0 0 18px rgba(194, 154, 96, 0.14);
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(194, 154, 96, 0.20);
+}
+
+.cover-title {
+    font-family: var(--font-display);
+    font-size: 72px;
+    font-weight: 800;
+    background: linear-gradient(180deg, 
+        #D4B474 0%,
+        #AD8350 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.04em; /* ENHANCED: +0.01em */
+    margin-bottom: 32px;
+    filter: drop-shadow(0 3px 12px rgba(194, 154, 96, 0.6));
+    text-shadow: 0 0 18px rgba(194, 154, 96, 0.14);
+}
+
+.cover-subtitle {
+    font-size: var(--h1-title-size);
+    color: rgba(255, 255, 255, 0.78); /* ENHANCED: Brightened */
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+/* SECTION 6 — LUXURY PAGE TRANSITION SYSTEM */
+
+.slide-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.015));
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* SECTION 7 — GOLD SIGNATURE MICRO-GLEAM */
+
+.footer-left svg,
+.logo-container img,
+.logo-container svg {
+    filter: brightness(1.05);
+    position: relative;
+}
+
+.footer-left svg::after,
+.logo-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(194, 154, 96, 0.06) 45%,
+        transparent 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    pointer-events: none;
+}
+
+/* SECTION 8 — INTERNAL DOCUMENT TAGGING SYSTEM */
+
+.slide-footer-branded::after {
+    content: 'Document ID: VX-2025-INTEL';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* ============================================
 END VOXMILL V3 LUXURY DETAILING PASS COMPLETE
 PHASE 3: INSTITUTIONAL £10K/MONTH FINISHING LAYER ✅
 MATTE TEXTURE OVERLAY ✅
@@ -1963,4 +2163,14 @@ TABLE LUXURY FINISH ✅
 HEADER/FOOTER POLISH ✅
 SECTION TRANSITION MICRO-CUES ✅
 ZERO POSITIONAL CHANGES ✅
+
+PHASE 4: EXECUTIVE SIGNATURE PASS COMPLETE ✅
+CONFIDENTIALITY SYSTEM ✅
+INSTITUTIONAL METADATA BAR ✅
+PAGE NUMBERING ENHANCEMENT ✅
+SECTION HEADER SIGNATURE ✅
+EXECUTIVE SUMMARY HERO ✅
+LUXURY PAGE TRANSITIONS ✅
+GOLD MICRO-GLEAM ✅
+DOCUMENT TAGGING ✅
 ============================================ */
