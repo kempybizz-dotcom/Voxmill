@@ -309,8 +309,8 @@ WEEKLY MOVEMENT DASHBOARD — PREMIUM CARDS
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    margin-top: 40px;
-    padding: 28px;
+    margin-top: 50px;
+    padding: 23px;
     background: rgba(197, 164, 109, 0.03);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -370,7 +370,7 @@ CROSS-VERTICAL INTELLIGENCE SLIDE
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 40px;
-    margin-top: 40px;
+    margin-top: 50px;
 }
 
 .cross-vertical-card {
@@ -410,7 +410,7 @@ CROSS-VERTICAL INTELLIGENCE SLIDE
 
 .cross-vertical-bullets {
     list-style: none;
-    margin-top: 16px;
+    margin-top: 26px;
     padding-left: 0;
     width: 100%;
 }
@@ -441,7 +441,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .methodology-panel {
@@ -487,7 +487,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
     padding: 32px;
-    margin-top: 40px;
+    margin-top: 50px;
     text-align: center;
 }
 
@@ -525,7 +525,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .proprietary-badge {
     background: var(--vm-gold);
-    color: var(--vm-dark);
+    color: var(--vm-light);
     padding: 20px 32px;
     border-radius: 8px;
     margin-top: 32px;
@@ -548,14 +548,14 @@ CHART ENHANCEMENTS — DASHBOARD-GRADE CLARITY
     color: var(--vm-muted);
     font-style: italic;
     text-align: center;
-    margin-top: 8px;
+    margin-top: 18px;
 }
 
 .chart-mini-insight {
     background: rgba(197, 164, 109, 0.1);
     border-left: 4px solid var(--vm-gold);
     padding: 12px 20px;
-    margin-top: 12px;
+    margin-top: 18px;
     border-radius: 6px;
     font-size: 14px;
     color: var(--vm-text-body);
@@ -603,7 +603,7 @@ KPI GRID — PREMIUM DASHBOARD CARDS
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-bottom: 64px;
+    margin-bottom: 74px;
     page-break-inside: avoid;
 }
 
@@ -679,7 +679,7 @@ CHART CONTAINERS — ENHANCED CLARITY
 ============================================ */
 
 .chart-section {
-    margin-top: 0;
+    margin-top: 10;
     page-break-inside: avoid;
 }
 
@@ -751,7 +751,7 @@ TWO-COLUMN LAYOUT
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     height: auto;
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .chart-panel {
@@ -776,7 +776,7 @@ INSIGHT CARDS — ENHANCED ACCENT
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 64px;
+    margin-top: 74px;
 }
 
 .insight-card {
@@ -847,7 +847,7 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
 .competitive-inventory-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .competitive-inventory-table thead tr {
@@ -924,7 +924,7 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
 }
 
 .competitive-insight-row {
-    margin-top: 32px;
+    margin-top: 42px;
     padding: 16px 20px;
     background: rgba(197, 164, 109, 0.04);
     border-radius: 6px;
@@ -948,7 +948,7 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 32px 28px;
-    margin-top: 64px;
+    margin-top: 74px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -975,7 +975,7 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
 
 .bullet-list {
     list-style: none;
-    margin-top: 16px;
+    margin-top: 26px;
 }
 
 .bullet-list li {
@@ -1169,7 +1169,7 @@ MICRO-FOOTER NOTES
 
 .slide-micro-footer-note {
     position: absolute;
-    bottom: 110px;
+    margin-top: 110px;
     left: 48px;
     right: 48px;
     text-align: center;
@@ -1211,7 +1211,7 @@ DEPTH METRICS
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    margin-top: 64px;
+    margin-top: 74px;
 }
 
 .depth-card {
@@ -1263,12 +1263,12 @@ PROPERTY TYPE HEATMAP
 ============================================ */
 
 .property-type-heatmap {
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .heatmap-table {
     width: 100%;
-    margin-top: 32px;
+    margin-top: 42px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
@@ -1340,7 +1340,7 @@ STRATEGIC FORECAST — 2×2 GRID
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 520px;
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .forecast-card-v2 {
@@ -1402,14 +1402,14 @@ STRATEGIC FORECAST — 2×2 GRID
 .forecast-label-text {
     font-size: 16px;
     color: var(--vm-text);
-    margin-top: 8px;
+    margin-top: 18px;
     text-align: center;
 }
 
 .forecast-confidence-text {
     font-size: 14px;
     color: var(--vm-muted);
-    margin-top: 8px;
+    margin-top: 18px;
 }
 
 .cone-range-display {
@@ -1496,7 +1496,7 @@ MACRO CONTEXT — ENHANCED STYLING
 ============================================ */
 
 .macro-context {
-    margin-top: 64px;
+    margin-top: 74px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
@@ -1526,7 +1526,7 @@ EXECUTIVE INTELLIGENCE — VERTICAL STACK
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .executive-brief-card {
@@ -1573,7 +1573,7 @@ EXECUTIVE INTELLIGENCE — VERTICAL STACK
 }
 
 .review-banner {
-    margin-top: 64px;
+    margin-top: 74px;
     background: var(--vm-gold);
     border-radius: 8px;
     padding: 28px;
@@ -1596,7 +1596,7 @@ TABLE SUBTITLE
     font-size: 13px;
     color: var(--vm-muted);
     text-align: center;
-    margin-top: 8px;
+    margin-top: 18px;
     margin-bottom: 0;
     font-style: italic;
 }
@@ -1665,7 +1665,7 @@ BENCHMARK TABLE
 }
 
 .benchmark-insight {
-    margin-top: 32px;
+    margin-top: 42px;
     padding: 22px 28px;
     background: rgba(197, 164, 109, 0.05);
     border-left: 4px solid var(--vm-gold);
@@ -1712,7 +1712,7 @@ FORECAST & MARKET RISK — ENHANCED
     gap: 32px;
     align-items: stretch;
     margin-bottom: 64px;
-    margin-top: 0;
+    margin-top: 10;
 }
 
 .forecast-risk-card {
@@ -1767,7 +1767,7 @@ FORECAST & MARKET RISK — ENHANCED
 .risk-context-note {
     font-size: 12px;
     color: var(--vm-muted);
-    margin-top: 16px;
+    margin-top: 26px;
     font-style: italic;
     line-height: 1.6;
     max-width: 90%;
@@ -1835,7 +1835,7 @@ MACRO RISK DASHBOARD
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 32px;
-    margin-top: 40px;
+    margin-top: 50px;
 }
 
 .risk-dial-card {
