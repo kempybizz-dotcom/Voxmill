@@ -1,69 +1,29 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — PRODUCTION FINAL
-VISUAL POLISH: V3.3 Light Visual Refinements ONLY
-LAYOUT MASTER: VOXMILL_SPACING_FINAL (preserved exactly)
-INSTITUTIONAL GRADE — ENTERPRISE LUXURY
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V3.3 LIGHT VISUAL POLISH
+INSTITUTIONAL GRADE — HEDGE FUND × PRIVATE EQUITY × SOVEREIGN WEALTH
+MULTI-ASSET CLASS INTELLIGENCE PLATFORM
 ============================================ */
 
 :root {
-    /* V3.3 VISUAL UPGRADE: Enhanced Gold Palette */
     --vm-bronze: #A77B3A;
     --vm-gold: #C6A15B;
     --vm-gold-light: #C6A15B;
     --vm-gold-secondary: #B59854;
     --vm-bronze-dark: #9E7B47;
-    
-    /* V3.3 VISUAL UPGRADE: Richer Text Colors */
     --vm-text: #EAEAEA;
     --vm-text-body: rgba(234, 234, 234, 0.85);
     --vm-muted: #B8B8B8;
-    
-    /* V3.3 VISUAL UPGRADE: Deeper Blacks */
     --vm-dark: #0C0C0C;
     --vm-darker: #111111;
     --vm-panel: #171717;
-    
-    /* Typography */
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
-    
-    /* FIX 2: Unified Section Header Spacing */
-    --spacing-section: 80px;
-    --spacing-title-top: 0px;
-    --spacing-title-bottom: 32px;
-    --spacing-card: 28px;
-    --spacing-content: 24px;
-    --spacing-chart-title: 20px;
-    
-    /* Typography Scale */
-    --h1-size: 50px;
-    --h2-size: 22px;
-    --h3-size: 18px;
-    --body-size: 13px;
-    --small-size: 11px;
-    
-    /* POLISH 1: Universal Border Radius */
-    --border-radius-standard: 8px;
-    
-    /* Bar Standards */
-    --bar-height: 4px;
-    --bar-color: #C6A15B;
-    --bar-radius: 2px;
-    
-    /* POLISH 3: Universal Chart Theme */
-    --chart-line-thickness: 2.2px;
-    --chart-point-radius: 4px;
-    --chart-gridline: rgba(255,255,255,0.05);
-    --chart-axis-color: rgba(255, 255, 255, 0.10);
-    --chart-axis-thickness: 1px;
-    --chart-padding: 32px;
-    --chart-label-size: 12px;
-    --chart-label-weight: 500;
+    --grid: 8px;
 }
 
 @page {
-    size: 1920px 1220px; /* FIX 1: Extended by +140px */
+    size: 1920px 1080px;
     margin: 0;
 }
 
@@ -77,51 +37,23 @@ body {
     font-family: var(--font-body);
     color: var(--vm-text);
     background: #000000;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
 }
 
 /* ============================================
-SLIDE CONTAINER + FIX 1: EXTENDED PAGE HEIGHT
+SLIDE CONTAINER — SAFE AREAS ENFORCED
 ============================================ */
 
 .slide {
     width: 1920px;
-    height: 1220px; /* FIX 1: Extended by +140px */
+    height: 1080px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
     page-break-inside: avoid;
     overflow: hidden;
-    padding: 48px;
-    padding-top: 140px; /* FIX 1: Additional top padding */
-    padding-bottom: 60px; /* FIX 1: Bottom padding */
     border: 3px solid var(--vm-gold);
-}
-
-.slide:first-child {
-    height: 1080px; /* FIX 1: Cover page remains original */
-    padding-top: 48px;
-}
-
-.slide:last-child {
-    page-break-after: auto;
-}
-
-/* V3.3 VISUAL UPGRADE: Slide decorative elements */
-.slide::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg,
-        var(--vm-bronze) 0%,
-        var(--vm-gold) 50%,
-        var(--vm-bronze) 100%);
-    z-index: 10;
+    padding: 64px 48px 64px 48px;
 }
 
 .slide::after {
@@ -139,33 +71,22 @@ SLIDE CONTAINER + FIX 1: EXTENDED PAGE HEIGHT
         repeating-linear-gradient(-45deg, transparent, transparent 80px, rgba(198, 161, 91, 0.12) 80px, rgba(198, 161, 91, 0.12) 82px);
 }
 
-/* ALIGNMENT FIX 1: All section containers align to master left edge */
-.slide-content {
-    position: absolute;
-    top: 120px;
-    left: 48px; /* ALIGNMENT FIX 1: Universal left anchor */
-    right: 48px;
-    bottom: 120px;
-    overflow: hidden;
-    z-index: 5;
+.slide:last-child {
+    page-break-after: auto;
 }
 
-.executive-summary-bullets,
-.kpi-grid,
-.chart-section,
-.two-column,
-.insight-cards,
-.cross-vertical-grid,
-.property-type-heatmap,
-.depth-metrics,
-.forecast-grid-2x2,
-.executive-brief-stack,
-.macro-risk-grid,
-.submarket-grid-v2,
-.signal-board-v2,
-.methodology-grid {
-    margin-left: 0;
-    padding-left: 0;
+.slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+        var(--vm-bronze) 0%,
+        var(--vm-gold) 50%,
+        var(--vm-bronze) 100%);
+    z-index: 10;
 }
 
 /* ============================================
@@ -185,7 +106,6 @@ SLIDE HEADER
     z-index: 5;
 }
 
-/* V3.3 VISUAL: Header decorative accent */
 .slide-header::before {
     content: '';
     position: absolute;
@@ -218,6 +138,20 @@ SLIDE HEADER
 }
 
 /* ============================================
+SLIDE CONTENT AREA
+============================================ */
+
+.slide-content {
+    position: absolute;
+    top: 140px;
+    left: 48px;
+    right: 48px;
+    bottom: 140px;
+    overflow: hidden;
+    z-index: 5;
+}
+
+/* ============================================
 COVER SLIDE
 ============================================ */
 
@@ -228,7 +162,6 @@ COVER SLIDE
     justify-content: center;
 }
 
-/* V3.3 VISUAL: Cover page subtle pattern */
 .slide-cover::after {
     background-image:
         repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(198, 161, 91, 0.04) 60px, rgba(198, 161, 91, 0.04) 62px),
@@ -240,9 +173,8 @@ COVER SLIDE
 }
 
 .voxmill-logo {
-    width: 194px;
-    height: 194px;
-    opacity: 0.95;
+    width: 216px;
+    height: 216px;
 }
 
 .cover-label {
@@ -259,9 +191,8 @@ COVER SLIDE
     font-size: 72px;
     font-weight: 700;
     color: var(--vm-gold);
-    letter-spacing: 0.03em;
-    margin-bottom: 38px;
-    text-align: center;
+    letter-spacing: 0.01em;
+    margin-bottom: 32px;
 }
 
 .cover-subtitle {
@@ -269,7 +200,6 @@ COVER SLIDE
     color: var(--vm-text-body);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    text-align: center;
 }
 
 .cover-subtitle .location {
@@ -283,11 +213,10 @@ COVER SLIDE
     letter-spacing: 0.15em;
     margin-top: 24px;
     font-style: italic;
-    text-align: center;
 }
 
 .cover-compiled {
-    font-size: var(--small-size);
+    font-size: 11px;
     color: var(--vm-text);
     margin-top: 80px;
     line-height: 1.8;
@@ -299,40 +228,14 @@ COVER SLIDE
 }
 
 /* ============================================
-SECTION TITLES — FIX 2: GLOBAL VERTICAL SPACING
-============================================ */
-
-.chart-title,
-.methodology-title,
-.macro-title,
-.momentum-title,
-.panel-title,
-.risk-dial-title,
-.forecast-card-title,
-.submarket-header,
-.cross-vertical-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    color: #C6A15B;
-    letter-spacing: 0.02em;
-    margin-top: 120px;
-    margin-bottom: 32px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.14);
-    width: 50%;
-    text-transform: none;
-}
-
-/* ============================================
-EXECUTIVE SUMMARY — FIX 3 & V3.3 VISUAL UPGRADE
+EXECUTIVE SUMMARY SLIDE — ENHANCED DASHBOARD
 ============================================ */
 
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 40px;
-    margin-top: var(--spacing-title-bottom);
+    gap: 32px;
+    margin-top: 20px;
 }
 
 .executive-summary-bullet {
@@ -340,8 +243,8 @@ EXECUTIVE SUMMARY — FIX 3 & V3.3 VISUAL UPGRADE
     border-left: 6px solid var(--vm-gold);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 40px 40px 50px 40px;
-    min-height: 160px;
+    padding: 28px 36px;
+    min-height: 110px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -349,45 +252,42 @@ EXECUTIVE SUMMARY — FIX 3 & V3.3 VISUAL UPGRADE
 }
 
 .executive-bullet-title {
-    font-size: var(--h3-size);
+    font-size: 18px;
     font-weight: 600;
     color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 16px;
 }
 
 .executive-bullet-text {
-    font-size: var(--body-size);
+    font-size: 16px;
     color: var(--vm-text-body);
-    line-height: 1.85;
+    line-height: 1.7;
     font-weight: 400;
 }
 
 .killer-insight {
     display: block;
-    font-size: var(--body-size);
+    font-size: 15px;
     font-weight: 700;
     color: #C6A15B;
-    margin-top: 20px;
-    padding-top: 20px;
+    margin-top: 16px;
+    padding-top: 16px;
     border-top: 2px solid rgba(198, 161, 91, 0.5);
-    line-height: 1.75;
     letter-spacing: 0.03em;
     text-shadow: 0 0 8px rgba(198, 161, 91, 0.6);
 }
 
 /* ============================================
-WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
+WEEKLY MOVEMENT DASHBOARD — PREMIUM CARDS
 ============================================ */
 
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-    margin-top: var(--spacing-section);
+    gap: 20px;
+    margin-top: 40px;
     padding: 28px;
     background: rgba(198, 161, 91, 0.03);
     border-radius: 10px;
@@ -398,14 +298,13 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
     background: linear-gradient(135deg, rgba(18, 18, 18, 1), rgba(12, 12, 12, 1));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 40px 40px 50px 40px;
+    padding: 18px 16px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    min-height: 140px;
 }
 
 .movement-label {
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(184, 184, 184, 0.75);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -414,7 +313,7 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
 }
 
 .movement-value {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 800;
     color: #C6A15B;
     line-height: 1;
@@ -438,235 +337,7 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
 }
 
 /* ============================================
-KPI GRID — V3.3 VISUAL UPGRADE
-============================================ */
-
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 40px;
-    height: 340px;
-    margin-bottom: var(--spacing-section);
-    page-break-inside: avoid;
-}
-
-.kpi-card {
-    background: linear-gradient(135deg,
-        rgba(12, 12, 12, 0.98) 0%,
-        rgba(23, 23, 23, 0.95) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    padding: 35px 40px;
-    min-height: 165px;
-}
-
-.kpi-content {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-.kpi-label {
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: 16px;
-    font-weight: 400;
-    line-height: 1.4;
-}
-
-.kpi-value {
-    font-family: var(--font-body);
-    font-size: 60px;
-    font-weight: 800;
-    color: #C6A15B;
-    line-height: 1;
-    margin-bottom: 16px;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 8px rgba(198, 161, 91, 0.5);
-}
-
-.kpi-change {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 12px;
-    line-height: 1.4;
-}
-
-.kpi-change.positive {
-    color: #4CAF50;
-}
-
-.kpi-change.negative {
-    color: #F44336;
-}
-
-/* ============================================
-CHART SECTION — V3.3 VISUAL UPGRADE
-============================================ */
-
-.chart-section {
-    margin-top: var(--spacing-content);
-    page-break-inside: avoid;
-}
-
-.chart-divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.14);
-    opacity: 0.12;
-    border: none;
-    margin: var(--spacing-content) 0;
-}
-
-.chart-container {
-    background: linear-gradient(135deg,
-        rgba(18, 18, 18, 0.95) 0%,
-        rgba(12, 12, 12, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 40px;
-    height: 360px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    display: flex;
-    flex-direction: column;
-    page-break-inside: avoid;
-}
-
-.chart-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #C6A15B;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 6px;
-    text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.chart-context {
-    font-size: var(--chart-label-size);
-    color: rgba(184, 184, 184, 0.75);
-    text-align: center;
-    font-weight: 400;
-    margin-bottom: var(--spacing-chart-title);
-    font-style: italic;
-    line-height: 1.6;
-    max-width: 100%;
-}
-
-.chart-source {
-    font-size: 11px;
-    color: var(--vm-muted);
-    text-align: center;
-    margin-top: 16px;
-    font-style: italic;
-    padding-top: 12px;
-}
-
-.chart-mini-insight {
-    background: rgba(198, 161, 91, 0.1);
-    border-left: 4px solid var(--vm-gold);
-    padding: 12px 20px;
-    margin-top: 12px;
-    border-radius: 8px;
-    font-size: var(--body-size);
-    color: var(--vm-text-body);
-    line-height: 1.6;
-    font-weight: 400;
-    box-shadow: inset 0 1px 3px rgba(198, 161, 91, 0.2);
-}
-
-.chart-axis-label {
-    font-size: var(--chart-label-size);
-    fill: rgba(255, 255, 255, 0.10);
-    font-family: var(--font-body);
-    font-weight: var(--chart-label-weight);
-    color: rgba(255, 255, 255, 0.10);
-    letter-spacing: 0.08em;
-}
-
-/* ============================================
-TWO-COLUMN LAYOUT — V3.3 VISUAL UPGRADE
-============================================ */
-
-.two-column {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    height: auto;
-    margin-top: 0;
-}
-
-.chart-panel {
-    background: linear-gradient(135deg,
-        rgba(18, 18, 18, 0.95) 0%,
-        rgba(12, 12, 12, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 40px;
-    height: 420px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    display: flex;
-    flex-direction: column;
-    page-break-inside: avoid;
-}
-
-/* ============================================
-INSIGHT CARDS — V3.3 VISUAL UPGRADE
-============================================ */
-
-.insight-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    margin-top: var(--spacing-section);
-}
-
-.insight-card {
-    background: linear-gradient(135deg,
-        rgba(18, 18, 18, 0.98) 0%,
-        rgba(12, 12, 12, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 5px solid var(--vm-gold);
-    border-radius: 10px;
-    padding: 40px 40px 50px 40px;
-    min-height: 160px;
-    height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.insight-title {
-    font-size: var(--body-size);
-    font-weight: 600;
-    color: #C6A15B;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
-}
-
-.insight-text {
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-}
-
-/* ============================================
-CROSS-VERTICAL INTELLIGENCE — V3.3 VISUAL UPGRADE
+CROSS-VERTICAL INTELLIGENCE SLIDE
 ============================================ */
 
 .cross-vertical-grid {
@@ -681,7 +352,7 @@ CROSS-VERTICAL INTELLIGENCE — V3.3 VISUAL UPGRADE
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 5px solid var(--vm-gold);
     border-radius: 12px;
-    padding: 40px 40px 50px 40px;
+    padding: 40px 32px;
     min-height: 300px;
     display: flex;
     flex-direction: column;
@@ -737,7 +408,7 @@ CROSS-VERTICAL INTELLIGENCE — V3.3 VISUAL UPGRADE
 }
 
 /* ============================================
-METHODOLOGY & MODEL ARCHITECTURE — V3.3 VISUAL
+METHODOLOGY & MODEL ARCHITECTURE SLIDE
 ============================================ */
 
 .methodology-grid {
@@ -751,7 +422,7 @@ METHODOLOGY & MODEL ARCHITECTURE — V3.3 VISUAL
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 40px 40px 50px 40px;
+    padding: 32px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -843,184 +514,274 @@ METHODOLOGY & MODEL ARCHITECTURE — V3.3 VISUAL
 }
 
 /* ============================================
-TABLE STYLING — V3.3 VISUAL UPGRADE
+CHART ENHANCEMENTS — DASHBOARD-GRADE CLARITY
 ============================================ */
 
-.table-luxury {
-    width: 100%;
-    margin-top: 32px;
-    border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    table-layout: auto;
+.chart-annotation {
+    font-size: 11px;
+    color: var(--vm-muted);
+    font-style: italic;
+    text-align: center;
+    margin-top: 8px;
 }
 
-.table-luxury thead {
-    background: linear-gradient(90deg,
-        rgba(198, 161, 91, 1) 0%,
-        rgba(198, 161, 91, 1) 50%,
-        rgba(198, 161, 91, 1) 100%);
-    height: 56px;
+.chart-mini-insight {
+    background: rgba(198, 161, 91, 0.1);
+    border-left: 4px solid var(--vm-gold);
+    padding: 12px 20px;
+    margin-top: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.6;
+    font-weight: 400;
+    box-shadow: inset 0 1px 3px rgba(198, 161, 91, 0.2);
 }
 
-.table-luxury th {
-    font-size: 15px;
+.chart-callout {
+    font-size: 11px;
+    color: var(--vm-gold);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.chart-baseline {
+    stroke: rgba(198, 161, 91, 0.4);
+    stroke-width: 2.2px;
+    stroke-dasharray: 4 4;
+}
+
+.chart-confidence-band {
+    fill: rgba(198, 161, 91, 0.08);
+    stroke: none;
+}
+
+.chart-trend-arrow {
+    font-size: 16px;
     font-weight: 700;
-    color: var(--vm-dark);
+}
+
+.chart-percent-marker {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--vm-gold);
+}
+
+/* ============================================
+KPI GRID — PREMIUM DASHBOARD CARDS
+============================================ */
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 32px;
+    height: 360px;
+    margin-bottom: 64px;
+    page-break-inside: avoid;
+}
+
+.kpi-card {
+    background: linear-gradient(135deg,
+        rgba(12, 12, 12, 0.98) 0%,
+        rgba(23, 23, 23, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 164px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    width: 100%;
+}
+
+.kpi-label {
+    font-size: 16px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.kpi-value {
+    font-family: var(--font-body);
+    font-size: 68px;
+    font-weight: 800;
+    color: #C6A15B;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 8px rgba(198, 161, 91, 0.5);
+}
+
+.kpi-change {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 12px;
+    line-height: 1.4;
+}
+
+.kpi-change.positive {
+    color: #4CAF50;
+}
+
+.kpi-change.negative {
+    color: #F44336;
+}
+
+/* ============================================
+CHART CONTAINERS — ENHANCED CLARITY
+============================================ */
+
+.chart-section {
+    margin-top: 0;
+    page-break-inside: avoid;
+}
+
+.chart-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.14);
+    margin: 32px 0;
+    opacity: 0.12;
+}
+
+.chart-container {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 28px;
+    height: 380px;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.chart-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    padding: 40px 40px 50px 40px;
+    margin-bottom: 6px;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.table-luxury tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.table-luxury tbody tr:nth-child(odd) {
-    background: rgba(18, 18, 18, 0.8);
-}
-
-.table-luxury tbody tr:nth-child(even) {
-    background: rgba(23, 23, 23, 0.8);
-}
-
-.table-luxury td {
-    font-size: 14px;
-    color: var(--vm-text);
-    padding: 40px 40px 50px 40px;
-    vertical-align: middle;
-}
-
-.table-luxury td.align-right {
-    text-align: right;
-    font-family: var(--font-mono);
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-}
-
-.table-luxury td.align-center {
-    text-align: center;
-}
-
-.property-address {
-    font-weight: 500;
-    color: var(--vm-gold);
-}
-
-.score-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 16px;
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 700;
-    background: #0B0B0B;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.score-high, .score-excellent {
-    color: #4CAF50;
-    border: 1px solid #C6A15B;
-}
-
-.score-medium, .score-good {
-    color: #FFC107;
-    border: 1px solid #C6A15B;
-}
-
-.score-low, .score-standard {
-    color: #F44336;
-    border: 1px solid #C6A15B;
-}
-
-/* ============================================
-VELOCITY BADGES — V3.3 VISUAL UPGRADE
-============================================ */
-
-.velocity-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-weight: 600;
+.chart-context {
     font-size: 13px;
-    background: #0B0B0B;
+    color: rgba(184, 184, 184, 0.75);
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 100%;
+    font-weight: 400;
 }
 
-.velocity-high {
-    color: #4CAF50;
-    border: 1px solid #C6A15B;
+.chart-source {
+    font-size: 12px;
+    color: var(--vm-muted);
+    text-align: center;
+    margin-top: auto;
+    font-style: italic;
+    padding-top: 12px;
 }
 
-.velocity-medium {
-    color: #FFC107;
-    border: 1px solid #C6A15B;
-}
-
-.velocity-low {
-    color: #F44336;
-    border: 1px solid #C6A15B;
+.chart-axis-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.10);
+    font-weight: 600;
+    letter-spacing: 0.08em;
 }
 
 /* ============================================
-FOOTER — V3.3 VISUAL UPGRADE
+TWO-COLUMN LAYOUT
 ============================================ */
 
-.slide-footer-branded {
-    position: absolute;
-    bottom: 24px;
-    left: 48px;
-    right: 48px;
+.two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    height: auto;
+    margin-top: 0;
+}
+
+.chart-panel {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.95) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 28px;
+    height: 480px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    z-index: 20;
-    height: 72px;
-    background: var(--vm-dark);
-    box-shadow: 0 -2px 12px rgba(198, 161, 91, 0.15);
-}
-
-.footer-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.footer-company {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.05em;
-    line-height: 1;
-    opacity: 1;
-}
-
-.footer-page {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    background: rgba(198, 161, 91, 0.25);
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: 1px solid #C6A15B;
-    font-variant-numeric: tabular-nums;
-    opacity: 1;
-    letter-spacing: 0.02em;
-    box-shadow: 0 2px 8px rgba(198, 161, 91, 0.3);
+    flex-direction: column;
+    page-break-inside: avoid;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* ============================================
-INTELLIGENCE PANELS — V3.3 VISUAL
+INSIGHT CARDS — ENHANCED ACCENT
+============================================ */
+
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 64px;
+}
+
+.insight-card {
+    background: linear-gradient(135deg,
+        rgba(18, 18, 18, 0.98) 0%,
+        rgba(12, 12, 12, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 5px solid var(--vm-gold);
+    border-radius: 10px;
+    padding: 28px 25px;
+    min-height: 110px;
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.insight-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #C6A15B;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+}
+
+.insight-text {
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+}
+
+/* ============================================
+INTELLIGENCE PANELS
 ============================================ */
 
 .panel {
@@ -1029,8 +790,8 @@ INTELLIGENCE PANELS — V3.3 VISUAL
         rgba(12, 12, 12, 1) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 40px 40px 50px 40px;
-    margin-top: var(--spacing-section);
+    padding: 32px 28px;
+    margin-top: 64px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1079,21 +840,228 @@ INTELLIGENCE PANELS — V3.3 VISUAL
 }
 
 /* ============================================
-DEPTH METRICS — V3.3 VISUAL
+TABLE STYLING — PREMIUM ENHANCEMENT
+============================================ */
+
+.table-luxury {
+    width: 100%;
+    margin-top: 32px;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    table-layout: auto;
+}
+
+.table-luxury thead {
+    background: linear-gradient(90deg,
+        rgba(198, 161, 91, 1) 0%,
+        rgba(198, 161, 91, 1) 50%,
+        rgba(198, 161, 91, 1) 100%);
+    height: 56px;
+}
+
+.table-luxury th {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--vm-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 18px 12px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.table-luxury th:nth-child(1) { width: 30%; }
+.table-luxury th:nth-child(2) { width: 12%; }
+.table-luxury th:nth-child(3) { width: 12%; }
+.table-luxury th:nth-child(4) { width: 14%; }
+.table-luxury th:nth-child(5) { width: 12%; }
+.table-luxury th:nth-child(6) { width: 10%; }
+.table-luxury th:nth-child(7) { width: 10%; text-align: center; }
+
+.table-luxury tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.table-luxury tbody tr:nth-child(odd) {
+    background: rgba(18, 18, 18, 0.8);
+}
+
+.table-luxury tbody tr:nth-child(even) {
+    background: rgba(23, 23, 23, 0.8);
+}
+
+.table-luxury td {
+    font-size: 14px;
+    color: var(--vm-text);
+    padding: 16px 12px;
+    vertical-align: middle;
+}
+
+.table-luxury td.align-right {
+    text-align: right;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.table-luxury td.align-center {
+    text-align: center;
+}
+
+.table-luxury td:last-child {
+    text-align: center;
+}
+
+.property-address {
+    font-weight: 500;
+    color: var(--vm-gold);
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    background: #0B0B0B;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.score-high, .score-excellent {
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
+}
+
+.score-medium, .score-good {
+    color: #FFC107;
+    border: 1px solid #C6A15B;
+}
+
+.score-low, .score-standard {
+    color: #F44336;
+    border: 1px solid #C6A15B;
+}
+
+.table-luxury td:nth-child(3),
+.table-luxury td:nth-child(4),
+.table-luxury td:nth-child(5),
+.table-luxury td:nth-child(6) {
+    text-align: center;
+}
+
+/* ============================================
+FOOTER — PREMIUM ENHANCEMENT
+============================================ */
+
+.slide-footer-branded {
+    position: absolute;
+    bottom: 24px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    z-index: 20;
+    height: 72px;
+    background: var(--vm-dark);
+    box-shadow: 0 -2px 12px rgba(198, 161, 91, 0.15);
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-branding {
+    display: flex;
+    align-items: center;
+}
+
+.footer-company {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.footer-page {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    background: rgba(198, 161, 91, 0.25);
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid #C6A15B;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 8px rgba(198, 161, 91, 0.3);
+}
+
+/* ============================================
+MICRO-FOOTER NOTES
+============================================ */
+
+.slide-micro-footer-note {
+    position: absolute;
+    bottom: 110px;
+    left: 48px;
+    right: 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--vm-muted);
+    font-style: italic;
+    padding: 12px 24px;
+    background: rgba(198, 161, 91, 0.03);
+    border-radius: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+WATERMARK
+============================================ */
+
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-family: var(--font-display);
+    font-size: 140px;
+    font-weight: 700;
+    color: rgba(198, 161, 91, 0.03);
+    letter-spacing: 0.15em;
+    z-index: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    display: none;
+}
+
+/* ============================================
+DEPTH METRICS
 ============================================ */
 
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-top: var(--spacing-section);
+    gap: 32px;
+    margin-top: 64px;
 }
 
 .depth-card {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 40px 40px 50px 40px;
+    padding: 32px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1106,13 +1074,13 @@ DEPTH METRICS — V3.3 VISUAL
 }
 
 .depth-value {
-    font-size: 42px;
+    font-size: 48px;
     font-weight: 700;
     color: var(--vm-gold);
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .depth-bar {
@@ -1134,23 +1102,95 @@ DEPTH METRICS — V3.3 VISUAL
 }
 
 /* ============================================
-FORECAST GRID — V3.3 VISUAL
+PROPERTY TYPE HEATMAP
+============================================ */
+
+.property-type-heatmap {
+    margin-top: 0;
+}
+
+.heatmap-table {
+    width: 100%;
+    margin-top: 32px;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.heatmap-table th {
+    background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
+    color: var(--vm-dark);
+    padding: 16px 12px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-align: left;
+}
+
+.heatmap-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+    color: var(--vm-text);
+    vertical-align: middle;
+}
+
+.property-type-name {
+    font-weight: 500;
+    color: var(--vm-gold);
+}
+
+.velocity-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 13px;
+    background: #0B0B0B;
+}
+
+.velocity-high {
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
+}
+
+.velocity-medium {
+    color: #FFC107;
+    border: 1px solid #C6A15B;
+}
+
+.velocity-low {
+    color: #F44336;
+    border: 1px solid #C6A15B;
+}
+
+.signal-text {
+    font-weight: 500;
+}
+
+/* ============================================
+STRATEGIC FORECAST — 2×2 GRID
 ============================================ */
 
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 40px;
-    height: 480px;
-    margin-top: var(--spacing-content);
+    gap: 32px;
+    height: 520px;
+    margin-top: 0;
 }
 
 .forecast-card-v2 {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 40px 40px 50px 40px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1185,23 +1225,20 @@ FORECAST GRID — V3.3 VISUAL
 }
 
 .forecast-arrow-large {
-    font-size: 64px;
+    font-size: 96px;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 12px;
-    font-weight: 300;
+    margin-bottom: 16px;
 }
 
-.forecast-percentage-large,
-.voxmill-index-number,
-.risk-dial-value {
-    font-size: 56px;
+.forecast-percentage-large {
+    font-size: 64px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: 12px;
-    font-variant-numeric: tabular-nums;
+    margin-bottom: 16px;
     letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
     text-shadow: 0 3px 12px rgba(198, 161, 91, 0.6);
 }
 
@@ -1218,12 +1255,24 @@ FORECAST GRID — V3.3 VISUAL
     margin-top: 8px;
 }
 
+.cone-range-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
 .cone-value {
-    font-size: 36px;
+    font-size: 40px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
     font-variant-numeric: tabular-nums;
+}
+
+.cone-mid {
+    font-size: 48px;
 }
 
 .sentiment-display {
@@ -1252,16 +1301,49 @@ FORECAST GRID — V3.3 VISUAL
     border: 1px solid rgba(244, 67, 54, 0.5);
 }
 
+.voxmill-index-number {
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 3px 12px rgba(198, 161, 91, 0.6);
+}
+
+.voxmill-index-bar-container {
+    height: 20px;
+    background: rgba(198, 161, 91, 0.2);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.voxmill-index-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--vm-gold), var(--vm-gold-light));
+    border-radius: 10px;
+}
+
+.voxmill-index-caption {
+    font-size: 13px;
+    color: var(--vm-muted);
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
 /* ============================================
-MACRO CONTEXT — V3.3 VISUAL
+MACRO CONTEXT — ENHANCED STYLING
 ============================================ */
 
 .macro-context {
-    margin-top: var(--spacing-section);
+    margin-top: 64px;
     padding: 20px 24px;
     background: rgba(198, 161, 91, 0.08);
     border-left: 4px solid #C6A15B;
-    border-radius: 8px;
+    border-radius: 6px;
     box-shadow: inset 0 1px 2px rgba(198, 161, 91, 0.2);
 }
 
@@ -1280,319 +1362,14 @@ MACRO CONTEXT — V3.3 VISUAL
 }
 
 /* ============================================
-MACRO RISK DASHBOARD — V3.3 & FIX 6
-============================================ */
-
-.macro-risk-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
-    margin-top: var(--spacing-title-bottom);
-}
-
-.risk-dial-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    min-height: 280px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.risk-dial-title {
-    font-size: 16px;
-    color: var(--vm-bronze);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 24px;
-    font-weight: 600;
-}
-
-.risk-dial-value {
-    font-size: 52px;
-    font-weight: 800;
-    color: var(--vm-gold);
-    margin-bottom: 12px;
-    text-shadow: 0 2px 10px rgba(198, 161, 91, 0.5);
-}
-
-.risk-dial-status {
-    font-size: var(--body-size);
-    color: var(--vm-text-body);
-    font-weight: 400;
-}
-
-.risk-bar-simple {
-    height: 12px;
-    background: rgba(198, 161, 91, 0.2);
-    border-radius: 6px;
-    overflow: hidden;
-    margin: 20px auto 16px;
-    width: 80%;
-}
-
-.risk-bar-fill-simple {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.3s ease;
-}
-
-.risk-low-fill {
-    background: linear-gradient(90deg, #4CAF50, #66BB6A);
-}
-
-.risk-medium-fill {
-    background: linear-gradient(90deg, #FFC107, #FFD54F);
-}
-
-.risk-high-fill {
-    background: linear-gradient(90deg, #FF9800, #F44336);
-}
-
-/* ============================================
-SUB-MARKET BREAKDOWN — V3.3 & FIX 7
-============================================ */
-
-.submarket-grid-v2 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    margin-top: var(--spacing-title-bottom);
-}
-
-.submarket-card-v2 {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 40px;
-    min-height: 340px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.submarket-header {
-    font-family: var(--font-display);
-    font-size: 24px;
-    color: #C6A15B;
-    margin-bottom: 40px;
-    font-weight: 600;
-    text-align: right;
-    width: 100%;
-    text-shadow: 0 1px 4px rgba(198, 161, 91, 0.4);
-}
-
-.submarket-metrics {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    width: 100%;
-    flex: 1;
-}
-
-.submarket-metric-row {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-}
-
-.submarket-metric-label {
-    font-size: 10px;
-    color: var(--vm-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.submarket-metric-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--vm-text);
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-}
-
-.velocity-bar-container {
-    width: 100%;
-    margin: 8px 0;
-    height: 10px;
-    background: rgba(198, 161, 91, 0.2);
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.velocity-bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(198, 161, 91, 0.3);
-}
-
-.velocity-color-high {
-    background: #4CAF50;
-}
-
-.velocity-color-medium {
-    background: #FFC107;
-}
-
-.velocity-color-low {
-    background: #F44336;
-}
-
-.momentum-streets-panel {
-    background: rgba(198, 161, 91, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 40px 40px 50px 40px;
-    margin-top: var(--spacing-section);
-}
-
-.momentum-title {
-    font-size: 16px;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    font-weight: 600;
-}
-
-.momentum-list {
-    list-style: none;
-}
-
-.momentum-list li {
-    padding: 10px 0 10px 24px;
-    position: relative;
-    font-size: 14px;
-    color: var(--vm-text);
-    line-height: 1.5;
-}
-
-.momentum-list li::before {
-    content: "★";
-    position: absolute;
-    left: 0;
-    color: var(--vm-gold);
-    font-size: 14px;
-}
-
-/* ============================================
-SIGNAL BOARD — V3.3 & FIX 8
-============================================ */
-
-.signal-board-v2 {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: var(--spacing-content);
-}
-
-.signal-card-v2 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 20px 26px;
-    height: 90px;
-    margin-bottom: 14px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.signal-card-v2:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.signal-content-v2 {
-    flex: 1;
-}
-
-.signal-property-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 6px;
-}
-
-.signal-property-metrics {
-    font-size: 12px;
-    color: var(--vm-muted);
-    font-family: var(--font-mono);
-}
-
-.ai-flag-reason {
-    font-size: 11px;
-    color: var(--vm-muted);
-    font-style: italic;
-    margin-top: 4px;
-    padding-left: 10px;
-    border-left: 2px solid rgba(198, 161, 91, 0.3);
-}
-
-.signal-badges-v2 {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-end;
-    justify-content: center;
-}
-
-.signal-badge-v2 {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 5px 11px;
-    border-radius: 6px;
-    white-space: nowrap;
-    background: #0B0B0B;
-}
-
-.badge-risk {
-    color: #4CAF50;
-    border: 1px solid #C6A15B;
-}
-
-.badge-confidence {
-    color: var(--vm-gold);
-    border: 1px solid #C6A15B;
-}
-
-.badge-trigger {
-    color: #FFC107;
-    border: 1px solid #C6A15B;
-}
-
-.acquisition-strategy-ribbon {
-    background: var(--vm-gold);
-    border-radius: 8px;
-    padding: 40px 40px 50px 40px;
-    margin-top: var(--spacing-section);
-}
-
-.acquisition-strategy-text {
-    font-size: var(--body-size);
-    color: var(--vm-dark);
-    line-height: 1.6;
-    font-weight: 400;
-}
-
-.acquisition-strategy-text strong {
-    font-weight: 700;
-}
-
-/* ============================================
-EXECUTIVE BRIEF STACK — V3.3 VISUAL
+EXECUTIVE INTELLIGENCE — VERTICAL STACK
 ============================================ */
 
 .executive-brief-stack {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: var(--spacing-content);
+    margin-top: 0;
 }
 
 .executive-brief-card {
@@ -1603,7 +1380,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 40px 40px 50px 40px;
+    padding: 22px 28px;
     min-height: 88px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
@@ -1617,6 +1394,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: var(--font-body);
     font-size: 20px;
     font-weight: 800;
     flex-shrink: 0;
@@ -1624,9 +1402,9 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
 }
 
 .executive-brief-text {
-    font-size: var(--body-size);
+    font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.6;
+    line-height: 1.65;
     flex: 1;
 }
 
@@ -1638,7 +1416,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
 }
 
 .review-banner {
-    margin-top: var(--spacing-section);
+    margin-top: 64px;
     background: var(--vm-gold);
     border-radius: 8px;
     padding: 28px;
@@ -1654,7 +1432,20 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
 }
 
 /* ============================================
-BENCHMARK TABLE — V3.3 VISUAL
+TABLE SUBTITLE
+============================================ */
+
+.table-subtitle {
+    font-size: 13px;
+    color: var(--vm-muted);
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+
+/* ============================================
+BENCHMARK TABLE
 ============================================ */
 
 .benchmark-table {
@@ -1718,7 +1509,7 @@ BENCHMARK TABLE — V3.3 VISUAL
 
 .benchmark-insight {
     margin-top: 32px;
-    padding: 40px 40px 50px 40px;
+    padding: 22px 28px;
     background: rgba(198, 161, 91, 0.05);
     border-left: 4px solid var(--vm-gold);
     border-radius: 8px;
@@ -1728,67 +1519,476 @@ BENCHMARK TABLE — V3.3 VISUAL
 }
 
 /* ============================================
-PLAYBOOK GRID — V3.3 VISUAL
+AGENCY TREND INDICATORS
 ============================================ */
 
-.playbook-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    align-items: stretch;
-    margin-bottom: var(--spacing-section);
-}
-
-.playbook-column {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 0;
-    min-height: 340px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.playbook-column-title {
-    font-size: 18px;
-    color: var(--vm-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.agency-trend-indicator {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-weight: 600;
-    text-align: center;
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(135deg, rgba(198, 161, 91, 0.05), transparent);
 }
 
-.playbook-items {
-    list-style: none;
-    padding: 40px 40px 50px 40px;
-    flex: 1;
+.trend-up {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
 }
 
-.playbook-items li {
-    padding: 12px 0;
-    padding-left: 25px;
-    position: relative;
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-    margin-bottom: 16px;
+.trend-down {
+    background: rgba(244, 67, 54, 0.15);
+    color: #F44336;
 }
 
-.playbook-items li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-    font-size: 18px;
+.trend-stable {
+    background: rgba(198, 161, 91, 0.15);
+    color: var(--vm-gold);
 }
 
 /* ============================================
-APPENDIX — V3.3 VISUAL
+FORECAST & MARKET RISK — ENHANCED
+============================================ */
+
+.forecast-risk-grid {
+    display: flex;
+    gap: 32px;
+    align-items: stretch;
+    margin-bottom: 64px;
+    margin-top: 0;
+}
+
+.forecast-risk-card {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 40px 48px 32px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.forecast-risk-card h3 {
+    font-size: 20px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 28px;
+}
+
+.forecast-risk-arrow {
+    font-size: 96px;
+    color: var(--vm-gold);
+    margin-bottom: 24px;
+    line-height: 1;
+}
+
+.forecast-risk-percentage {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.forecast-risk-label {
+    font-size: 18px;
+    color: var(--vm-text);
+    margin-bottom: 8px;
+}
+
+.forecast-risk-confidence {
+    font-size: 15px;
+    color: var(--vm-muted);
+}
+
+.risk-context-note {
+    font-size: 12px;
+    color: var(--vm-muted);
+    margin-top: 16px;
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 90%;
+}
+
+.risk-gauge-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.risk-gauge-value {
+    font-size: 96px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 32px;
+    line-height: 1;
+}
+
+.risk-gauge-bar {
+    height: 24px;
+    background: rgba(198, 161, 91, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto 16px;
+    width: 60%;
+}
+
+.risk-gauge-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
+}
+
+.risk-gauge-status {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.risk-low {
+    color: #4CAF50;
+}
+
+.risk-moderate {
+    color: #FFC107;
+}
+
+.risk-elevated {
+    color: #F44336;
+}
+
+.risk-gauge-legend {
+    font-size: 13px;
+    color: var(--vm-muted);
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ============================================
+MACRO RISK DASHBOARD
+============================================ */
+
+.macro-risk-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+}
+
+.risk-dial-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.risk-dial-title {
+    font-size: 16px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.risk-dial-container {
+    width: 180px;
+    height: 90px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+.risk-dial-value {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(198, 161, 91, 0.5);
+}
+
+.risk-dial-status {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    font-weight: 400;
+}
+
+.risk-bar-simple {
+    height: 12px;
+    background: rgba(198, 161, 91, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px auto 16px;
+    width: 80%;
+}
+
+.risk-bar-fill-simple {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.risk-low-fill {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+}
+
+.risk-medium-fill {
+    background: linear-gradient(90deg, #FFC107, #FFD54F);
+}
+
+.risk-high-fill {
+    background: linear-gradient(90deg, #FF9800, #F44336);
+}
+
+/* ============================================
+SUB-MARKET BREAKDOWN — IMPROVED SPACING
+============================================ */
+
+.submarket-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 0;
+}
+
+.submarket-card-v2 {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 40px 28px 32px 28px;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.submarket-header {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: #C6A15B;
+    margin-bottom: 40px;
+    font-weight: 600;
+    text-align: right;
+    width: 100%;
+    text-shadow: 0 1px 4px rgba(198, 161, 91, 0.4);
+}
+
+.submarket-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+    flex: 1;
+}
+
+.submarket-metric-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.submarket-metric-label {
+    font-size: 11px;
+    color: var(--vm-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.submarket-metric-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--vm-text);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.submarket-micro-label {
+    font-size: 10px;
+    color: var(--vm-muted);
+    margin-top: 6px;
+    font-style: italic;
+}
+
+.velocity-bar-container {
+    height: 10px;
+    background: rgba(198, 161, 91, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+    margin: 8px 0;
+}
+
+.velocity-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(198, 161, 91, 0.3);
+}
+
+.velocity-color-high {
+    background: #4CAF50;
+}
+
+.velocity-color-medium {
+    background: #FFC107;
+}
+
+.velocity-color-low {
+    background: #F44336;
+}
+
+.submarket-listing-count {
+    font-size: 13px;
+    color: var(--vm-muted);
+    margin-top: 20px;
+    text-align: right;
+}
+
+.momentum-streets-panel {
+    background: rgba(198, 161, 91, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-top: 64px;
+}
+
+.momentum-title {
+    font-size: 16px;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.momentum-list {
+    list-style: none;
+}
+
+.momentum-list li {
+    padding: 10px 0 10px 24px;
+    position: relative;
+    font-size: 14px;
+    color: var(--vm-text);
+    line-height: 1.5;
+}
+
+.momentum-list li::before {
+    content: "★";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-size: 16px;
+}
+
+/* ============================================
+ACQUISITION SIGNALS — SIGNAL BOARD
+============================================ */
+
+.signal-board-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 0;
+}
+
+.signal-card-v2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 18px 28px;
+    height: 88px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.signal-content-v2 {
+    flex: 1;
+}
+
+.signal-property-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 8px;
+}
+
+.signal-property-metrics {
+    font-size: 13px;
+    color: var(--vm-muted);
+    font-family: var(--font-mono);
+}
+
+.ai-flag-reason {
+    font-size: 11px;
+    color: var(--vm-muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding-left: 4px;
+    border-left: 2px solid rgba(198, 161, 91, 0.3);
+    padding-left: 10px;
+}
+
+.signal-badges-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.signal-badge-v2 {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    background: #0B0B0B;
+}
+
+.badge-risk {
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
+}
+
+.badge-confidence {
+    color: var(--vm-gold);
+    border: 1px solid #C6A15B;
+}
+
+.badge-trigger {
+    color: #FFC107;
+    border: 1px solid #C6A15B;
+}
+
+.acquisition-strategy-ribbon {
+    background: var(--vm-gold);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-top: 64px;
+}
+
+.acquisition-strategy-text {
+    font-size: 15px;
+    color: var(--vm-dark);
+    line-height: 1.65;
+    font-weight: 400;
+}
+
+.acquisition-strategy-text strong {
+    font-weight: 700;
+}
+
+/* ============================================
+APPENDIX
 ============================================ */
 
 .appendix-section {
@@ -1825,12 +2025,12 @@ APPENDIX — V3.3 VISUAL
 .appendix-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
+    gap: 32px;
 }
 
 .appendix-item {
     background: rgba(18, 18, 18, 0.6);
-    padding: 40px 40px 50px 40px;
+    padding: 24px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -1851,7 +2051,7 @@ APPENDIX — V3.3 VISUAL
 
 .appendix-disclaimer {
     margin-top: 32px;
-    padding: 40px 40px 50px 40px;
+    padding: 28px 32px;
     background: rgba(198, 161, 91, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
@@ -1870,43 +2070,110 @@ APPENDIX — V3.3 VISUAL
 }
 
 /* ============================================
-MICRO-FOOTER NOTE — V3.3 VISUAL
+PLAYBOOK GRID
 ============================================ */
 
-.slide-micro-footer-note {
-    position: absolute;
-    bottom: 110px;
-    left: 48px;
-    right: 48px;
+.playbook-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: stretch;
+    margin-bottom: 64px;
+}
+
+.playbook-column {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.playbook-column-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
     text-align: center;
-    font-size: 12px;
-    color: var(--vm-muted);
-    font-style: italic;
-    padding: 12px 24px;
-    background: rgba(198, 161, 91, 0.03);
-    border-radius: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(198, 161, 91, 0.05), transparent);
+}
+
+.playbook-items {
+    list-style: none;
+    padding: 24px;
+    flex: 1;
+}
+
+.playbook-items li {
+    padding: 12px 0;
+    padding-left: 25px;
+    position: relative;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+.playbook-items li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+    font-size: 18px;
 }
 
 /* ============================================
-WATERMARK — V3.3 VISUAL
+MACRO PULSE STRIP
 ============================================ */
 
-.watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-family: var(--font-display);
-    font-size: 140px;
-    font-weight: 700;
-    color: rgba(198, 161, 91, 0.03);
-    letter-spacing: 0.15em;
-    z-index: 1;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    display: none;
+.macro-pulse-strip {
+    background: linear-gradient(135deg, rgba(198, 161, 91, 0.08), rgba(198, 161, 91, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 20px 32px;
+    margin: 64px auto 0;
+    max-width: 100%;
+    text-align: center;
+}
+
+.macro-pulse-text {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* ============================================
+DATA INTEGRITY FOOTER
+============================================ */
+
+.data-integrity-footer {
+    background: linear-gradient(135deg, rgba(198, 161, 91, 0.05), rgba(198, 161, 91, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: 32px;
+}
+
+.data-integrity-title {
+    font-size: 15px;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.data-integrity-text {
+    font-size: 12px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
 }
 
 /* ============================================
@@ -1941,7 +2208,7 @@ PRINT OPTIMIZATION
 }
 
 /* ============================================
-SLIDE-SPECIFIC WATERMARKS — V3.3 VISUAL
+SLIDE-SPECIFIC WATERMARKS
 ============================================ */
 
 .slide:nth-child(2) .watermark,
@@ -1952,9 +2219,9 @@ SLIDE-SPECIFIC WATERMARKS — V3.3 VISUAL
 }
 
 /* ============================================
-END VOXMILL PRODUCTION FINAL
-LAYOUT: VOXMILL_SPACING_FINAL (Preserved)
-VISUAL: V3.3 Light Visual Polish (Applied)
-INSTITUTIONAL GRADE — ENTERPRISE LUXURY ✅
-PERFECT SPACING + PREMIUM VISUAL POLISH ✅
+END VOXMILL V3.3 LIGHT VISUAL POLISH COMPLETE
+INSTITUTIONAL GRADE — HEDGE FUND × PRIVATE EQUITY × SOVEREIGN WEALTH ✅
+ELITE ANALYTICAL DEPTH ✅
+BOARDROOM-READY EXECUTIVE INTELLIGENCE ✅
+ENHANCED VISUAL CLARITY + PREMIUM POLISH ✅
 ============================================ */
