@@ -6,14 +6,14 @@ INSTITUTIONAL GRADE — ENTERPRISE LUXURY
 ============================================ */
 
 :root {
-    /* V3.3 VISUAL UPGRADE: Richer Luxury Gold Palette */
+    /* V3.3 VISUAL UPGRADE: Enhanced Gold Palette */
     --vm-bronze: #A77B3A;
     --vm-gold: #C6A15B;
-    --vm-gold-light: #C9A55A;
+    --vm-gold-light: #C6A15B;
     --vm-gold-secondary: #B59854;
     --vm-bronze-dark: #9E7B47;
     
-    /* V3.3 VISUAL UPGRADE: Refined Text Colors */
+    /* V3.3 VISUAL UPGRADE: Richer Text Colors */
     --vm-text: #EAEAEA;
     --vm-text-body: rgba(234, 234, 234, 0.85);
     --vm-muted: #B8B8B8;
@@ -51,7 +51,7 @@ INSTITUTIONAL GRADE — ENTERPRISE LUXURY
     --bar-color: #C6A15B;
     --bar-radius: 2px;
     
-    /* V3.3 POLISH: Universal Chart Theme */
+    /* POLISH 3: Universal Chart Theme */
     --chart-line-thickness: 2.2px;
     --chart-point-radius: 4px;
     --chart-gridline: rgba(255,255,255,0.05);
@@ -205,7 +205,7 @@ SLIDE HEADER
     font-family: var(--font-display);
     font-size: 50px;
     font-weight: 700;
-    color: #C9A55A;
+    color: #C6A15B;
     letter-spacing: 0.01em;
     text-shadow: 0 2px 6px rgba(198, 161, 91, 0.4);
 }
@@ -232,7 +232,7 @@ COVER SLIDE
 .slide-cover::after {
     background-image:
         repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(198, 161, 91, 0.04) 60px, rgba(198, 161, 91, 0.04) 62px),
-        radial-gradient(circle at 50% 50%, rgba(201, 165, 90, 0.03) 0%, transparent 60%);
+        radial-gradient(circle at 50% 50%, rgba(198, 161, 91, 0.03) 0%, transparent 60%);
 }
 
 .logo-container {
@@ -319,13 +319,13 @@ SECTION TITLES — FIX 2: GLOBAL VERTICAL SPACING
     margin-top: 120px;
     margin-bottom: 32px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #C6A15B;
+    border-bottom: 1px solid rgba(255,255,255,0.14);
     width: 50%;
     text-transform: none;
 }
 
 /* ============================================
-EXECUTIVE SUMMARY — V3.3 VISUAL UPGRADE
+EXECUTIVE SUMMARY — FIX 3 & V3.3 VISUAL UPGRADE
 ============================================ */
 
 .executive-summary-bullets {
@@ -351,7 +351,7 @@ EXECUTIVE SUMMARY — V3.3 VISUAL UPGRADE
 .executive-bullet-title {
     font-size: var(--h3-size);
     font-weight: 600;
-    color: #C9A55A;
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     margin-bottom: 18px;
@@ -369,8 +369,8 @@ EXECUTIVE SUMMARY — V3.3 VISUAL UPGRADE
 .killer-insight {
     display: block;
     font-size: var(--body-size);
-    font-weight: 600;
-    color: #C9A55A;
+    font-weight: 700;
+    color: #C6A15B;
     margin-top: 20px;
     padding-top: 20px;
     border-top: 2px solid rgba(198, 161, 91, 0.5);
@@ -400,7 +400,7 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
     border-radius: 8px;
     padding: 40px 40px 50px 40px;
     text-align: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     min-height: 140px;
 }
 
@@ -415,8 +415,8 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
 
 .movement-value {
     font-size: 32px;
-    font-weight: 700;
-    color: #C9A55A;
+    font-weight: 800;
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 8px;
     font-variant-numeric: tabular-nums;
@@ -425,7 +425,7 @@ WEEKLY MOVEMENT DASHBOARD — V3.3 VISUAL UPGRADE
 
 .movement-change {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     font-family: var(--font-mono);
 }
 
@@ -461,7 +461,7 @@ KPI GRID — V3.3 VISUAL UPGRADE
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     padding: 35px 40px;
     min-height: 165px;
 }
@@ -488,8 +488,8 @@ KPI GRID — V3.3 VISUAL UPGRADE
 .kpi-value {
     font-family: var(--font-body);
     font-size: 60px;
-    font-weight: 700;
-    color: #C9A55A;
+    font-weight: 800;
+    color: #C6A15B;
     line-height: 1;
     margin-bottom: 16px;
     letter-spacing: 0.02em;
@@ -538,7 +538,7 @@ CHART SECTION — V3.3 VISUAL UPGRADE
     border-radius: 12px;
     padding: 40px;
     height: 360px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -547,7 +547,7 @@ CHART SECTION — V3.3 VISUAL UPGRADE
 .chart-title {
     font-size: 22px;
     font-weight: 600;
-    color: #C9A55A;
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 6px;
@@ -580,7 +580,7 @@ CHART SECTION — V3.3 VISUAL UPGRADE
     border-left: 4px solid var(--vm-gold);
     padding: 12px 20px;
     margin-top: 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: var(--body-size);
     color: var(--vm-text-body);
     line-height: 1.6;
@@ -617,7 +617,7 @@ TWO-COLUMN LAYOUT — V3.3 VISUAL UPGRADE
     border-radius: 12px;
     padding: 40px;
     height: 420px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -647,13 +647,13 @@ INSIGHT CARDS — V3.3 VISUAL UPGRADE
     display: flex;
     flex-direction: column;
     justify-content: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .insight-title {
     font-size: var(--body-size);
     font-weight: 600;
-    color: #C9A55A;
+    color: #C6A15B;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 12px;
@@ -687,7 +687,7 @@ CROSS-VERTICAL INTELLIGENCE — V3.3 VISUAL UPGRADE
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .cross-vertical-icon {
@@ -752,7 +752,7 @@ METHODOLOGY & MODEL ARCHITECTURE — V3.3 VISUAL
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 40px 40px 50px 40px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .methodology-title {
@@ -830,7 +830,7 @@ METHODOLOGY & MODEL ARCHITECTURE — V3.3 VISUAL
     background: var(--vm-gold);
     color: var(--vm-dark);
     padding: 20px 32px;
-    border-radius: 6px;
+    border-radius: 8px;
     margin-top: 32px;
     text-align: center;
 }
@@ -859,14 +859,14 @@ TABLE STYLING — V3.3 VISUAL UPGRADE
 .table-luxury thead {
     background: linear-gradient(90deg,
         rgba(198, 161, 91, 1) 0%,
-        rgba(201, 165, 90, 1) 50%,
+        rgba(198, 161, 91, 1) 50%,
         rgba(198, 161, 91, 1) 100%);
     height: 56px;
 }
 
 .table-luxury th {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--vm-dark);
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -918,24 +918,24 @@ TABLE STYLING — V3.3 VISUAL UPGRADE
     border-radius: 6px;
     font-family: var(--font-mono);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     background: #0B0B0B;
-    border: 1px solid #C6A15B;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .score-high, .score-excellent {
-    color: #5ADB63;
-    border-color: #4CAF50;
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
 }
 
 .score-medium, .score-good {
-    color: #FFD54F;
-    border-color: #FFC107;
+    color: #FFC107;
+    border: 1px solid #C6A15B;
 }
 
 .score-low, .score-standard {
-    color: #FF6B6B;
-    border-color: #F44336;
+    color: #F44336;
+    border: 1px solid #C6A15B;
 }
 
 /* ============================================
@@ -955,18 +955,18 @@ VELOCITY BADGES — V3.3 VISUAL UPGRADE
 }
 
 .velocity-high {
-    color: #5ADB63;
-    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
 }
 
 .velocity-medium {
-    color: #FFD54F;
-    border: 1px solid #FFC107;
+    color: #FFC107;
+    border: 1px solid #C6A15B;
 }
 
 .velocity-low {
-    color: #FF6B6B;
-    border: 1px solid #F44336;
+    color: #F44336;
+    border: 1px solid #C6A15B;
 }
 
 /* ============================================
@@ -982,7 +982,7 @@ FOOTER — V3.3 VISUAL UPGRADE
     justify-content: space-between;
     align-items: center;
     padding-top: 18px;
-    border-top: 3px solid rgba(198, 161, 91, 0.6);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
     z-index: 20;
     height: 72px;
     background: var(--vm-dark);
@@ -1012,7 +1012,7 @@ FOOTER — V3.3 VISUAL UPGRADE
     background: rgba(198, 161, 91, 0.25);
     padding: 10px 20px;
     border-radius: 6px;
-    border: 2px solid rgba(198, 161, 91, 0.6);
+    border: 1px solid #C6A15B;
     font-variant-numeric: tabular-nums;
     opacity: 1;
     letter-spacing: 0.02em;
@@ -1031,7 +1031,7 @@ INTELLIGENCE PANELS — V3.3 VISUAL
     border-radius: 12px;
     padding: 40px 40px 50px 40px;
     margin-top: var(--spacing-section);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .panel-title {
@@ -1094,7 +1094,7 @@ DEPTH METRICS — V3.3 VISUAL
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 40px 40px 50px 40px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .depth-label {
@@ -1103,8 +1103,6 @@ DEPTH METRICS — V3.3 VISUAL
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 16px;
-    font-weight: 400;
-    opacity: 0.75;
 }
 
 .depth-value {
@@ -1157,13 +1155,13 @@ FORECAST GRID — V3.3 VISUAL
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .forecast-card-highlight {
-    border-color: #C9A55A;
+    border-color: #C6A15B;
     background: linear-gradient(135deg, rgba(198, 161, 91, 0.08), rgba(18, 18, 18, 0.95));
-    box-shadow: 0 6px 16px rgba(198, 161, 91, 0.2);
+    box-shadow: 0 4px 20px rgba(198, 161, 91, 0.35);
 }
 
 .forecast-card-title {
@@ -1232,12 +1230,12 @@ FORECAST GRID — V3.3 VISUAL
     font-size: 40px;
     font-weight: 600;
     padding: 24px 48px;
-    border-radius: 6px;
+    border-radius: 8px;
     margin-bottom: 24px;
 }
 
 .sentiment-bullish {
-    color: #5ADB63;
+    color: #4CAF50;
     background: rgba(76, 175, 80, 0.2);
     border: 1px solid rgba(76, 175, 80, 0.5);
 }
@@ -1249,7 +1247,7 @@ FORECAST GRID — V3.3 VISUAL
 }
 
 .sentiment-bearish {
-    color: #FF6B6B;
+    color: #F44336;
     background: rgba(244, 67, 54, 0.2);
     border: 1px solid rgba(244, 67, 54, 0.5);
 }
@@ -1262,14 +1260,14 @@ MACRO CONTEXT — V3.3 VISUAL
     margin-top: var(--spacing-section);
     padding: 20px 24px;
     background: rgba(198, 161, 91, 0.08);
-    border-left: 4px solid #C9A55A;
-    border-radius: 6px;
+    border-left: 4px solid #C6A15B;
+    border-radius: 8px;
     box-shadow: inset 0 1px 2px rgba(198, 161, 91, 0.2);
 }
 
 .macro-title {
     font-size: 19px;
-    color: #C9A55A;
+    color: #C6A15B;
     margin-bottom: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -1282,7 +1280,7 @@ MACRO CONTEXT — V3.3 VISUAL
 }
 
 /* ============================================
-MACRO RISK DASHBOARD — V3.3
+MACRO RISK DASHBOARD — V3.3 & FIX 6
 ============================================ */
 
 .macro-risk-grid {
@@ -1298,7 +1296,7 @@ MACRO RISK DASHBOARD — V3.3
     border-radius: 12px;
     padding: 40px;
     text-align: center;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     min-height: 280px;
     display: flex;
     flex-direction: column;
@@ -1311,13 +1309,12 @@ MACRO RISK DASHBOARD — V3.3
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 24px;
-    font-weight: 400;
-    opacity: 0.75;
+    font-weight: 600;
 }
 
 .risk-dial-value {
     font-size: 52px;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--vm-gold);
     margin-bottom: 12px;
     text-shadow: 0 2px 10px rgba(198, 161, 91, 0.5);
@@ -1357,7 +1354,7 @@ MACRO RISK DASHBOARD — V3.3
 }
 
 /* ============================================
-SUB-MARKET BREAKDOWN — V3.3
+SUB-MARKET BREAKDOWN — V3.3 & FIX 7
 ============================================ */
 
 .submarket-grid-v2 {
@@ -1376,13 +1373,13 @@ SUB-MARKET BREAKDOWN — V3.3
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .submarket-header {
     font-family: var(--font-display);
     font-size: 24px;
-    color: #C9A55A;
+    color: #C6A15B;
     margin-bottom: 40px;
     font-weight: 600;
     text-align: right;
@@ -1410,8 +1407,6 @@ SUB-MARKET BREAKDOWN — V3.3
     color: var(--vm-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: 400;
-    opacity: 0.75;
 }
 
 .submarket-metric-value {
@@ -1485,7 +1480,7 @@ SUB-MARKET BREAKDOWN — V3.3
 }
 
 /* ============================================
-SIGNAL BOARD — V3.3
+SIGNAL BOARD — V3.3 & FIX 8
 ============================================ */
 
 .signal-board-v2 {
@@ -1502,11 +1497,11 @@ SIGNAL BOARD — V3.3
     gap: 40px;
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 20px 26px;
     height: 90px;
     margin-bottom: 14px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .signal-card-v2:nth-child(odd) {
@@ -1557,23 +1552,23 @@ SIGNAL BOARD — V3.3
 }
 
 .badge-risk {
-    color: #5ADB63;
-    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    border: 1px solid #C6A15B;
 }
 
 .badge-confidence {
     color: var(--vm-gold);
-    border: 1px solid var(--vm-gold);
+    border: 1px solid #C6A15B;
 }
 
 .badge-trigger {
-    color: #FFD54F;
-    border: 1px solid #FFC107;
+    color: #FFC107;
+    border: 1px solid #C6A15B;
 }
 
 .acquisition-strategy-ribbon {
     background: var(--vm-gold);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 40px 40px 50px 40px;
     margin-top: var(--spacing-section);
 }
@@ -1610,7 +1605,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
     border-radius: 10px;
     padding: 40px 40px 50px 40px;
     min-height: 88px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .executive-brief-number {
@@ -1623,7 +1618,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
     align-items: center;
     justify-content: center;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 800;
     flex-shrink: 0;
     box-shadow: 0 3px 10px rgba(198, 161, 91, 0.5);
 }
@@ -1645,7 +1640,7 @@ EXECUTIVE BRIEF STACK — V3.3 VISUAL
 .review-banner {
     margin-top: var(--spacing-section);
     background: var(--vm-gold);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 28px;
     text-align: center;
 }
@@ -1726,7 +1721,7 @@ BENCHMARK TABLE — V3.3 VISUAL
     padding: 40px 40px 50px 40px;
     background: rgba(198, 161, 91, 0.05);
     border-left: 4px solid var(--vm-gold);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 15px;
     color: var(--vm-text-body);
     line-height: 1.65;
@@ -1752,7 +1747,7 @@ PLAYBOOK GRID — V3.3 VISUAL
     min-height: 340px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 .playbook-column-title {
@@ -1836,7 +1831,7 @@ APPENDIX — V3.3 VISUAL
 .appendix-item {
     background: rgba(18, 18, 18, 0.6);
     padding: 40px 40px 50px 40px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1846,8 +1841,6 @@ APPENDIX — V3.3 VISUAL
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 8px;
-    font-weight: 400;
-    opacity: 0.75;
 }
 
 .appendix-value {
@@ -1891,7 +1884,7 @@ MICRO-FOOTER NOTE — V3.3 VISUAL
     font-style: italic;
     padding: 12px 24px;
     background: rgba(198, 161, 91, 0.03);
-    border-radius: 6px;
+    border-radius: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
