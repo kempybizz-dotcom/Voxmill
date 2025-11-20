@@ -23,7 +23,7 @@ MULTI-ASSET CLASS INTELLIGENCE PLATFORM
 }
 
 @page {
-    size: 1920px 1080px;
+    size: 1920px 1380px;
     margin: 0;
 }
 
@@ -67,7 +67,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
 
 .slide {
     width: 1920px;
-    height: 1080px;
+    height: 1380px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
