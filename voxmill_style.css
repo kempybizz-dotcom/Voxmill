@@ -55,7 +55,8 @@ body::before {
     background-image: 
         repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(197, 164, 109, 0.015) 2px, rgba(197, 164, 109, 0.015) 4px),
         repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(197, 164, 109, 0.015) 2px, rgba(197, 164, 109, 0.015) 4px);
-    opacity: 0.07;
+    background-repeat: repeat;
+    opacity: 0.11;
     z-index: 0;
     pointer-events: none;
 }
@@ -66,7 +67,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
 
 .slide {
     width: 1920px;
-    height: 1430px;
+    height: 1480px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
@@ -115,7 +116,7 @@ SLIDE HEADER — UNCHANGED POSITION
 
 .slide-header {
     position: absolute;
-    top: 50px;
+    top: 60px;
     left: 48px;
     right: 48px;
     display: flex;
@@ -130,8 +131,8 @@ SECTION HEADER SPACING — UNIFORM ACROSS ALL SLIDES
 ============================================ */
 
 .section-header {
-    margin-top: 40px;
-    margin-bottom: 22px;
+    margin-top: 50px;
+    margin-bottom: 14px;
     border-bottom: none;
 }
 
@@ -157,7 +158,7 @@ SECTION HEADER SPACING — UNIFORM ACROSS ALL SLIDES
     color: #C5A46D;
     letter-spacing: 0.01em;
     text-shadow: 0 2px 6px rgba(197, 164, 109, 0.4);
-    margin-bottom: 18px;
+    margin-bottom: 6px;
 }
 
 .slide-meta {
@@ -173,7 +174,7 @@ SLIDE CONTENT AREA — ORIGINAL POSITION (REVERTED)
 
 .slide-content {
     position: absolute;
-    top: 170px;
+    top: 185px;
     left: 48px;
     right: 48px;
     bottom: 140px;
@@ -375,7 +376,7 @@ CROSS-VERTICAL INTELLIGENCE SLIDE
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 210px;
+    top: 225px;
 }
 
 .cross-vertical-grid {
@@ -389,14 +390,19 @@ CROSS-VERTICAL INTELLIGENCE SLIDE
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 5px solid var(--vm-gold);
+    border-right: 1px solid rgba(197, 164, 109, 0.15);
     border-radius: 12px;
-    padding: 40px 32px 40px 52px;
+    padding: 40px 36px;
     min-height: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+}
+
+.cross-vertical-card:last-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .cross-vertical-icon {
@@ -519,7 +525,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .pipeline-box {
     background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-light));
-    color: var(--vm-dark);
+    color: #EDE8DA !important;
     padding: 18px 28px;
     border-radius: 6px;
     font-size: 13px;
@@ -537,7 +543,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .proprietary-badge {
     background: var(--vm-gold);
-    color: var(--vm-dark);
+    color: var(--vm-light);
     padding: 20px 32px;
     border-radius: 8px;
     margin-top: 52px;
@@ -546,7 +552,6 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .proprietary-badge-text {
     font-family: var(--font-display);
-    color: var(--vm-dark);
     font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -1017,7 +1022,7 @@ TABLE STYLING — PREMIUM ENHANCEMENT
 ============================================ */
 
 .top-market-opportunities .slide-content {
-    top: 210px;
+    top: 225px;
 }
 
 .opportunities-table {
@@ -1077,7 +1082,7 @@ TABLE STYLING — PREMIUM ENHANCEMENT
 .table-luxury td {
     font-size: 14px;
     color: var(--vm-text);
-    padding: 16px 12px;
+    padding: 20px 12px;
     vertical-align: middle;
 }
 
@@ -1233,7 +1238,7 @@ DEPTH METRICS
 ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 210px;
+    top: 225px;
 }
 
 .depth-metrics {
@@ -1525,7 +1530,7 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 ============================================ */
 
 .macro-context {
-    margin-top: 260px;
+    margin-top: 275px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
@@ -2379,23 +2384,6 @@ DATA INTEGRITY FOOTER
     line-height: 1.7;
 }
 
-.final-footer {
-    width: 100%;
-    padding: 18px 0;
-    background-color: #0A0A0A;
-    border-top: 1px solid #D3B46A;
-    text-align: center;
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    color: #D3B46A;
-    letter-spacing: 0.5px;
-    margin-top: -80px;
-}
-
-.footer-content {
-    line-height: 1.6;
-}
-
 /* ============================================
 UTILITY CLASSES
 ============================================ */
@@ -2406,6 +2394,27 @@ UTILITY CLASSES
 .text-muted { color: var(--vm-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
+
+/* ============================================
+FINAL PAGE FOOTER — LAST PAGE ONLY
+============================================ */
+
+.final-footer {
+    width: 100%;
+    padding: 24px 0;
+    background-color: transparent;
+    border-top: none;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    color: rgba(211, 180, 106, 0.7);
+    letter-spacing: 0.8px;
+    margin-top: 60px;
+}
+
+.footer-content {
+    line-height: 1.8;
+}
 
 /* ============================================
 PRINT OPTIMIZATION
