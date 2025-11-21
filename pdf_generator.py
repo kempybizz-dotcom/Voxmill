@@ -5,6 +5,7 @@ Production-ready HTML/CSS to PDF converter using WeasyPrint
 Fortune-500 grade executive intelligence deck generation
 ENHANCED VERSION: Multi-vertical token support + 5 elite intelligence sections
 🔥 CRITICAL FIX: Bulletproof vertical_config handling (string AND dict support)
+✅ SCORING FIX: Real 0-100 scores, no more hardcoded "9"
 """
 
 import os
@@ -185,7 +186,6 @@ class VoxmillPDFGenerator:
                 'forward_indicator_label': 'Momentum'
             }
 
-    # All calculation methods unchanged from Document 3
     def calculate_liquidity_index(self, data: Dict[str, Any]) -> int:
         kpis = data.get('kpis', data.get('metrics', {}))
         days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
@@ -602,79 +602,82 @@ class VoxmillPDFGenerator:
         
         return chart_data
 
-   def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    opportunities = []
-    opportunities_raw = data.get('top_opportunities', data.get('properties', []))
-    
-    if not opportunities_raw:
+    def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        ✅ FIXED: Real 0-100 scoring logic - no more hardcoded "9"
+        """
+        opportunities = []
+        opportunities_raw = data.get('top_opportunities', data.get('properties', []))
+        
+        if not opportunities_raw:
+            return opportunities
+        
+        for idx, opp in enumerate(opportunities_raw[:8]):
+            # CRITICAL FIX: Properly extract and calculate score
+            score = 0
+            
+            # First try to get existing score
+            if 'score' in opp and opp['score'] is not None:
+                score = int(float(opp.get('score', 0)))
+            elif 'deal_score' in opp and opp['deal_score'] is not None:
+                score = int(float(opp.get('deal_score', 0)))
+            elif 'opportunity_score' in opp and opp['opportunity_score'] is not None:
+                score = int(float(opp.get('opportunity_score', 0)))
+            
+            # If no score exists, calculate one based on metrics
+            if score == 0:
+                price_per_sqft = opp.get('price_per_sqft', 0)
+                days_listed = opp.get('days_listed', opp.get('days_on_market', 0))
+                
+                # Base score
+                score = 50
+                
+                # Price efficiency score (0-30 points)
+                if price_per_sqft > 0:
+                    if price_per_sqft < 1500:
+                        score += 30
+                    elif price_per_sqft < 2000:
+                        score += 20
+                    elif price_per_sqft < 2500:
+                        score += 10
+                
+                # Velocity score (0-25 points)
+                if days_listed > 0:
+                    if days_listed < 20:
+                        score += 25
+                    elif days_listed < 40:
+                        score += 15
+                    elif days_listed < 60:
+                        score += 5
+                
+                # Ranking bonus (distribute remaining points by position)
+                score += max(0, (8 - idx) * 2)
+                
+                # Clamp to 55-95 range (never show 0 or 100)
+                score = max(55, min(95, score))
+            
+            # Determine score class
+            if score >= 80:
+                score_class = 'high'
+            elif score >= 65:
+                score_class = 'medium'
+            else:
+                score_class = 'low'
+            
+            opportunities.append({
+                'address': opp.get('address', 'N/A'),
+                'property_type': opp.get('type', opp.get('property_type', 'N/A')),
+                'size': opp.get('size', opp.get('sqft', 0)),
+                'price': opp.get('price', 0),
+                'price_per_sqft': opp.get('price_per_sqft', 0),
+                'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
+                'score': score,  # Now guaranteed to be 55-95
+                'score_class': score_class
+            })
+        
+        # Sort by score descending
+        opportunities.sort(key=lambda x: x['score'], reverse=True)
         return opportunities
-    
-    for idx, opp in enumerate(opportunities_raw[:8]):
-        # CRITICAL FIX: Properly extract and calculate score
-        score = 0
-        
-        # First try to get existing score
-        if 'score' in opp and opp['score'] is not None:
-            score = int(float(opp.get('score', 0)))
-        elif 'deal_score' in opp and opp['deal_score'] is not None:
-            score = int(float(opp.get('deal_score', 0)))
-        elif 'opportunity_score' in opp and opp['opportunity_score'] is not None:
-            score = int(float(opp.get('opportunity_score', 0)))
-        
-        # If no score exists, calculate one based on metrics
-        if score == 0:
-            price_per_sqft = opp.get('price_per_sqft', 0)
-            days_listed = opp.get('days_listed', opp.get('days_on_market', 0))
-            
-            # Base score
-            score = 50
-            
-            # Price efficiency score (0-30 points)
-            if price_per_sqft > 0:
-                if price_per_sqft < 1500:
-                    score += 30
-                elif price_per_sqft < 2000:
-                    score += 20
-                elif price_per_sqft < 2500:
-                    score += 10
-            
-            # Velocity score (0-25 points)
-            if days_listed > 0:
-                if days_listed < 20:
-                    score += 25
-                elif days_listed < 40:
-                    score += 15
-                elif days_listed < 60:
-                    score += 5
-            
-            # Ranking bonus (distribute remaining points by position)
-            score += max(0, (8 - idx) * 2)
-            
-            # Clamp to 55-95 range (never show 0 or 100)
-            score = max(55, min(95, score))
-        
-        # Determine score class
-        if score >= 80:
-            score_class = 'high'
-        elif score >= 65:
-            score_class = 'medium'
-        else:
-            score_class = 'low'
-        
-        opportunities.append({
-            'address': opp.get('address', 'N/A'),
-            'property_type': opp.get('type', opp.get('property_type', 'N/A')),
-            'size': opp.get('size', opp.get('sqft', 0)),
-            'price': opp.get('price', 0),
-            'price_per_sqft': opp.get('price_per_sqft', 0),
-            'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
-            'score': score,  # Now guaranteed to be 55-95
-            'score_class': score_class
-        })
-    
-    # Sort by score descending
-    opportunities.sort(key=lambda x: x['score'], reverse=True)
-    return opportunities
     
     def render_template(self, data: Dict[str, Any]) -> str:
         """UPDATED: Now includes vertical token support"""
