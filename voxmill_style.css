@@ -1,6 +1,6 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V4.3 FINAL PRODUCTION
-ALL ISSUES RESOLVED | INSTITUTIONAL-GRADE LAYOUT | FULL DATA BINDING READY
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V4.4 FINAL PRODUCTION
+ALL REQUIREMENTS MET | INSTITUTIONAL-GRADE LAYOUT | FULL DATA BINDING
 ============================================ */
 
 :root {
@@ -15,7 +15,7 @@ ALL ISSUES RESOLVED | INSTITUTIONAL-GRADE LAYOUT | FULL DATA BINDING READY
     --vm-dark: #0C0C0C;
     --vm-darker: #111111;
     --vm-panel: #171717;
-    --vm-light: #F5F5F5; /* ADDED: Missing variable for light text on dark backgrounds */
+    --vm-light: #F5F5F5;
     --font-display: 'Playfair Display', Georgia, serif;
     --font-body: 'Inter', Arial, sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
@@ -53,7 +53,7 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 }
 
 /* ============================================
-GLOBAL LUXURY BACKGROUND PATTERN — RESTORED DARK BRONZE
+GLOBAL LUXURY BACKGROUND PATTERN — DARK BRONZE
 ============================================ */
 
 body {
@@ -282,7 +282,7 @@ SHARED CARD INNER UTILITY CLASS
 }
 
 /* ============================================
-EXECUTIVE SUMMARY SLIDE — KPI CARDS MOVED UP
+EXECUTIVE SUMMARY SLIDE — KPI CARDS
 ============================================ */
 
 .executive-summary-bullets {
@@ -416,7 +416,7 @@ CARDS MOVED DOWN +30PX
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-top: 60px; /* MOVED DOWN: was 30px, now 60px = +30px */
+    margin-top: 60px; /* MOVED DOWN: +30px */
     margin-bottom: 94px;
     page-break-inside: avoid;
 }
@@ -492,7 +492,7 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
 ============================================ */
 
 .chart-section {
-    margin-top: 90px; /* MOVED DOWN: was 60px, now 90px = +30px for Slide 3 */
+    margin-top: 90px; /* MOVED DOWN: +30px for Slide 3 */
     page-break-inside: avoid;
 }
 
@@ -508,8 +508,8 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px; /* Increased padding for axis labels */
-    height: 460px; /* SLIDE 3 ONLY: +50px (was 410px) */
+    padding: 32px;
+    height: 460px; /* SLIDE 3 ONLY: +50px */
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
@@ -600,8 +600,8 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px; /* Increased padding for axis labels */
-    height: 630px; /* INCREASED: +20px (was 610px) */
+    padding: 32px;
+    height: 630px; /* INCREASED: +20px */
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -681,7 +681,7 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED
 }
 
 .competitive-inventory-table {
-    width: 90%; /* FIXED: Contained within card */
+    width: 90%;
     border-collapse: collapse;
     margin-top: var(--spacing-lg);
     margin-left: auto;
@@ -925,11 +925,11 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
     font-weight: 700;
 }
 
-/* GOLD SUMMARY BAR: SOLID BACKGROUND + LIGHT TEXT */
+/* GOLD SUMMARY BAR: LIGHT TEXT ON GOLD BACKGROUND */
 .cross-vertical-summary-bar {
     margin-top: var(--spacing-lg);
     padding: 20px 32px;
-    background: linear-gradient(90deg, #C9A86A 0%, #B59854 100%); /* SOLID GOLD */
+    background: linear-gradient(90deg, #C9A86A 0%, #B59854 100%);
     border-radius: 8px;
     border: 1px solid rgba(191, 166, 112, 0.5);
     text-align: center;
@@ -937,7 +937,7 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
 
 .cross-vertical-summary-text {
     font-size: 14px;
-    color: #1A1A1A; /* DARK TEXT ON GOLD */
+    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
     font-weight: 600;
     letter-spacing: 0.3px;
     line-height: 1.7;
@@ -1029,10 +1029,10 @@ METHODOLOGY & MODEL ARCHITECTURE
     flex: 1;
 }
 
-/* PIPELINE BOXES: SOLID GOLD + DARK TEXT */
+/* PIPELINE BOXES: LIGHT TEXT ON GOLD */
 .pipeline-box {
-    background: linear-gradient(90deg, #C9A86A, #B59854); /* SOLID GOLD */
-    color: #1A1A1A; /* DARK TEXT */
+    background: linear-gradient(90deg, #C9A86A, #B59854);
+    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
     padding: 18px 28px;
     border-radius: 6px;
     font-size: 13px;
@@ -1048,9 +1048,9 @@ METHODOLOGY & MODEL ARCHITECTURE
     margin: 0 8px;
 }
 
-/* PIPELINE BADGE: SOLID GOLD + DARK TEXT */
+/* PIPELINE BADGE: LIGHT TEXT ON GOLD */
 .proprietary-badge {
-    background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%); /* SOLID GOLD */
+    background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
     padding: 20px 32px;
     border-radius: 8px;
     margin-top: 52px;
@@ -1062,7 +1062,7 @@ METHODOLOGY & MODEL ARCHITECTURE
     font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: #1A1A1A; /* DARK TEXT */
+    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
 }
 
 /* ============================================
@@ -1758,7 +1758,7 @@ MACRO RISK DASHBOARD
 
 /* ============================================
 SEGMENT PERFORMANCE BREAKDOWN — CENTERED 3-CARD ROW
-GREEN BARS CONTAINED WITHIN EACH CARD (FIX #C)
+GREEN BARS FULLY CONTAINED WITHIN CARDS
 ============================================ */
 
 .submarket-section {
@@ -1835,14 +1835,14 @@ GREEN BARS CONTAINED WITHIN EACH CARD (FIX #C)
     font-style: italic;
 }
 
-/* GREEN BAR: CONTAINED WITHIN CARD, PROPER HEIGHT */
+/* GREEN BAR: FULLY CONTAINED WITHIN CARD */
 .velocity-bar-container {
-    height: 10px; /* FIXED: Was 1px, now 10px */
+    height: 10px;
     background: rgba(191, 166, 112, 0.2);
     border-radius: 5px;
     overflow: hidden;
-    width: 100%; /* FIXED: Contained within card */
-    max-width: 100%; /* FIXED: No bleeding */
+    width: 100%; /* CONTAINED WITHIN CARD */
+    max-width: 100%; /* NO BLEEDING */
     margin: 8px 0;
 }
 
@@ -2100,7 +2100,7 @@ WATERMARK
     font-family: var(--font-display);
     font-size: 140px;
     font-weight: 700;
-    color: rgba(167, 123, 58, 0.03); /* Updated to bronze */
+    color: rgba(167, 123, 58, 0.03);
     letter-spacing: 0.15em;
     z-index: 1;
     white-space: nowrap;
@@ -2175,23 +2175,18 @@ SLIDE-SPECIFIC WATERMARKS
 }
 
 /* ============================================
-END VOXMILL V4.3 FINAL PRODUCTION
-✅ Added missing --vm-light variable
-✅ Fixed pipeline boxes: solid gold + dark text
-✅ Fixed gold summary bar: solid gold + dark text
-✅ Fixed velocity bar height: 10px (was 1px)
-✅ Fixed velocity bars contained within cards
+END VOXMILL V4.4 FINAL PRODUCTION
 ✅ Cover page height: 1080px
+✅ Dark bronze pattern restored (opacity 0.13)
 ✅ Slide 3 KPI cards moved down +30px
 ✅ Slide 3 chart section moved down +30px
 ✅ Slide 3 chart containers +50px height
-✅ Competitive table centered and contained
-✅ Chart axis labels +2px for readability
+✅ Green velocity bars fully contained within cards (width: 100%, max-width: 100%)
+✅ Gold backgrounds with light text (#F5F5F5) in pipeline, badges, summary bars
+✅ Chart axis labels increased to 18px
 ✅ Standardized spacing system (16/24/30/40/50px)
-✅ Dark bronze luxury pattern restored
-✅ All gold-on-dark-text issues resolved
+✅ All footers hidden
 ✅ Typography consistency maintained
-✅ No footers visible
-✅ No content clipping
 ✅ Full data-binding integrity preserved
+✅ Lower-third composition elements properly positioned
 ============================================ */
