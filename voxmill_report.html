@@ -826,7 +826,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 9: EXECUTIVE INTELLIGENCE — REDESIGNED
+     SLIDE 9: EXECUTIVE INTELLIGENCE — WITH STRATEGIC ACTION WINDOW
      ============================================ -->
 <div class="slide executive-intelligence">
     <div class="slide-header">
@@ -837,38 +837,36 @@
     <div class="slide-content">
         <div class="executive-intelligence-container">
             <div class="executive-intelligence-layout">
-                <!-- Left: Numbered Insights -->
                 <div class="executive-insights-list">
                     <div class="executive-insight-item">
                         <div class="executive-insight-number">1</div>
                         <div class="executive-insight-text">
-                            Mayfair prime listings velocity increased 18% QoQ, indicating strong buyer confidence despite macroeconomic headwinds.
+                            Premium segment velocity increased 18% QoQ, indicating strong participant confidence despite macroeconomic headwinds.
                         </div>
                     </div>
                     
                     <div class="executive-insight-item">
                         <div class="executive-insight-number">2</div>
                         <div class="executive-insight-text">
-                            £10M+ transactions demonstrate 6.2% price resilience vs. broader market, confirming ultra-prime segment decoupling.
+                            Ultra-prime transactions demonstrate 6.2% valuation resilience vs. broader market, confirming segment decoupling.
                         </div>
                     </div>
                     
                     <div class="executive-insight-item">
                         <div class="executive-insight-number">3</div>
                         <div class="executive-insight-text">
-                            Foreign capital inflows concentrated in Belgravia and Knightsbridge, with Middle Eastern buyers representing 34% of total volume.
+                            Foreign capital inflows concentrated in premium segments, with international participants representing 34% of total volume.
                         </div>
                     </div>
                     
                     <div class="executive-insight-item">
                         <div class="executive-insight-number">4</div>
                         <div class="executive-insight-text">
-                            Competitive intensity suggests 90-120 day acquisition window for optimal positioning before Q1 2026 price adjustments.
+                            Competitive intensity suggests 90-120 day acquisition window for optimal positioning before Q1 2026 {{ value_metric_label }} adjustments.
                         </div>
                     </div>
                 </div>
                 
-                <!-- Right: Summary Signal Card -->
                 <div class="executive-summary-card">
                     <h3 class="executive-summary-title">Summary Signal</h3>
                     <div class="executive-summary-icon">⚡</div>
@@ -884,9 +882,31 @@
                 </div>
             </div>
             
+            <div style="background: linear-gradient(135deg, rgba(197, 164, 109, 0.08), rgba(197, 164, 109, 0.03)); border: 1px solid rgba(197, 164, 109, 0.3); border-radius: 8px; padding: 20px 32px; margin-top: 32px;">
+                <h4 style="font-size: 15px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600; text-align: center;">Strategic Action Window</h4>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; font-size: 13px; color: var(--vm-text-body); line-height: 1.7;">
+                    <div>
+                        <strong style="color: #C8AA6E;">Acquisition Window:</strong><br>
+                        Optimal entry = 30–45 days
+                    </div>
+                    <div>
+                        <strong style="color: #C8AA6E;">Pricing Stance:</strong><br>
+                        Neutral-to-Firm
+                    </div>
+                    <div>
+                        <strong style="color: #C8AA6E;">Participant Behaviour:</strong><br>
+                        Activity elevated in key segments
+                    </div>
+                    <div>
+                        <strong style="color: #C8AA6E;">Risk Note:</strong><br>
+                        Liquidity robust; negotiate firmly
+                    </div>
+                </div>
+            </div>
+            
             <div class="executive-bottom-strip">
                 <p class="executive-bottom-text">
-                    Intelligence Synthesis: Voxmill proprietary multi-signal analysis indicates strong buy conditions through Q1 2026
+                    Intelligence Synthesis: Voxmill proprietary multi-signal analysis indicates strong acquisition conditions through Q1 2026
                 </p>
             </div>
         </div>
@@ -911,7 +931,7 @@
 </div>
 
 <!-- ============================================
-     SLIDE 10: TOP OPPORTUNITIES — STRENGTHENED
+     SLIDE 10: TOP OPPORTUNITIES
      ============================================ -->
 <div class="slide top-market-opportunities">
     <div class="slide-header">
@@ -922,7 +942,7 @@
         <div class="opportunities-table">
             <div class="opportunities-table-header">
                 <p style="font-size: 14px; color: var(--vm-text-body); font-style: italic;">
-                    Top-ranked properties identified by Voxmill predictive acquisition model
+                    Top-ranked {{ inventory_label }} identified by Voxmill predictive acquisition model
                 </p>
             </div>
             
@@ -932,11 +952,11 @@
             <table class="table-luxury">
                 <thead>
                     <tr>
-                        <th>Property</th>
+                        <th>{{ acquisition_label }}</th>
                         <th>Type</th>
-                        <th>Size</th>
-                        <th>Price</th>
-                        <th>£/sqft</th>
+                        <th>{{ unit_metric }}</th>
+                        <th>Valuation</th>
+                        <th>Unit Economics</th>
                         <th>Days</th>
                         <th>Score</th>
                     </tr>
@@ -944,12 +964,12 @@
                 <tbody>
                     {% for opportunity in top_opportunities[:8] %}
                     <tr>
-                        <td class="property-address">{{ (opportunity.address or "Address not available")[:45] }}</td>
-                        <td>{{ opportunity.property_type or "N/A" }}</td>
-                        <td class="align-right">{{ "{:,}".format(opportunity.size or 0) }} sqft</td>
-                        <td class="align-right">£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
-                        <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
-                        <td class="align-center">{{ opportunity.days_listed or 0 }}</td>
+                        <td class="property-address">{{ (opportunity.identifier or "Identifier not available")[:45] }}</td>
+                        <td>{{ opportunity.segment_type or "N/A" }}</td>
+                        <td class="align-right">{{ opportunity.unit_measure or "N/A" }}</td>
+                        <td class="align-right">£{{ "{:,.0f}".format(opportunity.valuation or 0) }}</td>
+                        <td class="align-right">£{{ "{:,.0f}".format(opportunity.unit_economics or 0) }}</td>
+                        <td class="align-center">{{ opportunity.days_active or 0 }}</td>
                         <td class="align-right">
                             <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">{{ opportunity.score or 0 }}</span>
                         </td>
@@ -968,15 +988,15 @@
                 <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Appreciation Forecast (Q1 2026)</h4>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                     <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Penthouses</div>
+                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_1 if segment_label_1 else "Premium" }}</div>
                         <div style="font-size: 14px; color: var(--vm-text-body);">+2.1% expected uplift</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Apartments</div>
+                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_2 if segment_label_2 else "Core" }}</div>
                         <div style="font-size: 14px; color: var(--vm-text-body);">+1.4% stable appreciation</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Townhouses</div>
+                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_3 if segment_label_3 else "Alternative" }}</div>
                         <div style="font-size: 14px; color: var(--vm-text-body);">+0.9% soft but positive</div>
                     </div>
                 </div>
@@ -1021,10 +1041,10 @@
             <div class="methodology-panel">
                 <h3 class="methodology-title">Data Sources</h3>
                 <ul class="methodology-list">
-                    <li>Rightmove API — Real-time listing feeds with 15-minute latency</li>
-                    <li>Zoopla Premium Data — Historical transaction archives (12-month rolling)</li>
-                    <li>Outscraper — Competitive intelligence & agent positioning</li>
-                    <li>Land Registry — Official sale completions & ownership transfers</li>
+                    <li>{{ data_source_1 if data_source_1 else "Primary Data API — Real-time feeds with 15-minute latency" }}</li>
+                    <li>{{ data_source_2 if data_source_2 else "Premium Data Archive — Historical transaction records (12-month rolling)" }}</li>
+                    <li>{{ data_source_3 if data_source_3 else "Competitive Intelligence — Market positioning & provider analysis" }}</li>
+                    <li>{{ data_source_4 if data_source_4 else "Official Registry — Confirmed transactions & ownership transfers" }}</li>
                     <li>Voxmill Internal DB — Proprietary enrichment & cross-validation layer</li>
                 </ul>
             </div>
@@ -1034,7 +1054,7 @@
                 <ul class="methodology-list">
                     <li>30-Day: Linear regression weighted by recent velocity trends</li>
                     <li>90-Day: Monte Carlo simulation (10,000 iterations) with confidence bands</li>
-                    <li>Sentiment: Multi-factor composite (price momentum, velocity, inventory)</li>
+                    <li>Sentiment: Multi-factor composite (valuation momentum, velocity, inventory)</li>
                     <li>Voxmill Index: Proprietary blend (40% liquidity, 30% demand, 30% momentum)</li>
                     <li>Update Cadence: Daily refresh at 06:00 UTC with real-time alert triggers</li>
                 </ul>
@@ -1108,13 +1128,13 @@
         <div class="macro-risk-grid">
             <div class="risk-dial-card">
                 <h3 class="risk-dial-title">Interest Rate Pressure</h3>
-                <div class="risk-dial-value">4.75%</div>
+                <div class="risk-dial-value">{{ interest_rate if interest_rate else "4.75" }}%</div>
                 <div class="risk-bar-simple">
                     <div class="risk-bar-fill-simple risk-medium-fill" style="width: 48%"></div>
                 </div>
-                <div class="risk-dial-status">Moderate — BoE holding pattern sustained</div>
+                <div class="risk-dial-status">Moderate — Central bank holding pattern sustained</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Current 4.75% base rate maintains historical average positioning. No imminent hikes projected through Q1 2026, supporting mortgage availability at current pricing levels.
+                    Current base rate maintains historical average positioning. No imminent adjustments projected through Q1 2026, supporting capital availability at current pricing levels.
                 </p>
             </div>
 
@@ -1126,7 +1146,7 @@
                 </div>
                 <div class="risk-dial-status">Stable — No major legislative disruption</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Regulatory environment remains predictable with no anticipated capital gains or stamp duty modifications. Planning policy stable across prime London boroughs.
+                    Regulatory environment remains predictable with no anticipated capital gains or transaction tax modifications. Policy framework stable across premium segments.
                 </p>
             </div>
 
@@ -1138,7 +1158,7 @@
                 </div>
                 <div class="risk-dial-status">Robust — Institutional capital flows sustained</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    International buyer activity remains elevated, particularly Middle Eastern and Asian sovereign wealth allocations. Transaction volumes support continued market depth.
+                    International participant activity remains elevated, particularly from institutional and sovereign wealth allocations. Transaction volumes support continued market depth.
                 </p>
             </div>
 
@@ -1150,7 +1170,7 @@
                 </div>
                 <div class="risk-dial-status">Positive — Confidence indicators elevated</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Prime London maintains safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} acquisition strategies.
+                    Premium markets maintain safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} acquisition strategies.
                 </p>
             </div>
         </div>
@@ -1158,7 +1178,7 @@
         <div class="macro-context" style="margin-top: 64px;">
             <h4 class="macro-title">📈 Composite Risk Assessment</h4>
             <p class="macro-text">
-                <strong>Overall Market Risk: LOW-MODERATE</strong> — Macro fundamentals support continued prime market resilience. Interest rate stability, policy predictability, robust liquidity, and positive sentiment converge to create favorable acquisition environment. Primary risk vectors remain geopolitical (Middle East, US-China relations) and potential currency volatility (GBP weakness vs USD/EUR). Recommend maintaining diversified portfolio positioning with 20-30% cash reserves for opportunistic deployment during short-term volatility windows.
+                <strong>Overall Market Risk: LOW-MODERATE</strong> — Macro fundamentals support continued premium market resilience. Interest rate stability, policy predictability, robust liquidity, and positive sentiment converge to create favorable acquisition environment. Primary risk vectors remain geopolitical and potential currency volatility. Recommend maintaining diversified portfolio positioning with 20-30% capital reserves for opportunistic deployment during short-term volatility windows.
             </p>
         </div>
         
@@ -1204,70 +1224,70 @@
 </div>
 
 <!-- ============================================
-     SLIDE 13: SUB-MARKET BREAKDOWN
+     SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN
      ============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Sub-Market Breakdown</h2>
+        <h2 class="slide-title">Segment Performance Breakdown</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context">Property category performance analysis — Apartments | Penthouses | Townhouses</p>
+        <p class="chart-context">Segment category performance analysis — {{ segment_label_1 }} | {{ segment_label_2 }} | {{ segment_label_3 }}</p>
         
         <div class="submarket-grid-v2">
-            {% if submarket_breakdown %}
-            {% for submarket in submarket_breakdown %}
+            {% if segment_breakdown %}
+            {% for segment in segment_breakdown %}
             <div class="submarket-card-v2">
-                <div class="submarket-header">{{ submarket.category or "Unknown" }}</div>
+                <div class="submarket-header">{{ segment.category or "Unknown" }}</div>
                 <div class="submarket-metrics">
                     <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Avg Price</div>
-                        <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket.avg_price or 0) / 1000) }}K</div>
-                        <div class="submarket-micro-label">{{ "Premium tier" if (submarket.avg_price or 0) > 3000000 else "Core segment" }}</div>
+                        <div class="submarket-metric-label">Avg Valuation</div>
+                        <div class="submarket-metric-value">£{{ "{:,.0f}".format((segment.avg_value or 0) / 1000) }}K</div>
+                        <div class="submarket-micro-label">{{ "Premium tier" if (segment.avg_value or 0) > 3000000 else "Core segment" }}</div>
                     </div>
                     
                     <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Price/Sqft</div>
-                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft or 0) }}</div>
-                        <div class="submarket-micro-label">{{ "Above market avg" if (submarket.price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                        <div class="submarket-metric-label">Unit Economics</div>
+                        <div class="submarket-metric-value">£{{ "{:,}".format(segment.unit_economics or 0) }}</div>
+                        <div class="submarket-micro-label">{{ "Above market avg" if (segment.unit_economics or 0) > kpis.avg_unit_economics else "Competitive" }}</div>
                     </div>
                     
                     <div class="submarket-metric-row">
                         <div class="submarket-metric-label">Velocity Score</div>
                         <div class="velocity-bar-container">
-                            <div class="velocity-bar-fill velocity-color-{{ 'high' if (submarket.velocity_score or 0) >= 70 else 'medium' if (submarket.velocity_score or 0) >= 50 else 'low' }}" style="width: {{ submarket.velocity_score or 0 }}%"></div>
+                            <div class="velocity-bar-fill velocity-color-{{ 'high' if (segment.velocity_score or 0) >= 70 else 'medium' if (segment.velocity_score or 0) >= 50 else 'low' }}" style="width: {{ segment.velocity_score or 0 }}%"></div>
                         </div>
-                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket.velocity_score or 0) >= 70 else '#FFC107' if (submarket.velocity_score or 0) >= 50 else '#F44336' }}">
-                            {{ submarket.velocity_score or 0 }}/100
+                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (segment.velocity_score or 0) >= 70 else '#FFC107' if (segment.velocity_score or 0) >= 50 else '#F44336' }}">
+                            {{ segment.velocity_score or 0 }}/100
                         </div>
-                        <div class="submarket-micro-label">{{ "Fast-moving" if (submarket.velocity_score or 0) >= 70 else "Moderate pace" if (submarket.velocity_score or 0) >= 50 else "Slow absorption" }}</div>
+                        <div class="submarket-micro-label">{{ "Fast-moving" if (segment.velocity_score or 0) >= 70 else "Moderate pace" if (segment.velocity_score or 0) >= 50 else "Slow absorption" }}</div>
                     </div>
                 </div>
-                <div class="submarket-listing-count">{{ submarket.count or 0 }} active listings</div>
+                <div class="submarket-listing-count">{{ segment.count or 0 }} active {{ inventory_label }}</div>
             </div>
             {% endfor %}
             {% endif %}
         </div>
         
         <div class="momentum-streets-panel">
-            <div class="momentum-title">🔍 High-Momentum Streets</div>
+            <div class="momentum-title">🔍 High-Momentum Segments</div>
             <ul class="momentum-list">
-                <li>Sloane Street — Premium penthouses showing 22% faster turnover vs. area average</li>
-                <li>Eaton Square — Townhouse segment velocity +18% (avg 28 days on market)</li>
-                <li>Belgrave Square — Luxury apartments commanding £2,800/sqft with 12% price appreciation</li>
+                <li>{{ momentum_segment_1 if momentum_segment_1 else "Premium Tier A — showing 22% faster turnover vs. area average" }}</li>
+                <li>{{ momentum_segment_2 if momentum_segment_2 else "Core Segment B — velocity +18% (avg 28 days turnover)" }}</li>
+                <li>{{ momentum_segment_3 if momentum_segment_3 else "Alternative Tier C — commanding premium unit economics with 12% appreciation" }}</li>
             </ul>
         </div>
         
         <div style="background: rgba(0, 0, 0, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 32px;">
             <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Capital Rotation Guidance</h4>
             <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">Penthouses:</strong> Near-term inflows from UHNW overseas buyers.</div>
-                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">Apartments:</strong> Strong domestic liquidity, stable demand.</div>
-                <div><strong style="color: #C8AA6E;">Townhouses:</strong> Deep-value band emerging — negotiate aggressively.</div>
+                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">{{ segment_label_1 }}:</strong> Near-term inflows from institutional participants.</div>
+                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">{{ segment_label_2 }}:</strong> Strong domestic liquidity, stable demand.</div>
+                <div><strong style="color: #C8AA6E;">{{ segment_label_3 }}:</strong> Deep-value band emerging — negotiate aggressively.</div>
             </div>
         </div>
         
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Sub-Market Intelligence — Updated {{ report_date }}</p>
+        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Segment Intelligence — Updated {{ report_date }}</p>
     </div>
     <div class="slide-footer-branded">
         <div class="footer-left">
@@ -1292,21 +1312,21 @@
      ============================================ -->
 <div class="slide ai-identified-opportunities">
     <div class="slide-header">
-        <h2 class="slide-title">AI-Identified Buying Opportunities</h2>
+        <h2 class="slide-title">AI-Identified Acquisition Opportunities</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged properties showing value signals — Underpricing or extended listing periods</p>
+        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged {{ inventory_label }} showing value signals — Undervaluation or extended market periods</p>
         
         {% if acquisition_signals and acquisition_signals|length > 0 %}
         <div class="signal-board-v2">
             {% for signal in acquisition_signals %}
             <div class="signal-card-v2">
                 <div class="signal-content-v2">
-                    <div class="signal-property-title">{{ signal.address or "Address not available" }}</div>
-                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price or 0) }} | £{{ "{:,}".format(signal.price_per_sqft or 0) }}/sqft</div>
+                    <div class="signal-property-title">{{ signal.identifier or "Identifier not available" }}</div>
+                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.valuation or 0) }} | £{{ "{:,}".format(signal.unit_economics or 0) }} {{ unit_metric }}</div>
                     <div class="ai-flag-reason">
-                        <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — seller flexibility indicated" }}
+                        <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended market time + pricing below area median — provider flexibility indicated" }}
                     </div>
                 </div>
                 <div class="signal-badges-v2">
@@ -1319,25 +1339,25 @@
         </div>
         {% else %}
         <div class="panel">
-            <p class="panel-text">No acquisition signals detected in current market scan. Market pricing appears efficient with minimal arbitrage opportunities. Consider expanding search radius or adjusting criteria parameters.</p>
+            <p class="panel-text">No acquisition signals detected in current market scan. Market valuation appears efficient with minimal arbitrage opportunities. Consider expanding search parameters or adjusting criteria thresholds.</p>
         </div>
         {% endif %}
         
         <div class="acquisition-strategy-ribbon">
             <div class="acquisition-strategy-text">
                 <strong>Acquisition Strategy:</strong> 
-                Flagged properties demonstrate {{ "significant value potential" if (acquisition_signals and acquisition_signals|length >= 3) else "limited value signals" }}. 
+                Flagged {{ inventory_label }} demonstrate {{ "significant value potential" if (acquisition_signals and acquisition_signals|length >= 3) else "limited value signals" }}. 
                 Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if (acquisition_signals and acquisition_signals|length >= 3) else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
-                Due diligence priority: {{ "Immediate site visits and vendor motivation assessment" if (acquisition_signals and acquisition_signals|length >= 3) else "Standard acquisition protocols apply" }}.
+                Due diligence priority: {{ "Immediate assessment and provider motivation analysis" if (acquisition_signals and acquisition_signals|length >= 3) else "Standard acquisition protocols apply" }}.
             </div>
         </div>
         
         <div style="background: rgba(0, 0, 0, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 32px; margin-bottom: 48px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Vendor Acceptance Probability (VAP) Indicators</h4>
+            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Provider Acceptance Probability (PAP) Indicators</h4>
             <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Stale Listings:</strong> 60–90 days → High acceptance likelihood.</div>
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged vendors = negotiation leverage.</div>
-                <div>• <strong style="color: #C8AA6E;">Vacant Properties:</strong> Fastest acceptance due to carrying cost pressure.</div>
+                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Extended Market Time:</strong> 60–90 days → High acceptance likelihood.</div>
+                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
+                <div>• <strong style="color: #C8AA6E;">Inactive {{ inventory_label }}:</strong> Fastest acceptance due to carrying cost pressure.</div>
             </div>
         </div>
         
@@ -1347,7 +1367,7 @@
     <!-- Final Footer -->
     <footer class="final-footer">
         <div class="footer-content">
-            ──────────── Voxmill Intelligence™ — Confidential Executive Briefing — Generated by the Voxmill Data Engine v2.2 — London, United Kingdom ────────────
+            ──────────── © Voxmill Intelligence™ — Confidential Executive Market Analytics — Proprietary Forecast Engine v2.1 ────────────
         </div>
     </footer>
     
