@@ -122,7 +122,8 @@ SLIDE HEADER — UNCHANGED POSITION
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid rgba(197, 164, 109, 0.35);
     z-index: 5;
 }
 
@@ -372,65 +373,79 @@ WEEKLY MOVEMENT DASHBOARD — PREMIUM CARDS
 }
 
 /* ============================================
-CROSS-VERTICAL INTELLIGENCE SLIDE
+CROSS-VERTICAL INTELLIGENCE SLIDE — COMPLETE REDESIGN
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
     top: 225px;
 }
 
+.cross-vertical-container {
+    padding: 0 48px;
+}
+
 .cross-vertical-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
-    margin-top: 70px;
+    gap: 0;
+    margin-top: 40px;
+    position: relative;
 }
 
 .cross-vertical-card {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.98), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 5px solid var(--vm-gold);
-    border-right: 1px solid rgba(197, 164, 109, 0.15);
-    border-radius: 12px;
-    padding: 40px 36px;
-    min-height: 300px;
+    border-right: 1px solid rgba(197, 164, 109, 0.25);
+    padding: 42px 32px 30px 32px;
+    min-height: 320px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    position: relative;
+}
+
+.cross-vertical-card:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 
 .cross-vertical-card:last-child {
     border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 .cross-vertical-icon {
-    font-size: 56px;
-    margin-bottom: 24px;
+    font-size: 52px;
+    margin-bottom: 20px;
     line-height: 1;
+    color: var(--vm-gold);
 }
 
 .cross-vertical-title {
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     letter-spacing: 0.05em;
 }
 
 .cross-vertical-text {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--vm-text-body);
-    line-height: 1.85;
+    line-height: 1.75;
+    width: 65%;
+    margin: 0 auto;
 }
 
 .cross-vertical-bullets {
     list-style: none;
-    margin-top: 26px;
+    margin-top: 20px;
     padding-left: 0;
-    width: 100%;
+    width: 65%;
 }
 
 .cross-vertical-bullets li {
@@ -449,6 +464,22 @@ CROSS-VERTICAL INTELLIGENCE SLIDE
     color: var(--vm-gold);
     font-weight: 700;
     font-size: 16px;
+}
+
+.cross-vertical-bottom-bar {
+    margin-top: 14px;
+    padding: 16px 24px;
+    background: rgba(197, 164, 109, 0.12);
+    border-radius: 8px;
+    border: 1px solid rgba(197, 164, 109, 0.25);
+}
+
+.cross-vertical-bottom-text {
+    font-size: 13px;
+    color: rgba(197, 164, 109, 0.85);
+    line-height: 1.6;
+    text-align: center;
+    font-style: italic;
 }
 
 /* ============================================
@@ -829,7 +860,7 @@ INSIGHT CARDS — ENHANCED ACCENT
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
+COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES + INSIGHTS STRIP
 ============================================ */
 
 .competitive-landscape {
@@ -861,6 +892,41 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
     letter-spacing: 0.15em;
     font-style: italic;
     font-family: var(--font-display);
+}
+
+.competitive-insights-strip {
+    margin-top: 40px;
+    padding: 20px 32px;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid var(--vm-gold);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.competitive-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.competitive-insight-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.competitive-insight-icon {
+    font-size: 20px;
+    color: var(--vm-gold);
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.competitive-insight-text {
+    font-size: 13px;
+    color: rgba(197, 164, 109, 0.85);
+    line-height: 1.6;
+    flex: 1;
 }
 
 .competitive-inventory-table {
@@ -1018,7 +1084,7 @@ INTELLIGENCE PANELS
 }
 
 /* ============================================
-TABLE STYLING — PREMIUM ENHANCEMENT
+TABLE STYLING — PREMIUM ENHANCEMENT + BUYING OPPORTUNITIES
 ============================================ */
 
 .top-market-opportunities .slide-content {
@@ -1026,13 +1092,25 @@ TABLE STYLING — PREMIUM ENHANCEMENT
 }
 
 .opportunities-table {
-    padding-left: 24px;
-    padding-right: 24px;
+    padding-left: 48px;
+    padding-right: 48px;
+}
+
+.opportunities-table-header {
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(197, 164, 109, 0.2);
+}
+
+.opportunities-section-divider {
+    height: 1px;
+    background: rgba(197, 164, 109, 0.15);
+    margin: 32px 0;
 }
 
 .table-luxury {
     width: 100%;
-    margin-top: 52px;
+    margin-top: 24px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
@@ -1553,11 +1631,124 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — VERTICAL STACK
+EXECUTIVE INTELLIGENCE — COMPLETE REDESIGN
 ============================================ */
 
 .executive-intel-item {
     margin-bottom: 8px;
+}
+
+.executive-intelligence-container {
+    padding: 0 48px;
+}
+
+.executive-intelligence-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.executive-insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.executive-insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: 8px;
+    padding: 20px 24px;
+    min-height: 80px;
+}
+
+.executive-insight-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--vm-gold);
+    color: var(--vm-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(197, 164, 109, 0.4);
+}
+
+.executive-insight-text {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+    flex: 1;
+    padding-top: 2px;
+}
+
+.executive-summary-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
+    border: 2px solid var(--vm-gold);
+    border-radius: 12px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(197, 164, 109, 0.25);
+}
+
+.executive-summary-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+}
+
+.executive-summary-icon {
+    font-size: 64px;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    line-height: 1;
+}
+
+.executive-summary-text {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.75;
+    margin-bottom: 16px;
+}
+
+.executive-summary-highlight {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-top: 12px;
+}
+
+.executive-bottom-strip {
+    margin-top: 32px;
+    padding: 12px 24px;
+    background: rgba(197, 164, 109, 0.12);
+    border-radius: 6px;
+    border-top: 1px solid rgba(197, 164, 109, 0.3);
+    border-bottom: 1px solid rgba(197, 164, 109, 0.3);
+}
+
+.executive-bottom-text {
+    font-size: 13px;
+    color: rgba(197, 164, 109, 0.85);
+    text-align: center;
+    line-height: 1.5;
+    font-style: italic;
 }
 
 .executive-brief-stack {
