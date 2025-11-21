@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <!-- KPI DASHBOARD: Moved up 15px via CSS (margin-top: 40px) -->
+        <!-- KPI DASHBOARD -->
         <div class="weekly-movement-dashboard">
             <div class="movement-mini-card">
                 <div class="movement-label">{{ inventory_label }}</div>
@@ -146,6 +146,7 @@
     </div>
 
     <div class="slide-content">
+        <!-- KPI GRID: Moved down +30px via CSS -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-content">
@@ -188,6 +189,7 @@
             </div>
         </div>
         
+        <!-- CHART SECTION: Moved down +30px via CSS, height +50px -->
         <div class="chart-section">
             <div class="chart-divider"></div>
             <div class="chart-container">
@@ -238,10 +240,10 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <!-- CONCENTRATION SIGNAL: Moved down 25px via CSS (margin-top: 63px) -->
                 <div class="chart-mini-insight">
                     📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
                 </div>
+                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
         </div>
     </div>
@@ -340,7 +342,7 @@
             </div>
         </div>
         
-        <!-- LOWER SECTION: Moved down 20px via CSS (margin-top: 154px) -->
+        <!-- LOWER SECTION -->
         <div class="insight-cards">
             <div class="insight-card">
                 <div class="insight-title">Market Momentum</div>
@@ -471,7 +473,7 @@
     </div>
 </div>
 
-<!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN -->
+<!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
 
 <div class="slide cross-vertical-intelligence">
     <div class="slide-header">
@@ -563,7 +565,7 @@
                 </div>
             </div>
             
-            <!-- GOLD SUMMARY BAR WITH DARK TEXT -->
+            <!-- GOLD SUMMARY BAR WITH LIGHT TEXT -->
             <div class="cross-vertical-summary-bar">
                 <p class="cross-vertical-summary-text">
                     Cross-Vertical Composite Forecast: Strong forward demand indicated across luxury goods (+11%), PE dealflow (+23%), and wealth allocation shifts (+18%) — 90-day outlook bullish with 84% confidence
@@ -780,7 +782,7 @@
                 </p>
             </div>
             
-            <!-- STRATEGIC ACTION WINDOW: REDESIGNED WITH 2-COLUMN GRID -->
+            <!-- STRATEGIC ACTION WINDOW -->
             <div class="action-window">
                 <h4 class="action-window-title">Strategic Action Window</h4>
                 <div class="action-window-grid">
@@ -946,7 +948,7 @@
             </p>
         </div>
 
-        <!-- GOLD BAR WITH DARK TEXT -->
+        <!-- GOLD BAR WITH LIGHT TEXT -->
         <div class="proprietary-badge">
             <div class="proprietary-badge-text">VOXMILL FORECAST ENGINE V2.1 — PROPRIETARY ARCHITECTURE</div>
         </div>
@@ -1055,7 +1057,7 @@
     <div class="slide-content">
         <p class="chart-context">Segment category performance analysis — {{ segment_label_1 }} | {{ segment_label_2 }} | {{ segment_label_3 }}</p>
         
-        <!-- CENTERED THREE-CARD ROW -->
+        <!-- CENTERED THREE-CARD ROW WITH CONTAINED GREEN BARS -->
         <div class="submarket-grid-v2">
             {% if submarket_breakdown %}
             {% for submarket in submarket_breakdown %}
