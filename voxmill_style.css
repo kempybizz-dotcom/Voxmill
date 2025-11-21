@@ -1,5 +1,5 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V3.3 LIGHT VISUAL POLISH
+VOXMILL EXECUTIVE INTELLIGENCE DECK — FINAL MULTI-VERTICAL VERSION
 INSTITUTIONAL GRADE — HEDGE FUND × PRIVATE EQUITY × SOVEREIGN WEALTH
 MULTI-ASSET CLASS INTELLIGENCE PLATFORM
 ============================================ */
@@ -34,7 +34,7 @@ MULTI-ASSET CLASS INTELLIGENCE PLATFORM
 }
 
 /* ============================================
-GLOBAL LUXURY BACKGROUND PATTERN — NOW VISIBLE ON ALL PAGES
+GLOBAL LUXURY BACKGROUND PATTERN — VISIBLE ON ALL PAGES
 ============================================ */
 
 body {
@@ -56,13 +56,13 @@ body::before {
         repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(197, 164, 109, 0.015) 2px, rgba(197, 164, 109, 0.015) 4px),
         repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(197, 164, 109, 0.015) 2px, rgba(197, 164, 109, 0.015) 4px);
     background-repeat: repeat;
-    opacity: 0.11;
+    opacity: 0.13;
     z-index: 0;
     pointer-events: none;
 }
 
 /* ============================================
-SLIDE CONTAINER — SAFE AREAS ENFORCED
+SLIDE CONTAINER
 ============================================ */
 
 .slide {
@@ -111,7 +111,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
 }
 
 /* ============================================
-SLIDE HEADER — UNCHANGED POSITION
+SLIDE HEADER
 ============================================ */
 
 .slide-header {
@@ -123,33 +123,14 @@ SLIDE HEADER — UNCHANGED POSITION
     justify-content: space-between;
     align-items: center;
     padding-bottom: 18px;
-    border-bottom: 2px solid rgba(197, 164, 109, 0.35);
+    border-bottom: 1px solid rgba(197, 164, 109, 0.35);
     z-index: 5;
 }
-
-/* ============================================
-SECTION HEADER SPACING — UNIFORM ACROSS ALL SLIDES
-============================================ */
 
 .section-header {
     margin-top: 50px;
     margin-bottom: 14px;
     border-bottom: none;
-}
-
-.slide-header::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(197, 164, 109, 0.3) 20%,
-        rgba(197, 164, 109, 0.5) 50%,
-        rgba(197, 164, 109, 0.3) 80%,
-        transparent 100%);
 }
 
 .slide-title {
@@ -170,7 +151,7 @@ SECTION HEADER SPACING — UNIFORM ACROSS ALL SLIDES
 }
 
 /* ============================================
-SLIDE CONTENT AREA — ORIGINAL POSITION (REVERTED)
+SLIDE CONTENT AREA
 ============================================ */
 
 .slide-content {
@@ -181,6 +162,18 @@ SLIDE CONTENT AREA — ORIGINAL POSITION (REVERTED)
     bottom: 140px;
     overflow: hidden;
     z-index: 5;
+}
+
+.cross-vertical-intelligence .slide-content {
+    top: 185px;
+}
+
+.market-depth-analysis .slide-content {
+    top: 185px;
+}
+
+.top-market-opportunities .slide-content {
+    top: 185px;
 }
 
 /* ============================================
@@ -260,7 +253,7 @@ COVER SLIDE
 }
 
 /* ============================================
-EXECUTIVE SUMMARY SLIDE — ENHANCED DASHBOARD
+EXECUTIVE SUMMARY SLIDE
 ============================================ */
 
 .executive-summary-bullets {
@@ -312,7 +305,7 @@ EXECUTIVE SUMMARY SLIDE — ENHANCED DASHBOARD
 }
 
 /* ============================================
-WEEKLY MOVEMENT DASHBOARD — PREMIUM CARDS
+WEEKLY MOVEMENT DASHBOARD
 ============================================ */
 
 .weekly-movement-dashboard {
@@ -373,12 +366,8 @@ WEEKLY MOVEMENT DASHBOARD — PREMIUM CARDS
 }
 
 /* ============================================
-CROSS-VERTICAL INTELLIGENCE SLIDE — COMPLETE REDESIGN
+CROSS-VERTICAL INTELLIGENCE SLIDE
 ============================================ */
-
-.cross-vertical-intelligence .slide-content {
-    top: 225px;
-}
 
 .cross-vertical-container {
     padding: 0 48px;
@@ -441,31 +430,6 @@ CROSS-VERTICAL INTELLIGENCE SLIDE — COMPLETE REDESIGN
     margin: 0 auto;
 }
 
-.cross-vertical-bullets {
-    list-style: none;
-    margin-top: 20px;
-    padding-left: 0;
-    width: 65%;
-}
-
-.cross-vertical-bullets li {
-    font-size: 13px;
-    color: var(--vm-text-body);
-    margin-bottom: 8px;
-    padding-left: 20px;
-    position: relative;
-    text-align: left;
-}
-
-.cross-vertical-bullets li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: var(--vm-gold);
-    font-weight: 700;
-    font-size: 16px;
-}
-
 .cross-vertical-bottom-bar {
     margin-top: 14px;
     padding: 16px 24px;
@@ -483,167 +447,7 @@ CROSS-VERTICAL INTELLIGENCE SLIDE — COMPLETE REDESIGN
 }
 
 /* ============================================
-METHODOLOGY & MODEL ARCHITECTURE SLIDE
-============================================ */
-
-.methodology-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-top: 50px;
-}
-
-.methodology-panel {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.methodology-title {
-    font-size: 18px;
-    color: var(--vm-gold);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 20px;
-}
-
-.methodology-list {
-    list-style: none;
-}
-
-.methodology-list li {
-    padding: 10px 0 10px 28px;
-    position: relative;
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-}
-
-.methodology-list li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.model-pipeline {
-    background: rgba(197, 164, 109, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 32px;
-    margin-top: 70px;
-    text-align: center;
-}
-
-.pipeline-flow {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin: 24px 0;
-}
-
-.pipeline-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-}
-
-.pipeline-box {
-    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-light));
-    color: #EDE8DA !important;
-    padding: 18px 28px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    min-width: 160px;
-}
-
-.pipeline-arrow {
-    font-size: 32px;
-    color: var(--vm-gold);
-    margin: 0 8px;
-}
-
-.proprietary-badge {
-    background: var(--vm-gold);
-    color: var(--vm-light);
-    padding: 20px 32px;
-    border-radius: 8px;
-    margin-top: 52px;
-    text-align: center;
-}
-
-.proprietary-badge-text {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-}
-
-/* ============================================
-CHART ENHANCEMENTS — DASHBOARD-GRADE CLARITY
-============================================ */
-
-.chart-annotation {
-    font-size: 11px;
-    color: var(--vm-muted);
-    font-style: italic;
-    text-align: center;
-    margin-top: 38px;
-}
-
-.chart-mini-insight {
-    background: rgba(197, 164, 109, 0.1);
-    border-left: 4px solid var(--vm-gold);
-    padding: 12px 20px;
-    margin-top: 38px;
-    border-radius: 6px;
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.6;
-    font-weight: 400;
-    box-shadow: inset 0 1px 3px rgba(197, 164, 109, 0.2);
-}
-
-.chart-callout {
-    font-size: 11px;
-    color: var(--vm-gold);
-    font-weight: 600;
-    letter-spacing: 0.05em;
-}
-
-.chart-baseline {
-    stroke: rgba(197, 164, 109, 0.4);
-    stroke-width: 2.2px;
-    stroke-dasharray: 4 4;
-}
-
-.chart-confidence-band {
-    fill: rgba(197, 164, 109, 0.08);
-    stroke: none;
-}
-
-.chart-trend-arrow {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.chart-percent-marker {
-    font-size: 12px;
-    font-weight: 600;
-    fill: var(--vm-gold);
-}
-
-/* ============================================
-KPI GRID — PREMIUM DASHBOARD CARDS
+KPI GRID
 ============================================ */
 
 .kpi-grid {
@@ -785,10 +589,35 @@ CHART CONTAINERS — ENHANCED CLARITY
 }
 
 .chart-axis-label {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.10);
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.85);
     font-weight: 600;
     letter-spacing: 0.08em;
+}
+
+/* ============================================
+CHART ENHANCEMENTS
+============================================ */
+
+.chart-annotation {
+    font-size: 11px;
+    color: var(--vm-muted);
+    font-style: italic;
+    text-align: center;
+    margin-top: 38px;
+}
+
+.chart-mini-insight {
+    background: rgba(197, 164, 109, 0.1);
+    border-left: 4px solid var(--vm-gold);
+    padding: 12px 20px;
+    margin-top: 38px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.6;
+    font-weight: 400;
+    box-shadow: inset 0 1px 3px rgba(197, 164, 109, 0.2);
 }
 
 /* ============================================
@@ -818,7 +647,7 @@ TWO-COLUMN LAYOUT
 }
 
 /* ============================================
-INSIGHT CARDS — ENHANCED ACCENT
+INSIGHT CARDS
 ============================================ */
 
 .insight-cards {
@@ -860,7 +689,7 @@ INSIGHT CARDS — ENHANCED ACCENT
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES + INSIGHTS STRIP
+COMPETITIVE LANDSCAPE
 ============================================ */
 
 .competitive-landscape {
@@ -1008,22 +837,6 @@ COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES + INSIGHTS STRIP
     border: 1px solid rgba(244, 67, 54, 0.3);
 }
 
-.competitive-insight-row {
-    margin-top: 62px;
-    padding: 16px 20px;
-    background: rgba(197, 164, 109, 0.04);
-    border-radius: 6px;
-    text-align: center;
-}
-
-.competitive-insight-text {
-    font-family: var(--font-display);
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.85);
-    font-style: italic;
-    line-height: 1.6;
-}
-
 /* ============================================
 INTELLIGENCE PANELS
 ============================================ */
@@ -1084,11 +897,11 @@ INTELLIGENCE PANELS
 }
 
 /* ============================================
-TABLE STYLING — PREMIUM ENHANCEMENT + BUYING OPPORTUNITIES
+TABLE STYLING — PREMIUM ENHANCEMENT
 ============================================ */
 
 .top-market-opportunities .slide-content {
-    top: 225px;
+    top: 185px;
 }
 
 .opportunities-table {
@@ -1188,13 +1001,15 @@ TABLE STYLING — PREMIUM ENHANCEMENT + BUYING OPPORTUNITIES
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 7px 16px;
+    padding: 7px 18px;
+    min-width: 62px;
     border-radius: 6px;
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 700;
     background: #0B0B0B;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    overflow: visible;
 }
 
 .score-high, .score-excellent {
@@ -1220,7 +1035,7 @@ TABLE STYLING — PREMIUM ENHANCEMENT + BUYING OPPORTUNITIES
 }
 
 /* ============================================
-FOOTER — HIDDEN COMPLETELY
+FOOTER — VISIBLE ON ALL SLIDES
 ============================================ */
 
 .slide-footer-branded {
@@ -1228,7 +1043,7 @@ FOOTER — HIDDEN COMPLETELY
     bottom: 24px;
     left: 48px;
     right: 48px;
-    display: none;
+    display: flex;
     justify-content: space-between;
     align-items: center;
     padding-top: 34px;
@@ -1272,25 +1087,6 @@ FOOTER — HIDDEN COMPLETELY
 }
 
 /* ============================================
-MICRO-FOOTER NOTES
-============================================ */
-
-.slide-micro-footer-note {
-    position: absolute;
-    margin-top: 130px;
-    left: 48px;
-    right: 48px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--vm-muted);
-    font-style: italic;
-    padding: 12px 24px;
-    background: rgba(197, 164, 109, 0.03);
-    border-radius: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ============================================
 WATERMARK
 ============================================ */
 
@@ -1311,13 +1107,16 @@ WATERMARK
     display: none;
 }
 
+.slide:nth-child(2) .watermark,
+.slide:nth-child(4) .watermark,
+.slide:nth-child(6) .watermark,
+.slide:nth-child(9) .watermark {
+    display: block;
+}
+
 /* ============================================
 DEPTH METRICS
 ============================================ */
-
-.market-depth-analysis .slide-content {
-    top: 225px;
-}
 
 .depth-metrics {
     display: grid;
@@ -1371,7 +1170,7 @@ DEPTH METRICS
 }
 
 /* ============================================
-PROPERTY TYPE HEATMAP
+SEGMENT PERFORMANCE HEATMAP
 ============================================ */
 
 .property-type-heatmap {
@@ -1604,7 +1403,7 @@ STRATEGIC FORECAST — 2×2 GRID
 }
 
 /* ============================================
-MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
+MACRO CONTEXT
 ============================================ */
 
 .macro-context {
@@ -1631,12 +1430,8 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — COMPLETE REDESIGN
+EXECUTIVE INTELLIGENCE
 ============================================ */
-
-.executive-intel-item {
-    margin-bottom: 8px;
-}
 
 .executive-intelligence-container {
     padding: 0 48px;
@@ -1751,309 +1546,110 @@ EXECUTIVE INTELLIGENCE — COMPLETE REDESIGN
     font-style: italic;
 }
 
-.executive-brief-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 30px;
-}
-
-.executive-brief-card {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 5px solid var(--vm-gold);
-    border-radius: 10px;
-    padding: 22px 28px;
-    min-height: 88px;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.executive-brief-number {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--vm-gold);
-    color: var(--vm-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-body);
-    font-size: 20px;
-    font-weight: 800;
-    flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(197, 164, 109, 0.5);
-}
-
-.executive-brief-text {
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-    flex: 1;
-}
-
-.executive-brief-divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.14);
-    margin: 0;
-    opacity: 0.12;
-}
-
-.review-banner {
-    margin-top: 94px;
-    background: var(--vm-gold);
-    border-radius: 8px;
-    padding: 28px;
-    text-align: center;
-}
-
-.review-banner-text {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--vm-dark);
-    letter-spacing: 0.05em;
-}
-
 /* ============================================
-TABLE SUBTITLE
+METHODOLOGY & MODEL ARCHITECTURE
 ============================================ */
 
-.table-subtitle {
-    font-size: 13px;
-    color: var(--vm-muted);
-    text-align: center;
-    margin-top: 38px;
-    margin-bottom: 0;
-    font-style: italic;
+.methodology-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 50px;
 }
 
-/* ============================================
-BENCHMARK TABLE
-============================================ */
-
-.benchmark-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 52px;
-}
-
-.benchmark-table thead {
-    background: linear-gradient(90deg, var(--vm-gold) 0%, var(--vm-gold-light) 100%);
-    height: 56px;
-}
-
-.benchmark-table th {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--vm-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 18px;
-    text-align: left;
-}
-
-.benchmark-table tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.benchmark-table tbody tr:nth-child(odd) {
-    background: rgba(18, 18, 18, 0.8);
-}
-
-.benchmark-table tbody tr:nth-child(even) {
-    background: rgba(23, 23, 23, 0.8);
-}
-
-.benchmark-table td {
-    font-size: 15px;
-    color: var(--vm-text);
-    padding: 18px;
-    font-variant-numeric: tabular-nums;
-}
-
-.benchmark-table .agency-name {
-    font-weight: 600;
-    color: var(--vm-gold);
-}
-
-.benchmark-table tr.market-average {
-    background: rgba(197, 164, 109, 0.08) !important;
-    border-top: 2px solid var(--vm-gold);
-    border-bottom: 2px solid var(--vm-gold);
-}
-
-.benchmark-table tr.market-average td {
-    font-weight: 600;
-    color: var(--vm-gold);
-}
-
-.benchmark-insight {
-    margin-top: 62px;
-    padding: 22px 28px;
-    background: rgba(197, 164, 109, 0.05);
-    border-left: 4px solid var(--vm-gold);
-    border-radius: 8px;
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-}
-
-/* ============================================
-AGENCY TREND INDICATORS
-============================================ */
-
-.agency-trend-indicator {
-    display: inline-block;
-    margin-left: 8px;
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.trend-up {
-    background: rgba(76, 175, 80, 0.15);
-    color: #4CAF50;
-}
-
-.trend-down {
-    background: rgba(244, 67, 54, 0.15);
-    color: #F44336;
-}
-
-.trend-stable {
-    background: rgba(197, 164, 109, 0.15);
-    color: var(--vm-gold);
-}
-
-/* ============================================
-FORECAST & MARKET RISK — ENHANCED
-============================================ */
-
-.forecast-risk-grid {
-    display: flex;
-    gap: 32px;
-    align-items: stretch;
-    margin-bottom: 84px;
-    margin-top: 30px;
-}
-
-.forecast-risk-card {
-    flex: 1;
+.methodology-panel {
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 40px 48px 32px 48px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    padding: 32px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
-.forecast-risk-card h3 {
-    font-size: 20px;
-    color: var(--vm-bronze);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 28px;
-}
-
-.forecast-risk-arrow {
-    font-size: 96px;
-    color: var(--vm-gold);
-    margin-bottom: 24px;
-    line-height: 1;
-}
-
-.forecast-risk-percentage {
-    font-size: 64px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-}
-
-.forecast-risk-label {
+.methodology-title {
     font-size: 18px;
-    color: var(--vm-text);
-    margin-bottom: 8px;
+    color: var(--vm-gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
 }
 
-.forecast-risk-confidence {
-    font-size: 15px;
-    color: var(--vm-muted);
+.methodology-list {
+    list-style: none;
 }
 
-.risk-context-note {
-    font-size: 12px;
-    color: var(--vm-muted);
-    margin-top: 46px;
-    font-style: italic;
-    line-height: 1.6;
-    max-width: 90%;
+.methodology-list li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
 }
 
-.risk-gauge-container {
-    width: 100%;
+.methodology-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--vm-bronze);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.model-pipeline {
+    background: rgba(197, 164, 109, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 32px;
+    margin-top: 70px;
+    text-align: center;
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 24px 0;
+}
+
+.pipeline-step {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1;
 }
 
-.risk-gauge-value {
-    font-size: 96px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 32px;
-    line-height: 1;
-}
-
-.risk-gauge-bar {
-    height: 24px;
-    background: rgba(197, 164, 109, 0.2);
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 0 auto 16px;
-    width: 60%;
-}
-
-.risk-gauge-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
-}
-
-.risk-gauge-status {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.risk-low {
-    color: #4CAF50;
-}
-
-.risk-moderate {
-    color: #FFC107;
-}
-
-.risk-elevated {
-    color: #F44336;
-}
-
-.risk-gauge-legend {
+.pipeline-box {
+    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-light));
+    color: #EDE8DA !important;
+    padding: 18px 28px;
+    border-radius: 6px;
     font-size: 13px;
-    color: var(--vm-muted);
-    margin-top: 8px;
-    font-style: italic;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    min-width: 160px;
+}
+
+.pipeline-arrow {
+    font-size: 32px;
+    color: var(--vm-gold);
+    margin: 0 8px;
+}
+
+.proprietary-badge {
+    background: var(--vm-gold);
+    color: var(--vm-light);
+    padding: 20px 32px;
+    border-radius: 8px;
+    margin-top: 52px;
+    text-align: center;
+}
+
+.proprietary-badge-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
 }
 
 /* ============================================
@@ -2083,13 +1679,6 @@ MACRO RISK DASHBOARD
     letter-spacing: 0.1em;
     margin-bottom: 24px;
     font-weight: 600;
-}
-
-.risk-dial-container {
-    width: 180px;
-    height: 90px;
-    margin: 0 auto 20px;
-    position: relative;
 }
 
 .risk-dial-value {
@@ -2134,7 +1723,7 @@ MACRO RISK DASHBOARD
 }
 
 /* ============================================
-SUB-MARKET BREAKDOWN — IMPROVED SPACING
+SUB-MARKET BREAKDOWN
 ============================================ */
 
 .submarket-section {
@@ -2279,7 +1868,7 @@ SUB-MARKET BREAKDOWN — IMPROVED SPACING
 }
 
 /* ============================================
-ACQUISITION SIGNALS — SIGNAL BOARD
+ACQUISITION SIGNALS
 ============================================ */
 
 .ai-identified-opportunities .final-footer {
@@ -2387,207 +1976,7 @@ ACQUISITION SIGNALS — SIGNAL BOARD
 }
 
 /* ============================================
-APPENDIX
-============================================ */
-
-.appendix-section {
-    margin-bottom: 52px;
-}
-
-.appendix-title {
-    font-family: var(--font-display);
-    font-size: 24px;
-    color: var(--vm-gold);
-    margin-bottom: 20px;
-}
-
-.appendix-list {
-    list-style: none;
-}
-
-.appendix-list li {
-    padding: 12px 0;
-    padding-left: 25px;
-    position: relative;
-    font-size: 15px;
-    color: var(--vm-text);
-}
-
-.appendix-list li::before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-}
-
-.appendix-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
-}
-
-.appendix-item {
-    background: rgba(18, 18, 18, 0.6);
-    padding: 24px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.appendix-label {
-    font-size: 13px;
-    color: var(--vm-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-}
-
-.appendix-value {
-    font-size: 18px;
-    color: var(--vm-gold);
-    font-weight: 600;
-}
-
-.appendix-disclaimer {
-    margin-top: 52px;
-    padding: 28px 32px;
-    background: rgba(197, 164, 109, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-}
-
-.appendix-disclaimer h4 {
-    font-size: 18px;
-    color: var(--vm-gold);
-    margin-bottom: 15px;
-}
-
-.appendix-disclaimer p {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-}
-
-/* ============================================
-PLAYBOOK GRID
-============================================ */
-
-.playbook-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    align-items: stretch;
-    margin-bottom: 84px;
-}
-
-.playbook-column {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(12, 12, 12, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 0;
-    min-height: 340px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-}
-
-.playbook-column-title {
-    font-size: 18px;
-    color: var(--vm-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    text-align: center;
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(135deg, rgba(197, 164, 109, 0.05), transparent);
-}
-
-.playbook-items {
-    list-style: none;
-    padding: 24px;
-    flex: 1;
-}
-
-.playbook-items li {
-    padding: 12px 0;
-    padding-left: 25px;
-    position: relative;
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.65;
-    margin-bottom: 16px;
-}
-
-.playbook-items li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-    font-size: 18px;
-}
-
-/* ============================================
-MACRO PULSE STRIP
-============================================ */
-
-.macro-pulse-strip {
-    background: linear-gradient(135deg, rgba(197, 164, 109, 0.08), rgba(197, 164, 109, 0.03));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 20px 32px;
-    margin: 84px auto 0;
-    max-width: 100%;
-    text-align: center;
-}
-
-.macro-pulse-text {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.6;
-    font-weight: 500;
-}
-
-/* ============================================
-DATA INTEGRITY FOOTER
-============================================ */
-
-.data-integrity-footer {
-    background: linear-gradient(135deg, rgba(197, 164, 109, 0.05), rgba(197, 164, 109, 0.02));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 24px 28px;
-    margin-top: 52px;
-}
-
-.data-integrity-title {
-    font-size: 15px;
-    color: var(--vm-gold);
-    margin-bottom: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-}
-
-.data-integrity-text {
-    font-size: 12px;
-    color: var(--vm-text-body);
-    line-height: 1.7;
-}
-
-/* ============================================
-UTILITY CLASSES
-============================================ */
-
-.text-center { text-align: center; }
-.text-gold { color: var(--vm-gold); }
-.text-bronze { color: var(--vm-bronze); }
-.text-muted { color: var(--vm-muted); }
-.align-right { text-align: right; }
-.align-center { text-align: center; }
-
-/* ============================================
-FINAL PAGE FOOTER — LAST PAGE ONLY
+FINAL PAGE FOOTER
 ============================================ */
 
 .final-footer {
@@ -2606,6 +1995,17 @@ FINAL PAGE FOOTER — LAST PAGE ONLY
 .footer-content {
     line-height: 1.8;
 }
+
+/* ============================================
+UTILITY CLASSES
+============================================ */
+
+.text-center { text-align: center; }
+.text-gold { color: var(--vm-gold); }
+.text-bronze { color: var(--vm-bronze); }
+.text-muted { color: var(--vm-muted); }
+.align-right { text-align: right; }
+.align-center { text-align: center; }
 
 /* ============================================
 PRINT OPTIMIZATION
@@ -2628,20 +2028,10 @@ PRINT OPTIMIZATION
 }
 
 /* ============================================
-SLIDE-SPECIFIC WATERMARKS
-============================================ */
-
-.slide:nth-child(2) .watermark,
-.slide:nth-child(4) .watermark,
-.slide:nth-child(6) .watermark,
-.slide:nth-child(9) .watermark {
-    display: block;
-}
-
-/* ============================================
-END VOXMILL V3.3 LIGHT VISUAL POLISH COMPLETE
+END VOXMILL FINAL MULTI-VERTICAL VERSION
 INSTITUTIONAL GRADE — HEDGE FUND × PRIVATE EQUITY × SOVEREIGN WEALTH ✅
 ELITE ANALYTICAL DEPTH ✅
 BOARDROOM-READY EXECUTIVE INTELLIGENCE ✅
 ENHANCED VISUAL CLARITY + PREMIUM POLISH ✅
+MULTI-VERTICAL TRANSFORMATION COMPLETE ✅
 ============================================ */
