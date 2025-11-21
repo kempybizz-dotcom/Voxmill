@@ -23,7 +23,7 @@ MULTI-ASSET CLASS INTELLIGENCE PLATFORM
 }
 
 @page {
-    size: 1920px 1280px;
+    size: 1920px 1330px;
     margin: 0;
 }
 
@@ -66,7 +66,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
 
 .slide {
     width: 1920px;
-    height: 1380px;
+    height: 1430px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
@@ -122,7 +122,6 @@ SLIDE HEADER — UNCHANGED POSITION
     justify-content: space-between;
     align-items: center;
     padding-bottom: 20px;
-    border-bottom: 3px solid rgba(197, 164, 109, 0.6);
     z-index: 5;
 }
 
@@ -159,12 +158,12 @@ SLIDE HEADER — UNCHANGED POSITION
 }
 
 /* ============================================
-SLIDE CONTENT AREA — SHIFTED DOWN 20PX
+SLIDE CONTENT AREA — SHIFTED DOWN 10PX
 ============================================ */
 
 .slide-content {
     position: absolute;
-    top: 160px;
+    top: 150px;
     left: 48px;
     right: 48px;
     bottom: 140px;
@@ -1490,11 +1489,11 @@ STRATEGIC FORECAST — 2×2 GRID
 }
 
 /* ============================================
-MACRO CONTEXT — ENHANCED STYLING
+MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 ============================================ */
 
 .macro-context {
-    margin-top: 94px;
+    margin-top: 114px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
