@@ -981,9 +981,6 @@
             <div class="risk-dial-card">
                 <h3 class="risk-dial-title">Interest Rate Pressure</h3>
                 <div class="risk-dial-value">4.75%</div>
-                <div class="risk-bar-simple">
-                    <div class="risk-bar-fill-simple risk-medium-fill" style="width: 48%"></div>
-                </div>
                 <div class="risk-dial-status">Moderate — BoE holding pattern sustained</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
                     Current 4.75% base rate maintains historical average positioning. No imminent hikes projected through Q1 2026, supporting mortgage availability at current pricing levels.
@@ -993,9 +990,6 @@
             <div class="risk-dial-card">
                 <h3 class="risk-dial-title">Policy Risk</h3>
                 <div class="risk-dial-value">Low</div>
-                <div class="risk-bar-simple">
-                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 28%"></div>
-                </div>
                 <div class="risk-dial-status">Stable — No major legislative disruption</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
                     Regulatory environment remains predictable with no anticipated capital gains or stamp duty modifications. Planning policy stable across prime London boroughs.
@@ -1005,9 +999,6 @@
             <div class="risk-dial-card">
                 <h3 class="risk-dial-title">Liquidity Conditions</h3>
                 <div class="risk-dial-value">Strong</div>
-                <div class="risk-bar-simple">
-                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 78%"></div>
-                </div>
                 <div class="risk-dial-status">Robust — Institutional capital flows sustained</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
                     International participant activity remains elevated, particularly Middle Eastern and Asian sovereign wealth allocations. Transaction volumes support continued market depth.
@@ -1017,9 +1008,6 @@
             <div class="risk-dial-card">
                 <h3 class="risk-dial-title">Investor Sentiment</h3>
                 <div class="risk-dial-value">Bullish</div>
-                <div class="risk-bar-simple">
-                    <div class="risk-bar-fill-simple risk-low-fill" style="width: 72%"></div>
-                </div>
                 <div class="risk-dial-status">Positive — Confidence indicators elevated</div>
                 <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
                     Prime London maintains safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} {{ acquisition_label|lower }} strategies.
@@ -1089,9 +1077,6 @@
                     
                     <div class="submarket-metric-row">
                         <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
-                        <div class="velocity-bar-container">
-                            <div class="velocity-bar-fill velocity-color-{{ 'high' if (submarket.velocity_score or 0) >= 70 else 'medium' if (submarket.velocity_score or 0) >= 50 else 'low' }}" style="width: {{ submarket.velocity_score or 0 }}%"></div>
-                        </div>
                         <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket.velocity_score or 0) >= 70 else '#FFC107' if (submarket.velocity_score or 0) >= 50 else '#F44336' }}">
                             {{ submarket.velocity_score or 0 }}/100
                         </div>
