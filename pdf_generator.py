@@ -3,7 +3,7 @@
 VOXMILL MARKET INTELLIGENCE — PDF GENERATOR (16:9 SLIDE DECK)
 Production-ready HTML/CSS to PDF converter using WeasyPrint
 Fortune-500 grade executive intelligence deck generation
-ENHANCED VERSION: Added 5 new elite intelligence sections
+ENHANCED VERSION: Multi-vertical token support + 5 elite intelligence sections
 """
 
 import os
@@ -94,26 +94,98 @@ class VoxmillPDFGenerator:
             logger.error(f"Error loading data: {e}")
             raise
     
-    # ============================================
-    # ELITE INTELLIGENCE METHODS (EXISTING)
-    # ============================================
-    
+    def get_vertical_tokens(self, data: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Generate vertical-specific terminology tokens based on data or config.
+        
+        Args:
+            data: Complete report data
+            
+        Returns:
+            Dictionary of vertical tokens
+        """
+        metadata = data.get('metadata', {})
+        vertical_config = metadata.get('vertical', {})
+        
+        # Default to real estate if not specified
+        vertical_type = vertical_config.get('type', 'real_estate')
+        
+        if vertical_type == 'real_estate':
+            return {
+                'vertical_name': 'Real Estate',
+                'segment_label_1': 'Penthouses',
+                'segment_label_2': 'Apartments',
+                'segment_label_3': 'Townhouses',
+                'segment_label_4': 'Houses',
+                'unit_metric': 'sqft',
+                'inventory_label': 'Active Listings',
+                'value_metric_label': 'Price',
+                'velocity_metric_label': 'Absorption Rate',
+                'market_signal_label': 'value signals',
+                'acquisition_label': 'Acquisition',
+                'forward_indicator_label': 'Price Momentum'
+            }
+        elif vertical_type == 'luxury_goods':
+            return {
+                'vertical_name': 'Luxury Goods',
+                'segment_label_1': 'Ultra-Premium',
+                'segment_label_2': 'Premium',
+                'segment_label_3': 'Accessible Luxury',
+                'segment_label_4': 'Entry Luxury',
+                'unit_metric': 'unit',
+                'inventory_label': 'Active Inventory',
+                'value_metric_label': 'Price Point',
+                'velocity_metric_label': 'Turnover Velocity',
+                'market_signal_label': 'opportunity signals',
+                'acquisition_label': 'Procurement',
+                'forward_indicator_label': 'Demand Pressure'
+            }
+        elif vertical_type == 'private_equity':
+            return {
+                'vertical_name': 'Private Equity',
+                'segment_label_1': 'Large-Cap',
+                'segment_label_2': 'Mid-Cap',
+                'segment_label_3': 'Small-Cap',
+                'segment_label_4': 'Micro-Cap',
+                'unit_metric': 'valuation',
+                'inventory_label': 'Deal Pipeline',
+                'value_metric_label': 'Valuation',
+                'velocity_metric_label': 'Deal Velocity',
+                'market_signal_label': 'entry signals',
+                'acquisition_label': 'Investment',
+                'forward_indicator_label': 'Multiple Expansion'
+            }
+        else:
+            # Generic fallback
+            return {
+                'vertical_name': metadata.get('vertical_name', 'Market Intelligence'),
+                'segment_label_1': 'Premium Tier',
+                'segment_label_2': 'Core Tier',
+                'segment_label_3': 'Value Tier',
+                'segment_label_4': 'Entry Tier',
+                'unit_metric': 'unit',
+                'inventory_label': 'Active Inventory',
+                'value_metric_label': 'Value',
+                'velocity_metric_label': 'Turnover Velocity',
+                'market_signal_label': 'signals',
+                'acquisition_label': 'Acquisition',
+                'forward_indicator_label': 'Momentum'
+            }
+
+    # All calculation methods unchanged - keeping exact same logic
     def calculate_liquidity_index(self, data: Dict[str, Any]) -> int:
-        """Voxmill Liquidity Index (0-100)"""
         kpis = data.get('kpis', data.get('metrics', {}))
         days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
         index = int(100 - (days / 2))
         return max(0, min(100, index))
     
     def calculate_demand_pressure(self, data: Dict[str, Any]) -> float:
-        """Demand Pressure Index"""
         kpis = data.get('kpis', data.get('metrics', {}))
         active = kpis.get('total_properties', 100)
         recent_sales = active * 0.2
         return round(active / max(recent_sales, 1), 2)
     
     def get_property_type_heatmap(self, data: Dict[str, Any]) -> List[Dict]:
-        """Property type performance"""
         properties = data.get('properties', data.get('top_opportunities', []))
         type_stats = {}
         
@@ -142,7 +214,6 @@ class VoxmillPDFGenerator:
         return sorted(results, key=lambda x: x['velocity_score'], reverse=True)[:5]
     
     def generate_30_day_forecast(self, data: Dict[str, Any]) -> Dict:
-        """30-day price forecast"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         
@@ -158,7 +229,6 @@ class VoxmillPDFGenerator:
         }
     
     def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
-        """90-day trend cone"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         
@@ -172,7 +242,6 @@ class VoxmillPDFGenerator:
         }
     
     def calculate_sentiment(self, data: Dict[str, Any]) -> str:
-        """Market sentiment"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         velocity_change = kpis.get('velocity_change', 0)
@@ -197,7 +266,6 @@ class VoxmillPDFGenerator:
         else: return "Neutral"
     
     def calculate_voxmill_index(self, data: Dict[str, Any]) -> int:
-        """Voxmill Predictive Index (0-100)"""
         liquidity = self.calculate_liquidity_index(data)
         demand_pressure = self.calculate_demand_pressure(data)
         kpis = data.get('kpis', data.get('metrics', {}))
@@ -216,7 +284,6 @@ class VoxmillPDFGenerator:
         return max(0, min(100, voxmill_index))
     
     def generate_executive_actions(self, data: Dict[str, Any]) -> List[str]:
-        """Generate actionable directives"""
         actions = []
         
         kpis = data.get('kpis', data.get('metrics', {}))
@@ -228,21 +295,21 @@ class VoxmillPDFGenerator:
         if price_change > 3:
             actions.append(f"Monitor premium segment (£{int(avg_price * 1.2):,}+) — upward pressure may create acquisition opportunities below peak.")
         elif price_change < -3:
-            actions.append(f"Target distressed sellers in £{int(avg_price * 0.8):,}-£{int(avg_price):,} range — price weakness presents value entry points.")
+            actions.append(f"Target distressed providers in £{int(avg_price * 0.8):,}-£{int(avg_price):,} range — price weakness presents value entry points.")
         else:
             actions.append(f"Focus on £{int(avg_price * 0.9):,}-£{int(avg_price * 1.1):,} corridor — pricing stability supports confident positioning.")
         
         if velocity_change < -5:
             actions.append("Accelerate acquisition timelines — market velocity improving favors decisive action within 14-21 days.")
         elif velocity_change > 5:
-            actions.append("Extend due diligence periods — slower velocity permits comprehensive property evaluation and negotiation.")
+            actions.append("Extend due diligence periods — slower velocity permits comprehensive evaluation and negotiation.")
         else:
             actions.append(f"Maintain standard {days_on_market}-day transaction cycles — velocity stable and predictable.")
         
         prop_types = self.get_property_type_heatmap(data)
         if prop_types:
             best = prop_types[0]
-            actions.append(f"Prioritize {best['type']} properties — velocity score {best['velocity_score']}/100 signals strong demand dynamics.")
+            actions.append(f"Prioritize {best['type']} assets — velocity score {best['velocity_score']}/100 signals strong demand dynamics.")
         
         liquidity = self.calculate_liquidity_index(data)
         if liquidity < 60:
@@ -252,18 +319,12 @@ class VoxmillPDFGenerator:
         
         return actions[:5]
     
-    # ============================================
-    # NEW ELITE INTELLIGENCE METHODS (ADDED)
-    # ============================================
-    
     def get_competitive_benchmarking(self, data: Dict[str, Any]) -> List[Dict]:
-        """Generate competitive agency benchmarking data"""
         properties = data.get('properties', data.get('top_opportunities', []))
         kpis = data.get('kpis', data.get('metrics', {}))
         avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
         avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
         
-        # Premium agency benchmarks
         agencies = [
             {'name': 'Savills', 'price_per_sqft': int(avg_price_per_sqft * 1.08), 'days_on_market': int(avg_days * 0.95)},
             {'name': 'Knight Frank', 'price_per_sqft': int(avg_price_per_sqft * 1.12), 'days_on_market': int(avg_days * 0.85)},
@@ -275,27 +336,20 @@ class VoxmillPDFGenerator:
         return agencies
     
     def get_market_risk_index(self, data: Dict[str, Any]) -> Dict:
-        """Calculate market risk index (0-100)"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         velocity_change = kpis.get('velocity_change', 0)
         property_change = kpis.get('property_change', 0)
         
-        # Risk calculation: Higher volatility = higher risk
-        risk_score = 50  # Baseline
-        
-        # Price volatility risk
+        risk_score = 50
         risk_score += abs(price_change) * 3
         
-        # Velocity risk (slower = higher risk)
         if velocity_change > 10:
             risk_score += 15
         elif velocity_change > 5:
             risk_score += 8
         
-        # Supply risk (rapid inventory changes)
         risk_score += abs(property_change) * 2
-        
         risk_score = max(0, min(100, int(risk_score)))
         
         if risk_score < 40:
@@ -311,7 +365,6 @@ class VoxmillPDFGenerator:
         }
     
     def get_submarket_breakdown(self, data: Dict[str, Any]) -> List[Dict]:
-        """Break down market by property sub-types"""
         properties = data.get('properties', data.get('top_opportunities', []))
         
         submarket_stats = {
@@ -323,7 +376,6 @@ class VoxmillPDFGenerator:
         for prop in properties:
             ptype = prop.get('type', prop.get('property_type', 'Apartment'))
             
-            # Categorize into submarkets
             if 'penthouse' in ptype.lower():
                 category = 'Penthouse'
             elif 'townhouse' in ptype.lower() or 'house' in ptype.lower():
@@ -363,7 +415,6 @@ class VoxmillPDFGenerator:
         return sorted(results, key=lambda x: x['velocity_score'], reverse=True)
     
     def get_acquisition_signals(self, data: Dict[str, Any]) -> List[Dict]:
-        """Identify AI-flagged buying opportunities"""
         properties = data.get('properties', data.get('top_opportunities', []))
         kpis = data.get('kpis', data.get('metrics', {}))
         
@@ -376,7 +427,6 @@ class VoxmillPDFGenerator:
             price_per_sqft = prop.get('price_per_sqft', 0)
             days_listed = prop.get('days_listed', prop.get('days_on_market', 0))
             
-            # Flag underpriced or stale listings
             if price_per_sqft > 0 and price_per_sqft < median_price_per_sqft * 0.90:
                 discount_pct = int(((median_price_per_sqft - price_per_sqft) / median_price_per_sqft) * 100)
                 signals.append({
@@ -391,7 +441,7 @@ class VoxmillPDFGenerator:
                     'address': prop.get('address', 'N/A')[:50],
                     'price': prop.get('price', 0),
                     'price_per_sqft': price_per_sqft,
-                    'reasoning': f"Extended listing (+{excess_days} days) suggests seller flexibility"
+                    'reasoning': f"Extended listing (+{excess_days} days) suggests provider flexibility"
                 })
             
             if len(signals) >= 5:
@@ -400,7 +450,6 @@ class VoxmillPDFGenerator:
         return signals[:5]
     
     def get_strategic_playbook(self, data: Dict[str, Any]) -> Dict:
-        """Generate tactical, strategic, and operational recommendations"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         velocity_change = kpis.get('velocity_change', 0)
@@ -412,18 +461,16 @@ class VoxmillPDFGenerator:
             'operational': []
         }
         
-        # Tactical (30 days)
         if price_change > 2:
-            playbook['tactical'].append(f"Accelerate offers on properties £{int(avg_price * 0.85):,}-£{int(avg_price * 0.95):,} before further price escalation")
+            playbook['tactical'].append(f"Accelerate offers on assets £{int(avg_price * 0.85):,}-£{int(avg_price * 0.95):,} before further price escalation")
         else:
             playbook['tactical'].append(f"Negotiate aggressively in £{int(avg_price * 0.9):,}-£{int(avg_price * 1.1):,} band while pricing stable")
         
         if velocity_change < 0:
             playbook['tactical'].append("Fast-track due diligence — improving velocity window closing rapidly")
         else:
-            playbook['tactical'].append("Leverage extended market time for comprehensive property analysis")
+            playbook['tactical'].append("Leverage extended market time for comprehensive analysis")
         
-        # Strategic (90 days)
         playbook['strategic'].append(f"Build pipeline in top-performing segments identified in velocity analysis")
         playbook['strategic'].append("Position for Q1 market conditions — institutional capital flows seasonally peak")
         
@@ -433,7 +480,6 @@ class VoxmillPDFGenerator:
         else:
             playbook['strategic'].append("Market caution warranted — focus on core holdings and defensive positioning")
         
-        # Operational
         playbook['operational'].append("Enable daily Voxmill alerts for new listings matching acquisition criteria")
         playbook['operational'].append("Automate competitive tracking — monitor agency inventory changes weekly")
         playbook['operational'].append("Schedule monthly intelligence briefings to assess forecast accuracy and adjust strategy")
@@ -441,9 +487,8 @@ class VoxmillPDFGenerator:
         return playbook
     
     def get_macro_pulse_data(self, data: Dict[str, Any]) -> Dict:
-        """Generate macro pulse indicators"""
         return {
-            'interest_rate_trend': '↓',  # Simulated
+            'interest_rate_trend': '↓',
             'interest_rate_label': '4.75% (holding)',
             'gbp_usd_trend': '↔',
             'gbp_usd_label': '1.27 (stable)',
@@ -452,29 +497,13 @@ class VoxmillPDFGenerator:
             'macro_analysis': 'Macro sentiment stable; high-end liquidity sustained through Q4 2025. Cooling inflation supports mortgage availability.'
         }
     
-    # ============================================
-    # EXISTING METHODS (UNCHANGED)
-    # ============================================
-    
     def prepare_chart_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform raw data into chart-ready format for SVG rendering.
-        Handles missing fields gracefully.
-        
-        Args:
-            data: Raw market intelligence data
-            
-        Returns:
-            Dictionary with formatted chart data
-        """
         chart_data = {
             'price_distribution': [],
             'price_ranges': [],
             'weekly_trend': [],
             'market_share': [],
             'competitor_inventory': [],
-            
-            # ELITE FEATURES
             'liquidity_index': self.calculate_liquidity_index(data),
             'demand_pressure': self.calculate_demand_pressure(data),
             'property_type_performance': self.get_property_type_heatmap(data),
@@ -484,11 +513,9 @@ class VoxmillPDFGenerator:
             'voxmill_index': self.calculate_voxmill_index(data)
         }
         
-        # Handle different data structures from ai_analyzer
         properties = data.get('properties', data.get('top_opportunities', []))
         metrics = data.get('metrics', data.get('kpis', {}))
         
-        # Price distribution bars
         if 'price_distribution' in data:
             dist = data['price_distribution']
             chart_data['price_distribution'] = [
@@ -498,7 +525,6 @@ class VoxmillPDFGenerator:
                 {'label': '£2M+', 'count': dist.get('2m_plus', 0), 'height': min(dist.get('2m_plus', 0) * 3, 150)}
             ]
         elif properties:
-            # Calculate from properties
             ranges = {'0_500k': 0, '500k_1m': 0, '1m_2m': 0, '2m_plus': 0}
             for p in properties:
                 price = p.get('price', 0)
@@ -518,7 +544,6 @@ class VoxmillPDFGenerator:
                 {'label': '£2M+', 'count': ranges['2m_plus'], 'height': min(ranges['2m_plus'] * 3, 150)}
             ]
         
-        # Price ranges (horizontal bars)
         if 'price_ranges' in data:
             ranges = data['price_ranges']
             chart_data['price_ranges'] = [
@@ -536,7 +561,6 @@ class VoxmillPDFGenerator:
                     for r in ranges
                 ]
         
-        # Weekly trend
         chart_data['weekly_trend'] = [
             {'label': 'Mon', 'value': 120},
             {'label': 'Wed', 'value': 140},
@@ -544,7 +568,6 @@ class VoxmillPDFGenerator:
             {'label': 'Sun', 'value': 150}
         ]
         
-        # Market share from agents
         if properties:
             agents = {}
             for p in properties[:20]:
@@ -567,27 +590,13 @@ class VoxmillPDFGenerator:
         return chart_data
 
     def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Format top opportunities with scoring badges.
-        ENHANCED: Creates varied scores for visual contrast
-        GREEN (80-100), AMBER (60-79), RED (<60)
-        
-        Args:
-            data: Raw opportunities data
-            
-        Returns:
-            List of formatted opportunity dictionaries
-        """
         opportunities = []
-        
-        # Try multiple possible field names
         opportunities_raw = data.get('top_opportunities', data.get('properties', []))
         
         if not opportunities_raw:
             return opportunities
         
         for idx, opp in enumerate(opportunities_raw[:8]):
-            # Try multiple score field names and ensure it's an integer
             score = 0
             if 'score' in opp:
                 score = int(opp.get('score', 0))
@@ -596,15 +605,12 @@ class VoxmillPDFGenerator:
             elif 'opportunity_score' in opp:
                 score = int(opp.get('opportunity_score', 0))
             
-            # If no score found, calculate with VARIATION
             if score == 0:
                 price_per_sqft = opp.get('price_per_sqft', 0)
                 days_listed = opp.get('days_listed', opp.get('days_on_market', 0))
                 
-                # Start at midpoint
                 score = 50
                 
-                # Price competitiveness (0-30 points)
                 if price_per_sqft > 0:
                     if price_per_sqft < 1500:
                         score += 30
@@ -613,7 +619,6 @@ class VoxmillPDFGenerator:
                     elif price_per_sqft < 2500:
                         score += 10
                 
-                # Velocity bonus (0-25 points)
                 if days_listed > 0:
                     if days_listed < 20:
                         score += 25
@@ -622,19 +627,15 @@ class VoxmillPDFGenerator:
                     elif days_listed < 60:
                         score += 5
                 
-                # Position-based variation (creates natural spread)
-                score += (idx * 2) - 8  # Varies from -8 to +6 across 8 properties
-                
-                # Clamp to realistic range
+                score += (idx * 2) - 8
                 score = max(55, min(95, score))
             
-            # Determine score class with COLOR CODING
             if score >= 80:
-                score_class = 'high'      # GREEN
+                score_class = 'high'
             elif score >= 60:
-                score_class = 'medium'    # AMBER
+                score_class = 'medium'
             else:
-                score_class = 'low'       # RED
+                score_class = 'low'
             
             opportunities.append({
                 'address': opp.get('address', 'N/A'),
@@ -647,25 +648,18 @@ class VoxmillPDFGenerator:
                 'score_class': score_class
             })
         
-        # Sort by score descending (best opportunities first)
         opportunities.sort(key=lambda x: x['score'], reverse=True)
-        
         return opportunities
     
     def render_template(self, data: Dict[str, Any]) -> str:
-        """
-        Render HTML template with data using Jinja2.
-        
-        Args:
-            data: Complete report data
-            
-        Returns:
-            Rendered HTML string
-        """
+        """UPDATED: Now includes vertical token support"""
         logger.info("Rendering HTML template")
         
         try:
             template = self.jinja_env.get_template('voxmill_report.html')
+            
+            # Get vertical tokens
+            vertical_tokens = self.get_vertical_tokens(data)
             
             # Extract metadata
             metadata = data.get('metadata', {})
@@ -705,14 +699,14 @@ class VoxmillPDFGenerator:
                     'competitive_landscape', 
                     intelligence.get(
                         'executive_summary', 
-                        f'The {full_location} market demonstrates stable competitive dynamics with {len(properties)} active listings. Market share distribution indicates established agency presence with opportunities for strategic positioning in emerging segments.'
+                        f'The {full_location} market demonstrates stable competitive dynamics with {len(properties)} active assets. Market share distribution indicates established participant presence with opportunities for strategic positioning in emerging segments.'
                     )
                 ),
                 'key_insights': intelligence.get('strategic_insights', [
-                    f'Total market inventory of {len(properties)} properties indicates active supply',
-                    'Pricing strategies vary across property types and location premiums',
+                    f'Total market inventory of {len(properties)} assets indicates active supply',
+                    'Pricing strategies vary across segments and location premiums',
                     'Market demonstrates balanced competitive landscape with multiple active participants',
-                    'Emerging opportunities exist in underserved price segments'
+                    'Emerging opportunities exist in underserved value segments'
                 ])[:4]
             }
             
@@ -722,29 +716,29 @@ class VoxmillPDFGenerator:
                     'market_dynamics', 
                     intelligence.get(
                         'executive_summary', 
-                        f'The {full_location} market demonstrates characteristic fundamentals with {kpis["total_properties"]} active properties and £{kpis["avg_price"]:,.0f} average pricing. Current market velocity of {kpis["days_on_market"]} days indicates balanced supply-demand dynamics, while {abs(kpis["property_change"]):.1f}% week-over-week inventory change signals {"expanding" if kpis["property_change"] > 0 else "contracting"} market conditions.'
+                        f'The {full_location} market demonstrates characteristic fundamentals with {kpis["total_properties"]} active assets and £{kpis["avg_price"]:,.0f} average {vertical_tokens["value_metric_label"].lower()}. Current market {vertical_tokens["velocity_metric_label"].lower()} of {kpis["days_on_market"]} days indicates balanced supply-demand dynamics, while {abs(kpis["property_change"]):.1f}% week-over-week inventory change signals {"expanding" if kpis["property_change"] > 0 else "contracting"} market conditions.'
                     )
                 ),
                 'pricing_strategy': intelligence.get(
                     'pricing_strategy', 
-                    f'Current pricing dynamics position the market at £{kpis["avg_price_per_sqft"]:,.0f} per sqft, representing {"premium" if kpis["avg_price_per_sqft"] > 1500 else "competitive"} positioning. The {"upward" if kpis["price_change"] > 0 else "downward"} price trajectory of {abs(kpis["price_change"]):.1f}% suggests {"aggressive seller confidence" if kpis["price_change"] > 0 else "buyer-favorable conditions"}. Strategic pricing within market norms optimizes transaction velocity while preserving value appreciation potential.'
+                    f'Current pricing dynamics position the market at £{kpis["avg_price_per_sqft"]:,.0f} per {vertical_tokens["unit_metric"]}, representing {"premium" if kpis["avg_price_per_sqft"] > 1500 else "competitive"} positioning. The {"upward" if kpis["price_change"] > 0 else "downward"} price trajectory of {abs(kpis["price_change"]):.1f}% suggests {"aggressive provider confidence" if kpis["price_change"] > 0 else "participant-favorable conditions"}. Strategic pricing within market norms optimizes transaction {vertical_tokens["velocity_metric_label"].lower()} while preserving value appreciation potential.'
                 ),
                 'opportunity_assessment': intelligence.get(
                     'opportunity_assessment', 
                     intelligence.get(
                         'tactical_opportunities', 
-                        f'Primary opportunity vectors emerge across multiple market segments. Current inventory levels support selective acquisition strategies targeting {"fast-moving" if kpis["days_on_market"] < 45 else "value-positioned"} properties. The {abs(kpis["velocity_change"]):.1f}% {"improvement" if kpis["velocity_change"] < 0 else "extension"} in market velocity indicates {"favorable" if kpis["velocity_change"] < 0 else "deliberate"} transaction conditions for strategic market participants.'
+                        f'Primary opportunity vectors emerge across multiple market segments. Current inventory levels support selective {vertical_tokens["acquisition_label"].lower()} strategies targeting {"fast-moving" if kpis["days_on_market"] < 45 else "value-positioned"} assets. The {abs(kpis["velocity_change"]):.1f}% {"improvement" if kpis["velocity_change"] < 0 else "extension"} in market {vertical_tokens["velocity_metric_label"].lower()} indicates {"favorable" if kpis["velocity_change"] < 0 else "deliberate"} transaction conditions for strategic market participants.'
                     )
                 ),
                 'recommendation': intelligence.get(
                     'recommendation', 
-                    f'For market participants seeking {"expansion" if kpis["property_change"] > 0 else "consolidation"} opportunities, focus acquisition efforts on properties demonstrating strong fundamentals within the £{int(kpis["avg_price"] * 0.8):,.0f}-£{int(kpis["avg_price"] * 1.2):,.0f} range. Consider aggressive marketing timelines within the {kpis["days_on_market"]}-day velocity window to capitalize on current buyer sentiment and optimize transaction probability.'
+                    f'For market participants seeking {"expansion" if kpis["property_change"] > 0 else "consolidation"} opportunities, focus {vertical_tokens["acquisition_label"].lower()} efforts on assets demonstrating strong fundamentals within the £{int(kpis["avg_price"] * 0.8):,.0f}-£{int(kpis["avg_price"] * 1.2):,.0f} range. Consider aggressive marketing timelines within the {kpis["days_on_market"]}-day {vertical_tokens["velocity_metric_label"].lower()} window to capitalize on current participant sentiment and optimize transaction probability.'
                 )
             }
             
             chart_data = self.prepare_chart_data(data)
             
-            # Prepare all data
+            # Prepare all data INCLUDING vertical tokens
             template_data = {
                 'location': full_location,
                 'report_date': datetime.now().strftime('%B %Y'),
@@ -756,7 +750,6 @@ class VoxmillPDFGenerator:
                 'strategic_intelligence': strategic_intelligence,
                 'top_opportunities': self.prepare_opportunities(data),
                 
-                # ELITE FEATURES (EXISTING)
                 'market_depth': {
                     'liquidity_index': chart_data['liquidity_index'],
                     'demand_pressure': chart_data['demand_pressure'],
@@ -771,8 +764,6 @@ class VoxmillPDFGenerator:
                 },
                 
                 'executive_actions': self.generate_executive_actions(data),
-                
-                # NEW ELITE FEATURES (ADDED)
                 'competitive_benchmarking': self.get_competitive_benchmarking(data),
                 'market_risk': self.get_market_risk_index(data),
                 'submarket_breakdown': self.get_submarket_breakdown(data),
@@ -783,10 +774,13 @@ class VoxmillPDFGenerator:
                 'appendix': {
                     'data_sources': ['Rightmove API', 'Zoopla Listings', 'Outscraper', 'Voxmill Internal DB'],
                     'model_version': 'Voxmill Forecast Engine v2.1',
-                    'transactions_trained': '8,247 London transactions',
+                    'transactions_trained': '8,247 transactions',
                     'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M UTC'),
                     'update_frequency': 'Daily at 06:00 UTC'
-                }
+                },
+                
+                # VERTICAL TOKENS - CRITICAL ADDITION
+                **vertical_tokens
             }
             
             html_content = template.render(**template_data)
@@ -805,25 +799,13 @@ class VoxmillPDFGenerator:
         html_content: str,
         output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf"
     ) -> Path:
-        """
-        Convert HTML to PDF using WeasyPrint (16:9 SLIDE FORMAT).
-        
-        Args:
-            html_content: Rendered HTML string
-            output_filename: Name of output PDF file
-            
-        Returns:
-            Path to generated PDF file
-        """
         output_path = self.output_dir / output_filename
         
         logger.info(f"Generating PDF: {output_path}")
         
         try:
-            # Load main CSS stylesheet
             css_path = self.template_dir / 'voxmill_style.css'
             
-            # CRITICAL: Set 16:9 page size (1920×1080px)
             page_css = CSS(string='''
                 @page {
                     size: 1920px 1080px;
@@ -835,7 +817,6 @@ class VoxmillPDFGenerator:
                 }
             ''')
             
-            # Build stylesheet list
             if not css_path.exists():
                 logger.warning(f"CSS file not found: {css_path}")
                 stylesheets = [page_css]
@@ -844,7 +825,6 @@ class VoxmillPDFGenerator:
                 stylesheets = [page_css, main_css]
                 logger.info(f"Loaded CSS from {css_path}")
             
-            # Generate PDF
             html = HTML(string=html_content, base_url=str(self.template_dir))
             html.write_pdf(str(output_path), stylesheets=stylesheets)
             
@@ -861,15 +841,6 @@ class VoxmillPDFGenerator:
         self,
         output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf"
     ) -> Path:
-        """
-        Complete pipeline: load data → render template → generate PDF.
-        
-        Args:
-            output_filename: Name of output PDF file
-            
-        Returns:
-            Path to generated PDF file
-        """
         logger.info("=" * 70)
         logger.info("VOXMILL EXECUTIVE INTELLIGENCE DECK — PDF GENERATION")
         logger.info("=" * 70)
@@ -899,7 +870,6 @@ class VoxmillPDFGenerator:
 
 
 def main():
-    """Main execution function."""
     template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/opt/render/project/src')
     output_dir = os.getenv('VOXMILL_OUTPUT_DIR', '/tmp')
     data_path = os.getenv('VOXMILL_DATA_PATH', '/tmp/voxmill_analysis.json')
