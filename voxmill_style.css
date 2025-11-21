@@ -1035,58 +1035,6 @@ TABLE STYLING — PREMIUM ENHANCEMENT
 }
 
 /* ============================================
-FOOTER — VISIBLE ON ALL SLIDES
-============================================ */
-
-.slide-footer-branded {
-    position: absolute;
-    bottom: 24px;
-    left: 48px;
-    right: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 34px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    z-index: 20;
-    height: 72px;
-    background: var(--vm-dark);
-    box-shadow: 0 -2px 12px rgba(197, 164, 109, 0.15);
-}
-
-.footer-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.footer-branding {
-    display: flex;
-    align-items: center;
-}
-
-.footer-company {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.05em;
-    line-height: 1;
-}
-
-.footer-page {
-    font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    background: rgba(197, 164, 109, 0.25);
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: 1px solid #C5A46D;
-    font-variant-numeric: tabular-nums;
-    box-shadow: 0 2px 8px rgba(197, 164, 109, 0.3);
-}
-
-/* ============================================
 WATERMARK
 ============================================ */
 
