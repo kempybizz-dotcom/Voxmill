@@ -125,6 +125,16 @@ SLIDE HEADER — UNCHANGED POSITION
     z-index: 5;
 }
 
+/* ============================================
+SECTION HEADER SPACING — UNIFORM ACROSS ALL SLIDES
+============================================ */
+
+.section-header {
+    margin-top: 40px;
+    margin-bottom: 22px;
+    border-bottom: none;
+}
+
 .slide-header::before {
     content: '';
     position: absolute;
@@ -163,7 +173,7 @@ SLIDE CONTENT AREA — ORIGINAL POSITION (REVERTED)
 
 .slide-content {
     position: absolute;
-    top: 160px;
+    top: 170px;
     left: 48px;
     right: 48px;
     bottom: 140px;
@@ -812,6 +822,10 @@ INSIGHT CARDS — ENHANCED ACCENT
 COMPETITIVE LANDSCAPE — LUXURY REBUILD STYLES
 ============================================ */
 
+.competitive-landscape {
+    margin-top: 12px;
+}
+
 .competitive-radial-container {
     display: flex;
     flex-direction: column;
@@ -996,6 +1010,11 @@ INTELLIGENCE PANELS
 /* ============================================
 TABLE STYLING — PREMIUM ENHANCEMENT
 ============================================ */
+
+.opportunities-table {
+    padding-left: 24px;
+    padding-right: 24px;
+}
 
 .table-luxury {
     width: 100%;
@@ -1493,7 +1512,7 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 ============================================ */
 
 .macro-context {
-    margin-top: 114px;
+    margin-top: 20px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
@@ -1518,6 +1537,10 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 /* ============================================
 EXECUTIVE INTELLIGENCE — VERTICAL STACK
 ============================================ */
+
+.executive-intel-item {
+    margin-bottom: 8px;
+}
 
 .executive-brief-stack {
     display: flex;
@@ -1904,6 +1927,10 @@ MACRO RISK DASHBOARD
 /* ============================================
 SUB-MARKET BREAKDOWN — IMPROVED SPACING
 ============================================ */
+
+.submarket-section {
+    margin-top: 10px;
+}
 
 .submarket-grid-v2 {
     display: grid;
@@ -2341,6 +2368,27 @@ UTILITY CLASSES
 .text-muted { color: var(--vm-muted); }
 .align-right { text-align: right; }
 .align-center { text-align: center; }
+
+/* ============================================
+FINAL PAGE FOOTER — LAST PAGE ONLY
+============================================ */
+
+.final-footer {
+    width: 100%;
+    padding: 18px 0;
+    background-color: #0A0A0A;
+    border-top: 1px solid #D3B46A;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #D3B46A;
+    letter-spacing: 0.5px;
+    margin-top: 40px;
+}
+
+.footer-content {
+    line-height: 1.6;
+}
 
 /* ============================================
 PRINT OPTIMIZATION
