@@ -115,7 +115,7 @@ SLIDE HEADER — UNCHANGED POSITION
 
 .slide-header {
     position: absolute;
-    top: 50px;
+    top: 70px;
     left: 48px;
     right: 48px;
     display: flex;
@@ -1512,7 +1512,7 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 ============================================ */
 
 .macro-context {
-    margin-top: 90px;
+    margin-top: 120px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
@@ -2383,7 +2383,7 @@ FINAL PAGE FOOTER — LAST PAGE ONLY
     font-size: 12px;
     color: #D3B46A;
     letter-spacing: 0.5px;
-    margin-top: -20px;
+    margin-top: -50px;
 }
 
 .footer-content {
