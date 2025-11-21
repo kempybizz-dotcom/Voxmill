@@ -405,6 +405,7 @@
                         <text x="140" y="150" font-family="Playfair Display" font-size="64" font-weight="700" fill="#C5A46D" text-anchor="middle">{{ chart_data.market_share|length if chart_data.market_share else 0 }}</text>
                     </svg>
                     
+                    <div class="competitive-radial-value">{{ chart_data.market_share|length if chart_data.market_share else 0 }}</div>
                     <div class="competitive-radial-label">Premium Participants</div>
                 </div>
                 
@@ -416,28 +417,23 @@
                 <p class="chart-context">Active inventory distribution across institutional participants</p>
                 
                 {% if chart_data.competitor_inventory %}
-                <table class="competitive-inventory-table">
-                    <thead>
-                        <tr>
-                            <th>Participant</th>
-                            <th>{{ inventory_label }}</th>
-                            <th>{{ velocity_metric_label }} Signal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for comp in chart_data.competitor_inventory[:5] %}
-                        <tr>
-                            <td class="competitive-agency-name">{{ (comp.name or "Unknown")[:25] }}</td>
-                            <td class="competitive-listings-value">{{ comp.listings or 0 }}</td>
-                            <td style="text-align: center;">
-                                <span class="competitive-velocity-pill velocity-{{ 'strong' if (comp.listings or 0) > 15 else 'moderate' if (comp.listings or 0) > 8 else 'weak' }}">
-                                    {{ 'Strong' if (comp.listings or 0) > 15 else 'Moderate' if (comp.listings or 0) > 8 else 'Emerging' }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="competitive-inventory-luxury-grid">
+                    {% for comp in chart_data.competitor_inventory[:5] %}
+                    <div class="competitive-inventory-card-luxury">
+                        <div class="competitor-name-luxury">{{ (comp.name or "Unknown")[:30] }}</div>
+                        <div class="competitor-stats-luxury">
+                            <div class="competitor-stat-label-luxury">Inventory</div>
+                            <div class="competitor-stat-value-luxury">{{ comp.listings or 0 }}</div>
+                        </div>
+                        <div class="competitor-velocity-luxury">
+                            <span class="velocity-indicator-luxury velocity-{{ 'strong' if (comp.listings or 0) > 15 else 'moderate' if (comp.listings or 0) > 8 else 'weak' }}-luxury">
+                                <span class="velocity-icon-luxury">{{ '▲' if (comp.listings or 0) > 15 else '■' if (comp.listings or 0) > 8 else '▼' }}</span>
+                                {{ 'Strong' if (comp.listings or 0) > 15 else 'Moderate' if (comp.listings or 0) > 8 else 'Emerging' }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
                 {% else %}
                 <div style="padding: 40px; text-align: center; color: rgba(184, 184, 184, 0.6); font-style: italic;">
                     Competitive data unavailable for this reporting period.
@@ -557,22 +553,33 @@
                 </div>
             </div>
             
-            <!-- MOMENTUM CORRELATION PANEL -->
+            <!-- MOMENTUM CORRELATION PANEL — HORIZONTAL FLOW -->
             <div class="momentum-correlation-panel">
                 <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
-                <div class="momentum-correlation-grid">
-                    <ul>
-                        <li>Luxury goods spending +11% → short-term confidence boost signaling immediate demand uptick</li>
-                        <li>PE deal flow +22% → liquidity rotation into prime assets within 90-120 day window</li>
-                    </ul>
-                    <ul>
-                        <li>Charter activity +7% YoY → UHNW mobility patterns indicate seasonal entry positioning</li>
-                        <li>Wealth fund flows indicating strong 90-day forward demand across premium segments</li>
-                    </ul>
-                    <ul>
-                        <li>Capital rotation alignment suggests synchronized entry across luxury asset classes</li>
-                        <li>Cross-vertical momentum reinforces bullish 90-day outlook with 84% confidence</li>
-                    </ul>
+                <div class="momentum-correlation-flow">
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">Luxury goods spending +11% → short-term confidence boost</div>
+                    </div>
+                    <div class="momentum-arrow">→</div>
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">PE deal flow +22% → liquidity rotation within 90-120 days</div>
+                    </div>
+                    <div class="momentum-arrow">→</div>
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">Charter activity +7% YoY → UHNW mobility patterns</div>
+                    </div>
+                    <div class="momentum-arrow">→</div>
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">Wealth fund flows → strong 90-day forward demand</div>
+                    </div>
+                    <div class="momentum-arrow">→</div>
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">Capital rotation alignment → synchronized entry</div>
+                    </div>
+                    <div class="momentum-arrow">→</div>
+                    <div class="momentum-signal-box">
+                        <div class="momentum-signal-text">Cross-vertical momentum → bullish 90-day outlook (84%)</div>
+                    </div>
                 </div>
             </div>
             
@@ -654,28 +661,32 @@
     </div>
     <div class="slide-content">
         <div class="forecast-grid-2x2">
+            <!-- TOP LEFT: 30-DAY — REDESIGNED -->
             <div class="forecast-card-v2">
                 <h3 class="forecast-card-title">30-Day {{ forward_indicator_label }}</h3>
                 <div class="forecast-card-body">
-                    <div class="forecast-arrow-large">{{ forecast.day_30.arrow if forecast.day_30 else "→" }}</div>
-                    <div class="forecast-percentage-large">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-                    <div class="forecast-label-text">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
-                    <div class="forecast-confidence-text">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
+                    <div class="forecast-arrow-redesigned">{{ forecast.day_30.arrow if forecast.day_30 else "→" }}</div>
+                    <div class="forecast-percentage-redesigned">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+                    <div class="forecast-label-redesigned">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
+                    <div class="forecast-confidence-redesigned">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
                 </div>
             </div>
             
+            <!-- TOP RIGHT: 90-DAY TREND CONE — REDESIGNED -->
             <div class="forecast-card-v2">
                 <h3 class="forecast-card-title">90-Day Trend Cone</h3>
                 <div class="forecast-card-body">
+                    <div class="forecast-arrow-redesigned">{{ '↗' if forecast.day_90 and (forecast.day_90.mid or 0) > 0 else '→' if forecast.day_90 and (forecast.day_90.mid or 0) == 0 else '↘' }}</div>
                     <div class="cone-range-display">
                         <span class="cone-value cone-high">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</span>
                         <span class="cone-value cone-mid">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</span>
                         <span class="cone-value cone-low">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</span>
                     </div>
-                    <div class="forecast-label-text">Projected Range (Low-Mid-High)</div>
+                    <div class="forecast-label-redesigned">Projected Range (Low-Mid-High)</div>
                 </div>
             </div>
             
+            <!-- BOTTOM LEFT: MARKET SENTIMENT -->
             <div class="forecast-card-v2 forecast-card-highlight">
                 <h3 class="forecast-card-title">Market Sentiment</h3>
                 <div class="forecast-card-body">
@@ -686,6 +697,7 @@
                 </div>
             </div>
             
+            <!-- BOTTOM RIGHT: VOXMILL INDEX -->
             <div class="forecast-card-v2 forecast-card-highlight">
                 <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
                 <div class="forecast-card-body">
@@ -793,7 +805,7 @@
                 </p>
             </div>
             
-            <!-- STRATEGIC ACTION WINDOW -->
+            <!-- REDESIGNED ACTION WINDOW -->
             <div class="action-window">
                 <h4 class="action-window-title">Strategic Action Window</h4>
                 <div class="action-window-grid">
@@ -1022,9 +1034,10 @@
             </p>
         </div>
         
-        <div class="macro-context" style="margin-top: 42px; margin-bottom: 48px;">
-            <h4 class="macro-title" style="color: #C8AA6E;">30-Day {{ forward_indicator_label }} Risk Map</h4>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;">
+        <!-- EXTENDED RISK MAP CONTAINER -->
+        <div class="macro-risk-map-extended">
+            <h4 class="macro-title" style="color: #C8AA6E; margin-bottom: 20px;">30-Day {{ forward_indicator_label }} Risk Map</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
                 <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
                     <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Interest Rates</div>
                     <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Stable — No rate movement expected.</div>
