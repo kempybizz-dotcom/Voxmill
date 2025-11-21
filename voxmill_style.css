@@ -84,7 +84,7 @@ SLIDE CONTAINER — SAFE AREAS ENFORCED
     right: 0;
     bottom: 0;
     opacity: 0.28;
-    z-index: 0;
+    z-index: 1;
     pointer-events: none;
     background-image:
         repeating-linear-gradient(45deg, transparent, transparent 80px, rgba(197, 164, 109, 0.15) 80px, rgba(197, 164, 109, 0.15) 82px),
@@ -122,7 +122,7 @@ SLIDE HEADER — UNCHANGED POSITION
     justify-content: space-between;
     align-items: center;
     padding-bottom: 20px;
-    z-index: 5;
+    z-index: 10;
 }
 
 .slide-header::before {
@@ -1193,7 +1193,7 @@ WATERMARK
     font-weight: 700;
     color: rgba(197, 164, 109, 0.03);
     letter-spacing: 0.15em;
-    z-index: 1;
+    z-index: 2;
     white-space: nowrap;
     pointer-events: none;
     user-select: none;
