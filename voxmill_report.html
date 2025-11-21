@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <!-- KPI DASHBOARD: CSS has margin-top: 40px (moved up 15px from original 55px) -->
+        <!-- KPI DASHBOARD: Moved up 15px via CSS (margin-top: 40px) -->
         <div class="weekly-movement-dashboard">
             <div class="movement-mini-card">
                 <div class="movement-label">{{ inventory_label }}</div>
@@ -193,17 +193,17 @@
             <div class="chart-container">
                 <h3 class="chart-title">Value Distribution Range</h3>
                 <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
-                <svg width="100%" height="240" viewBox="0 0 1700 240" preserveAspectRatio="xMidYMid meet">
-                    <text x="35" y="110" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 35, 110)" class="chart-axis-label">Count</text>
-                    <line x1="80" y1="40" x2="80" y2="180" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="80" y1="180" x2="1620" y2="180" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="80" y1="75" x2="1620" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
-                    <line x1="80" y1="110" x2="1620" y2="110" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
-                    <line x1="80" y1="145" x2="1620" y2="145" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
+                <svg width="100%" height="260" viewBox="0 0 1700 260" preserveAspectRatio="xMidYMid meet">
+                    <text x="35" y="120" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 35, 120)" class="chart-axis-label">Count</text>
+                    <line x1="80" y1="40" x2="80" y2="200" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+                    <line x1="80" y1="200" x2="1620" y2="200" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+                    <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
+                    <line x1="80" y1="120" x2="1620" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
+                    <line x1="80" y1="155" x2="1620" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
                     
                     {% for bar in chart_data.price_distribution %}
                     <rect x="{{ 200 + loop.index0 * 350 }}" 
-                          y="{{ 180 - (bar.height * 0.9) }}" 
+                          y="{{ 200 - (bar.height * 0.9) }}" 
                           width="200" 
                           height="{{ bar.height * 0.9 }}" 
                           fill="url(#barGradient)" 
@@ -212,7 +212,7 @@
                           rx="6"
                           style="filter: drop-shadow(0 2px 8px rgba(198, 161, 91, 0.4));"/>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
-                          y="{{ 165 - (bar.height * 0.9) }}" 
+                          y="{{ 185 - (bar.height * 0.9) }}" 
                           font-family="Inter" 
                           font-size="24" 
                           font-weight="700"
@@ -220,7 +220,7 @@
                           text-anchor="middle"
                           style="text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);">{{ bar.count }}</text>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
-                          y="205" 
+                          y="225" 
                           font-family="Inter" 
                           font-size="18" 
                           fill="rgba(255,255,255,0.85)" 
@@ -228,7 +228,7 @@
                           class="chart-axis-label">{{ bar.label }}</text>
                     {% endfor %}
                     
-                    <text x="850" y="235" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
+                    <text x="850" y="255" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
                     
                     <defs>
                         <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -238,7 +238,7 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <!-- CONCENTRATION SIGNAL: CSS has margin-top: 63px (moved down 25px from original 38px) -->
+                <!-- CONCENTRATION SIGNAL: Moved down 25px via CSS (margin-top: 63px) -->
                 <div class="chart-mini-insight">
                     📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
                 </div>
@@ -248,8 +248,6 @@
 </div>
 
 <!-- SLIDE 4: PERFORMANCE ANALYSIS -->
-<!-- CHARTS: CSS extended to 520px height (+20px) -->
-<!-- LOWER SECTION: CSS moved to margin-top: 174px (+40px down) -->
 
 <div class="slide">
     <div class="slide-header">
@@ -262,20 +260,20 @@
             <div class="chart-panel">
                 <h3 class="chart-title">Value Range Distribution</h3>
                 <p class="chart-context">Portfolio composition by value bracket — strategic positioning across market segments (Based on {{ kpis.total_properties }} assets)</p>
-                <svg width="100%" height="420" viewBox="0 0 700 420">
-                    <line x1="280" y1="40" x2="280" y2="360" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="350" y1="40" x2="350" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="420" y1="40" x2="420" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="490" y1="40" x2="490" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="560" y1="40" x2="560" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="630" y1="40" x2="630" y2="360" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <svg width="100%" height="440" viewBox="0 0 700 440">
+                    <line x1="280" y1="40" x2="280" y2="380" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+                    <line x1="350" y1="40" x2="350" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="420" y1="40" x2="420" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="490" y1="40" x2="490" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="560" y1="40" x2="560" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="630" y1="40" x2="630" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
                     
-                    <text x="5" y="200" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 5, 200)" class="chart-axis-label">% of Assets</text>
+                    <text x="5" y="210" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 5, 210)" class="chart-axis-label">% of Assets</text>
                     
                     {% for item in chart_data.price_ranges %}
-                    <text x="25" y="{{ 80 + loop.index0 * 70 }}" font-family="Inter" font-size="16" fill="#EAEAEA">{{ item.range }}</text>
+                    <text x="25" y="{{ 90 + loop.index0 * 70 }}" font-family="Inter" font-size="16" fill="#EAEAEA">{{ item.range }}</text>
                     <rect x="280" 
-                          y="{{ 65 + loop.index0 * 70 }}" 
+                          y="{{ 75 + loop.index0 * 70 }}" 
                           width="{{ item.percentage * 3.5 }}" 
                           height="28" 
                           fill="url(#horizontalGradient)" 
@@ -283,14 +281,14 @@
                           stroke-width="2.2"
                           rx="6"/>
                     <text x="{{ 290 + item.percentage * 3.5 }}" 
-                          y="{{ 85 + loop.index0 * 70 }}" 
+                          y="{{ 95 + loop.index0 * 70 }}" 
                           font-family="Inter" 
                           font-size="16" 
                           font-weight="600"
                           fill="#C5A46D">{{ item.percentage }}%</text>
                     {% endfor %}
                     
-                    <text x="480" y="405" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
+                    <text x="480" y="425" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
                     
                     <defs>
                         <linearGradient id="horizontalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -305,30 +303,30 @@
             <div class="chart-panel">
                 <h3 class="chart-title">Weekly Trend: Unit Economics (£/{{ unit_metric }})</h3>
                 <p class="chart-context">7-day rolling average of price-per-{{ unit_metric }} — micro-trend velocity indicator</p>
-                <svg width="100%" height="420" viewBox="0 0 700 420">
-                    <text x="10" y="215" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 10, 215)" class="chart-axis-label">£/{{ unit_metric }}</text>
+                <svg width="100%" height="440" viewBox="0 0 700 440">
+                    <text x="10" y="225" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 10, 225)" class="chart-axis-label">£/{{ unit_metric }}</text>
                     
                     <line x1="60" y1="70" x2="650" y2="70" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="155" x2="650" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="240" x2="650" y2="240" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="325" x2="650" y2="325" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="390" x2="650" y2="390" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="60" y1="260" x2="650" y2="260" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="60" y1="355" x2="650" y2="355" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
                     
                     <polyline 
-                        points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 390 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
+                        points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 410 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
                         fill="none" 
                         stroke="#C5A46D" 
                         stroke-width="2.2"/>
                     
                     {% for point in chart_data.weekly_trend %}
                     <circle cx="{{ 80 + loop.index0 * 120 }}" 
-                            cy="{{ 390 - point.value }}" 
+                            cy="{{ 410 - point.value }}" 
                             r="8" 
                             fill="#C5A46D" 
                             stroke="#0C0C0C" 
                             stroke-width="3"/>
                     <text x="{{ 80 + loop.index0 * 120 }}" 
-                          y="410" 
+                          y="430" 
                           font-family="Inter" 
                           font-size="18" 
                           fill="rgba(255,255,255,0.85)" 
@@ -336,13 +334,13 @@
                           class="chart-axis-label">{{ point.label }}</text>
                     {% endfor %}
                     
-                    <text x="350" y="430" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Day of Week</text>
+                    <text x="350" y="450" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Day of Week</text>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
         </div>
         
-        <!-- LOWER SECTION: CSS has margin-top: 174px (+40px down from original 134px) -->
+        <!-- LOWER SECTION: Moved down 20px via CSS (margin-top: 154px) -->
         <div class="insight-cards">
             <div class="insight-card">
                 <div class="insight-title">Market Momentum</div>
@@ -372,7 +370,6 @@
 </div>
 
 <!-- SLIDE 5: COMPETITIVE LANDSCAPE -->
-<!-- TABLE: CSS has margin-top: 40px (-5px from original 45px), centered -->
 
 <div class="slide competitive-landscape-slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
@@ -475,7 +472,6 @@
 </div>
 
 <!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN -->
-<!-- 4 CARDS IN ROW + MOMENTUM CORRELATION PANEL + GOLD SUMMARY BAR -->
 
 <div class="slide cross-vertical-intelligence">
     <div class="slide-header">
@@ -636,7 +632,6 @@
 </div>
 
 <!-- SLIDE 8: STRATEGIC FORECAST -->
-<!-- DATA BINDING READY: {momentum_30_day}, {trendcone_low/mid/high}, {voxmill_index} -->
 
 <div class="slide">
     <div class="watermark">VOXMILL INTELLIGENCE</div>
@@ -650,7 +645,6 @@
                 <h3 class="forecast-card-title">30-Day {{ forward_indicator_label }}</h3>
                 <div class="forecast-card-body">
                     <div class="forecast-arrow-large">{{ forecast.day_30.arrow if forecast.day_30 else "→" }}</div>
-                    <!-- REAL DATA BINDING: {momentum_30_day} -->
                     <div class="forecast-percentage-large">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
                     <div class="forecast-label-text">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
                     <div class="forecast-confidence-text">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
@@ -661,7 +655,6 @@
                 <h3 class="forecast-card-title">90-Day Trend Cone</h3>
                 <div class="forecast-card-body">
                     <div class="cone-range-display">
-                        <!-- REAL DATA BINDING: {trendcone_low/mid/high} -->
                         <span class="cone-value cone-high">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</span>
                         <span class="cone-value cone-mid">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</span>
                         <span class="cone-value cone-low">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</span>
@@ -683,7 +676,6 @@
             <div class="forecast-card-v2 forecast-card-highlight">
                 <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
                 <div class="forecast-card-body">
-                    <!-- REAL DATA BINDING: {voxmill_index} -->
                     <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
                     <div class="voxmill-index-bar-container">
                         <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
@@ -703,7 +695,7 @@
             </p>
         </div>
         
-        <div style="margin-top: 42px;">
+        <div style="margin-top: 52px;">
             <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 20px; font-weight: 600; text-align: center;">Portfolio Bias Recommendation</h4>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
                 <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
@@ -727,7 +719,6 @@
 </div>
 
 <!-- SLIDE 9: EXECUTIVE INTELLIGENCE -->
-<!-- ACTION WINDOW REDESIGNED WITH 2-COLUMN GRID LAYOUT -->
 
 <div class="slide executive-intelligence">
     <div class="slide-header">
@@ -816,7 +807,6 @@
 </div>
 
 <!-- SLIDE 10: TOP OPPORTUNITIES -->
-<!-- SCORE BADGE: CSS has min-width: 60px, auto-width support for 1-3 digits -->
 
 <div class="slide top-market-opportunities">
     <div class="slide-header">
@@ -856,7 +846,6 @@
                         <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
                         <td class="align-center">{{ opportunity.days_listed or 0 }}</td>
                         <td class="align-center">
-                            <!-- REAL SCORE DATA BINDING: {acquisition_score} -->
                             <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">{{ opportunity.score or 0 }}</span>
                         </td>
                     </tr>
@@ -897,7 +886,6 @@
 </div>
 
 <!-- SLIDE 11: METHODOLOGY -->
-<!-- INTELLIGENCE PIPELINE: Gold bar with dark text (#1A1A1A) -->
 
 <div class="slide">
     <div class="slide-header">
@@ -1058,7 +1046,6 @@
 </div>
 
 <!-- SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN -->
-<!-- THREE CARDS: CSS centered with flex: 0 0 480px, left-aligned internal content -->
 
 <div class="slide">
     <div class="slide-header">
