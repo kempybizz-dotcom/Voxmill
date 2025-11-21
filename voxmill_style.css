@@ -537,7 +537,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .proprietary-badge {
     background: var(--vm-gold);
-    color: var(--vm-light);
+    color: var(--vm-dark);
     padding: 20px 32px;
     border-radius: 8px;
     margin-top: 52px;
@@ -546,6 +546,7 @@ METHODOLOGY & MODEL ARCHITECTURE SLIDE
 
 .proprietary-badge-text {
     font-family: var(--font-display);
+    color: var(--vm-dark);
     font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -1524,7 +1525,7 @@ MACRO CONTEXT — ENHANCED STYLING + 20PX MARGIN
 ============================================ */
 
 .macro-context {
-    margin-top: 200px;
+    margin-top: 260px;
     padding: 20px 24px;
     background: rgba(197, 164, 109, 0.08);
     border-left: 4px solid #C5A46D;
@@ -2378,21 +2379,6 @@ DATA INTEGRITY FOOTER
     line-height: 1.7;
 }
 
-/* ============================================
-UTILITY CLASSES
-============================================ */
-
-.text-center { text-align: center; }
-.text-gold { color: var(--vm-gold); }
-.text-bronze { color: var(--vm-bronze); }
-.text-muted { color: var(--vm-muted); }
-.align-right { text-align: right; }
-.align-center { text-align: center; }
-
-/* ============================================
-FINAL PAGE FOOTER — LAST PAGE ONLY
-============================================ */
-
 .final-footer {
     width: 100%;
     padding: 18px 0;
@@ -2403,12 +2389,23 @@ FINAL PAGE FOOTER — LAST PAGE ONLY
     font-size: 12px;
     color: #D3B46A;
     letter-spacing: 0.5px;
-    margin-top: 20px;
+    margin-top: -80px;
 }
 
 .footer-content {
     line-height: 1.6;
 }
+
+/* ============================================
+UTILITY CLASSES
+============================================ */
+
+.text-center { text-align: center; }
+.text-gold { color: var(--vm-gold); }
+.text-bronze { color: var(--vm-bronze); }
+.text-muted { color: var(--vm-muted); }
+.align-right { text-align: right; }
+.align-center { text-align: center; }
 
 /* ============================================
 PRINT OPTIMIZATION
