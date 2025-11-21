@@ -1,6 +1,6 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V4.4 FINAL PRODUCTION
-ALL REQUIREMENTS MET | INSTITUTIONAL-GRADE LAYOUT | FULL DATA BINDING
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V4.5 FINAL POLISH
+SURGICAL CSS FIXES | NO HTML CHANGES | ALL TOKENS PRESERVED
 ============================================ */
 
 :root {
@@ -82,7 +82,7 @@ body::before {
 }
 
 /* ============================================
-SLIDE CONTAINER — INCREASED BOTTOM PADDING
+SLIDE CONTAINER
 ============================================ */
 
 .slide {
@@ -270,14 +270,19 @@ SLIDE CONTENT AREA
 }
 
 /* ============================================
-SHARED CARD INNER UTILITY CLASS
+SHARED CARD INNER UTILITY CLASS — PERFECT CENTRING
 ============================================ */
 
 .card-inner {
-    padding: var(--spacing-md) 32px var(--spacing-sm) 32px;
+    padding: 30px 32px 24px 32px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
+}
+
+/* MODIFIER FOR LEFT-ALIGNED CONTENT */
+.card--left-content {
     align-items: flex-start;
 }
 
@@ -363,9 +368,13 @@ EXECUTIVE SUMMARY SLIDE — KPI CARDS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 18px 16px;
+    padding: 30px 16px 18px 16px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .movement-label {
@@ -406,8 +415,7 @@ EXECUTIVE SUMMARY SLIDE — KPI CARDS
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW SLIDE (SLIDE 3 FIX)
-CARDS MOVED DOWN +30PX
+KPI GRID — MARKET OVERVIEW SLIDE — PERFECT CENTRING
 ============================================ */
 
 .kpi-grid {
@@ -416,7 +424,7 @@ CARDS MOVED DOWN +30PX
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-top: 60px; /* MOVED DOWN: +30px */
+    margin-top: 60px;
     margin-bottom: 94px;
     page-break-inside: avoid;
 }
@@ -426,8 +434,9 @@ CARDS MOVED DOWN +30PX
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 0;
+    padding: 30px 24px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -440,7 +449,6 @@ CARDS MOVED DOWN +30PX
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-sm);
     width: 100%;
 }
 
@@ -488,11 +496,11 @@ CARDS MOVED DOWN +30PX
 }
 
 /* ============================================
-CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
+CHART CONTAINERS — IMPROVED READABILITY
 ============================================ */
 
 .chart-section {
-    margin-top: 90px; /* MOVED DOWN: +30px for Slide 3 */
+    margin-top: 90px;
     page-break-inside: avoid;
 }
 
@@ -508,8 +516,8 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px;
-    height: 460px; /* SLIDE 3 ONLY: +50px */
+    padding: 30px 32px;
+    height: 460px;
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
@@ -517,12 +525,12 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
 }
 
 .chart-title {
-    font-size: 22px;
+    font-size: 14px;
     font-weight: 600;
-    color: #BFA670;
+    color: #e8d7b0;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 6px;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     position: relative;
@@ -542,10 +550,10 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
 }
 
 .chart-context {
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.75);
+    font-size: 11px;
+    color: #b2a58a;
     text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 8px;
     font-style: italic;
     line-height: 1.8;
     max-width: 100%;
@@ -553,18 +561,19 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
 }
 
 .chart-source {
-    font-size: 12px;
-    color: var(--vm-muted);
+    font-size: 11px;
+    color: #f4f4f4;
+    opacity: 0.9;
     text-align: center;
     margin-top: auto;
     font-style: italic;
     padding-top: 12px;
-    opacity: 0.85;
 }
 
 .chart-axis-label {
-    font-size: 18px; /* INCREASED: +2px for readability */
-    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    color: #f4f4f4;
+    opacity: 0.9;
     font-weight: 600;
     letter-spacing: 0.08em;
 }
@@ -583,8 +592,7 @@ CHART CONTAINERS — SLIDE 3 SPECIFIC HEIGHT INCREASE
 }
 
 /* ============================================
-TWO-COLUMN LAYOUT — PERFORMANCE ANALYSIS
-CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
+TWO-COLUMN LAYOUT — PERFORMANCE ANALYSIS — PERFECT CENTRING
 ============================================ */
 
 .two-column {
@@ -600,10 +608,12 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px;
-    height: 630px; /* INCREASED: +20px */
+    padding: 30px 32px;
+    height: 630px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     page-break-inside: avoid;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
@@ -621,7 +631,7 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 28px 25px;
+    padding: 30px 25px;
     min-height: 110px;
     height: 110px;
     display: flex;
@@ -681,11 +691,9 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED
 }
 
 .competitive-inventory-table {
-    width: 90%;
+    width: 80%;
     border-collapse: collapse;
-    margin-top: var(--spacing-lg);
-    margin-left: auto;
-    margin-right: auto;
+    margin: var(--spacing-lg) auto 0;
 }
 
 .competitive-inventory-table thead tr {
@@ -766,6 +774,8 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED
     border: 1px solid var(--vm-gold);
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
 }
 
 .competitive-insights-grid {
@@ -776,7 +786,7 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED
 
 .competitive-insight-point {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
 }
 
@@ -784,19 +794,17 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED
     font-size: 20px;
     color: var(--vm-gold);
     line-height: 1;
-    margin-top: 2px;
 }
 
 .competitive-insight-text {
     font-size: 13px;
-    color: rgba(191, 166, 112, 0.85);
+    color: #f4f4f4;
     line-height: 1.6;
     flex: 1;
 }
 
 /* ============================================
 CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
-4 CARDS + MOMENTUM PANEL + GOLD BAR WITH LIGHT TEXT
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
@@ -820,7 +828,7 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 32px 24px;
+    padding: 30px 24px;
     min-height: 360px;
     display: flex;
     flex-direction: column;
@@ -883,7 +891,7 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
     backdrop-filter: blur(2px);
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 10px;
-    padding: 32px;
+    padding: 30px 32px;
     margin-top: var(--spacing-lg);
 }
 
@@ -933,11 +941,14 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
     border-radius: 8px;
     border: 1px solid rgba(191, 166, 112, 0.5);
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .cross-vertical-summary-text {
     font-size: 14px;
-    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
+    color: #F5F5F5;
     font-weight: 600;
     letter-spacing: 0.3px;
     line-height: 1.7;
@@ -959,7 +970,7 @@ METHODOLOGY & MODEL ARCHITECTURE
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px;
+    padding: 30px 32px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1010,7 +1021,7 @@ METHODOLOGY & MODEL ARCHITECTURE
     background: rgba(191, 166, 112, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 32px;
+    padding: 30px 32px;
     margin-top: 90px;
     text-align: center;
 }
@@ -1032,7 +1043,7 @@ METHODOLOGY & MODEL ARCHITECTURE
 /* PIPELINE BOXES: LIGHT TEXT ON GOLD */
 .pipeline-box {
     background: linear-gradient(90deg, #C9A86A, #B59854);
-    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
+    color: #F5F5F5;
     padding: 18px 28px;
     border-radius: 6px;
     font-size: 13px;
@@ -1062,7 +1073,7 @@ METHODOLOGY & MODEL ARCHITECTURE
     font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: #F5F5F5; /* LIGHT TEXT ON GOLD */
+    color: #F5F5F5;
 }
 
 /* ============================================
@@ -1153,7 +1164,11 @@ MARKET DEPTH ANALYSIS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px;
+    padding: 30px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1175,22 +1190,33 @@ MARKET DEPTH ANALYSIS
     font-variant-numeric: tabular-nums;
 }
 
-.depth-bar {
-    height: 10px;
-    background: rgba(191, 166, 112, 0.2);
-    border-radius: 6px;
+/* KPI METER: SHORT CENTRED BAR */
+.depth-bar,
+.kpi-meter {
+    width: 220px;
+    max-width: 220px;
+    height: 6px;
+    background: #3b3b3b;
+    border-radius: 999px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin: 16px auto 0;
+    position: relative;
 }
 
-.depth-bar-fill {
+.depth-bar-fill,
+.kpi-meter-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    background: linear-gradient(90deg, var(--vm-gold), var(--vm-gold-light));
+    border-radius: 999px;
+    background: #14b866;
 }
 
 .depth-note {
     font-size: 14px;
     color: var(--vm-muted);
+    margin-top: 12px;
 }
 
 /* ============================================
@@ -1211,11 +1237,11 @@ STRATEGIC FORECAST — DATA BINDING READY
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 28px;
+    padding: 30px 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1348,24 +1374,29 @@ STRATEGIC FORECAST — DATA BINDING READY
 }
 
 .voxmill-index-bar-container {
-    height: 20px;
-    background: rgba(191, 166, 112, 0.2);
-    border-radius: 20px;
+    width: 220px;
+    max-width: 220px;
+    height: 6px;
+    background: #3b3b3b;
+    border-radius: 999px;
     overflow: hidden;
-    margin-bottom: var(--spacing-xs);
-    width: 100%;
+    margin: 16px auto 0;
+    position: relative;
 }
 
 .voxmill-index-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    background: linear-gradient(90deg, var(--vm-gold), var(--vm-gold-light));
-    border-radius: 10px;
+    background: #14b866;
+    border-radius: 999px;
 }
 
 .voxmill-index-caption {
     font-size: 13px;
     color: var(--vm-muted);
-    margin-bottom: 8px;
+    margin-top: 12px;
     font-style: italic;
 }
 
@@ -1455,7 +1486,7 @@ EXECUTIVE INTELLIGENCE — ENHANCED ACTION WINDOW
     backdrop-filter: blur(2px);
     border: 2px solid var(--vm-gold);
     border-radius: 12px;
-    padding: 32px 28px;
+    padding: 30px 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1501,11 +1532,13 @@ EXECUTIVE INTELLIGENCE — ENHANCED ACTION WINDOW
     border-radius: 6px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
+    display: flex;
+    align-items: center;
 }
 
 .executive-bottom-text {
     font-size: 13px;
-    color: rgba(191, 166, 112, 0.85);
+    color: #f4f4f4;
     text-align: center;
     line-height: 1.5;
     font-style: italic;
@@ -1686,7 +1719,7 @@ TOP OPPORTUNITIES — SCORE BADGE
 }
 
 /* ============================================
-MACRO RISK DASHBOARD
+MACRO RISK DASHBOARD — KPI METERS
 ============================================ */
 
 .macro-risk-grid {
@@ -1701,8 +1734,12 @@ MACRO RISK DASHBOARD
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px;
+    padding: 30px 32px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1729,36 +1766,42 @@ MACRO RISK DASHBOARD
     font-weight: 400;
 }
 
+/* KPI METER: SHORT CENTRED BAR */
 .risk-bar-simple {
-    height: 12px;
-    background: rgba(191, 166, 112, 0.2);
-    border-radius: 6px;
+    width: 220px;
+    max-width: 220px;
+    height: 6px;
+    background: #3b3b3b;
+    border-radius: 999px;
     overflow: hidden;
-    margin: 20px auto var(--spacing-xs);
-    width: 80%;
+    margin: 16px auto 0;
+    position: relative;
 }
 
 .risk-bar-fill-simple {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    border-radius: 6px;
+    border-radius: 999px;
     transition: width 0.3s ease;
 }
 
 .risk-low-fill {
-    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+    background: #14b866;
 }
 
 .risk-medium-fill {
-    background: linear-gradient(90deg, #FFC107, #FFD54F);
+    background: #FFC107;
 }
 
 .risk-high-fill {
-    background: linear-gradient(90deg, #FF9800, #F44336);
+    background: #F44336;
 }
 
 /* ============================================
 SEGMENT PERFORMANCE BREAKDOWN — CENTERED 3-CARD ROW
-GREEN BARS FULLY CONTAINED WITHIN CARDS
+KPI METERS FULLY CONTAINED
 ============================================ */
 
 .submarket-section {
@@ -1778,7 +1821,7 @@ GREEN BARS FULLY CONTAINED WITHIN CARDS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: var(--spacing-lg) 28px 32px 28px;
+    padding: 30px 28px 32px 28px;
     min-height: 340px;
     flex: 0 0 480px;
     display: flex;
@@ -1835,25 +1878,28 @@ GREEN BARS FULLY CONTAINED WITHIN CARDS
     font-style: italic;
 }
 
-/* GREEN BAR: FULLY CONTAINED WITHIN CARD */
+/* KPI METER: SHORT CENTRED BAR */
 .velocity-bar-container {
-    height: 10px;
-    background: rgba(191, 166, 112, 0.2);
-    border-radius: 5px;
+    width: 220px;
+    max-width: 220px;
+    height: 6px;
+    background: #3b3b3b;
+    border-radius: 999px;
     overflow: hidden;
-    width: 100%; /* CONTAINED WITHIN CARD */
-    max-width: 100%; /* NO BLEEDING */
     margin: 8px 0;
+    position: relative;
 }
 
 .velocity-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    border-radius: 5px;
-    box-shadow: 0 2px 8px rgba(191, 166, 112, 0.3);
+    border-radius: 999px;
 }
 
 .velocity-color-high {
-    background: #4CAF50;
+    background: #14b866;
 }
 
 .velocity-color-medium {
@@ -2011,6 +2057,9 @@ AI ACQUISITION SIGNALS
     border-radius: 8px;
     padding: 28px 32px;
     margin-top: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .acquisition-strategy-text {
@@ -2033,7 +2082,7 @@ GENERAL PANELS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 32px 28px;
+    padding: 30px 28px;
     margin-top: 94px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
@@ -2175,18 +2224,15 @@ SLIDE-SPECIFIC WATERMARKS
 }
 
 /* ============================================
-END VOXMILL V4.4 FINAL PRODUCTION
-✅ Cover page height: 1080px
-✅ Dark bronze pattern restored (opacity 0.13)
-✅ Slide 3 KPI cards moved down +30px
-✅ Slide 3 chart section moved down +30px
-✅ Slide 3 chart containers +50px height
-✅ Green velocity bars fully contained within cards (width: 100%, max-width: 100%)
-✅ Gold backgrounds with light text (#F5F5F5) in pipeline, badges, summary bars
-✅ Chart axis labels increased to 18px
-✅ Standardized spacing system (16/24/30/40/50px)
+END VOXMILL V4.5 FINAL POLISH
+✅ KPI meters: short (220px), centred, consistent across all slides
+✅ Perfect internal centring: all cards use flex centre alignment
+✅ Chart readability: improved titles (14px), labels (11px), breathing room (30px padding)
+✅ Colour safety: no dark text on dark backgrounds (all fixed to #f4f4f4)
+✅ Competitive table: 80% width, centred with margin auto
+✅ Info bars: text vertically centred with flex alignment
 ✅ All footers hidden
-✅ Typography consistency maintained
-✅ Full data-binding integrity preserved
-✅ Lower-third composition elements properly positioned
+✅ Dark bronze pattern preserved
+✅ No HTML changes
+✅ All tokens preserved
 ============================================ */
