@@ -300,6 +300,11 @@ COVER SLIDE
 EXECUTIVE SUMMARY SLIDE — ENHANCED SPACING
 ============================================ */
 
+.executive-summary-slide {
+  min-height: 1080px !important;
+    height: auto !important;
+}
+
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
