@@ -6,6 +6,8 @@ Fortune-500 grade executive intelligence deck generation
 ENHANCED VERSION: Multi-vertical token support + 5 elite intelligence sections
 🔥 CRITICAL FIX: Bulletproof vertical_config handling (string AND dict support)
 ✅ SCORING FIX: Real 0-100 scores, no more hardcoded "9"
+✅ VELOCITY SCORE FIX: Properly calculated turnover velocity (0-100 scale)
+✅ FORECAST FIX: Real 30-day and 90-day calculations from data
 """
 
 import os
@@ -199,6 +201,10 @@ class VoxmillPDFGenerator:
         return round(active / max(recent_sales, 1), 2)
     
     def get_property_type_heatmap(self, data: Dict[str, Any]) -> List[Dict]:
+        """
+        ✅ FIXED: Proper velocity score calculation (0-100 scale)
+        Lower days_on_market = higher velocity score
+        """
         properties = data.get('properties', data.get('top_opportunities', []))
         type_stats = {}
         
@@ -215,38 +221,67 @@ class VoxmillPDFGenerator:
                 continue
             avg_price = sum(stats['prices']) / len(stats['prices'])
             avg_days = sum(stats['days']) / len(stats['days']) if stats['days'] else 42
-            velocity_score = max(0, 100 - (avg_days / 2))
+            
+            # FIXED: Proper velocity score calculation
+            # 0 days = 100 score, 100+ days = 0 score
+            velocity_score = max(0, min(100, int(100 - (avg_days / 1.0))))
             
             results.append({
                 'type': ptype,
                 'avg_price': int(avg_price),
-                'velocity_score': int(velocity_score),
+                'velocity_score': velocity_score,
                 'count': len(stats['prices'])
             })
         
         return sorted(results, key=lambda x: x['velocity_score'], reverse=True)[:5]
     
     def generate_30_day_forecast(self, data: Dict[str, Any]) -> Dict:
+        """
+        ✅ FIXED: Real 30-day forecast calculation
+        """
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
+        velocity_change = kpis.get('velocity_change', 0)
         
-        projected_change = price_change * 1.2
-        direction = "Upward" if projected_change > 0 else "Downward"
-        confidence = "High" if abs(projected_change) > 2 else "Moderate"
+        # Project 30-day momentum based on weekly change
+        # Weekly change * 4.3 weeks ≈ monthly projection
+        projected_change = price_change * 4.3
+        
+        # Adjust for velocity signal (faster velocity = stronger momentum)
+        if velocity_change < 0:  # Improving velocity
+            projected_change *= 1.15
+        elif velocity_change > 5:  # Declining velocity
+            projected_change *= 0.85
+        
+        direction = "Upward" if projected_change > 0 else "Downward" if projected_change < 0 else "Neutral"
+        confidence = "High" if abs(projected_change) > 3 else "Moderate" if abs(projected_change) > 1 else "Low"
         
         return {
             'direction': direction,
             'percentage': round(abs(projected_change), 1),
             'confidence': confidence,
-            'arrow': '↑' if projected_change > 0 else '↓'
+            'arrow': '↑' if projected_change > 0 else '↓' if projected_change < 0 else '→'
         }
     
     def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
+        """
+        ✅ FIXED: Real 90-day trend cone calculation
+        """
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
+        property_change = kpis.get('property_change', 0)
         
-        base_projection = price_change * 3
-        confidence_band = abs(base_projection) * 0.4
+        # Base projection: weekly change * ~13 weeks (90 days)
+        base_projection = price_change * 13
+        
+        # Adjust for supply dynamics (inventory changes)
+        if property_change > 5:  # Increasing supply
+            base_projection *= 0.85  # Downward pressure
+        elif property_change < -5:  # Decreasing supply
+            base_projection *= 1.15  # Upward pressure
+        
+        # Confidence band: ±35% of base projection
+        confidence_band = abs(base_projection) * 0.35
         
         return {
             'low': round(base_projection - confidence_band, 1),
@@ -279,15 +314,24 @@ class VoxmillPDFGenerator:
         else: return "Neutral"
     
     def calculate_voxmill_index(self, data: Dict[str, Any]) -> int:
+        """
+        ✅ FIXED: Properly calculated Voxmill Predictive Index
+        """
         liquidity = self.calculate_liquidity_index(data)
         demand_pressure = self.calculate_demand_pressure(data)
         kpis = data.get('kpis', data.get('metrics', {}))
         price_momentum = kpis.get('price_change', 0)
         
-        liquidity_score = liquidity
-        demand_score = max(0, 100 - (demand_pressure * 30))
-        momentum_score = max(0, min(100, 50 + (price_momentum * 10)))
+        # Component scores (0-100 scale)
+        liquidity_score = liquidity  # Already 0-100
         
+        # Demand score: Lower pressure = higher score
+        demand_score = max(0, min(100, int(100 - (demand_pressure * 30))))
+        
+        # Momentum score: ±10% change = ±50 points around center
+        momentum_score = max(0, min(100, int(50 + (price_momentum * 5))))
+        
+        # Weighted composite
         voxmill_index = int(
             (liquidity_score * 0.4) +
             (demand_score * 0.3) +
@@ -378,6 +422,9 @@ class VoxmillPDFGenerator:
         }
     
     def get_submarket_breakdown(self, data: Dict[str, Any]) -> List[Dict]:
+        """
+        ✅ FIXED: Proper velocity score calculation for submarkets
+        """
         properties = data.get('properties', data.get('top_opportunities', []))
         
         submarket_stats = {
@@ -414,14 +461,16 @@ class VoxmillPDFGenerator:
             total_sqft = sum(stats['sqft'])
             price_per_sqft = int(sum(stats['prices']) / total_sqft) if total_sqft > 0 else 0
             avg_days = int(sum(stats['days']) / len(stats['days'])) if stats['days'] else 42
-            velocity_score = max(0, 100 - (avg_days / 2))
+            
+            # FIXED: Proper velocity score
+            velocity_score = max(0, min(100, int(100 - (avg_days / 1.0))))
             
             results.append({
                 'category': category,
                 'avg_price': int(avg_price),
                 'price_per_sqft': price_per_sqft,
                 'avg_days': avg_days,
-                'velocity_score': int(velocity_score),
+                'velocity_score': velocity_score,
                 'count': len(stats['prices'])
             })
         
@@ -605,12 +654,18 @@ class VoxmillPDFGenerator:
     def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         ✅ FIXED: Real 0-100 scoring logic - no more hardcoded "9"
+        Scores now range from 55-95 based on actual property metrics
         """
         opportunities = []
         opportunities_raw = data.get('top_opportunities', data.get('properties', []))
         
         if not opportunities_raw:
             return opportunities
+        
+        # Get market benchmarks for scoring
+        kpis = data.get('kpis', data.get('metrics', {}))
+        market_avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
+        market_avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
         
         for idx, opp in enumerate(opportunities_raw[:8]):
             # CRITICAL FIX: Properly extract and calculate score
@@ -633,28 +688,36 @@ class VoxmillPDFGenerator:
                 score = 50
                 
                 # Price efficiency score (0-30 points)
-                if price_per_sqft > 0:
-                    if price_per_sqft < 1500:
+                if price_per_sqft > 0 and market_avg_price_per_sqft > 0:
+                    price_ratio = price_per_sqft / market_avg_price_per_sqft
+                    if price_ratio < 0.80:  # 20%+ below market
                         score += 30
-                    elif price_per_sqft < 2000:
-                        score += 20
-                    elif price_per_sqft < 2500:
+                    elif price_ratio < 0.90:  # 10-20% below market
+                        score += 22
+                    elif price_ratio < 0.95:  # 5-10% below market
+                        score += 15
+                    elif price_ratio < 1.05:  # At market
                         score += 10
                 
                 # Velocity score (0-25 points)
                 if days_listed > 0:
-                    if days_listed < 20:
+                    if days_listed < market_avg_days * 0.5:  # Super fast
                         score += 25
-                    elif days_listed < 40:
-                        score += 15
-                    elif days_listed < 60:
+                    elif days_listed < market_avg_days * 0.8:  # Fast
+                        score += 18
+                    elif days_listed < market_avg_days * 1.2:  # Normal
+                        score += 12
+                    elif days_listed < market_avg_days * 1.5:  # Slow
                         score += 5
                 
-                # Ranking bonus (distribute remaining points by position)
+                # Ranking bonus (top-ranked get boost)
                 score += max(0, (8 - idx) * 2)
                 
                 # Clamp to 55-95 range (never show 0 or 100)
                 score = max(55, min(95, score))
+            
+            # Ensure score is in valid range
+            score = max(55, min(95, score))
             
             # Determine score class
             if score >= 80:
