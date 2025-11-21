@@ -488,7 +488,7 @@ CHART CONTAINERS — EXTENDED HEIGHT +20PX
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 28px;
-    height: 480px; /* Extended by +20px (was 420px) */
+    height: 410px; /* Extended by +20px (was 420px) */
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
@@ -575,8 +575,8 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    height: auto;
-    margin-top: 60px;
+    height: 30px;
+    margin-top: 70px;
 }
 
 .chart-panel {
@@ -585,7 +585,7 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 28px;
-    height: 580px; /* Extended by +20px (was 500px) */
+    height: 610px; /* Extended by +20px (was 500px) */
     display: flex;
     flex-direction: column;
     page-break-inside: avoid;
@@ -597,7 +597,7 @@ CHART PANELS +20PX HEIGHT | LOWER SECTION +40PX DOWN
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 174px; /* Was 134px, now 174px = +40px spacing */
+    margin-top: 204px; /* Was 134px, now 174px = +40px spacing */
 }
 
 .insight-card {
@@ -671,7 +671,7 @@ COMPETITIVE LANDSCAPE — TABLE CENTERED & UP 5PX
     border-collapse: collapse;
     margin-top: 40px; /* Was 45px, now 40px = -5px higher */
     margin-left: 40PX;
-    margin-right: 40px;
+    margin-right: 10px;
 }
 
 .competitive-inventory-table thead tr {
@@ -786,7 +786,7 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 225px;
+    top: 250px;
 }
 
 .cross-vertical-container {
@@ -926,7 +926,7 @@ CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
 
 .cross-vertical-summary-text {
     font-size: 14px;
-    color: #1A1A1A; /* Dark text on gold background */
+    color: var(--vm-light); /* Dark text on gold background */
     font-weight: 600;
     letter-spacing: 0.3px;
     line-height: 1.7;
@@ -1245,7 +1245,7 @@ Variables: {momentum_30_day}, {trendcone_low/mid/high}, {voxmill_index}
     align-items: center;
     justify-content: center;
     flex: 1;
-    width: 100%;
+    width: 80%;
 }
 
 .forecast-arrow-large {
@@ -1394,13 +1394,13 @@ Strategic Action Window redesigned with 2-column grid layout
     display: grid;
     grid-template-columns: 1.4fr 1fr;
     gap: 40px;
-    margin-top: 40px;
+    margin-top: 70px;
 }
 
 .executive-insights-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 }
 
 .executive-insight-item {
@@ -1457,7 +1457,7 @@ Strategic Action Window redesigned with 2-column grid layout
 .executive-summary-title {
     font-family: var(--font-display);
     font-size: 18px;
-    margin-left: 20px
+    margin-right: -20px
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -1475,7 +1475,7 @@ Strategic Action Window redesigned with 2-column grid layout
 .executive-summary-text {
     font-size: 14px;
     color: var(--vm-text-body);
-    margin-left: 20px
+    margin-right: -20px
     line-height: 1.75;
     margin-bottom: 16px;
 }
@@ -1511,7 +1511,7 @@ Strategic Action Window redesigned with 2-column grid layout
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 12px;
     padding: 36px;
-    margin-top: 60px;
+    margin-top: 80px;
     margin-bottom: 40px;
     box-shadow: 0 6px 16px rgba(191, 166, 112, 0.15);
 }
@@ -1833,11 +1833,11 @@ GREEN BARS INSIDE EACH CARD | LEFT-TO-RIGHT DATA LAYOUT
 
 /* GREEN BAR INSIDE CARD */
 .velocity-bar-container {
-    height: 3.5px;
+    height: 1px;
     background: rgba(191, 166, 112, 0.2);
-    border-radius: 6px;
+    border-radius: 3px;
     overflow: hidden;
-    width: 100%;
+    width: 80%;
     margin: 5px 0;
 }
 
