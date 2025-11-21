@@ -1,6 +1,6 @@
 /* ============================================
 VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.0 FINAL PRODUCTION
-COMPLETE FIX: BRONZE PATTERN + PERFECT ALIGNMENT + ALL ISSUES RESOLVED
+ALL REQUESTED CHANGES APPLIED
 ============================================ */
 
 :root {
@@ -48,7 +48,7 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 }
 
 /* ============================================
-BRONZE PATTERN RESTORED — ORIGINAL DIAGONAL
+BRONZE PATTERN — OPACITY INCREASED BY 15% (0.14 → 0.29)
 ============================================ */
 
 body {
@@ -67,10 +67,10 @@ body::before {
     right: 0;
     bottom: 0;
     background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
-        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.29) 60px, rgba(167, 123, 58, 0.29) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.29) 60px, rgba(167, 123, 58, 0.29) 62px);
     background-repeat: repeat;
-    opacity: 0.14;
+    opacity: 0.29;
     z-index: 0;
     pointer-events: none;
 }
@@ -95,12 +95,12 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.14;
+    opacity: 0.29;
     z-index: 0;
     pointer-events: none;
     background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
-        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.29) 60px, rgba(167, 123, 58, 0.29) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.29) 60px, rgba(167, 123, 58, 0.29) 62px);
 }
 
 .slide:last-child {
@@ -122,7 +122,7 @@ body::before {
 }
 
 /* ============================================
-COVER PAGE — RESTORED ORIGINAL HEIGHT
+COVER PAGE — SAME SIZE AS OTHER SLIDES (1480px)
 ============================================ */
 
 .slide-cover {
@@ -130,14 +130,14 @@ COVER PAGE — RESTORED ORIGINAL HEIGHT
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 1080px !important;
-    height: 1080px !important;
+    min-height: 1480px !important;
+    height: 1480px !important;
 }
 
 .slide-cover::after {
     background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
-        radial-gradient(circle at 50% 50%, rgba(167, 123, 58, 0.14) 0%, transparent 60%);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.29) 60px, rgba(167, 123, 58, 0.29) 62px),
+        radial-gradient(circle at 50% 50%, rgba(167, 123, 58, 0.29) 0%, transparent 60%);
 }
 
 .logo-container {
@@ -252,34 +252,39 @@ COVER PAGE — RESTORED ORIGINAL HEIGHT
 }
 
 /* ============================================
-GLOBAL UTILITY CLASS — INNER ALIGNMENT
-============================================ */
-
-.inner-align {
-    padding: 30px 20px !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-/* ============================================
-UNIVERSAL CONTAINER RULES
+UNIVERSAL CONTAINER PADDING — ALL ELEMENTS CENTERED
+5PX FROM ALL EDGES INSIDE CONTAINER
 ============================================ */
 
 .card-inner,
 .kpi-content,
-.chart-panel > *,
-.executive-insight-item > *,
-.forecast-card-body > * {
-    padding-top: 5px;
-}
-
-.card-inner {
-    padding: 30px 20px !important;
+.forecast-card-body,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.executive-insight-item,
+.chart-container,
+.chart-panel,
+.movement-mini-card,
+.executive-summary-bullet,
+.insight-card,
+.cross-vertical-card,
+.momentum-correlation-panel,
+.methodology-panel,
+.model-pipeline,
+.panel,
+.action-window,
+.signal-card-v2,
+.competitive-insights-strip,
+.executive-summary-card {
+    padding: 5px !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.card-inner {
     gap: 10px;
     width: 100%;
 }
@@ -289,7 +294,7 @@ UNIVERSAL CONTAINER RULES
 }
 
 /* ============================================
-EXECUTIVE SUMMARY BULLETS — FIXED SPACING
+EXECUTIVE SUMMARY BULLETS
 ============================================ */
 
 .executive-summary-bullets {
@@ -305,11 +310,7 @@ EXECUTIVE SUMMARY BULLETS — FIXED SPACING
     border-left: 6px solid var(--vm-gold);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 30px 36px;
     min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
 }
 
@@ -322,7 +323,6 @@ EXECUTIVE SUMMARY BULLETS — FIXED SPACING
     margin-bottom: var(--spacing-xs);
     position: relative;
     padding-bottom: 8px;
-    padding-top: 5px;
 }
 
 .executive-bullet-title::after {
@@ -375,13 +375,8 @@ WEEKLY MOVEMENT DASHBOARD
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 35px 16px 18px 16px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .movement-label {
@@ -422,7 +417,7 @@ WEEKLY MOVEMENT DASHBOARD
 }
 
 /* ============================================
-KPI GRID — SLIDE 3 — FIXED SPACING + GREEN BARS
+KPI GRID — SLIDE 3
 ============================================ */
 
 .kpi-grid {
@@ -441,7 +436,7 @@ KPI GRID — SLIDE 3 — FIXED SPACING + GREEN BARS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 30px 24px;
+    padding: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -452,12 +447,7 @@ KPI GRID — SLIDE 3 — FIXED SPACING + GREEN BARS
 }
 
 .kpi-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     width: 100%;
-    padding-top: 5px;
 }
 
 .kpi-label {
@@ -504,31 +494,8 @@ KPI GRID — SLIDE 3 — FIXED SPACING + GREEN BARS
 }
 
 /* ============================================
-KPI METER — FIXED 60PX WIDTH, CENTERED
-============================================ */
-
-.kpi-meter {
-    width: 60px !important;
-    max-width: 60px !important;
-    height: 6px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 6px auto 0;
-    position: relative;
-}
-
-.kpi-meter-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    border-radius: 3px;
-    background: #6ECB63;
-}
-
-/* ============================================
 CHART SECTION — SLIDE 3
+CONCENTRATION SIGNAL MOVED DOWN 40PX
 ============================================ */
 
 .chart-section {
@@ -548,14 +515,8 @@ CHART SECTION — SLIDE 3
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 30px 30px 30px !important;
     height: 420px;
     page-break-inside: avoid;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
     width: 100%;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
@@ -618,7 +579,7 @@ CHART SECTION — SLIDE 3
     background: rgba(191, 166, 112, 0.1);
     border-left: 4px solid var(--vm-gold);
     padding: 12px 20px;
-    margin-top: var(--spacing-lg);
+    margin-top: 50px;
     border-radius: 6px;
     font-size: 14px;
     color: var(--vm-text-body);
@@ -644,27 +605,22 @@ TWO COLUMN CHARTS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 30px 30px 30px !important;
     height: 630px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
     width: 100%;
     page-break-inside: avoid;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
 /* ============================================
-INSIGHT CARDS
+INSIGHT CARDS — PERFORMANCE ANALYSIS SLIDE
+MOVED UP TO CREATE SYMMETRICAL SPACING
 ============================================ */
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 204px;
+    margin-top: 70px;
 }
 
 .insight-card {
@@ -673,12 +629,8 @@ INSIGHT CARDS
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 35px 25px 25px 25px;
     min-height: 110px;
     height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -698,7 +650,8 @@ INSIGHT CARDS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — TABLE FIXED + SHIFTED RIGHT
+COMPETITIVE LANDSCAPE — COMPLETE TABLE REDESIGN
+MODERN CARD-BASED LAYOUT
 ============================================ */
 
 .competitive-landscape-slide .two-column {
@@ -711,7 +664,6 @@ COMPETITIVE LANDSCAPE — TABLE FIXED + SHIFTED RIGHT
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding-top: 35px;
 }
 
 .competitive-radial-value {
@@ -733,96 +685,105 @@ COMPETITIVE LANDSCAPE — TABLE FIXED + SHIFTED RIGHT
     font-family: var(--font-display);
 }
 
-.competitive-inventory-table {
-    width: calc(85% + 20px);
-    margin: 35px auto 0 auto;
-    margin-right: 0;
-    border-collapse: collapse;
+/* COMPETITOR INVENTORY — CARD GRID REDESIGN */
+.competitive-inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 35px;
+    padding: 5px;
 }
 
-.competitive-inventory-table thead tr {
-    border-bottom: 1px solid rgba(191, 166, 112, 0.15);
+.competitive-inventory-card {
+    background: rgba(12, 12, 12, 0.5);
+    border: 1px solid rgba(191, 166, 112, 0.2);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr;
+    gap: 20px;
+    align-items: center;
+    transition: all 0.2s ease;
 }
 
-.competitive-inventory-table th {
-    font-size: 11px;
+.competitive-inventory-card:hover {
+    background: rgba(12, 12, 12, 0.7);
+    border-left-color: var(--vm-gold-light);
+}
+
+.competitive-agency-name-new {
+    font-size: 16px;
+    font-weight: 600;
+    color: #BFA670;
+    letter-spacing: 0.02em;
+}
+
+.competitive-listings-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(191, 166, 112, 0.1);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.competitive-listings-label {
+    font-size: 10px;
     color: rgba(184, 184, 184, 0.7);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    padding: 0 0 12px 0;
-    font-weight: 500;
-    text-align: center;
+    margin-bottom: 4px;
 }
 
-.competitive-inventory-table th:first-child {
-    text-align: left;
-}
-
-.competitive-inventory-table td {
-    padding: 14px 0;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(29, 29, 29, 0.2);
-    text-align: center;
-    vertical-align: middle;
-}
-
-.competitive-inventory-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.competitive-agency-name {
-    color: #BFA670;
-    font-weight: 500;
-    text-align: left;
-}
-
-.competitive-listings-value {
-    color: #BFA670;
+.competitive-listings-value-new {
+    font-size: 24px;
     font-weight: 700;
+    color: #BFA670;
     font-family: var(--font-mono);
-    font-size: 16px;
+    line-height: 1;
 }
 
 .competitive-velocity-pill {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    min-width: 70px;
+    letter-spacing: 0.08em;
     text-align: center;
 }
 
 .velocity-strong {
-    background: rgba(76, 175, 80, 0.12);
+    background: rgba(76, 175, 80, 0.15);
     color: #4CAF50;
-    border: 1px solid rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(76, 175, 80, 0.4);
 }
 
 .velocity-moderate {
-    background: rgba(255, 193, 7, 0.12);
+    background: rgba(255, 193, 7, 0.15);
     color: #FFC107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
+    border: 1px solid rgba(255, 193, 7, 0.4);
 }
 
 .velocity-weak {
-    background: rgba(244, 67, 54, 0.12);
+    background: rgba(244, 67, 54, 0.15);
     color: #F44336;
-    border: 1px solid rgba(244, 67, 54, 0.3);
+    border: 1px solid rgba(244, 67, 54, 0.4);
 }
 
 .competitive-insights-strip {
     margin-top: var(--spacing-lg);
-    padding: 20px 32px;
+    padding: 5px;
     background: rgba(12, 12, 12, 0.35);
     backdrop-filter: blur(2px);
     border: 1px solid var(--vm-gold);
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
 }
 
 .competitive-insights-grid {
@@ -875,10 +836,7 @@ CROSS-VERTICAL INTELLIGENCE
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 35px 24px 24px 24px;
     min-height: 360px;
-    display: flex;
-    flex-direction: column;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -938,7 +896,6 @@ CROSS-VERTICAL INTELLIGENCE
     backdrop-filter: blur(2px);
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 10px;
-    padding: 35px 32px 30px 32px;
     margin-top: var(--spacing-lg);
 }
 
@@ -1016,7 +973,6 @@ METHODOLOGY
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 32px 30px 32px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1067,7 +1023,6 @@ METHODOLOGY
     background: rgba(191, 166, 112, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 35px 32px 30px 32px;
     margin-top: 90px;
     text-align: center;
 }
@@ -1235,11 +1190,6 @@ MARKET DEPTH ANALYSIS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 32px 30px 32px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1260,10 +1210,6 @@ MARKET DEPTH ANALYSIS
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
 }
-
-/* ============================================
-DEPTH BARS — FIXED FULL WIDTH WITH PROPER ROUNDING
-============================================ */
 
 .depth-bar {
     width: 100%;
@@ -1292,7 +1238,8 @@ DEPTH BARS — FIXED FULL WIDTH WITH PROPER ROUNDING
 }
 
 /* ============================================
-FORECAST GRID — FIXED VERTICAL CENTERING + SPACING
+STRATEGIC FORECAST — TOP TWO CARDS REDESIGNED
+MINIMALIST ICON-DRIVEN LAYOUT
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1309,11 +1256,6 @@ FORECAST GRID — FIXED VERTICAL CENTERING + SPACING
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 28px 28px 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1349,49 +1291,69 @@ FORECAST GRID — FIXED VERTICAL CENTERING + SPACING
 }
 
 .forecast-card-body {
+    width: 100%;
+}
+
+/* TOP TWO CARDS — REDESIGNED LAYOUT */
+.forecast-card-v2:nth-child(1) .forecast-card-body,
+.forecast-card-v2:nth-child(2) .forecast-card-body {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 32px;
+    align-items: center;
+}
+
+.forecast-icon-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.2), rgba(191, 166, 112, 0.05));
+    border: 2px solid rgba(191, 166, 112, 0.4);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
-    width: 100%;
-    padding-top: 5px;
-}
-
-.forecast-arrow-large {
-    font-size: 96px;
-    color: var(--vm-gold);
-    line-height: 1;
-    margin-bottom: var(--spacing-xs);
-}
-
-.forecast-percentage-large {
     font-size: 64px;
+    color: var(--vm-gold);
+    box-shadow: 0 4px 16px rgba(191, 166, 112, 0.3);
+}
+
+.forecast-data-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+}
+
+.forecast-percentage-large-new {
+    font-size: 56px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: var(--spacing-xs);
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
 }
 
-.forecast-label-text {
-    font-size: 16px;
+.forecast-label-text-new {
+    font-size: 15px;
     color: var(--vm-text);
-    margin-top: 18px;
-    text-align: center;
+    line-height: 1.4;
 }
 
 .forecast-confidence-text {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--vm-muted);
-    margin-top: 18px;
+    font-style: italic;
 }
 
-/* ============================================
-90-DAY CONE — FIXED EVEN SPACING
-============================================ */
+/* BOTTOM TWO CARDS — KEEP ORIGINAL CENTERED LAYOUT */
+.forecast-card-v2:nth-child(3) .forecast-card-body,
+.forecast-card-v2:nth-child(4) .forecast-card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
 .cone-range-display {
     display: flex;
@@ -1477,9 +1439,16 @@ FORECAST GRID — FIXED VERTICAL CENTERING + SPACING
     font-style: italic;
 }
 
+.forecast-label-text {
+    font-size: 16px;
+    color: var(--vm-text);
+    margin-top: 18px;
+    text-align: center;
+}
+
 .macro-context {
     margin-top: 275px;
-    padding: 25px 24px 20px 24px;
+    padding: 5px;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
     border-radius: 6px;
@@ -1501,7 +1470,8 @@ FORECAST GRID — FIXED VERTICAL CENTERING + SPACING
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — FIXED SPACING + SUMMARY SIGNAL SHIFT
+EXECUTIVE INTELLIGENCE — TOP HALF COMPLETE REDESIGN
+SPLIT PANEL LAYOUT WITH VISUAL HIERARCHY
 ============================================ */
 
 .executive-intelligence-container {
@@ -1510,113 +1480,139 @@ EXECUTIVE INTELLIGENCE — FIXED SPACING + SUMMARY SIGNAL SHIFT
 
 .executive-intelligence-layout {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: var(--spacing-lg);
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
     margin-top: 70px;
 }
 
 .executive-insights-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 24px;
 }
 
 .executive-insight-item {
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.5));
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(191, 166, 112, 0.2);
+    border-left: 5px solid var(--vm-gold);
+    border-radius: 10px;
+    min-height: 90px;
+    transition: all 0.2s ease;
     display: flex;
     align-items: flex-start;
-    gap: 20px;
-    background: rgba(12, 12, 12, 0.35);
-    backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 3px solid var(--vm-gold);
-    border-radius: 8px;
-    padding: 35px 24px 20px 24px;
-    min-height: 80px;
+    gap: 24px;
+}
+
+.executive-insight-item:hover {
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.12), rgba(12, 12, 12, 0.7));
+    border-left-width: 6px;
+    transform: translateX(4px);
 }
 
 .executive-insight-number {
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: var(--vm-gold);
+    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-secondary));
     color: var(--vm-dark);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-body);
-    font-size: 18px;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
+    box-shadow: 0 4px 12px rgba(191, 166, 112, 0.5);
 }
 
 .executive-insight-text {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.65;
+    line-height: 1.75;
     flex: 1;
-    padding-top: 7px;
+    padding-top: 5px;
 }
 
-/* ============================================
-SUMMARY SIGNAL — SHIFTED 20PX RIGHT
-============================================ */
-
 .executive-summary-card {
-    background: rgba(12, 12, 12, 0.35);
-    backdrop-filter: blur(2px);
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.7), rgba(18, 18, 18, 0.9));
+    backdrop-filter: blur(4px);
     border: 2px solid var(--vm-gold);
     border-radius: 12px;
-    padding: 35px 28px 28px 48px;
-    margin-left: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
     text-align: center;
-    box-shadow: 0 6px 16px rgba(191, 166, 112, 0.25);
+    box-shadow: 0 8px 24px rgba(191, 166, 112, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.executive-summary-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(191, 166, 112, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 .executive-summary-title {
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 20px;
     color: var(--vm-gold);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: var(--spacing-sm);
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .executive-summary-icon {
-    font-size: 64px;
+    font-size: 72px;
     color: var(--vm-gold);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     line-height: 1;
+    filter: drop-shadow(0 0 20px rgba(191, 166, 112, 0.6));
+    position: relative;
+    z-index: 1;
 }
 
 .executive-summary-text {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.75;
-    margin-bottom: var(--spacing-xs);
+    line-height: 1.85;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
 }
 
 .executive-summary-highlight {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--vm-gold);
-    margin-top: 12px;
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: rgba(191, 166, 112, 0.15);
+    border-radius: 6px;
+    position: relative;
+    z-index: 1;
 }
 
 .executive-bottom-strip {
     margin-top: 32px;
-    padding: 12px 24px;
+    padding: 5px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 6px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .executive-bottom-text {
@@ -1632,7 +1628,6 @@ SUMMARY SIGNAL — SHIFTED 20PX RIGHT
     backdrop-filter: blur(2px);
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 12px;
-    padding: 41px 36px 36px 36px;
     margin-top: 80px;
     margin-bottom: var(--spacing-lg);
     box-shadow: 0 6px 16px rgba(191, 166, 112, 0.15);
@@ -1675,7 +1670,7 @@ SUMMARY SIGNAL — SHIFTED 20PX RIGHT
 }
 
 /* ============================================
-TOP MARKET OPPORTUNITIES — TABLE FIXED ALIGNMENT
+TOP MARKET OPPORTUNITIES — ORIGINAL FORMAT RESTORED
 ============================================ */
 
 .top-market-opportunities .slide-content {
@@ -1706,7 +1701,7 @@ TOP MARKET OPPORTUNITIES — TABLE FIXED ALIGNMENT
     background: rgba(18, 18, 18, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 .table-luxury thead {
@@ -1732,13 +1727,13 @@ TOP MARKET OPPORTUNITIES — TABLE FIXED ALIGNMENT
     text-align: left;
 }
 
-.table-luxury th:nth-child(1) { width: 32%; }
-.table-luxury th:nth-child(2) { width: 13%; }
-.table-luxury th:nth-child(3) { width: 13%; }
-.table-luxury th:nth-child(4) { width: 17%; }
-.table-luxury th:nth-child(5) { width: 13%; }
-.table-luxury th:nth-child(6) { width: 12%; }
-.table-luxury th:nth-child(7) { width: 12%; text-align: center; }
+.table-luxury th:nth-child(1) { width: 30%; }
+.table-luxury th:nth-child(2) { width: 12%; }
+.table-luxury th:nth-child(3) { width: 12%; }
+.table-luxury th:nth-child(4) { width: 14%; }
+.table-luxury th:nth-child(5) { width: 12%; }
+.table-luxury th:nth-child(6) { width: 10%; }
+.table-luxury th:nth-child(7) { width: 10%; text-align: center; }
 
 .table-luxury tbody tr {
     border-bottom: 1px solid rgba(191, 166, 112, 0.08);
@@ -1811,7 +1806,7 @@ TOP MARKET OPPORTUNITIES — TABLE FIXED ALIGNMENT
 }
 
 /* ============================================
-MACRO RISK DASHBOARD — FIXED BAR THICKNESS + FULL WIDTH
+MACRO RISK DASHBOARD — BARS REMOVED
 ============================================ */
 
 .macro-risk-grid {
@@ -1826,12 +1821,7 @@ MACRO RISK DASHBOARD — FIXED BAR THICKNESS + FULL WIDTH
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 32px 30px 32px;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1858,39 +1848,8 @@ MACRO RISK DASHBOARD — FIXED BAR THICKNESS + FULL WIDTH
     font-weight: 400;
 }
 
-.risk-bar-simple {
-    width: 100%;
-    max-width: 100%;
-    height: 6px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 12px 0 0 0;
-    position: relative;
-}
-
-.risk-bar-fill-simple {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    border-radius: 3px;
-}
-
-.risk-low-fill {
-    background: #6ECB63;
-}
-
-.risk-medium-fill {
-    background: #FFC107;
-}
-
-.risk-high-fill {
-    background: #F44336;
-}
-
 /* ============================================
-SEGMENT PERFORMANCE — FIXED SPACING + VELOCITY BARS
+SEGMENT PERFORMANCE — BARS REMOVED
 ============================================ */
 
 .submarket-section {
@@ -1910,12 +1869,8 @@ SEGMENT PERFORMANCE — FIXED SPACING + VELOCITY BARS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 40px 28px 32px 28px;
     min-height: 360px;
     flex: 0 0 480px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -1925,7 +1880,7 @@ SEGMENT PERFORMANCE — FIXED SPACING + VELOCITY BARS
     color: #BFA670;
     margin-bottom: 30px;
     font-weight: 600;
-    text-align: left;
+    text-align: center;
     width: 100%;
     text-shadow: 0 1px 4px rgba(191, 166, 112, 0.4);
 }
@@ -1941,7 +1896,7 @@ SEGMENT PERFORMANCE — FIXED SPACING + VELOCITY BARS
 .submarket-metric-row {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
 }
 
@@ -1967,49 +1922,18 @@ SEGMENT PERFORMANCE — FIXED SPACING + VELOCITY BARS
     font-style: italic;
 }
 
-.velocity-bar-container {
-    width: 100%;
-    max-width: 100%;
-    height: 6px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 6px 0 0 0;
-    position: relative;
-}
-
-.velocity-bar-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    border-radius: 3px;
-}
-
-.velocity-color-high {
-    background: #6ECB63;
-}
-
-.velocity-color-medium {
-    background: #FFC107;
-}
-
-.velocity-color-low {
-    background: #F44336;
-}
-
 .submarket-listing-count {
     font-size: 13px;
     color: var(--vm-muted);
     margin-top: 20px;
-    text-align: left;
+    text-align: center;
 }
 
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 33px 32px 28px 32px;
+    padding: 5px;
     margin-top: 84px;
 }
 
@@ -2049,7 +1973,7 @@ AI OPPORTUNITIES
     font-size: 14px;
     color: var(--vm-gold);
     margin-bottom: 20px;
-    padding: 17px 20px 12px 20px;
+    padding: 5px;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 6px;
@@ -2065,18 +1989,17 @@ AI OPPORTUNITIES
 }
 
 .signal-card-v2 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-sm);
     background: rgba(12, 12, 12, 0.35);
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 8px;
-    padding: 35px 32px 20px 32px;
     min-height: 88px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
 }
 
 .signal-content-v2 {
@@ -2170,7 +2093,6 @@ PANELS
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 35px 28px 28px 28px;
     margin-top: 94px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
 }
@@ -2300,18 +2222,17 @@ footer,
 }
 
 /* ============================================
-END VOXMILL V5.0 FINAL PRODUCTION — ALL ISSUES FIXED
-✅ Bronze diagonal pattern restored (opacity 0.14)
-✅ Cover page height restored (1080px)
-✅ All container content pushed down 5px with 30px top/bottom padding
-✅ Macro Risk bars: full width, 6px height, proper rounded corners
-✅ KPI green bars: 60px width, centered
-✅ All tables: perfect column alignment with locked grid
-✅ Summary Signal: content shifted 20px right
-✅ Forecast cards: vertically centered, even spacing on 90-day cone
-✅ Competitor table: width increased + shifted right
-✅ Weekly trend chart: redesigned with elegant styling
-✅ Executive bullets: 30px top padding added
-✅ Segment cards: increased internal spacing (+10px vertical)
-✅ All alignment, margins, breathing room optimized
+END VOXMILL V5.0 FINAL — ALL REQUESTS APPLIED
+✅ Cover slide: same size as other slides (1480px)
+✅ Bronze pattern: opacity increased by 15% (0.14 → 0.29)
+✅ All containers: 5px padding from all edges, centered content
+✅ Segment Performance: velocity bars removed
+✅ Macro Risk: bars removed
+✅ Top Opportunities: original table format restored
+✅ Executive Intelligence: top half completely redesigned
+✅ Strategic Forecast: top two cards redesigned with icon layout
+✅ Competitive Landscape: table redesigned as card grid
+✅ Weekly Trend: enhanced with context labels
+✅ Concentration Signal: moved down 40px
+✅ Performance Analysis: symmetrical spacing fixed
 ============================================ */
