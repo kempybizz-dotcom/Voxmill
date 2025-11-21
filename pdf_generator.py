@@ -4,6 +4,7 @@ VOXMILL MARKET INTELLIGENCE — PDF GENERATOR (16:9 SLIDE DECK)
 Production-ready HTML/CSS to PDF converter using WeasyPrint
 Fortune-500 grade executive intelligence deck generation
 ENHANCED VERSION: Multi-vertical token support + 5 elite intelligence sections
+🔥 CRITICAL FIX: Bulletproof vertical_config handling (string AND dict support)
 """
 
 import os
@@ -97,6 +98,7 @@ class VoxmillPDFGenerator:
     def get_vertical_tokens(self, data: Dict[str, Any]) -> Dict[str, str]:
         """
         Generate vertical-specific terminology tokens based on data or config.
+        🔥 BULLETPROOF: Handles both string and dict vertical configs.
         
         Args:
             data: Complete report data
@@ -107,8 +109,19 @@ class VoxmillPDFGenerator:
         metadata = data.get('metadata', {})
         vertical_config = metadata.get('vertical', {})
         
-        # Default to real estate if not specified
-        vertical_type = vertical_config.get('type', 'real_estate')
+        # 🔥 CRITICAL FIX: Handle both string and dict formats
+        if isinstance(vertical_config, str):
+            # Direct string: {"vertical": "real_estate"}
+            vertical_type = vertical_config
+            logger.info(f"✅ Vertical detected (string format): {vertical_type}")
+        elif isinstance(vertical_config, dict):
+            # Dict format: {"vertical": {"type": "real_estate"}}
+            vertical_type = vertical_config.get('type', 'real_estate')
+            logger.info(f"✅ Vertical detected (dict format): {vertical_type}")
+        else:
+            # Fallback for None or unexpected types
+            vertical_type = 'real_estate'
+            logger.warning(f"⚠️ Vertical config invalid, defaulting to: {vertical_type}")
         
         if vertical_type == 'real_estate':
             return {
@@ -172,7 +185,7 @@ class VoxmillPDFGenerator:
                 'forward_indicator_label': 'Momentum'
             }
 
-    # All calculation methods unchanged - keeping exact same logic
+    # All calculation methods unchanged from Document 3
     def calculate_liquidity_index(self, data: Dict[str, Any]) -> int:
         kpis = data.get('kpis', data.get('metrics', {}))
         days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
