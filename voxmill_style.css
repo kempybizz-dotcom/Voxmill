@@ -1109,7 +1109,7 @@ TABLE STYLING — PREMIUM ENHANCEMENT
 }
 
 /* ============================================
-FOOTER — ORIGINAL POSITION (UNCHANGED)
+FOOTER — HIDDEN COMPLETELY
 ============================================ */
 
 .slide-footer-branded {
@@ -1117,7 +1117,7 @@ FOOTER — ORIGINAL POSITION (UNCHANGED)
     bottom: 24px;
     left: 48px;
     right: 48px;
-    display: flex;
+    display: none;
     justify-content: space-between;
     align-items: center;
     padding-top: 34px;
