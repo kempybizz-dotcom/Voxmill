@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, initial-scale=1.0">
     <title>Voxmill Executive Intelligence Deck</title>
-    <link rel="stylesheet" href="voxmill_style.css">
+    <link rel="stylesheet" href="voxmill_style_fixed.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -306,37 +306,48 @@
                 <h3 class="chart-title">Weekly Trend: Unit Economics (£/{{ unit_metric }})</h3>
                 <p class="chart-context">7-day rolling average of price-per-{{ unit_metric }} — micro-trend velocity indicator</p>
                 <svg width="100%" height="440" viewBox="0 0 700 440">
-                    <text x="10" y="225" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 10, 225)" class="chart-axis-label">£/{{ unit_metric }}</text>
+                    <!-- Y-AXIS LABEL -->
+                    <text x="15" y="225" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 15, 225)" letter-spacing="0.8">£/{{ unit_metric }}</text>
                     
-                    <line x1="60" y1="70" x2="650" y2="70" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="260" x2="650" y2="260" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="355" x2="650" y2="355" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <!-- AXES -->
+                    <line x1="60" y1="40" x2="60" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
                     
+                    <!-- GRIDLINES (HORIZONTAL ONLY) -->
+                    <line x1="60" y1="90" x2="650" y2="90" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="240" x2="650" y2="240" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="315" x2="650" y2="315" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    
+                    <!-- DATA LINE -->
                     <polyline 
                         points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 410 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
                         fill="none" 
                         stroke="#C5A46D" 
-                        stroke-width="2.2"/>
+                        stroke-width="2.5"
+                        style="filter: drop-shadow(0 1px 3px rgba(197, 164, 109, 0.4));"/>
                     
+                    <!-- DATA POINTS WITH GLOW -->
                     {% for point in chart_data.weekly_trend %}
                     <circle cx="{{ 80 + loop.index0 * 120 }}" 
                             cy="{{ 410 - point.value }}" 
-                            r="8" 
+                            r="6" 
                             fill="#C5A46D" 
                             stroke="#0C0C0C" 
-                            stroke-width="3"/>
+                            stroke-width="2"
+                            style="filter: drop-shadow(0 2px 6px rgba(197, 164, 109, 0.6));"/>
                     <text x="{{ 80 + loop.index0 * 120 }}" 
                           y="430" 
                           font-family="Inter" 
-                          font-size="18" 
-                          fill="rgba(255,255,255,0.85)" 
+                          font-size="12" 
+                          font-weight="600"
+                          fill="rgba(255,255,255,0.9)" 
                           text-anchor="middle" 
-                          class="chart-axis-label">{{ point.label }}</text>
+                          letter-spacing="0.5">{{ point.label }}</text>
                     {% endfor %}
                     
-                    <text x="350" y="450" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Day of Week</text>
+                    <!-- X-AXIS LABEL -->
+                    <text x="350" y="455" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="0.8">Day of Week</text>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
