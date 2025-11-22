@@ -34,7 +34,7 @@ Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements
 }
 
 @page {
-    size: 1920px 1480px;
+    size: 1920px 1580px;
     margin: 0;
     padding: 0;
 }
@@ -472,7 +472,7 @@ KPI GRID — MARKET OVERVIEW (REFERENCE STANDARD)
     grid-template-rows: repeat(2, 1fr);
     gap: var(--spacing-md);
     height: 360px;
-    margin-top: 90px;
+    margin-top: 70px;
     margin-bottom: 94px;
     page-break-inside: avoid;
 }
@@ -767,19 +767,6 @@ COMPETITIVE LANDSCAPE — RADIAL CHART
     min-height: 420px;
 }
 
-.radial-micro-legend {
-    display: flex;
-    gap: 32px;
-    margin-top: 28px;
-    justify-content: center;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .legend-dot {
     width: 10px;
     height: 10px;
@@ -789,7 +776,7 @@ COMPETITIVE LANDSCAPE — RADIAL CHART
 
 .legend-text {
     font-family: var(--font-body);
-    font-size: 10px;
+    font-size: 30px;
     font-weight: 500;
     color: rgba(230,230,230,0.6);
     letter-spacing: 1px;
@@ -802,13 +789,14 @@ COMPETITOR ACTIVE INVENTORY — PREMIUM TABLE
 
 .competitive-inventory-premium {
     background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(18,18,18,0.75) 100%);
+    height: auto;
     border: 1px solid rgba(191,166,112,0.25);
     border-radius: var(--card-radius);
     overflow: hidden;
-    margin-top: 20px;
+    margin-top: 50px;
     margin-left: auto;
     margin-right: auto;
-    max-width: 98%;
+    max-width: 200%;
     box-shadow: var(--card-shadow);
 }
 
@@ -1028,7 +1016,7 @@ CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
 .cross-vertical-card {
     border-left: 4px solid var(--vm-gold);
     min-height: 380px;
-    padding: 14px 22px;
+    padding: 18px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1869,7 +1857,7 @@ MACRO CONTEXT
 ============================================ */
 
 .macro-context {
-    margin-top: 80px;
+    margin-top: 150px;
     margin-bottom: 65px;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -1988,10 +1976,11 @@ EXECUTIVE INTELLIGENCE — LUXURY BULLETS
 
 .executive-summary-card {
     border: 2px solid var(--vm-gold);
+    width: 80%;
     text-align: center;
     box-shadow: 0 6px 18px rgba(191, 166, 112, 0.25);
     padding: 28px 32px;
-    min-height: 140px;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2018,6 +2007,7 @@ EXECUTIVE INTELLIGENCE — LUXURY BULLETS
 
 .executive-summary-text {
     font-family: var(--font-body);
+    text-align: centre;
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.8;
@@ -2037,7 +2027,7 @@ EXECUTIVE INTELLIGENCE — LUXURY BULLETS
 }
 
 .executive-bottom-strip {
-    margin-top: 80px;
+    margin-top: 150px;
     margin-bottom: 65px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
@@ -2325,6 +2315,7 @@ SEGMENT PERFORMANCE
 
 .submarket-grid-v2 {
     display: flex !important;
+    text-align: center;
     justify-content: center !important;
     gap: var(--spacing-md) !important;
     margin-top: 24px !important;
