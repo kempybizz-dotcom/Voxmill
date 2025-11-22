@@ -1,6 +1,6 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.0 FINAL PRODUCTION
-SURGICAL REFINEMENT COMPLETE — BOARDROOM READY
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.1 LAYOUT REFINEMENT
+ALL SPACING + ALIGNMENT ISSUES RESOLVED
 ============================================ */
 
 :root {
@@ -48,16 +48,19 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 }
 
 /* ============================================
-GLOBAL CONTAINER PADDING UTILITY — CONSISTENT SPACING
+GLOBAL CONTAINER PADDING UTILITY — MINIMUM STANDARDS ENFORCED
 ============================================ */
 
 .card-content,
 .card-inner {
-    padding: 10px 20px !important;
+    padding: 15px 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ============================================
-BRONZE PATTERN BACKGROUND
+BRONZE PATTERN BACKGROUND — RESTORED SUBTLE ELEGANCE
 ============================================ */
 
 body {
@@ -76,10 +79,10 @@ body::before {
     right: 0;
     bottom: 0;
     background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.21) 60px, rgba(167, 123, 58, 0.21) 62px),
-        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.21) 60px, rgba(167, 123, 58, 0.21) 62px);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px);
     background-repeat: repeat;
-    opacity: 0.21;
+    opacity: 1;
     z-index: 0;
     pointer-events: none;
 }
@@ -104,12 +107,12 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.21;
+    opacity: 0.14;
     z-index: 0;
     pointer-events: none;
     background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.21) 60px, rgba(167, 123, 58, 0.21) 62px),
-        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.21) 60px, rgba(167, 123, 58, 0.21) 62px);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px);
 }
 
 .slide:last-child {
@@ -145,8 +148,8 @@ COVER PAGE
 
 .slide-cover::after {
     background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.21) 60px, rgba(167, 123, 58, 0.21) 62px),
-        radial-gradient(circle at 50% 50%, rgba(167, 123, 58, 0.21) 0%, transparent 60%);
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.14) 60px, rgba(167, 123, 58, 0.14) 62px),
+        radial-gradient(circle at 50% 50%, rgba(167, 123, 58, 0.14) 0%, transparent 60%);
 }
 
 .logo-container {
@@ -261,7 +264,7 @@ COVER PAGE
 }
 
 /* ============================================
-GLOBAL CONTAINER ALIGNMENT — MINIMUM PADDING ENFORCED
+GLOBAL CONTAINER ALIGNMENT — MINIMUM PADDING + CENTERING ENFORCED
 ============================================ */
 
 .kpi-card,
@@ -287,11 +290,14 @@ GLOBAL CONTAINER ALIGNMENT — MINIMUM PADDING ENFORCED
 .momentum-streets-panel,
 .acquisition-flagging-header,
 .acquisition-strategy-ribbon {
-    padding: 10px 20px !important;
+    padding: 15px 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ============================================
-EXECUTIVE SUMMARY BULLETS — TITLES LEFT-ALIGNED
+EXECUTIVE SUMMARY BULLETS — CENTERED CONTENT
 ============================================ */
 
 .executive-summary-bullets {
@@ -309,6 +315,10 @@ EXECUTIVE SUMMARY BULLETS — TITLES LEFT-ALIGNED
     border-radius: 8px;
     min-height: 110px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    padding: 17px 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .executive-bullet-title {
@@ -379,7 +389,10 @@ WEEKLY MOVEMENT DASHBOARD
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
-    padding: 12px 18px !important;
+    padding: 17px 18px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .movement-label {
@@ -420,7 +433,7 @@ WEEKLY MOVEMENT DASHBOARD
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW (REFERENCE ALIGNMENT)
+KPI GRID — MARKET OVERVIEW (REFERENCE STANDARD)
 ============================================ */
 
 .kpi-grid {
@@ -444,11 +457,15 @@ KPI GRID — MARKET OVERVIEW (REFERENCE ALIGNMENT)
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 15px 20px !important;
 }
 
 .kpi-content {
     width: 100%;
     padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .kpi-label {
@@ -521,7 +538,8 @@ CHART SECTION
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
-    padding: 15px 20px !important;
+    padding: 20px 25px !important;
+    justify-content: space-between;
 }
 
 .chart-title {
@@ -535,6 +553,7 @@ CHART SECTION
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     position: relative;
     padding-bottom: 10px;
+    padding-top: 5px;
 }
 
 .chart-title::after {
@@ -571,7 +590,7 @@ CHART SECTION
 }
 
 .chart-axis-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #D6D6D6;
     opacity: 0.9;
     font-weight: 600;
@@ -592,7 +611,7 @@ CHART SECTION
 }
 
 /* ============================================
-TWO COLUMN CHARTS
+TWO COLUMN CHARTS — WEEKLY TREND REDESIGNED
 ============================================ */
 
 .two-column {
@@ -614,6 +633,8 @@ TWO COLUMN CHARTS
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
+    padding: 20px 25px !important;
+    justify-content: space-between;
 }
 
 /* ============================================
@@ -639,6 +660,7 @@ INSIGHT CARDS
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 15px 20px !important;
 }
 
 .insight-title {
@@ -657,8 +679,7 @@ INSIGHT CARDS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — PARTICIPANT MARKET SHARE
-CLEAN RADIAL GAUGE (NO BACKGROUND TEXT)
+COMPETITIVE LANDSCAPE — RADIAL CHART (NO GHOST TEXT)
 ============================================ */
 
 .competitive-landscape-slide .two-column {
@@ -670,7 +691,7 @@ CLEAN RADIAL GAUGE (NO BACKGROUND TEXT)
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px 15px;
+    padding: 25px 20px;
     min-height: 420px;
 }
 
@@ -705,7 +726,7 @@ CLEAN RADIAL GAUGE (NO BACKGROUND TEXT)
 }
 
 /* ============================================
-COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
+COMPETITOR ACTIVE INVENTORY — WIDENED TABLE + RIGHT SHIFT
 ============================================ */
 
 .competitive-inventory-executive-panel {
@@ -716,14 +737,14 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
     margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
-    max-width: 92%;
+    max-width: 94%;
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .inventory-title-bar {
     background: linear-gradient(90deg, rgba(212,182,121,0.25), rgba(181,152,84,0.15));
     border-bottom: 1px solid rgba(212,182,121,0.3);
-    padding: 12px 28px;
+    padding: 12px 40px;
 }
 
 .inventory-bar-text {
@@ -740,7 +761,7 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
     display: grid;
     grid-template-columns: 1.8fr auto;
     align-items: center;
-    padding: 18px 28px;
+    padding: 18px 40px;
     gap: 32px;
     transition: background 0.2s ease;
 }
@@ -815,11 +836,11 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
 .competitor-separator {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(212,182,121,0.15), transparent);
-    margin: 0 28px;
+    margin: 0 40px;
 }
 
 .inventory-mini-footer {
-    padding: 14px 28px;
+    padding: 14px 40px;
     background: rgba(0,0,0,0.3);
     border-top: 1px solid rgba(212,182,121,0.15);
     font-family: 'Inter', Arial, sans-serif;
@@ -838,6 +859,7 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
     border: 1px solid var(--vm-gold);
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 17px 20px !important;
 }
 
 .competitive-insights-grid {
@@ -892,7 +914,7 @@ CROSS-VERTICAL INTELLIGENCE — BALANCED CENTERED CONTENT
     border-radius: 10px;
     min-height: 360px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-    padding: 22px 20px !important;
+    padding: 27px 20px !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -972,6 +994,7 @@ MOMENTUM CORRELATION — HORIZONTAL FLOW (EVEN SPACING)
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 10px;
     margin-top: var(--spacing-lg);
+    padding: 17px 20px !important;
 }
 
 .momentum-correlation-title {
@@ -1056,6 +1079,7 @@ METHODOLOGY
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 17px 20px !important;
 }
 
 .methodology-title {
@@ -1067,6 +1091,7 @@ METHODOLOGY
     margin-bottom: 20px;
     position: relative;
     padding-bottom: 8px;
+    padding-top: 5px;
 }
 
 .methodology-title::after {
@@ -1111,6 +1136,7 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
     border-radius: 10px;
     margin-top: 90px;
     text-align: center;
+    padding: 17px 20px !important;
 }
 
 .pipeline-flow {
@@ -1286,6 +1312,7 @@ MARKET DEPTH ANALYSIS
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 17px 20px !important;
 }
 
 .depth-label {
@@ -1333,7 +1360,7 @@ MARKET DEPTH ANALYSIS
 }
 
 /* ============================================
-STRATEGIC FORECAST — TITLE ALIGNMENT MATCHED
+STRATEGIC FORECAST — CENTERED CONTENT IN CARDS
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1353,6 +1380,8 @@ STRATEGIC FORECAST — TITLE ALIGNMENT MATCHED
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
+    padding: 17px 20px !important;
+    justify-content: center;
 }
 
 .forecast-card-highlight {
@@ -1365,10 +1394,13 @@ STRATEGIC FORECAST — TITLE ALIGNMENT MATCHED
     background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
     border: 1px solid rgba(212,182,121,0.28);
     border-radius: 12px;
-    padding: 18px 24px;
+    padding: 22px 24px !important;
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .forecast-card-executive::before {
@@ -1396,6 +1428,7 @@ STRATEGIC FORECAST — TITLE ALIGNMENT MATCHED
     text-align: center;
     position: relative;
     padding-bottom: 10px;
+    padding-top: 5px;
     z-index: 1;
 }
 
@@ -1653,6 +1686,7 @@ MACRO CONTEXT
     border-left: 4px solid #BFA670;
     border-radius: 6px;
     box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
+    padding: 17px 20px !important;
 }
 
 .macro-title {
@@ -1670,7 +1704,7 @@ MACRO CONTEXT
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
+EXECUTIVE INTELLIGENCE — CENTERED CONTENT IN CARDS
 ============================================ */
 
 .executive-intelligence-container {
@@ -1701,7 +1735,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     grid-template-columns: auto 1fr;
     align-items: center;
     gap: 24px;
-    padding: 16px 22px !important;
+    padding: 20px 22px !important;
     transition: all 0.2s ease;
 }
 
@@ -1756,6 +1790,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 17px 20px !important;
 }
 
 .executive-summary-title {
@@ -1794,6 +1829,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     border-radius: 6px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
+    padding: 17px 20px !important;
 }
 
 .executive-bottom-text {
@@ -1813,6 +1849,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     margin-top: 80px;
     margin-bottom: var(--spacing-lg);
     box-shadow: 0 6px 16px rgba(191, 166, 112, 0.15);
+    padding: 17px 20px !important;
 }
 
 .action-window-title {
@@ -1827,21 +1864,21 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
 
 .action-window-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
-.action-window-column {
+.action-window-item {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 18px 20px;
+    gap: 8px;
+    padding: 15px 18px;
     background: rgba(191, 166, 112, 0.05);
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 8px;
 }
 
-.action-column-label {
+.action-window-label {
     font-size: 9px;
     color: rgba(191, 166, 112, 0.7);
     text-transform: uppercase;
@@ -1849,17 +1886,11 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     font-weight: 600;
 }
 
-.action-column-main {
-    font-size: 15px;
+.action-window-value {
+    font-size: 14px;
     color: var(--vm-text);
     font-weight: 600;
     line-height: 1.4;
-}
-
-.action-column-support {
-    font-size: 12px;
-    color: var(--vm-text-body);
-    line-height: 1.5;
 }
 
 /* ============================================
@@ -1999,7 +2030,7 @@ TOP MARKET OPPORTUNITIES
 }
 
 /* ============================================
-MACRO RISK DASHBOARD — INCREASED PADDING + EXTENDED RISK MAP
+MACRO RISK DASHBOARD — CENTERED CONTENT IN CARDS
 ============================================ */
 
 .macro-risk-grid {
@@ -2019,7 +2050,7 @@ MACRO RISK DASHBOARD — INCREASED PADDING + EXTENDED RISK MAP
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 18px 24px !important;
+    padding: 22px 24px !important;
 }
 
 .risk-dial-title {
@@ -2029,6 +2060,7 @@ MACRO RISK DASHBOARD — INCREASED PADDING + EXTENDED RISK MAP
     letter-spacing: 0.1em;
     margin-bottom: var(--spacing-sm);
     font-weight: 600;
+    padding-top: 5px;
 }
 
 .risk-dial-value {
@@ -2082,6 +2114,7 @@ SEGMENT PERFORMANCE
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 22px 20px !important;
 }
 
 .submarket-header {
@@ -2144,6 +2177,7 @@ SEGMENT PERFORMANCE
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
     margin-top: 84px;
+    padding: 17px 20px !important;
 }
 
 .momentum-title {
@@ -2175,7 +2209,7 @@ SEGMENT PERFORMANCE
 }
 
 /* ============================================
-AI OPPORTUNITIES — CONSISTENT PADDING
+AI OPPORTUNITIES — CENTERED CONTENT
 ============================================ */
 
 .acquisition-flagging-header {
@@ -2188,6 +2222,7 @@ AI OPPORTUNITIES — CONSISTENT PADDING
     font-weight: 600;
     letter-spacing: 0.05em;
     text-align: left;
+    padding: 17px 20px !important;
 }
 
 .signal-board-v2 {
@@ -2206,9 +2241,10 @@ AI OPPORTUNITIES — CONSISTENT PADDING
     min-height: 88px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--spacing-sm);
+    padding: 17px 20px !important;
 }
 
 .signal-content-v2 {
@@ -2279,6 +2315,7 @@ AI OPPORTUNITIES — CONSISTENT PADDING
     background: var(--vm-gold);
     border-radius: 8px;
     margin-top: 84px;
+    padding: 17px 20px !important;
 }
 
 .acquisition-strategy-text {
@@ -2304,6 +2341,7 @@ PANELS
     border-radius: 12px;
     margin-top: 94px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 17px 20px !important;
 }
 
 .panel-title {
@@ -2314,6 +2352,7 @@ PANELS
     margin-bottom: var(--spacing-xs);
     position: relative;
     padding-bottom: 10px;
+    padding-top: 5px;
 }
 
 .panel-title::after {
@@ -2431,16 +2470,3411 @@ footer,
 }
 
 /* ============================================
-END VOXMILL V5.0 — SURGICAL REFINEMENT COMPLETE
-✅ Global padding rules enforced (≥8px top/bottom, ≥15px sides)
-✅ Competitor table widened, ghost text removed
-✅ Cross-vertical cards balanced and centered
-✅ Momentum correlation evenly spaced
-✅ Strategic forecast titles aligned
-✅ Executive intelligence bullets redesigned
-✅ Action window rebuilt as 3-column playbook
-✅ Intelligence pipeline spacing increased
-✅ Macro risk dashboard padding enhanced
-✅ All containers follow Market Overview alignment
-✅ Production-ready boardroom quality
+END VOXMILL V5.1 LAYOUT REFINEMENT COMPLETE
+✅ Global minimum padding enforced (10px top/bottom, 15px sides)
+✅ All content centered vertically within containers
+✅ Bronze pattern background restored at elegant opacity (0.14)
+✅ Weekly Trend chart redesigned with larger axes and grid
+✅ Competitor table widened and right-shifted for alignment
+✅ Active participants ghost text removed from radial chart
+✅ All card alignment normalized to Market Overview standard
+✅ No footers visible anywhere
+✅ Production-ready boardroom quality maintained
+============================================ */
+/* ============================================
+VOXMILL V5.2 — PREMIUM COMPONENT REDESIGNS
+Strategic Forecast | Action Window | Executive Intelligence | Competitor Table
+============================================ */
+
+/* ============================================
+STRATEGIC FORECAST — REDESIGNED TOP TWO CARDS
+Matching luxury aesthetic of bottom cards
+============================================ */
+
+.forecast-card-v2 {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    padding: 22px 28px !important;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.forecast-card-v2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(212,182,121,0.06) 40px, rgba(212,182,121,0.06) 42px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.forecast-card-highlight {
+    border-color: #BFA670;
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(18, 18, 18, 0.95));
+    box-shadow: 0 4px 20px rgba(191, 166, 112, 0.35);
+}
+
+/* PREMIUM 30-DAY MOMENTUM CARD */
+.forecast-card-momentum {
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
+    border: 1px solid rgba(212,182,121,0.28);
+}
+
+.forecast-momentum-header {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #D4B679;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 12px;
+    z-index: 1;
+}
+
+.forecast-momentum-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4B679, transparent);
+    opacity: 0.6;
+}
+
+.forecast-momentum-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    z-index: 1;
+}
+
+.forecast-momentum-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 88px;
+    font-weight: 700;
+    color: #D4B679;
+    line-height: 1;
+    margin-bottom: 18px;
+    letter-spacing: -0.02em;
+    text-shadow: 0 4px 20px rgba(212,182,121,0.8);
+}
+
+.forecast-momentum-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #E6E6E6;
+    letter-spacing: 0.6px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.forecast-momentum-confidence {
+    width: 200px;
+    height: 5px;
+    background: rgba(59, 59, 59, 0.4);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.momentum-confidence-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #D4B679, #B59854);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(212,182,121,0.7);
+}
+
+.forecast-momentum-meta {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.55);
+    letter-spacing: 0.9px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+/* PREMIUM 90-DAY TREND CONE CARD */
+.forecast-card-cone {
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
+    border: 1px solid rgba(212,182,121,0.28);
+}
+
+.forecast-cone-header {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #D4B679;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    margin-bottom: 24px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 12px;
+    z-index: 1;
+}
+
+.forecast-cone-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4B679, transparent);
+    opacity: 0.6;
+}
+
+.forecast-cone-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    z-index: 1;
+}
+
+.forecast-cone-values {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.forecast-cone-value {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-weight: 700;
+    color: #D4B679;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    text-shadow: 0 2px 12px rgba(212,182,121,0.6);
+}
+
+.cone-value-high {
+    font-size: 44px;
+}
+
+.cone-value-mid {
+    font-size: 52px;
+}
+
+.cone-value-low {
+    font-size: 44px;
+}
+
+.forecast-cone-separator {
+    width: 90px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,182,121,0.35), transparent);
+}
+
+.forecast-cone-labels {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(230,230,230,0.5);
+    letter-spacing: 1.3px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.forecast-cone-meta {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.55);
+    letter-spacing: 0.9px;
+    text-align: center;
+}
+
+/* ============================================
+STRATEGIC ACTION WINDOW — COMPLETE REDESIGN
+Clean 4-column premium layout
+============================================ */
+
+.action-window {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(191, 166, 112, 0.25);
+    border-radius: 12px;
+    margin-top: 80px;
+    margin-bottom: var(--spacing-lg);
+    box-shadow: 0 6px 16px rgba(191, 166, 112, 0.15);
+    padding: 32px 36px !important;
+}
+
+.action-window-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.action-window-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #BFA670;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    position: relative;
+    padding-bottom: 14px;
+}
+
+.action-window-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A86A, transparent);
+    opacity: 0.7;
+}
+
+.action-window-subtitle {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(184, 184, 184, 0.7);
+    letter-spacing: 0.8px;
+    font-style: italic;
+}
+
+.action-window-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.action-window-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px 20px;
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.04), rgba(12, 12, 12, 0.6));
+    border: 1px solid rgba(191, 166, 112, 0.18);
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.action-window-item:hover {
+    border-color: rgba(191, 166, 112, 0.35);
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.7));
+    box-shadow: 0 4px 12px rgba(191, 166, 112, 0.15);
+}
+
+.action-window-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 9px;
+    color: rgba(191, 166, 112, 0.65);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.action-window-value {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 15px;
+    color: #E6E6E6;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
+.action-window-divider {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.3), transparent);
+    margin: 8px auto;
+}
+
+/* ============================================
+EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS
+Premium left-aligned with refined typography
+============================================ */
+
+.executive-insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.executive-insight-item {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.4), rgba(18, 18, 18, 0.9));
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 10px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    padding: 24px 26px !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.executive-insight-item:hover {
+    border-left-width: 5px;
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.5), rgba(18, 18, 18, 0.95));
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+.executive-insight-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-secondary));
+    color: var(--vm-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(191, 166, 112, 0.6);
+}
+
+.executive-insight-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.executive-insight-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(191, 166, 112, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+}
+
+.executive-insight-text {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 15px;
+    color: #E6E6E6;
+    line-height: 1.75;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+/* ============================================
+COMPETITOR ACTIVE INVENTORY — COMPLETE REDESIGN
+Modern, wider, premium table aesthetic
+============================================ */
+
+.competitive-inventory-executive-panel {
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
+    border: 1px solid rgba(212,182,121,0.28);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.inventory-title-bar {
+    background: linear-gradient(90deg, rgba(212,182,121,0.22), rgba(181,152,84,0.12));
+    border-bottom: 1px solid rgba(212,182,121,0.3);
+    padding: 16px 40px;
+}
+
+.inventory-bar-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #D4B679;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    text-align: center;
+}
+
+.competitor-row-executive {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    padding: 22px 40px;
+    gap: 40px;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(212,182,121,0.08);
+}
+
+.competitor-row-executive:last-child {
+    border-bottom: none;
+}
+
+.competitor-row-executive:hover {
+    background: rgba(212,182,121,0.06);
+}
+
+.competitor-left-executive {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.competitor-name-exec {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #E6E6E6;
+    letter-spacing: 0.4px;
+    line-height: 1.4;
+}
+
+.competitor-inventory-count {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(212,182,121,0.65);
+    letter-spacing: 0.6px;
+}
+
+.competitor-center-executive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inventory-metric-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(212,182,121,0.2);
+    border-radius: 8px;
+}
+
+.inventory-metric-value {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #D4B679;
+    letter-spacing: 0.03em;
+}
+
+.inventory-metric-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    color: rgba(230,230,230,0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.competitor-right-executive {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.velocity-badge-executive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    border: 1.5px solid;
+    min-width: 110px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.velocity-strong-exec {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.45);
+}
+
+.velocity-moderate-exec {
+    color: #FFC107;
+    background: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.45);
+}
+
+.velocity-weak-exec {
+    color: #F44336;
+    background: rgba(244, 67, 54, 0.1);
+    border-color: rgba(244, 67, 54, 0.45);
+}
+
+.competitor-separator {
+    display: none;
+}
+
+.inventory-mini-footer {
+    padding: 16px 40px;
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(212,182,121,0.18);
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.5);
+    text-align: center;
+    font-style: italic;
+    letter-spacing: 0.6px;
+}
+
+/* ============================================
+END V5.2 PREMIUM COMPONENT REDESIGNS
+============================================ */
+/* ============================================
+VOXMILL V5.3 — STRUCTURAL CONSISTENCY FIXES
+Executive Summary | Cross-Vertical | Momentum | Pipeline | Charts
+============================================ */
+
+/* ============================================
+1) EXECUTIVE SUMMARY BULLET TITLES — LEFT-ALIGNED
+============================================ */
+
+.executive-bullet-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #BFA670;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: var(--spacing-xs);
+    position: relative;
+    padding-bottom: 8px;
+    text-align: left !important;
+    width: 100%;
+}
+
+.executive-bullet-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, #C9A86A, transparent);
+    opacity: 0.7;
+}
+
+/* ============================================
+2) CROSS-VERTICAL INTELLIGENCE CARDS — PERFECT CENTERING
+Equal left/right spacing, vertical centering
+============================================ */
+
+.cross-vertical-card {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 10px;
+    min-height: 360px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    padding: 32px 24px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.cross-vertical-icon {
+    font-size: 48px;
+    margin-bottom: 18px;
+    line-height: 1;
+    color: var(--vm-gold);
+    text-align: center;
+}
+
+.cross-vertical-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+    text-align: center;
+    position: relative;
+    padding-bottom: 14px;
+    width: 100%;
+}
+
+.cross-vertical-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A86A, transparent);
+    opacity: 0.6;
+}
+
+.cross-vertical-text {
+    font-size: 13px;
+    color: var(--vm-text-body);
+    line-height: 1.75;
+    margin-bottom: 18px;
+    text-align: center;
+    width: 100%;
+    padding: 0 4px;
+}
+
+.cross-vertical-bullets {
+    list-style: none;
+    margin-top: 12px;
+    padding-left: 0;
+    width: 100%;
+}
+
+.cross-vertical-bullets li {
+    font-size: 12px;
+    color: var(--vm-text-body);
+    margin-bottom: 11px;
+    padding-left: 20px;
+    padding-right: 4px;
+    position: relative;
+    text-align: left;
+    line-height: 1.7;
+}
+
+.cross-vertical-bullets li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* ============================================
+3) MOMENTUM CORRELATION SIGNALS — EVENLY SPACED
+Full-width distribution like Intelligence Pipeline
+============================================ */
+
+.momentum-correlation-panel {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(191, 166, 112, 0.2);
+    border-radius: 10px;
+    margin-top: var(--spacing-lg);
+    padding: 24px 28px !important;
+}
+
+.momentum-correlation-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.momentum-correlation-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: nowrap;
+    padding: 0;
+}
+
+.momentum-signal-box {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.6));
+    border: 1px solid rgba(191, 166, 112, 0.3);
+    border-radius: 8px;
+    padding: 20px 16px;
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+}
+
+.momentum-signal-text {
+    font-size: 11px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+}
+
+.momentum-arrow {
+    font-size: 28px;
+    color: var(--vm-gold);
+    flex-shrink: 0;
+    margin: 0 -4px;
+}
+
+/* ============================================
+4) INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
+============================================ */
+
+.model-pipeline {
+    background: rgba(191, 166, 112, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-top: 90px;
+    text-align: center;
+    padding: 28px 32px !important;
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 32px 0;
+    gap: 48px;
+}
+
+.pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.pipeline-box {
+    background: linear-gradient(90deg, #C9A86A, #B59854);
+    color: #F5F5F5;
+    padding: 26px 44px;
+    border-radius: 8px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(191, 166, 112, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pipeline-arrow {
+    font-size: 46px;
+    color: var(--vm-gold);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* ============================================
+5) MARKET DEPTH PANELS — TOP GAP FOR TEXT BREATHING ROOM
+============================================ */
+
+.depth-card {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 22px 24px !important;
+}
+
+.depth-label {
+    font-size: 14px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--spacing-xs);
+    padding-top: 4px;
+}
+
+.depth-value {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.depth-bar {
+    width: 100%;
+    max-width: 100%;
+    height: 6px;
+    background: rgba(59, 59, 59, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 6px 0 0 0;
+    position: relative;
+}
+
+.depth-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 3px;
+    background: #6ECB63;
+}
+
+.depth-note {
+    font-size: 14px;
+    color: var(--vm-muted);
+    margin-top: 12px;
+}
+
+/* ============================================
+6) CHART/METRIC CARD NORMALIZATION — MATCH MARKET OVERVIEW
+All cards follow same padding and centering pattern
+============================================ */
+
+/* Chart containers */
+.chart-container,
+.chart-panel {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    page-break-inside: avoid;
+    width: 100%;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    padding: 22px 28px !important;
+    justify-content: space-between;
+}
+
+/* Chart titles - consistent top padding */
+.chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #D6D6D6;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    padding-bottom: 10px;
+    padding-top: 6px;
+}
+
+.chart-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A86A, transparent);
+    opacity: 0.7;
+}
+
+/* Risk dial cards */
+.risk-dial-card {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 26px 28px !important;
+}
+
+.risk-dial-title {
+    font-size: 16px;
+    color: var(--vm-bronze);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    padding-top: 6px;
+}
+
+.risk-dial-value {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
+}
+
+.risk-dial-status {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    font-weight: 400;
+}
+
+/* Submarket cards */
+.submarket-card-v2 {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    min-height: 360px;
+    flex: 0 0 480px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 26px 24px !important;
+}
+
+.submarket-header {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: #BFA670;
+    margin-bottom: 32px;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    text-shadow: 0 1px 4px rgba(191, 166, 112, 0.4);
+    padding-top: 4px;
+}
+
+/* Insight cards */
+.insight-card {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 5px solid var(--vm-gold);
+    border-radius: 10px;
+    min-height: 110px;
+    height: 110px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 22px !important;
+}
+
+.insight-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #BFA670;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    padding-top: 2px;
+}
+
+.insight-text {
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.65;
+}
+
+/* Movement mini cards */
+.movement-mini-card {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 20px 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.movement-label {
+    font-size: 12px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    font-weight: 400;
+    padding-top: 2px;
+}
+
+/* Methodology panels */
+.methodology-panel {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 22px 26px !important;
+}
+
+.methodology-title {
+    font-size: 18px;
+    color: var(--vm-gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 8px;
+    padding-top: 6px;
+}
+
+.methodology-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, #C9A86A, transparent);
+    opacity: 0.7;
+}
+
+/* Panel general */
+.panel {
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    margin-top: 94px;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 22px 26px !important;
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: var(--spacing-xs);
+    position: relative;
+    padding-bottom: 10px;
+    padding-top: 6px;
+}
+
+.panel-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, #C9A86A, transparent);
+    opacity: 0.7;
+}
+
+/* ============================================
+MACRO CONTEXT PANEL
+============================================ */
+
+.macro-context {
+    margin-top: 255px;
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid #BFA670;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
+    padding: 20px 24px !important;
+}
+
+.macro-title {
+    font-size: 19px;
+    color: #BFA670;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding-top: 4px;
+}
+
+.macro-text {
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+}
+
+/* ============================================
+MOMENTUM STREETS PANEL
+============================================ */
+
+.momentum-streets-panel {
+    background: rgba(191, 166, 112, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-top: 84px;
+    padding: 22px 26px !important;
+}
+
+.momentum-title {
+    font-size: 16px;
+    color: var(--vm-gold);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+    padding-top: 4px;
+}
+
+/* ============================================
+ACQUISITION FLAGGING HEADER
+============================================ */
+
+.acquisition-flagging-header {
+    font-size: 14px;
+    color: var(--vm-gold);
+    margin-bottom: 20px;
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-align: left;
+    padding: 20px 24px !important;
+}
+
+/* ============================================
+ACQUISITION STRATEGY RIBBON
+============================================ */
+
+.acquisition-strategy-ribbon {
+    background: var(--vm-gold);
+    border-radius: 8px;
+    margin-top: 84px;
+    padding: 20px 28px !important;
+}
+
+.acquisition-strategy-text {
+    font-size: 15px;
+    color: var(--vm-dark);
+    line-height: 1.65;
+    font-weight: 400;
+    text-align: center;
+}
+
+/* ============================================
+COMPETITIVE INSIGHTS STRIP
+============================================ */
+
+.competitive-insights-strip {
+    margin-top: var(--spacing-lg);
+    background: rgba(12, 12, 12, 0.35);
+    backdrop-filter: blur(2px);
+    border: 1px solid var(--vm-gold);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 20px 26px !important;
+}
+
+/* ============================================
+EXECUTIVE BOTTOM STRIP
+============================================ */
+
+.executive-bottom-strip {
+    margin-top: 32px;
+    background: rgba(191, 166, 112, 0.12);
+    border-radius: 6px;
+    border-top: 1px solid rgba(191, 166, 112, 0.3);
+    border-bottom: 1px solid rgba(191, 166, 112, 0.3);
+    padding: 20px 26px !important;
+}
+
+/* ============================================
+END V5.3 STRUCTURAL CONSISTENCY FIXES
+✅ Executive Summary titles left-aligned
+✅ Cross-Vertical cards perfectly centered with equal spacing
+✅ Momentum Correlation signals evenly spaced full-width
+✅ Intelligence Pipeline increased spacing + larger labels
+✅ Market Depth panels top gap added
+✅ All cards normalized to Market Overview standard
+============================================ */
+/* ============================================
+VOXMILL V6.0 — ULTRA-LUXURY FINAL POLISH
+Typography | Spacing | Rhythm | Dividers | Floating Cards | Shadows
+============================================ */
+
+/* ============================================
+TYPOGRAPHY SYSTEM — CONSISTENT WEIGHTS & COLORS
+Playfair Display (titles, gold) | Inter (body, soft grey)
+============================================ */
+
+/* Primary Titles - Playfair Display Strong Gold */
+.slide-title,
+.cover-title,
+.forecast-card-title,
+.submarket-header,
+.panel-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    color: #BFA670;
+    letter-spacing: 0.02em;
+}
+
+/* Secondary Titles - Playfair Display Medium Gold */
+.action-window-title,
+.executive-summary-title,
+.methodology-title,
+.momentum-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    color: #BFA670;
+}
+
+/* Tertiary Headers - Inter Semibold Gold */
+.chart-title,
+.executive-bullet-title,
+.insight-title,
+.risk-dial-title,
+.depth-label,
+.kpi-label,
+.movement-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 600;
+    color: #BFA670;
+    letter-spacing: 0.08em;
+}
+
+/* Body Text - Inter Regular Soft Grey */
+.executive-bullet-text,
+.insight-text,
+.panel-text,
+.chart-context,
+.executive-insight-text,
+.macro-text,
+.competitive-insight-text,
+.cross-vertical-text,
+.momentum-signal-text {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 400;
+    color: rgba(234, 234, 234, 0.82);
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+}
+
+/* Metadata Text - Inter Light Muted Grey */
+.chart-source,
+.forecast-meta-label,
+.forecast-momentum-meta,
+.forecast-cone-meta,
+.cover-compiled,
+.slide-meta,
+.action-window-subtitle {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 400;
+    color: rgba(184, 184, 184, 0.7);
+    font-style: italic;
+}
+
+/* Metric Values - Inter/Mono Bold Gold */
+.kpi-value,
+.movement-value,
+.forecast-primary-value,
+.forecast-momentum-value,
+.voxmill-index-number,
+.risk-dial-value,
+.depth-value,
+.submarket-metric-value,
+.forecast-cone-value {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 800;
+    color: #BFA670;
+    text-shadow: 0 3px 12px rgba(191, 166, 112, 0.5);
+}
+
+/* ============================================
+WHITE SPACE & BREATHING ROOM — UNCLUTTERED SLIDES
+============================================ */
+
+/* Global container spacing */
+.slide-content {
+    position: absolute;
+    top: 195px;
+    left: 48px;
+    right: 48px;
+    bottom: 90px;
+    overflow: visible !important;
+    z-index: 5;
+}
+
+/* Section spacing */
+.kpi-grid {
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+.chart-section {
+    margin-top: 130px;
+}
+
+.two-column {
+    margin-top: 80px;
+}
+
+.insight-cards {
+    margin-top: 80px;
+}
+
+.cross-vertical-grid {
+    margin-top: 50px;
+}
+
+.methodology-grid {
+    margin-top: 100px;
+}
+
+.depth-metrics {
+    margin-top: 100px;
+}
+
+.forecast-grid-2x2 {
+    margin-top: 70px;
+}
+
+.macro-context {
+    margin-top: 270px;
+}
+
+.executive-intelligence-layout {
+    margin-top: 80px;
+}
+
+.action-window {
+    margin-top: 90px;
+}
+
+.submarket-grid-v2 {
+    margin-top: 30px;
+}
+
+.momentum-streets-panel {
+    margin-top: 90px;
+}
+
+.signal-board-v2 {
+    margin-top: 30px;
+}
+
+.acquisition-strategy-ribbon {
+    margin-top: 90px;
+}
+
+.model-pipeline {
+    margin-top: 100px;
+}
+
+.macro-risk-grid {
+    margin-top: 80px;
+}
+
+.macro-risk-map-extended {
+    margin-top: 70px;
+    margin-bottom: 70px;
+}
+
+/* Card internal spacing */
+.kpi-card,
+.movement-mini-card,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2 {
+    padding: 28px 32px !important;
+}
+
+.chart-container,
+.chart-panel {
+    padding: 28px 36px !important;
+}
+
+.executive-summary-bullet {
+    padding: 26px 32px !important;
+}
+
+.methodology-panel,
+.panel {
+    padding: 28px 34px !important;
+}
+
+/* ============================================
+VERTICAL RHYTHM — CONSISTENT SECTION TITLE SPACING
+Equal spacing above/below all section titles
+============================================ */
+
+/* All section titles follow same rhythm */
+.chart-title,
+.forecast-card-title,
+.risk-dial-title,
+.depth-label,
+.submarket-header,
+.methodology-title,
+.panel-title,
+.momentum-title,
+.executive-bullet-title,
+.insight-title,
+.action-window-title {
+    margin-bottom: 24px;
+    padding-top: 8px;
+    padding-bottom: 12px;
+}
+
+/* Subtitle rhythm */
+.chart-context,
+.action-window-subtitle {
+    margin-bottom: 16px;
+}
+
+/* ============================================
+GOLD DIVIDERS — CONSISTENT THICKNESS & WIDTH
+All dividers unified
+============================================ */
+
+/* Title underlines */
+.slide-header::after,
+.chart-title::after,
+.forecast-card-title::after,
+.executive-bullet-title::after,
+.cross-vertical-title::after,
+.methodology-title::after,
+.panel-title::after,
+.action-window-title::after,
+.forecast-momentum-header::after,
+.forecast-cone-header::after {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A86A, transparent);
+    opacity: 0.65;
+}
+
+/* Centered dividers - consistent width */
+.chart-title::after,
+.forecast-card-title::after,
+.cross-vertical-title::after,
+.action-window-title::after,
+.forecast-momentum-header::after,
+.forecast-cone-header::after {
+    width: 90px;
+}
+
+/* Left-aligned dividers - consistent width */
+.executive-bullet-title::after,
+.methodology-title::after,
+.panel-title::after {
+    width: 80px;
+}
+
+/* Horizontal dividers */
+.chart-divider,
+.opportunities-section-divider,
+.forecast-cone-separator,
+.cone-separator,
+.action-window-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.3), transparent);
+}
+
+/* ============================================
+FLOATING CARDS — SUBTLE DEPTH & MINIMAL GRADIENTS
+Cards feel elevated with refined shadows
+============================================ */
+
+/* Primary card elevation */
+.kpi-card,
+.movement-mini-card,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.executive-insight-item,
+.signal-card-v2 {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.4), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(191, 166, 112, 0.15);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Chart containers */
+.chart-container,
+.chart-panel {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.4), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(191, 166, 112, 0.15);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Panel containers */
+.methodology-panel,
+.panel,
+.macro-context,
+.momentum-streets-panel,
+.executive-summary-bullet,
+.competitive-insights-strip,
+.executive-bottom-strip,
+.action-window {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.4), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(191, 166, 112, 0.15);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Special panels with left accent */
+.executive-summary-bullet,
+.macro-context,
+.acquisition-flagging-header {
+    border-left: 4px solid #BFA670;
+}
+
+.insight-card,
+.cross-vertical-card,
+.executive-insight-item,
+.signal-card-v2 {
+    border-left: 4px solid #BFA670;
+}
+
+/* Hover states - subtle elevation increase */
+.action-window-item:hover,
+.executive-insight-item:hover,
+.competitor-row-executive:hover {
+    box-shadow: 
+        0 10px 20px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+BRONZE PATTERN — SUBTLE & ELEGANT
+Optimized for readability without interference
+============================================ */
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.06) 60px, rgba(167, 123, 58, 0.06) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.06) 60px, rgba(167, 123, 58, 0.06) 62px);
+    background-repeat: repeat;
+    opacity: 1;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.slide::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.06) 60px, rgba(167, 123, 58, 0.06) 62px),
+        repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(167, 123, 58, 0.06) 60px, rgba(167, 123, 58, 0.06) 62px);
+}
+
+/* Reduce pattern opacity on chart-heavy slides */
+.slide .chart-container::before,
+.slide .chart-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(12, 12, 12, 0.3);
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+/* Ensure SVG charts stay above overlay */
+.chart-container svg,
+.chart-panel svg {
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================================
+UNIFIED RADIUS, BORDERS & SHADOWS
+Consistent visual language across all elements
+============================================ */
+
+/* Standard border radius */
+.kpi-card,
+.movement-mini-card,
+.chart-container,
+.chart-panel,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.methodology-panel,
+.panel,
+.executive-summary-bullet,
+.action-window,
+.competitive-inventory-executive-panel,
+.macro-risk-map-extended {
+    border-radius: 12px;
+}
+
+/* Smaller elements - tighter radius */
+.insight-card,
+.cross-vertical-card,
+.momentum-correlation-panel,
+.momentum-streets-panel,
+.competitive-insights-strip,
+.executive-bottom-strip,
+.macro-context,
+.acquisition-flagging-header,
+.acquisition-strategy-ribbon {
+    border-radius: 10px;
+}
+
+/* Micro elements - minimal radius */
+.action-window-item,
+.momentum-signal-box,
+.executive-insight-item,
+.signal-card-v2,
+.inventory-metric-badge,
+.velocity-badge-executive {
+    border-radius: 8px;
+}
+
+/* Consistent border color */
+.kpi-card,
+.movement-mini-card,
+.chart-container,
+.chart-panel,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.methodology-panel,
+.panel,
+.executive-summary-bullet,
+.momentum-correlation-panel,
+.momentum-streets-panel,
+.competitive-insights-strip,
+.executive-insight-item,
+.signal-card-v2 {
+    border: 1px solid rgba(191, 166, 112, 0.15);
+}
+
+/* Highlighted borders */
+.forecast-card-highlight,
+.executive-summary-card,
+.action-window,
+.competitive-inventory-executive-panel {
+    border: 1px solid rgba(191, 166, 112, 0.28);
+}
+
+/* Unified shadow system */
+.kpi-card,
+.movement-mini-card,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2 {
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.chart-container,
+.chart-panel,
+.forecast-card-v2,
+.methodology-panel,
+.panel {
+    box-shadow: 
+        0 10px 20px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.action-window,
+.competitive-inventory-executive-panel,
+.executive-summary-card {
+    box-shadow: 
+        0 12px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================
+REFINED ACCENT COLORS
+Subtle color hierarchy for emphasis
+============================================ */
+
+/* Primary gold - titles & important metrics */
+:root {
+    --vm-gold-primary: #BFA670;
+    --vm-gold-secondary: #C9A86A;
+    --vm-gold-light: #D4B679;
+}
+
+/* Text hierarchy */
+:root {
+    --vm-text-primary: rgba(234, 234, 234, 0.92);
+    --vm-text-secondary: rgba(234, 234, 234, 0.82);
+    --vm-text-tertiary: rgba(234, 234, 234, 0.7);
+    --vm-text-muted: rgba(184, 184, 184, 0.7);
+}
+
+/* Update text colors */
+.slide-title,
+.cover-title,
+.panel-title {
+    color: var(--vm-gold-primary);
+}
+
+.chart-title,
+.executive-bullet-title,
+.methodology-title {
+    color: var(--vm-gold-secondary);
+}
+
+.forecast-momentum-header,
+.forecast-cone-header,
+.action-window-title {
+    color: var(--vm-gold-light);
+}
+
+.kpi-value,
+.movement-value,
+.forecast-primary-value,
+.voxmill-index-number {
+    color: var(--vm-gold-primary);
+}
+
+.executive-bullet-text,
+.panel-text,
+.insight-text {
+    color: var(--vm-text-secondary);
+}
+
+.chart-context,
+.chart-source,
+.slide-meta {
+    color: var(--vm-text-muted);
+}
+
+/* ============================================
+SPACING REFINEMENTS
+Micro-adjustments for perfect rhythm
+============================================ */
+
+/* Title to content gaps */
+.kpi-label {
+    margin-bottom: 14px;
+}
+
+.chart-title {
+    margin-bottom: 20px;
+}
+
+.methodology-title,
+.panel-title {
+    margin-bottom: 28px;
+}
+
+/* Content to metadata gaps */
+.kpi-value {
+    margin-bottom: 14px;
+}
+
+.depth-value {
+    margin-bottom: 22px;
+}
+
+.forecast-primary-value,
+.forecast-momentum-value {
+    margin-bottom: 20px;
+}
+
+/* Inter-element spacing */
+.cross-vertical-icon {
+    margin-bottom: 20px;
+}
+
+.cross-vertical-title {
+    margin-bottom: 18px;
+}
+
+.cross-vertical-text {
+    margin-bottom: 20px;
+}
+
+.executive-insight-number {
+    margin-right: 28px;
+}
+
+/* ============================================
+FINAL TYPOGRAPHY POLISH
+Letter-spacing and line-height refinements
+============================================ */
+
+/* Display text - looser tracking */
+.slide-title {
+    letter-spacing: 0.03em;
+}
+
+.cover-title {
+    letter-spacing: 0.015em;
+}
+
+.panel-title {
+    letter-spacing: 0.02em;
+}
+
+/* Body text - optimal readability */
+.executive-bullet-text,
+.panel-text,
+.insight-text,
+.executive-insight-text {
+    letter-spacing: 0.012em;
+    line-height: 1.78;
+}
+
+/* Micro text - enhanced tracking */
+.chart-source,
+.forecast-meta-label,
+.action-window-label {
+    letter-spacing: 0.08em;
+}
+
+/* Labels - strong tracking */
+.kpi-label,
+.movement-label,
+.executive-insight-label {
+    letter-spacing: 0.12em;
+}
+
+/* ============================================
+END V6.0 ULTRA-LUXURY FINAL POLISH
+✅ Consistent typography weights (Playfair titles, Inter body)
+✅ Breathable white space (increased section margins)
+✅ Unified vertical rhythm (24-28px title spacing)
+✅ Consistent gold dividers (1px, 80-90px width)
+✅ Floating card aesthetic (gradients + subtle shadows)
+✅ Refined bronze pattern (0.06 opacity for readability)
+✅ Unified radius/borders/shadows across all elements
+✅ Premium visual language throughout
+============================================ */
+/* ============================================
+VOXMILL V6.1 — FINAL QA FIXES
+Pixel-Perfect Professional Polish
+============================================ */
+
+/* ============================================
+TABLE ALIGNMENT — HEADERS PERFECTLY ALIGNED WITH DATA
+============================================ */
+
+/* Heatmap Table - Market Depth Analysis */
+.heatmap-table {
+    width: 100%;
+    margin-top: 62px;
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.heatmap-table th {
+    background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
+    color: var(--vm-dark);
+    padding: 18px 16px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.heatmap-table th:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+
+.heatmap-table td {
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+    color: var(--vm-text);
+    vertical-align: middle;
+    text-align: center;
+}
+
+.heatmap-table td:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+
+/* Opportunities Table - Top Market Opportunities */
+.table-luxury {
+    width: 100%;
+    margin-top: var(--spacing-sm);
+    border-collapse: collapse;
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.table-luxury thead {
+    background: linear-gradient(90deg, #BFA670 0%, #BFA670 50%, #BFA670 100%);
+    height: 56px;
+}
+
+.table-luxury th {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--vm-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 18px 16px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    vertical-align: middle;
+}
+
+.table-luxury th:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+
+.table-luxury th:last-child {
+    text-align: center;
+    padding-right: 24px;
+}
+
+.table-luxury td {
+    font-size: 14px;
+    color: var(--vm-text);
+    padding: 20px 16px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.table-luxury td:first-child {
+    text-align: left;
+    padding-left: 24px;
+}
+
+.table-luxury td:last-child {
+    text-align: center;
+    padding-right: 24px;
+}
+
+.table-luxury td.align-right {
+    text-align: right;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Competitor Table - Perfect 3-Column Alignment */
+.competitor-row-executive {
+    display: grid;
+    grid-template-columns: 1.8fr 280px 140px;
+    align-items: center;
+    padding: 22px 40px;
+    gap: 40px;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(212,182,121,0.08);
+}
+
+.competitor-left-executive {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 20px;
+}
+
+.competitor-center-executive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.competitor-right-executive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================
+UNIFORM CARD PADDING — CONSISTENT ACROSS ALL CARDS
+============================================ */
+
+/* All primary cards - 30px uniform */
+.kpi-card,
+.forecast-card-v2,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2 {
+    padding: 30px 32px !important;
+}
+
+/* Chart containers - 30px uniform */
+.chart-container,
+.chart-panel {
+    padding: 30px 32px !important;
+}
+
+/* Medium cards - 26px uniform */
+.insight-card,
+.cross-vertical-card,
+.movement-mini-card,
+.executive-insight-item {
+    padding: 26px 28px !important;
+}
+
+/* Panels - 28px uniform */
+.methodology-panel,
+.panel,
+.executive-summary-bullet,
+.momentum-correlation-panel,
+.momentum-streets-panel,
+.macro-context {
+    padding: 28px 30px !important;
+}
+
+/* Action window items - 24px uniform */
+.action-window-item {
+    padding: 24px 24px !important;
+}
+
+/* Signal cards - 22px uniform */
+.signal-card-v2 {
+    padding: 22px 24px !important;
+}
+
+/* Acquisition header - 22px uniform */
+.acquisition-flagging-header {
+    padding: 22px 26px !important;
+}
+
+/* Competitive insights - 24px uniform */
+.competitive-insights-strip {
+    padding: 24px 28px !important;
+}
+
+/* Executive bottom strip - 24px uniform */
+.executive-bottom-strip {
+    padding: 24px 28px !important;
+}
+
+/* Action window container - 32px uniform */
+.action-window {
+    padding: 32px 36px !important;
+}
+
+/* ============================================
+CHART CONSISTENCY — MATCHING STROKES, LABELS, POINTS
+============================================ */
+
+/* All SVG chart axes - consistent stroke */
+svg line[stroke] {
+    stroke-width: 2px;
+}
+
+/* Main axes - thicker */
+svg line[stroke*="0.25"],
+svg line[x1="70"][y1="460"],
+svg line[x1="60"][y1="410"],
+svg line[x1="80"][y1="200"],
+svg line[x1="280"][y1="40"] {
+    stroke-width: 2.5px;
+    stroke: rgba(255,255,255,0.25);
+}
+
+/* Grid lines - consistent thin */
+svg line[stroke-dasharray] {
+    stroke-width: 1.5px;
+    stroke: rgba(255,255,255,0.12);
+}
+
+/* Chart axis labels - consistent font */
+.chart-axis-label,
+svg text.chart-axis-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: rgba(214,214,214,0.9);
+    letter-spacing: 0.08em;
+}
+
+/* Chart data points - uniform radius */
+svg circle[fill="#C5A46D"] {
+    r: 7;
+    stroke: #0C0C0C;
+    stroke-width: 2.5;
+}
+
+/* Chart data lines - uniform width */
+svg polyline[stroke="#C5A46D"] {
+    stroke-width: 3.5px;
+}
+
+/* Bar chart strokes - consistent */
+svg rect[stroke="#C5A46D"],
+svg rect[stroke="#B59854"] {
+    stroke-width: 2.5px;
+}
+
+/* Chart value labels - consistent */
+svg text[fill="#C5A46D"] {
+    font-family: 'Inter', Arial, sans-serif;
+    font-weight: 700;
+}
+
+/* ============================================
+TEXT SPACING — NO OVERLAPS OR EDGE TOUCHING
+============================================ */
+
+/* All card content - minimum padding from edges */
+.kpi-content,
+.forecast-card-body,
+.forecast-momentum-body,
+.forecast-cone-body,
+.depth-card > *,
+.risk-dial-card > *,
+.insight-card > *,
+.cross-vertical-card > * {
+    padding: 4px 8px;
+}
+
+/* First child elements - top padding */
+.kpi-label,
+.chart-title,
+.forecast-card-title,
+.forecast-momentum-header,
+.forecast-cone-header,
+.risk-dial-title,
+.depth-label,
+.insight-title,
+.cross-vertical-icon {
+    padding-top: 6px;
+}
+
+/* Last child elements - bottom padding */
+.kpi-change,
+.chart-source,
+.forecast-meta-label,
+.forecast-momentum-meta,
+.forecast-cone-meta,
+.risk-dial-status,
+.depth-note,
+.insight-text,
+.cross-vertical-bullets {
+    padding-bottom: 6px;
+}
+
+/* Text in panels - side padding */
+.panel-text,
+.executive-bullet-text,
+.macro-text,
+.methodology-list,
+.bullet-list {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+/* ============================================
+SECTION SPACING — CONSISTENT GAPS
+============================================ */
+
+/* Top-level sections - 100px standard */
+.kpi-grid {
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+.chart-section {
+    margin-top: 100px;
+}
+
+.methodology-grid {
+    margin-top: 100px;
+}
+
+.depth-metrics {
+    margin-top: 100px;
+}
+
+.model-pipeline {
+    margin-top: 100px;
+}
+
+/* Mid-level sections - 80px standard */
+.two-column {
+    margin-top: 80px;
+}
+
+.insight-cards {
+    margin-top: 80px;
+}
+
+.macro-risk-grid {
+    margin-top: 80px;
+}
+
+.executive-intelligence-layout {
+    margin-top: 80px;
+}
+
+.action-window {
+    margin-top: 80px;
+}
+
+.momentum-streets-panel {
+    margin-top: 80px;
+}
+
+/* Lower sections - 60px standard */
+.cross-vertical-grid {
+    margin-top: 60px;
+}
+
+.forecast-grid-2x2 {
+    margin-top: 60px;
+}
+
+.submarket-grid-v2 {
+    margin-top: 60px;
+}
+
+/* Dividers and separators - 50px */
+.chart-divider {
+    margin: 50px 0;
+}
+
+.opportunities-section-divider {
+    margin: 50px 0;
+}
+
+/* Bottom margins - 40px standard */
+.executive-bottom-strip {
+    margin-top: 40px;
+    margin-bottom: 0;
+}
+
+.competitive-insights-strip {
+    margin-top: 40px;
+}
+
+/* Special cases */
+.macro-context {
+    margin-top: 260px;
+}
+
+.acquisition-strategy-ribbon {
+    margin-top: 80px;
+}
+
+.macro-risk-map-extended {
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+/* ============================================
+COLOR CONSISTENCY — STANDARDIZED HEX VALUES
+============================================ */
+
+/* Gold palette - exact values */
+:root {
+    --vm-gold-primary: #BFA670;
+    --vm-gold-secondary: #C9A86A;
+    --vm-gold-light: #D4B679;
+    --vm-bronze: #A77B3A;
+    --vm-bronze-dark: #9E7B47;
+}
+
+/* Grey palette - exact values */
+:root {
+    --vm-text-primary: rgba(234, 234, 234, 0.92);
+    --vm-text-secondary: rgba(234, 234, 234, 0.82);
+    --vm-text-tertiary: rgba(234, 234, 234, 0.70);
+    --vm-text-muted: rgba(184, 184, 184, 0.70);
+}
+
+/* Background colors - exact values */
+:root {
+    --vm-dark: #0C0C0C;
+    --vm-darker: #111111;
+    --vm-panel: #171717;
+    --vm-card-bg-start: rgba(12, 12, 12, 0.4);
+    --vm-card-bg-end: rgba(18, 18, 18, 0.95);
+}
+
+/* Border colors - exact values */
+:root {
+    --vm-border-standard: rgba(191, 166, 112, 0.15);
+    --vm-border-highlighted: rgba(191, 166, 112, 0.28);
+    --vm-border-strong: rgba(212, 182, 121, 0.28);
+}
+
+/* Apply consistent gold to all titles */
+.slide-title,
+.cover-title,
+.panel-title,
+.submarket-header {
+    color: #BFA670;
+}
+
+.chart-title,
+.executive-bullet-title,
+.methodology-title,
+.momentum-title,
+.macro-title,
+.insight-title {
+    color: #C9A86A;
+}
+
+.forecast-momentum-header,
+.forecast-cone-header,
+.action-window-title,
+.inventory-bar-text {
+    color: #D4B679;
+}
+
+/* Apply consistent grey to all body text */
+.executive-bullet-text,
+.panel-text,
+.insight-text,
+.cross-vertical-text,
+.macro-text,
+.momentum-signal-text,
+.competitive-insight-text,
+.executive-insight-text {
+    color: rgba(234, 234, 234, 0.82);
+}
+
+/* Apply consistent muted to metadata */
+.chart-source,
+.chart-context,
+.slide-meta,
+.forecast-meta-label,
+.action-window-subtitle {
+    color: rgba(184, 184, 184, 0.70);
+}
+
+/* Apply consistent borders */
+.kpi-card,
+.chart-container,
+.chart-panel,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.methodology-panel,
+.panel {
+    border: 1px solid rgba(191, 166, 112, 0.15);
+}
+
+/* Highlighted borders */
+.forecast-card-highlight,
+.executive-summary-card,
+.action-window {
+    border: 1px solid rgba(191, 166, 112, 0.28);
+}
+
+.competitive-inventory-executive-panel,
+.forecast-card-momentum,
+.forecast-card-cone {
+    border: 1px solid rgba(212, 182, 121, 0.28);
+}
+
+/* Apply consistent backgrounds */
+.kpi-card,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.chart-container,
+.chart-panel,
+.methodology-panel,
+.panel {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.4), rgba(18, 18, 18, 0.95));
+}
+
+/* ============================================
+PREDICTIVE INDEX BAR — VISUALLY BALANCED
+============================================ */
+
+.voxmill-index-number {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: #BFA670;
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
+}
+
+.voxmill-index-bar-container {
+    width: 280px;
+    height: 8px;
+    background: rgba(59, 59, 59, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.voxmill-index-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #6ECB63, #5AB854);
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(110, 203, 99, 0.6);
+}
+
+.voxmill-index-caption {
+    font-size: 13px;
+    color: rgba(184, 184, 184, 0.70);
+    margin-top: 14px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+}
+
+/* ============================================
+PIXEL-PERFECT ALIGNMENT — NO 1-2PX SHIFTS
+============================================ */
+
+/* Ensure all grid containers align */
+.kpi-grid,
+.forecast-grid-2x2,
+.methodology-grid,
+.depth-metrics,
+.macro-risk-grid {
+    display: grid;
+    align-items: stretch;
+    justify-items: stretch;
+}
+
+/* Ensure all flex containers align */
+.executive-intelligence-layout,
+.two-column,
+.cross-vertical-grid,
+.insight-cards,
+.submarket-grid-v2 {
+    display: grid;
+    align-items: start;
+}
+
+/* Fix sub-pixel rendering */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Ensure integer pixel values */
+.kpi-card,
+.chart-container,
+.forecast-card-v2,
+.insight-card,
+.cross-vertical-card {
+    transform: translateZ(0);
+}
+
+/* Align titles to baseline */
+.slide-title,
+.chart-title,
+.panel-title,
+.executive-bullet-title {
+    line-height: 1.2;
+    display: block;
+}
+
+/* Fix value alignment */
+.kpi-value,
+.movement-value,
+.forecast-primary-value,
+.voxmill-index-number,
+.risk-dial-value,
+.depth-value {
+    line-height: 1;
+    display: block;
+}
+
+/* Ensure grid gaps are even numbers */
+.kpi-grid,
+.forecast-grid-2x2 {
+    gap: 32px;
+}
+
+.methodology-grid,
+.depth-metrics,
+.macro-risk-grid {
+    gap: 32px;
+}
+
+.insight-cards,
+.cross-vertical-grid {
+    gap: 24px;
+}
+
+.submarket-grid-v2 {
+    gap: 32px;
+}
+
+.action-window-grid {
+    gap: 24px;
+}
+
+/* ============================================
+DIVIDER CONSISTENCY — PERFECT CENTERING
+============================================ */
+
+/* All centered dividers - exact positioning */
+.chart-title::after,
+.forecast-card-title::after,
+.cross-vertical-title::after,
+.action-window-title::after,
+.forecast-momentum-header::after,
+.forecast-cone-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A86A, transparent);
+    opacity: 0.65;
+}
+
+/* All left-aligned dividers - exact positioning */
+.executive-bullet-title::after,
+.methodology-title::after,
+.panel-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, #C9A86A, transparent);
+    opacity: 0.65;
+}
+
+/* Horizontal dividers - centered */
+.chart-divider,
+.opportunities-section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.3), transparent);
+}
+
+/* Small dividers in components */
+.forecast-cone-separator,
+.cone-separator {
+    width: 90px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,182,121,0.35), transparent);
+    margin: 0 auto;
+}
+
+.action-window-divider {
+    width: 50px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.3), transparent);
+    margin: 10px auto;
+}
+
+/* ============================================
+FINAL MICRO-ADJUSTMENTS
+============================================ */
+
+/* Remove any accidental margins */
+svg {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+/* Ensure tables don't shift */
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+/* Fix badge alignment */
+.score-badge,
+.velocity-badge,
+.velocity-badge-executive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+/* Fix number alignment */
+.executive-insight-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Ensure icon centering */
+.cross-vertical-icon,
+.executive-summary-icon {
+    display: block;
+    text-align: center;
+    line-height: 1;
+}
+
+/* Fix list alignment */
+.methodology-list,
+.bullet-list,
+.momentum-list,
+.cross-vertical-bullets {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* ============================================
+END V6.1 FINAL QA FIXES
+✅ Table headers aligned with data (24px left padding)
+✅ Uniform padding across all cards (30/26/28/24/22px tiers)
+✅ Chart strokes (2.5px axes, 1.5px grid, 3.5px lines)
+✅ Chart labels (14px Inter 600, 0.08em spacing)
+✅ Chart points (7px radius, 2.5px stroke)
+✅ No text overlaps (4-6px padding on all edges)
+✅ Consistent section gaps (100/80/60/50/40px)
+✅ Standardized colors (HEX + rgba exact values)
+✅ Predictive Index bar (280px width, 8px height, centered)
+✅ Pixel-perfect alignment (integer gaps, transform fixes)
+============================================ */
+/* ============================================
+VOXMILL V7.0 — FINAL GLOBAL REFINEMENTS
+Ultimate Production Polish Layer
+============================================ */
+
+/* ============================================
+1. GLOBAL SECTION SPACING STANDARDISATION
+Consistent 80px top, 65px bottom across all sections
+============================================ */
+
+/* Primary sections - 80px top, 65px bottom */
+.kpi-grid,
+.chart-section,
+.two-column,
+.insight-cards,
+.cross-vertical-grid,
+.methodology-grid,
+.depth-metrics,
+.forecast-grid-2x2,
+.executive-intelligence-layout,
+.action-window,
+.submarket-grid-v2,
+.momentum-streets-panel,
+.signal-board-v2,
+.acquisition-strategy-ribbon,
+.model-pipeline,
+.macro-risk-grid,
+.macro-risk-map-extended {
+    margin-top: 80px;
+    margin-bottom: 65px;
+}
+
+/* Weekly movement dashboard */
+.weekly-movement-dashboard {
+    margin-top: 40px;
+    margin-bottom: 65px;
+}
+
+/* Executive summary bullets */
+.executive-summary-bullets {
+    margin-top: 40px;
+    margin-bottom: 65px;
+}
+
+/* Competitive insights strip */
+.competitive-insights-strip {
+    margin-top: 50px;
+    margin-bottom: 65px;
+}
+
+/* Executive bottom strip */
+.executive-bottom-strip {
+    margin-top: 50px;
+    margin-bottom: 65px;
+}
+
+/* Macro context - special case */
+.macro-context {
+    margin-top: 80px;
+    margin-bottom: 65px;
+}
+
+/* Momentum correlation panel */
+.momentum-correlation-panel {
+    margin-top: 50px;
+    margin-bottom: 65px;
+}
+
+/* Dividers */
+.chart-divider,
+.opportunities-section-divider {
+    margin: 65px 0;
+}
+
+/* Slide content bottom padding to avoid black voids */
+.slide-content {
+    position: absolute;
+    top: 185px;
+    left: 48px;
+    right: 48px;
+    bottom: 100px;
+    overflow: visible !important;
+    z-index: 5;
+    padding-bottom: 40px;
+}
+
+/* Prevent sections too close to page break */
+.kpi-grid,
+.chart-container,
+.forecast-grid-2x2,
+.methodology-grid,
+.two-column {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* ============================================
+2. TITLE & DATE BLOCK ALIGNMENT
+Consistent positioning across all slides
+============================================ */
+
+.slide-header {
+    position: absolute;
+    top: 60px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 18px;
+    z-index: 5;
+    min-height: 80px;
+}
+
+.slide-title {
+    font-family: var(--font-display);
+    font-size: 50px;
+    font-weight: 700;
+    color: #BFA670;
+    letter-spacing: 0.03em;
+    text-shadow: 0 2px 6px rgba(191, 166, 112, 0.4);
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+.slide-meta {
+    font-size: 18px;
+    color: rgba(184, 184, 184, 0.70);
+    text-align: right;
+    line-height: 1.4;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* ============================================
+3. KPI CARD RED BADGES — REDUCED SATURATION
+85% opacity for refined look
+============================================ */
+
+.kpi-change.negative,
+.movement-change.negative,
+.negative {
+    color: rgba(244, 67, 54, 0.85);
+    background: rgba(244, 67, 54, 0.08);
+}
+
+/* Velocity badges - low status */
+.velocity-low,
+.velocity-weak-exec,
+.score-low,
+.score-standard {
+    color: rgba(244, 67, 54, 0.85);
+    border: 1px solid rgba(244, 67, 54, 0.5);
+}
+
+/* ============================================
+4. CHART STROKE & DATA POINT WEIGHTS
+Increased for luxury feel + subtle gold glow
+============================================ */
+
+/* Main axes - heavier stroke */
+svg line[x1="70"][y1="50"],
+svg line[x1="70"][y1="460"],
+svg line[x1="60"][y1="40"],
+svg line[x1="80"][y1="40"],
+svg line[x1="280"][y1="40"] {
+    stroke-width: 3px;
+    stroke: rgba(255,255,255,0.28);
+}
+
+/* Grid lines - slightly heavier */
+svg line[stroke-dasharray] {
+    stroke-width: 1.8px;
+    stroke: rgba(255,255,255,0.14);
+}
+
+/* Chart data lines - heavier with subtle glow */
+svg polyline[stroke="#C5A46D"] {
+    stroke-width: 4px;
+    filter: drop-shadow(0 2px 6px rgba(197, 164, 109, 0.5)) drop-shadow(0 0 4px rgba(191, 166, 112, 0.03));
+}
+
+/* Chart data points - 15% larger with gold glow */
+svg circle[fill="#C5A46D"] {
+    r: 8;
+    stroke: #0C0C0C;
+    stroke-width: 3;
+    filter: drop-shadow(0 3px 10px rgba(197, 164, 109, 0.7)) drop-shadow(0 0 6px rgba(191, 166, 112, 0.03));
+}
+
+/* Bar chart strokes - heavier */
+svg rect[stroke="#C5A46D"],
+svg rect[stroke="#B59854"] {
+    stroke-width: 3px;
+    filter: drop-shadow(0 2px 8px rgba(198, 161, 91, 0.4)) drop-shadow(0 0 4px rgba(191, 166, 112, 0.02));
+}
+
+/* ============================================
+5. MAX-WIDTH CONTROL FOR TEXT-HEAVY PARAGRAPHS
+900-1100px optimal width, left-aligned
+============================================ */
+
+/* Executive summary bullet text */
+.executive-bullet-text {
+    max-width: 1100px;
+    width: 100%;
+}
+
+/* Panel text */
+.panel-text {
+    max-width: 1000px;
+    width: 100%;
+}
+
+/* Macro context text */
+.macro-text {
+    max-width: 1100px;
+    width: 100%;
+}
+
+/* Insight text */
+.insight-text {
+    max-width: 900px;
+    width: 100%;
+}
+
+/* Executive insight text */
+.executive-insight-text {
+    max-width: 950px;
+    width: 100%;
+}
+
+/* Cross-vertical text */
+.cross-vertical-text {
+    max-width: 100%;
+}
+
+/* Competitive insight text */
+.competitive-insight-text {
+    max-width: 100%;
+}
+
+/* Acquisition strategy text */
+.acquisition-strategy-text {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Executive bottom strip text */
+.executive-bottom-text {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Chart context */
+.chart-context {
+    max-width: 900px;
+    margin: 0 auto 12px auto;
+}
+
+/* ============================================
+6. GOLD ACCENT CONSISTENCY
+Single primary gold (#BFA670) with consistent opacity
+============================================ */
+
+/* Primary gold for all titles and accents */
+:root {
+    --vm-gold-primary: #BFA670;
+    --vm-gold-opacity-full: rgba(191, 166, 112, 1);
+    --vm-gold-opacity-65: rgba(191, 166, 112, 0.65);
+    --vm-gold-opacity-40: rgba(191, 166, 112, 0.40);
+    --vm-gold-opacity-15: rgba(191, 166, 112, 0.15);
+}
+
+/* All dividers - consistent 65% opacity */
+.slide-header::after,
+.chart-title::after,
+.forecast-card-title::after,
+.executive-bullet-title::after,
+.cross-vertical-title::after,
+.methodology-title::after,
+.panel-title::after,
+.action-window-title::after,
+.forecast-momentum-header::after,
+.forecast-cone-header::after {
+    opacity: 0.65;
+    background: linear-gradient(90deg, transparent, #BFA670, transparent);
+}
+
+/* Left-aligned dividers */
+.executive-bullet-title::after,
+.methodology-title::after,
+.panel-title::after {
+    background: linear-gradient(90deg, #BFA670, transparent);
+    opacity: 0.65;
+}
+
+/* All borders - consistent 15% opacity */
+.kpi-card,
+.chart-container,
+.chart-panel,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.methodology-panel,
+.panel,
+.executive-summary-bullet,
+.momentum-correlation-panel {
+    border: 1px solid rgba(191, 166, 112, 0.15);
+}
+
+/* Highlighted borders - 28% opacity */
+.forecast-card-highlight,
+.executive-summary-card,
+.action-window {
+    border: 1px solid rgba(191, 166, 112, 0.28);
+}
+
+/* Accent bars - 65% opacity */
+.depth-bar-fill,
+.forecast-confidence-bar .momentum-confidence-fill,
+.voxmill-index-bar-fill {
+    opacity: 1;
+}
+
+/* ============================================
+7. DEAD ZONE FRAMING
+Subtle 1px dividers for empty-looking areas (30-40% opacity)
+============================================ */
+
+/* Strategic Action Window - top framing */
+.action-window::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.35), transparent);
+    z-index: -1;
+}
+
+/* Macro Context - bottom framing */
+.macro-context::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.35), transparent);
+}
+
+/* Methodology panels - subtle framing */
+.methodology-panel::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.30), transparent);
+    z-index: -1;
+}
+
+/* Pipeline - bottom framing */
+.model-pipeline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.35), transparent);
+}
+
+/* Executive bottom strip - top framing (already has borders, add subtle internal) */
+.executive-bottom-strip {
+    position: relative;
+}
+
+/* Competitive insights strip - internal framing */
+.competitive-insights-strip {
+    position: relative;
+}
+
+/* Acquisition strategy ribbon - subtle top line */
+.acquisition-strategy-ribbon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.4), transparent);
+}
+
+/* ============================================
+8. CARD DEPTH & "LUXURY FLOAT"
+Subtle shadows and gradients at same elevation
+============================================ */
+
+/* All primary cards - unified luxury float */
+.kpi-card,
+.movement-mini-card,
+.insight-card,
+.cross-vertical-card,
+.depth-card,
+.risk-dial-card,
+.submarket-card-v2,
+.forecast-card-v2,
+.executive-insight-item,
+.signal-card-v2 {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.40), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    box-shadow: 
+        0 8px 18px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        0 0 0 1px rgba(191, 166, 112, 0.03);
+    position: relative;
+}
+
+/* Chart containers - same elevation */
+.chart-container,
+.chart-panel {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.40), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    box-shadow: 
+        0 8px 18px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        0 0 0 1px rgba(191, 166, 112, 0.03);
+    position: relative;
+}
+
+/* Panel containers - same elevation */
+.methodology-panel,
+.panel,
+.executive-summary-bullet,
+.momentum-correlation-panel,
+.momentum-streets-panel,
+.macro-context {
+    background: linear-gradient(135deg, rgba(12, 12, 12, 0.40), rgba(18, 18, 18, 0.95));
+    backdrop-filter: blur(3px);
+    box-shadow: 
+        0 8px 18px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        0 0 0 1px rgba(191, 166, 112, 0.03);
+    position: relative;
+}
+
+/* Action window - slightly higher elevation */
+.action-window,
+.competitive-inventory-executive-panel,
+.executive-summary-card {
+    box-shadow: 
+        0 10px 22px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 0 0 1px rgba(191, 166, 112, 0.04);
+}
+
+/* Hover states - elevation increase */
+.action-window-item:hover,
+.executive-insight-item:hover,
+.competitor-row-executive:hover {
+    box-shadow: 
+        0 12px 26px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 0 1px rgba(191, 166, 112, 0.05);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+9. ICONOGRAPHY STANDARDISATION
+Universal size 48px, consistent spacing
+============================================ */
+
+/* All icons - unified size and spacing */
+.cross-vertical-icon,
+.executive-summary-icon,
+.competitive-insight-icon {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 18px;
+    display: block;
+    text-align: center;
+}
+
+/* Icon container alignment */
+.competitive-insight-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.competitive-insight-icon {
+    font-size: 20px;
+    color: var(--vm-gold-primary);
+    line-height: 1;
+    flex-shrink: 0;
+    padding-left: 0;
+    margin-top: 2px;
+}
+
+/* Emoji/symbol icons - consistent sizing */
+.killer-insight::before,
+.executive-summary-bullet::before {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+/* ============================================
+10. SECTION TRANSITIONS
+Every section ends with divider or 40px spacing
+============================================ */
+
+/* Add bottom divider to all major sections */
+.kpi-grid::after,
+.two-column::after,
+.insight-cards::after,
+.cross-vertical-grid::after,
+.methodology-grid::after,
+.depth-metrics::after,
+.forecast-grid-2x2::after,
+.executive-intelligence-layout::after,
+.submarket-grid-v2::after,
+.macro-risk-grid::after {
+    content: '';
+    display: block;
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.25), transparent);
+    margin: 40px auto 0 auto;
+}
+
+/* Sections that already have visual endings - just spacing */
+.weekly-movement-dashboard,
+.executive-summary-bullets,
+.chart-section,
+.competitive-insights-strip,
+.executive-bottom-strip,
+.momentum-correlation-panel,
+.momentum-streets-panel,
+.signal-board-v2,
+.acquisition-strategy-ribbon,
+.model-pipeline,
+.macro-risk-map-extended {
+    padding-bottom: 40px;
+}
+
+/* Ensure last elements don't create abrupt endings */
+.chart-container:last-child,
+.panel:last-child,
+.macro-context:last-child {
+    margin-bottom: 40px;
+}
+
+/* ============================================
+ADDITIONAL MICRO-REFINEMENTS
+============================================ */
+
+/* Ensure consistent text rendering */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Prevent layout shifts */
+.slide {
+    contain: layout style;
+}
+
+/* Smooth all transitions */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Ensure gold consistency in SVG */
+svg [fill="#C5A46D"],
+svg [fill="#BFA670"],
+svg [stroke="#C5A46D"],
+svg [stroke="#BFA670"] {
+    fill: #BFA670;
+    stroke: #BFA670;
+}
+
+/* Chart value labels - primary gold */
+svg text[fill="#C5A46D"] {
+    fill: #BFA670;
+}
+
+/* Ensure all metric values use primary gold */
+.kpi-value,
+.movement-value,
+.forecast-primary-value,
+.forecast-momentum-value,
+.voxmill-index-number,
+.risk-dial-value,
+.depth-value,
+.submarket-metric-value,
+.forecast-cone-value,
+.cone-value-executive {
+    color: #BFA670;
+}
+
+/* All gold text - primary */
+.slide-title,
+.cover-title,
+.panel-title,
+.submarket-header,
+.chart-title,
+.executive-bullet-title,
+.methodology-title,
+.momentum-title,
+.macro-title,
+.insight-title,
+.forecast-card-title,
+.risk-dial-title,
+.depth-label,
+.kpi-label {
+    color: #BFA670;
+}
+
+/* All gold borders - consistent */
+.executive-summary-bullet,
+.insight-card,
+.cross-vertical-card,
+.executive-insight-item,
+.signal-card-v2,
+.macro-context,
+.acquisition-flagging-header {
+    border-left-color: #BFA670;
+}
+
+/* ============================================
+PRINT OPTIMIZATION
+============================================ */
+
+@media print {
+    /* Ensure sections don't break awkwardly */
+    .kpi-grid,
+    .chart-container,
+    .chart-panel,
+    .forecast-grid-2x2,
+    .methodology-grid,
+    .two-column,
+    .executive-intelligence-layout {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Maintain shadows in print */
+    * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Ensure spacing in print */
+    .slide {
+        padding-bottom: 100px;
+    }
+}
+
+/* ============================================
+END V7.0 FINAL GLOBAL REFINEMENTS
+✅ Section spacing: 80px top, 65px bottom, 40px transitions
+✅ Title/date alignment: consistent baseline, 80px header height
+✅ Red badges: 85% opacity, uniform style
+✅ Chart weights: 3-4px lines, 8px points, subtle gold glow
+✅ Text width: 900-1100px max-width on paragraphs
+✅ Gold consistency: #BFA670 primary, 65% dividers, 15% borders
+✅ Dead zone framing: 30-40% opacity dividers
+✅ Card depth: unified 8-18px shadows, 2-3% inner highlights
+✅ Icons: 48px universal size, 18px spacing
+✅ Section transitions: dividers or 40px spacing
 ============================================ */
