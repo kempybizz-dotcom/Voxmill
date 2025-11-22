@@ -397,16 +397,55 @@
                 <p class="chart-context">Market concentration analysis — institutional participant distribution</p>
                 
                 <div class="competitive-radial-container">
-                    <svg width="280" height="280" viewBox="0 0 280 280">
-                        <circle cx="140" cy="140" r="110" fill="none" stroke="rgba(197, 164, 109, 0.15)" stroke-width="1"/>
-                        <circle cx="140" cy="140" r="85" fill="none" stroke="rgba(197, 164, 109, 0.25)" stroke-width="2"/>
-                        <circle cx="140" cy="140" r="60" fill="none" stroke="rgba(197, 164, 109, 0.45)" stroke-width="3"/>
+                    <svg width="320" height="320" viewBox="0 0 320 320">
+                        <!-- OUTER RING - TOTAL MARKET -->
+                        <circle cx="160" cy="160" r="135" fill="none" stroke="rgba(212,182,121,0.12)" stroke-width="2"/>
                         
-                        <text x="140" y="150" font-family="Playfair Display" font-size="64" font-weight="700" fill="#C5A46D" text-anchor="middle">{{ chart_data.market_share|length if chart_data.market_share else 0 }}</text>
+                        <!-- MIDDLE RING - PRIME TIER (68% of total) -->
+                        <circle cx="160" cy="160" r="105" fill="none" stroke="rgba(212,182,121,0.35)" stroke-width="3"
+                                stroke-dasharray="440 660" stroke-dashoffset="-110" 
+                                style="filter: drop-shadow(0 0 8px rgba(212,182,121,0.5));"/>
+                        
+                        <!-- INNER RING - LUXURY TIER (42% of total) -->
+                        <circle cx="160" cy="160" r="75" fill="none" stroke="rgba(212,182,121,0.65)" stroke-width="4"
+                                stroke-dasharray="200 320" stroke-dashoffset="-50"
+                                style="filter: drop-shadow(0 0 12px rgba(212,182,121,0.7));"/>
+                        
+                        <!-- CORE ILLUMINATION -->
+                        <circle cx="160" cy="160" r="50" fill="url(#coreGlow)" opacity="0.85"/>
+                        
+                        <!-- CENTRAL VALUE -->
+                        <text x="160" y="170" font-family="Playfair Display" font-size="76" font-weight="700" 
+                              fill="#D4B679" text-anchor="middle" style="text-shadow: 0 2px 12px rgba(212,182,121,0.8);">
+                            {{ chart_data.market_share|length if chart_data.market_share else 0 }}
+                        </text>
+                        
+                        <!-- SUBTLE LABEL BELOW -->
+                        <text x="160" y="195" font-family="Inter" font-size="11" font-weight="400" 
+                              fill="rgba(230,230,230,0.6)" text-anchor="middle" letter-spacing="1.8">
+                            ACTIVE PARTICIPANTS
+                        </text>
+                        
+                        <defs>
+                            <radialGradient id="coreGlow">
+                                <stop offset="0%" style="stop-color:#D4B679;stop-opacity:0.25" />
+                                <stop offset="70%" style="stop-color:#9E7B47;stop-opacity:0.08" />
+                                <stop offset="100%" style="stop-color:#0C0C0C;stop-opacity:0" />
+                            </radialGradient>
+                        </defs>
                     </svg>
                     
-                    <div class="competitive-radial-value">{{ chart_data.market_share|length if chart_data.market_share else 0 }}</div>
-                    <div class="competitive-radial-label">Premium Participants</div>
+                    <!-- MICRO LEGEND BELOW GAUGE -->
+                    <div class="radial-micro-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: rgba(212,182,121,0.65);"></div>
+                            <div class="legend-text">Luxury Tier</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: rgba(212,182,121,0.35);"></div>
+                            <div class="legend-text">Prime Tier</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
@@ -417,22 +456,34 @@
                 <p class="chart-context">Active inventory distribution across institutional participants</p>
                 
                 {% if chart_data.competitor_inventory %}
-                <div class="competitive-inventory-luxury-grid">
+                <div class="competitive-inventory-executive-panel">
+                    <!-- TITLE BAR -->
+                    <div class="inventory-title-bar">
+                        <div class="inventory-bar-text">Active Portfolio Distribution</div>
+                    </div>
+                    
+                    <!-- COMPETITOR ROWS -->
                     {% for comp in chart_data.competitor_inventory[:5] %}
-                    <div class="competitive-inventory-card-luxury">
-                        <div class="competitor-name-luxury">{{ (comp.name or "Unknown")[:30] }}</div>
-                        <div class="competitor-stats-luxury">
-                            <div class="competitor-stat-label-luxury">Inventory</div>
-                            <div class="competitor-stat-value-luxury">{{ comp.listings or 0 }}</div>
+                    <div class="competitor-row-executive">
+                        <div class="competitor-left-executive">
+                            <div class="competitor-name-exec">{{ (comp.name or "Unknown")[:32] }}</div>
+                            <div class="competitor-inventory-count">{{ comp.listings or 0 }} {{ inventory_label|lower }}</div>
                         </div>
-                        <div class="competitor-velocity-luxury">
-                            <span class="velocity-indicator-luxury velocity-{{ 'strong' if (comp.listings or 0) > 15 else 'moderate' if (comp.listings or 0) > 8 else 'weak' }}-luxury">
-                                <span class="velocity-icon-luxury">{{ '▲' if (comp.listings or 0) > 15 else '■' if (comp.listings or 0) > 8 else '▼' }}</span>
+                        <div class="competitor-right-executive">
+                            <div class="velocity-badge-executive velocity-{{ 'strong' if (comp.listings or 0) > 15 else 'moderate' if (comp.listings or 0) > 8 else 'weak' }}-exec">
                                 {{ 'Strong' if (comp.listings or 0) > 15 else 'Moderate' if (comp.listings or 0) > 8 else 'Emerging' }}
-                            </span>
+                            </div>
                         </div>
                     </div>
+                    {% if not loop.last %}
+                    <div class="competitor-separator"></div>
+                    {% endif %}
                     {% endfor %}
+                    
+                    <!-- MINI FOOTER -->
+                    <div class="inventory-mini-footer">
+                        Source: Voxmill Data Engine — Updated {{ report_date }}
+                    </div>
                 </div>
                 {% else %}
                 <div style="padding: 40px; text-align: center; color: rgba(184, 184, 184, 0.6); font-style: italic;">
@@ -661,28 +712,32 @@
     </div>
     <div class="slide-content">
         <div class="forecast-grid-2x2">
-            <!-- TOP LEFT: 30-DAY — REDESIGNED -->
-            <div class="forecast-card-v2">
-                <h3 class="forecast-card-title">30-Day {{ forward_indicator_label }}</h3>
-                <div class="forecast-card-body">
-                    <div class="forecast-arrow-redesigned">{{ forecast.day_30.arrow if forecast.day_30 else "→" }}</div>
-                    <div class="forecast-percentage-redesigned">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-                    <div class="forecast-label-redesigned">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
-                    <div class="forecast-confidence-redesigned">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
+            <!-- TOP LEFT: 30-DAY MOMENTUM — ULTRA-LUXURY REDESIGN -->
+            <div class="forecast-card-v2 forecast-card-executive">
+                <h3 class="forecast-card-title-executive">30-DAY {{ forward_indicator_label|upper }}</h3>
+                <div class="forecast-card-body-executive">
+                    <div class="forecast-primary-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+                    <div class="forecast-direction-indicator">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
+                    <div class="forecast-confidence-bar">
+                        <div class="confidence-fill" style="width: {{ '85' if forecast.day_30 and forecast.day_30.confidence else '0' }}%"></div>
+                    </div>
+                    <div class="forecast-meta-label">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
                 </div>
             </div>
             
-            <!-- TOP RIGHT: 90-DAY TREND CONE — REDESIGNED -->
-            <div class="forecast-card-v2">
-                <h3 class="forecast-card-title">90-Day Trend Cone</h3>
-                <div class="forecast-card-body">
-                    <div class="forecast-arrow-redesigned">{{ '↗' if forecast.day_90 and (forecast.day_90.mid or 0) > 0 else '→' if forecast.day_90 and (forecast.day_90.mid or 0) == 0 else '↘' }}</div>
-                    <div class="cone-range-display">
-                        <span class="cone-value cone-high">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</span>
-                        <span class="cone-value cone-mid">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</span>
-                        <span class="cone-value cone-low">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</span>
+            <!-- TOP RIGHT: 90-DAY TREND CONE — ULTRA-LUXURY REDESIGN -->
+            <div class="forecast-card-v2 forecast-card-executive">
+                <h3 class="forecast-card-title-executive">90-DAY TREND CONE</h3>
+                <div class="forecast-card-body-executive">
+                    <div class="cone-range-executive">
+                        <div class="cone-value-executive cone-high-exec">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
+                        <div class="cone-separator"></div>
+                        <div class="cone-value-executive cone-mid-exec">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
+                        <div class="cone-separator"></div>
+                        <div class="cone-value-executive cone-low-exec">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
                     </div>
-                    <div class="forecast-label-redesigned">Projected Range (Low-Mid-High)</div>
+                    <div class="cone-label-executive">High · Median · Low</div>
+                    <div class="forecast-meta-label">Projected Probability Range</div>
                 </div>
             </div>
             
