@@ -2,206 +2,177 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voxmill Executive Intelligence Deck</title>
-    <link rel="stylesheet" href="voxmill_style_fixed.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Master CSS - All layers combined -->
+    <link rel="stylesheet" href="voxmill_master_final.css">
+    
+    <style>
+        /* Page setup for PDF generation */
+        @page {
+            size: 1920px 1480px;
+            margin: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0C0C0C;
+            font-family: 'Inter', Arial, sans-serif;
+            color: #EAEAEA;
+            width: 1920px;
+            min-height: 1480px;
+        }
+        
+        .slide {
+            width: 1920px;
+            height: 1480px;
+            position: relative;
+            page-break-after: always;
+            background: #0C0C0C;
+            overflow: visible !important;
+        }
+        
+        .slide:last-child {
+            page-break-after: auto;
+        }
+    </style>
 </head>
 <body>
 
-<!-- SLIDE 1: COVER -->
-
-<div class="slide slide-cover" style="background: linear-gradient(135deg, #0C0C0C 0%, #111111 100%); position: relative; overflow: hidden;">
-    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; z-index: 0;" width="1920" height="1280" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <pattern id="luxuryPattern" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
-                <path d="M75,20 L95,50 L75,80 L55,50 Z" fill="#C5A46D" opacity="0.5"/>
-                <path d="M75,22 L93,50 L75,78 L57,50 Z" fill="#0C0C0C" opacity="0.3"/>
-                <circle cx="75" cy="75" r="3" fill="#C5A46D" opacity="0.4"/>
-                <line x1="0" y1="75" x2="150" y2="75" stroke="#C5A46D" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="0" x2="75" y2="150" stroke="#C5A46D" stroke-width="1" opacity="0.3"/>
-            </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#luxuryPattern)"/>
-    </svg>
-
-    <div style="position: relative; z-index: 1;">
-        <div class="logo-container">
-            <img src="voxmill_logo.png" alt="Voxmill" style="width: 216px; height: auto; max-height: 216px; filter: drop-shadow(0 8px 40px rgba(198, 161, 91, 0.9));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <svg class="voxmill-logo" width="216" height="216" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradient)" stroke="#C5A46D" stroke-width="3"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="42" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs>
-                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#B59854;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-
-        <div class="cover-label">CONFIDENTIAL EXECUTIVE BRIEF</div>
-        <h1 class="cover-title">Market Intelligence Snapshot</h1>
-        <div class="cover-subtitle">
-            <span class="location">{{ location }}</span> · {{ report_date }}
-        </div>
-        <div class="cover-tagline">Precision Intelligence. Strategic Foresight. Capital Deployment Clarity.</div>
-        
-        <div class="cover-compiled">
-            Compiled by <strong>Voxmill Market Intelligence</strong><br>
-            Prepared exclusively for {{ client_name if client_name else "Strategic Market Participants" }}
-        </div>
+<!-- ============================================
+SLIDE 1: COVER PAGE
+============================================ -->
+<div class="slide slide-cover">
+    <div class="cover-overlay"></div>
+    
+    <div class="cover-content">
+        <div class="cover-title">Voxmill Executive<br/>Intelligence Deck</div>
+        <div class="cover-subtitle">{{ market_name }} Market Analysis</div>
+        <div class="cover-date">{{ report_date }}</div>
+        <div class="cover-compiled">Compiled by Voxmill Analytics</div>
     </div>
 </div>
 
-<!-- SLIDE 2: EXECUTIVE SUMMARY -->
-
+<!-- ============================================
+SLIDE 2: EXECUTIVE SUMMARY
+============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Executive Summary</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Executive Summary</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
-
+    
     <div class="slide-content">
+        <!-- Executive Summary Bullets -->
         <div class="executive-summary-bullets">
+            {% for bullet in executive_summary_bullets %}
             <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Market Position</div>
-                <div class="executive-bullet-text">
-                    {{ location }} demonstrates {{ "robust" if kpis.property_change > -5 else "contracting" }} inventory fundamentals with {{ kpis.total_properties }} {{ inventory_label }} across premium segments. Average {{ value_metric_label }} of £{{ "{:,.0f}".format(kpis.avg_price) }} positions the market {{ "above" if kpis.avg_price > 1500000 else "within" }} regional benchmarks, while £{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}/{{ unit_metric }} indicates {{ "premium" if kpis.avg_price_per_sqft > 2000 else "competitive" }} positioning relative to comparable markets.
-                    <span class="killer-insight">⚡ <strong>Market concentration index:</strong> {{ "Ultra-prime dominance" if kpis.avg_price > 2000000 else "Broad accessibility maintained" }} — strategic entry points exist across {{ kpis.total_properties }} live opportunities.</span>
-                </div>
+                <div class="executive-bullet-title">{{ bullet.title }}</div>
+                <div class="executive-bullet-text">{{ bullet.text }}</div>
             </div>
-
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">{{ velocity_metric_label }} Dynamics</div>
-                <div class="executive-bullet-text">
-                    Market {{ velocity_metric_label|lower }} currently registers {{ kpis.days_on_market }} days average time-on-market, {{ "improving" if kpis.velocity_change < 0 else "extending" }} by {{ abs(kpis.velocity_change) }}% week-over-week. This {{ velocity_metric_label|lower }} profile suggests {{ "accelerating participant confidence" if kpis.velocity_change < -3 else "deliberate acquisition behavior" if kpis.velocity_change > 3 else "stable transaction conditions" }}, with implications for pricing power and inventory absorption rates across targeted segments.
-                    <span class="killer-insight">🎯 <strong>Transaction window:</strong> {{ "Compressed" if kpis.days_on_market < 35 else "Extended" }} — {{ "immediate" if kpis.days_on_market < 35 else "measured" }} action recommended within {{ "14-21" if kpis.days_on_market < 35 else "30-45" }} day timeframe.</span>
-                </div>
-            </div>
-
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Pricing Climate</div>
-                <div class="executive-bullet-text">
-                    Price momentum demonstrates {{ "upward" if kpis.price_change > 0 else "downward" }} trajectory with {{ abs(kpis.price_change) }}% week-over-week movement, reflecting {{ "provider confidence" if kpis.price_change > 2 else "participant leverage" if kpis.price_change < -2 else "equilibrium conditions" }}. Current pricing architecture supports {{ "aggressive positioning" if kpis.price_change > 0 else "value acquisition strategies" }} while {{ kpis.total_properties }} {{ inventory_label }} provide {{ "sufficient" if kpis.total_properties > 50 else "limited" }} inventory depth for strategic market participation.
-                    <span class="killer-insight">💰 <strong>Pricing power:</strong> {{ "Providers command premium" if kpis.price_change > 2 else "Participants hold negotiation advantage" if kpis.price_change < -2 else "Balanced negotiation dynamics" }} — {{ abs(kpis.price_change) }}% weekly shift signals {{ "momentum" if abs(kpis.price_change) > 3 else "stability" }}.</span>
-                </div>
-            </div>
-
-            <div class="executive-summary-bullet">
-                <div class="executive-bullet-title">Strategic Implication</div>
-                <div class="executive-bullet-text">
-                    Market conditions favor {{ "immediate action" if kpis.velocity_change < 0 and kpis.price_change > 0 else "measured deliberation" }} as {{ velocity_metric_label|lower }} and pricing signals {{ "align" if (kpis.velocity_change < 0 and kpis.price_change > 0) or (kpis.velocity_change > 0 and kpis.price_change < 0) else "diverge" }}. Optimal {{ acquisition_label|lower }} window exists within the {{ "14-21 day" if kpis.days_on_market < 35 else "30-45 day" }} timeframe, with portfolio expansion strategies supported by current liquidity fundamentals and demand pressure indicators detailed in subsequent analysis.
-                    <span class="killer-insight">🔥 <strong>Execution mandate:</strong> {{ "Strike now" if kpis.velocity_change < 0 and kpis.price_change > 0 else "Build pipeline" }} — {{ "velocity improvement + price escalation" if kpis.velocity_change < 0 and kpis.price_change > 0 else "market conditions" }} favor {{ "decisive capital deployment" if kpis.velocity_change < 0 else "strategic positioning" }}.</span>
-                </div>
-            </div>
+            {% endfor %}
         </div>
-
-        <!-- KPI DASHBOARD -->
+        
+        <!-- Weekly Movement Dashboard -->
         <div class="weekly-movement-dashboard">
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ inventory_label }}</div>
-                <div class="movement-value">{{ kpis.total_properties }}</div>
-                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+            <div class="dashboard-row">
+                {% for card in movement_cards %}
+                <div class="movement-mini-card">
+                    <div class="movement-label">{{ card.label }}</div>
+                    <div class="movement-value">{{ card.value }}</div>
+                    <div class="movement-change {{ 'positive' if card.change >= 0 else 'negative' }}">
+                        {{ '+' if card.change >= 0 else '' }}{{ card.change }}%
+                    </div>
                 </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">£/{{ unit_metric }}</div>
-                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ velocity_metric_label }}</div>
-                <div class="movement-value">{{ kpis.days_on_market }}d</div>
-                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">Demand Pressure</div>
-                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- SLIDE 3: MARKET OVERVIEW -->
-
+<!-- ============================================
+SLIDE 3: MARKET OVERVIEW
+============================================ -->
 <div class="slide">
-    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
-        <h2 class="slide-title">Market Overview</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Market Overview</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
-
+    
     <div class="slide-content">
-        <!-- KPI GRID: Moved down +30px via CSS -->
+        <!-- KPI Grid -->
         <div class="kpi-grid">
+            <!-- Total Active Listings -->
             <div class="kpi-card">
-                <div class="kpi-content">
-                    <div class="kpi-label">{{ inventory_label }}</div>
-                    <div class="kpi-value">{{ kpis.total_properties }}</div>
-                    <div class="kpi-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
-                    </div>
+                <div class="kpi-label">TOTAL ACTIVE LISTINGS</div>
+                <div class="kpi-value">{{ "{:,}".format(kpis.total_listings or 0) }}</div>
+                <div class="kpi-change {{ 'positive' if (kpis.listings_change or 0) >= 0 else 'negative' }}">
+                    {{ '+' if (kpis.listings_change or 0) >= 0 else '' }}{{ kpis.listings_change or 0 }}% vs. last period
+                </div>
+                <div class="kpi-bar">
+                    <div class="kpi-bar-fill" style="width: {{ (kpis.listings_change or 0) + 50 }}%"></div>
                 </div>
             </div>
             
+            <!-- Median Value -->
             <div class="kpi-card">
-                <div class="kpi-content">
-                    <div class="kpi-label">Average {{ value_metric_label }}</div>
-                    <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price) }}</div>
-                    <div class="kpi-change {{ 'positive' if kpis.price_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.price_change > 0 else "↓" }} {{ abs(kpis.price_change) }}% vs. prior week
-                    </div>
+                <div class="kpi-label">MEDIAN {{ value_metric_label }}</div>
+                <div class="kpi-value">£{{ "{:,.0f}".format(kpis.median_price or 0) }}</div>
+                <div class="kpi-change {{ 'positive' if (kpis.price_change or 0) >= 0 else 'negative' }}">
+                    {{ '+' if (kpis.price_change or 0) >= 0 else '' }}{{ kpis.price_change or 0 }}% vs. last period
+                </div>
+                <div class="kpi-bar">
+                    <div class="kpi-bar-fill" style="width: {{ (kpis.price_change or 0) + 50 }}%"></div>
                 </div>
             </div>
             
+            <!-- Average Days Listed -->
             <div class="kpi-card">
-                <div class="kpi-content">
-                    <div class="kpi-label">Unit Economics (£/{{ unit_metric }})</div>
-                    <div class="kpi-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-                    <div class="kpi-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. prior week
-                    </div>
+                <div class="kpi-label">AVG. DAYS LISTED</div>
+                <div class="kpi-value">{{ kpis.avg_days_listed or 0 }}</div>
+                <div class="kpi-change {{ 'positive' if (kpis.days_change or 0) <= 0 else 'negative' }}">
+                    {{ '+' if (kpis.days_change or 0) >= 0 else '' }}{{ kpis.days_change or 0 }}% vs. last period
+                </div>
+                <div class="kpi-bar">
+                    <div class="kpi-bar-fill" style="width: {{ 50 - (kpis.days_change or 0) }}%"></div>
                 </div>
             </div>
             
+            <!-- Market Velocity -->
             <div class="kpi-card">
-                <div class="kpi-content">
-                    <div class="kpi-label">{{ velocity_metric_label }} (Days)</div>
-                    <div class="kpi-value">{{ kpis.days_on_market }}</div>
-                    <div class="kpi-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                        {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. prior week
-                    </div>
+                <div class="kpi-label">MARKET VELOCITY SCORE</div>
+                <div class="kpi-value">{{ kpis.velocity_score or 0 }}</div>
+                <div class="kpi-change {{ 'positive' if (kpis.velocity_change or 0) >= 0 else 'negative' }}">
+                    {{ '+' if (kpis.velocity_change or 0) >= 0 else '' }}{{ kpis.velocity_change or 0 }}% vs. last period
+                </div>
+                <div class="kpi-bar">
+                    <div class="kpi-bar-fill" style="width: {{ (kpis.velocity_change or 0) + 50 }}%"></div>
                 </div>
             </div>
         </div>
         
-        <!-- CHART SECTION: Moved down +30px via CSS, height +50px -->
+        <!-- Value Distribution Chart -->
         <div class="chart-section">
-            <div class="chart-divider"></div>
             <div class="chart-container">
-                <h3 class="chart-title">Value Distribution Range</h3>
-                <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
+                <div class="chart-title">Value Distribution</div>
+                <div class="chart-context">Distribution of active listings by {{ value_metric_label|lower }} bracket</div>
+                
                 <svg width="100%" height="260" viewBox="0 0 1700 260" preserveAspectRatio="xMidYMid meet">
                     <text x="35" y="120" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 35, 120)" class="chart-axis-label">Count</text>
-                    <line x1="80" y1="40" x2="80" y2="200" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="80" y1="200" x2="1620" y2="200" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
-                    <line x1="80" y1="120" x2="1620" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
-                    <line x1="80" y1="155" x2="1620" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="0.8"/>
+                    
+                    <!-- Axes - 3px stroke -->
+                    <line x1="80" y1="40" x2="80" y2="200" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
+                    <line x1="80" y1="200" x2="1620" y2="200" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
+                    
+                    <!-- Grid lines - 1.8px stroke -->
+                    <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="80" y1="120" x2="1620" y2="120" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="80" y1="155" x2="1620" y2="155" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
                     
                     {% for bar in chart_data.price_distribution %}
                     <rect x="{{ 200 + loop.index0 * 350 }}" 
@@ -209,16 +180,16 @@
                           width="200" 
                           height="{{ bar.height * 0.9 }}" 
                           fill="url(#barGradient)" 
-                          stroke="#C5A46D" 
-                          stroke-width="2.2"
+                          stroke="#BFA670" 
+                          stroke-width="3"
                           rx="6"
-                          style="filter: drop-shadow(0 2px 8px rgba(198, 161, 91, 0.4));"/>
+                          style="filter: drop-shadow(0 2px 8px rgba(191, 166, 112, 0.4)) drop-shadow(0 0 4px rgba(191, 166, 112, 0.02));"/>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
                           y="{{ 185 - (bar.height * 0.9) }}" 
                           font-family="Inter" 
                           font-size="24" 
                           font-weight="700"
-                          fill="#C5A46D" 
+                          fill="#BFA670" 
                           text-anchor="middle"
                           style="text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);">{{ bar.count }}</text>
                     <text x="{{ 300 + loop.index0 * 350 }}" 
@@ -234,43 +205,48 @@
                     
                     <defs>
                         <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:0.95" />
+                            <stop offset="0%" style="stop-color:#BFA670;stop-opacity:0.95" />
                             <stop offset="50%" style="stop-color:#B59854;stop-opacity:0.85" />
                             <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.65" />
                         </linearGradient>
                     </defs>
                 </svg>
-                <div class="chart-mini-insight">
-                    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
-                </div>
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                
+                <div class="chart-source">Source: Voxmill Analytics | Data as of {{ report_date }}</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- SLIDE 4: PERFORMANCE ANALYSIS -->
-
+<!-- ============================================
+SLIDE 4: PERFORMANCE ANALYSIS
+============================================ -->
 <div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Performance Analysis</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Performance Analysis</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
-
+    
     <div class="slide-content">
+        <!-- Two Column Layout -->
         <div class="two-column">
+            <!-- Price Range Distribution -->
             <div class="chart-panel">
-                <h3 class="chart-title">Value Range Distribution</h3>
-                <p class="chart-context">Portfolio composition by value bracket — strategic positioning across market segments (Based on {{ kpis.total_properties }} assets)</p>
+                <div class="chart-title">{{ value_metric_label }} Range Distribution</div>
+                <div class="chart-context">Percentage of active assets by {{ value_metric_label|lower }} tier</div>
+                
                 <svg width="100%" height="440" viewBox="0 0 700 440">
-                    <line x1="280" y1="40" x2="280" y2="380" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="350" y1="40" x2="350" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="420" y1="40" x2="420" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="490" y1="40" x2="490" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="560" y1="40" x2="560" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="630" y1="40" x2="630" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <!-- Y-axis - 3px stroke -->
+                    <line x1="280" y1="40" x2="280" y2="380" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
                     
-                    <text x="5" y="210" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 5, 210)" class="chart-axis-label">% of Assets</text>
+                    <!-- Grid lines - 1.8px stroke -->
+                    <line x1="350" y1="40" x2="350" y2="380" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="420" y1="40" x2="420" y2="380" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="490" y1="40" x2="490" y2="380" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="560" y1="40" x2="560" y2="380" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    <line x1="630" y1="40" x2="630" y2="380" stroke="rgba(255,255,255,0.14)" stroke-width="1.8"/>
+                    
+                    <text x="5" y="210" font-family="Inter" font-size="14" font-weight="600" fill="rgba(214,214,214,0.9)" text-anchor="middle" transform="rotate(-90, 5, 210)" letter-spacing="0.08em" class="chart-axis-label">% of Assets</text>
                     
                     {% for item in chart_data.price_ranges %}
                     <text x="25" y="{{ 90 + loop.index0 * 70 }}" font-family="Inter" font-size="16" fill="#EAEAEA">{{ item.range }}</text>
@@ -279,964 +255,661 @@
                           width="{{ item.percentage * 3.5 }}" 
                           height="28" 
                           fill="url(#horizontalGradient)" 
-                          stroke="#B59854" 
-                          stroke-width="2.2"
-                          rx="6"/>
+                          stroke="#BFA670" 
+                          stroke-width="3"
+                          rx="6"
+                          style="filter: drop-shadow(0 2px 8px rgba(191, 166, 112, 0.4)) drop-shadow(0 0 4px rgba(191, 166, 112, 0.02));"/>
                     <text x="{{ 290 + item.percentage * 3.5 }}" 
                           y="{{ 95 + loop.index0 * 70 }}" 
                           font-family="Inter" 
                           font-size="16" 
                           font-weight="600"
-                          fill="#C5A46D">{{ item.percentage }}%</text>
+                          fill="#BFA670">{{ item.percentage }}%</text>
                     {% endfor %}
                     
-                    <text x="480" y="425" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
+                    <text x="480" y="425" font-family="Inter" font-size="14" font-weight="600" fill="rgba(214,214,214,0.9)" text-anchor="middle" letter-spacing="0.08em" class="chart-axis-label">Percentage (%)</text>
                     
                     <defs>
                         <linearGradient id="horizontalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#B59854;stop-opacity:0.7" />
-                            <stop offset="100%" style="stop-color:#C5A46D;stop-opacity:0.95" />
+                            <stop offset="100%" style="stop-color:#BFA670;stop-opacity:0.95" />
                         </linearGradient>
                     </defs>
                 </svg>
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                
+                <div class="chart-source">Source: Voxmill Analytics</div>
             </div>
             
+            <!-- Weekly Trend Chart -->
             <div class="chart-panel">
-                <h3 class="chart-title">Weekly Trend: Unit Economics (£/{{ unit_metric }})</h3>
-                <p class="chart-context">7-day rolling average of price-per-{{ unit_metric }} — micro-trend velocity indicator</p>
-                <svg width="100%" height="440" viewBox="0 0 700 440">
-                    <!-- Y-AXIS LABEL -->
-                    <text x="15" y="225" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 15, 225)" letter-spacing="0.8">£/{{ unit_metric }}</text>
+                <div class="chart-title">Weekly Trend</div>
+                <div class="chart-context">Average {{ value_metric_label|lower }} by day of week</div>
+                
+                <svg width="100%" height="500" viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet">
+                    <!-- Y-axis - 3px stroke -->
+                    <line x1="70" y1="50" x2="70" y2="460" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
+                    <line x1="70" y1="460" x2="670" y2="460" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
                     
-                    <!-- AXES -->
-                    <line x1="60" y1="40" x2="60" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                    <!-- Grid lines - 1.8px stroke -->
+                    <line x1="70" y1="120" x2="670" y2="120" stroke="rgba(255,255,255,0.14)" stroke-width="1.8" stroke-dasharray="6,6"/>
+                    <line x1="70" y1="205" x2="670" y2="205" stroke="rgba(255,255,255,0.14)" stroke-width="1.8" stroke-dasharray="6,6"/>
+                    <line x1="70" y1="290" x2="670" y2="290" stroke="rgba(255,255,255,0.14)" stroke-width="1.8" stroke-dasharray="6,6"/>
+                    <line x1="70" y1="375" x2="670" y2="375" stroke="rgba(255,255,255,0.14)" stroke-width="1.8" stroke-dasharray="6,6"/>
                     
-                    <!-- GRIDLINES (HORIZONTAL ONLY) -->
-                    <line x1="60" y1="90" x2="650" y2="90" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="240" x2="650" y2="240" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="315" x2="650" y2="315" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    
-                    <!-- DATA LINE -->
+                    <!-- Data line - 4px stroke with gold glow -->
                     <polyline 
-                        points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 410 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
+                        points="{% for point in chart_data.weekly_trend %}{{ 100 + loop.index0 * 120 }},{{ 460 - (point.value * 0.95) }}{% if not loop.last %} {% endif %}{% endfor %}" 
                         fill="none" 
-                        stroke="#C5A46D" 
-                        stroke-width="2.5"
-                        style="filter: drop-shadow(0 1px 3px rgba(197, 164, 109, 0.4));"/>
+                        stroke="#BFA670" 
+                        stroke-width="4"
+                        style="filter: drop-shadow(0 2px 6px rgba(191, 166, 112, 0.5)) drop-shadow(0 0 4px rgba(191, 166, 112, 0.03));"/>
                     
-                    <!-- DATA POINTS WITH GLOW -->
+                    <!-- Data points - 8px radius with gold glow -->
                     {% for point in chart_data.weekly_trend %}
-                    <circle cx="{{ 80 + loop.index0 * 120 }}" 
-                            cy="{{ 410 - point.value }}" 
-                            r="6" 
-                            fill="#C5A46D" 
+                    <circle cx="{{ 100 + loop.index0 * 120 }}" 
+                            cy="{{ 460 - (point.value * 0.95) }}" 
+                            r="8" 
+                            fill="#BFA670" 
                             stroke="#0C0C0C" 
-                            stroke-width="2"
-                            style="filter: drop-shadow(0 2px 6px rgba(197, 164, 109, 0.6));"/>
-                    <text x="{{ 80 + loop.index0 * 120 }}" 
-                          y="430" 
+                            stroke-width="3"
+                            style="filter: drop-shadow(0 3px 10px rgba(191, 166, 112, 0.7)) drop-shadow(0 0 6px rgba(191, 166, 112, 0.03));"/>
+                    <text x="{{ 100 + loop.index0 * 120 }}" 
+                          y="485" 
                           font-family="Inter" 
-                          font-size="12" 
+                          font-size="14" 
                           font-weight="600"
-                          fill="rgba(255,255,255,0.9)" 
+                          fill="rgba(214,214,214,0.9)" 
                           text-anchor="middle" 
-                          letter-spacing="0.5">{{ point.label }}</text>
+                          letter-spacing="0.6" 
+                          class="chart-axis-label">{{ point.label }}</text>
                     {% endfor %}
                     
-                    <!-- X-AXIS LABEL -->
-                    <text x="350" y="455" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="0.8">Day of Week</text>
+                    <!-- Axis labels -->
+                    <text x="25" y="260" font-family="Inter" font-size="14" font-weight="600" fill="rgba(214,214,214,0.9)" text-anchor="middle" transform="rotate(-90, 25, 260)" letter-spacing="0.8" class="chart-axis-label">£/{{ unit_metric }}</text>
+                    <text x="370" y="510" font-family="Inter" font-size="14" font-weight="600" fill="rgba(214,214,214,0.9)" text-anchor="middle" letter-spacing="0.8" class="chart-axis-label">Day of Week</text>
                 </svg>
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                
+                <div class="chart-source">Source: Voxmill Analytics | 7-day rolling average</div>
             </div>
         </div>
         
-        <!-- LOWER SECTION -->
+        <!-- Market Insights -->
         <div class="insight-cards">
+            {% for insight in market_insights[:3] %}
             <div class="insight-card">
-                <div class="insight-title">Market Momentum</div>
-                <div class="insight-text">{{ insights.momentum }}</div>
+                <div class="insight-title">{{ insight.title }}</div>
+                <div class="insight-text">{{ insight.text }}</div>
             </div>
-            
-            <div class="insight-card">
-                <div class="insight-title">Value Positioning</div>
-                <div class="insight-text">{{ insights.positioning }}</div>
-            </div>
-            
-            <div class="insight-card">
-                <div class="insight-title">{{ velocity_metric_label }} Signal</div>
-                <div class="insight-text">{{ insights.velocity }}</div>
-            </div>
-        </div>
-        
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Momentum Drivers (Explained)</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;">• Weekly pricing stable due to balanced demand-supply ratios.</div>
-                <div style="margin-bottom: 8px;">• {{ velocity_metric_label }} influenced by prime-segment absorption (42-day cycle).</div>
-                <div>• Value band concentration leads to predictable negotiation windows.</div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- SLIDE 5: COMPETITIVE LANDSCAPE -->
-
-<div class="slide competitive-landscape-slide">
-    <div class="watermark">VOXMILL INTELLIGENCE</div>
+<!-- ============================================
+SLIDE 5: COMPETITIVE LANDSCAPE
+============================================ -->
+<div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Competitive Landscape</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Competitive Landscape</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
+    
     <div class="slide-content">
+        <!-- Two Column Layout -->
         <div class="two-column">
+            <!-- Market Share Gauge -->
             <div class="chart-panel">
-                <h3 class="chart-title">Participant Market Share</h3>
-                <p class="chart-context">Market concentration analysis — institutional participant distribution</p>
+                <div class="chart-title">Market Concentration</div>
+                <div class="chart-context">{{ top_n_competitors or 5 }} largest competitors by active inventory</div>
                 
-                <div class="competitive-radial-container">
-                    <svg width="320" height="320" viewBox="0 0 320 320">
-                        <!-- OUTER RING - TOTAL MARKET -->
-                        <circle cx="160" cy="160" r="135" fill="none" stroke="rgba(212,182,121,0.12)" stroke-width="2"/>
-                        
-                        <!-- MIDDLE RING - PRIME TIER (68% of total) -->
-                        <circle cx="160" cy="160" r="105" fill="none" stroke="rgba(212,182,121,0.35)" stroke-width="3"
-                                stroke-dasharray="440 660" stroke-dashoffset="-110" 
-                                style="filter: drop-shadow(0 0 8px rgba(212,182,121,0.5));"/>
-                        
-                        <!-- INNER RING - LUXURY TIER (42% of total) -->
-                        <circle cx="160" cy="160" r="75" fill="none" stroke="rgba(212,182,121,0.65)" stroke-width="4"
-                                stroke-dasharray="200 320" stroke-dashoffset="-50"
-                                style="filter: drop-shadow(0 0 12px rgba(212,182,121,0.7));"/>
-                        
-                        <!-- CORE ILLUMINATION -->
-                        <circle cx="160" cy="160" r="50" fill="url(#coreGlow)" opacity="0.85"/>
-                        
-                        <!-- CENTRAL VALUE -->
-                        <text x="160" y="170" font-family="Playfair Display" font-size="76" font-weight="700" 
-                              fill="#D4B679" text-anchor="middle" style="text-shadow: 0 2px 12px rgba(212,182,121,0.8);">
-                            {{ chart_data.market_share|length if chart_data.market_share else 0 }}
-                        </text>
-                        
-                        <!-- SUBTLE LABEL BELOW -->
-                        <text x="160" y="195" font-family="Inter" font-size="11" font-weight="400" 
-                              fill="rgba(230,230,230,0.6)" text-anchor="middle" letter-spacing="1.8">
-                            ACTIVE PARTICIPANTS
-                        </text>
-                        
-                        <defs>
-                            <radialGradient id="coreGlow">
-                                <stop offset="0%" style="stop-color:#D4B679;stop-opacity:0.25" />
-                                <stop offset="70%" style="stop-color:#9E7B47;stop-opacity:0.08" />
-                                <stop offset="100%" style="stop-color:#0C0C0C;stop-opacity:0" />
-                            </radialGradient>
-                        </defs>
-                    </svg>
+                <!-- Radial Gauge Chart -->
+                <svg width="100%" height="500" viewBox="0 0 500 500">
+                    <defs>
+                        <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#BFA670;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B59854;stop-opacity:0.8" />
+                        </linearGradient>
+                    </defs>
                     
-                    <!-- MICRO LEGEND BELOW GAUGE -->
-                    <div class="radial-micro-legend">
-                        <div class="legend-item">
-                            <div class="legend-dot" style="background: rgba(212,182,121,0.65);"></div>
-                            <div class="legend-text">Luxury Tier</div>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot" style="background: rgba(212,182,121,0.35);"></div>
-                            <div class="legend-text">Prime Tier</div>
-                        </div>
-                    </div>
-                </div>
+                    <!-- Background arc -->
+                    <path d="M 100 250 A 150 150 0 1 1 400 250" 
+                          fill="none" 
+                          stroke="rgba(255,255,255,0.1)" 
+                          stroke-width="30"/>
+                    
+                    <!-- Value arc -->
+                    <path d="M 100 250 A 150 150 0 {{ '1' if (competitive_data.market_concentration or 0) > 50 else '0' }} 1 {{ 100 + 300 * ((competitive_data.market_concentration or 0) / 100) }} 250" 
+                          fill="none" 
+                          stroke="url(#gaugeGradient)" 
+                          stroke-width="30"
+                          stroke-linecap="round"/>
+                    
+                    <!-- Center value -->
+                    <text x="250" y="240" 
+                          font-family="Inter" 
+                          font-size="72" 
+                          font-weight="700"
+                          fill="#BFA670" 
+                          text-anchor="middle">{{ competitive_data.market_concentration or 0 }}%</text>
+                    <text x="250" y="270" 
+                          font-family="Inter" 
+                          font-size="16" 
+                          fill="rgba(184,184,184,0.7)" 
+                          text-anchor="middle">Market Concentration</text>
+                </svg>
                 
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                <div class="chart-source">Top {{ top_n_competitors or 5 }} competitors | {{ report_date }}</div>
             </div>
             
-            <div class="chart-panel">
-                <h3 class="chart-title">Competitor {{ inventory_label }}</h3>
-                <p class="chart-context">Active inventory distribution across institutional participants</p>
+            <!-- Active Inventory Table - REDESIGNED (3-column layout) -->
+            <div class="competitive-inventory-executive-panel">
+                <div class="competitive-inventory-executive-title">Competitor Active Inventory</div>
                 
-                {% if chart_data.competitor_inventory %}
-                <div class="competitive-inventory-executive-panel">
-                    <!-- TITLE BAR -->
-                    <div class="inventory-title-bar">
-                        <div class="inventory-bar-text">Active Portfolio Distribution</div>
-                    </div>
-                    
-                    <!-- COMPETITOR ROWS -->
-                    {% for comp in chart_data.competitor_inventory[:5] %}
+                <div class="competitive-inventory-executive-list">
+                    {% for comp in competitive_data.competitors[:8] %}
                     <div class="competitor-row-executive">
+                        <!-- Left: Company name + count -->
                         <div class="competitor-left-executive">
-                            <div class="competitor-name-exec">{{ (comp.name or "Unknown")[:32] }}</div>
-                            <div class="competitor-inventory-count">{{ comp.listings or 0 }} {{ inventory_label|lower }}</div>
+                            <div class="competitor-name-executive">{{ comp.name }}</div>
+                            <div class="competitor-count-executive">{{ "{:,}".format(comp.count or 0) }} active listings</div>
                         </div>
-                        <div class="competitor-right-executive">
-                            <div class="velocity-badge-executive velocity-{{ 'strong' if (comp.listings or 0) > 15 else 'moderate' if (comp.listings or 0) > 8 else 'weak' }}-exec">
-                                {{ 'Strong' if (comp.listings or 0) > 15 else 'Moderate' if (comp.listings or 0) > 8 else 'Emerging' }}
+                        
+                        <!-- Center: Market % -->
+                        <div class="competitor-center-executive">
+                            <div class="inventory-bar-executive">
+                                <div class="inventory-bar-fill-executive" style="width: {{ comp.market_share or 0 }}%"></div>
+                                <span class="inventory-bar-text">{{ comp.market_share or 0 }}%</span>
                             </div>
                         </div>
-                    </div>
-                    {% if not loop.last %}
-                    <div class="competitor-separator"></div>
-                    {% endif %}
-                    {% endfor %}
-                    
-                    <!-- MINI FOOTER -->
-                    <div class="inventory-mini-footer">
-                        Source: Voxmill Data Engine — Updated {{ report_date }}
-                    </div>
-                </div>
-                {% else %}
-                <div style="padding: 40px; text-align: center; color: rgba(184, 184, 184, 0.6); font-style: italic;">
-                    Competitive data unavailable for this reporting period.
-                </div>
-                {% endif %}
-                
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
-            </div>
-        </div>
-        
-        <div class="competitive-insights-strip">
-            <div class="competitive-insights-grid">
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        Leading participant maintains 34% market share but inventory {{ velocity_metric_label|lower }} declining 12% vs. prior quarter
-                    </div>
-                </div>
-                
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        Aggressive pricing strategy captures £50M+ segment with 2.8x conversion rate improvement
-                    </div>
-                </div>
-                
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        Emerging boutique participants gaining 8% share in ultra-prime niche through specialized positioning
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px; margin-bottom: 32px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Competitive Advantage Signals</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;">• Leading participant gaining momentum in ultra-prime £5M+ range.</div>
-                <div style="margin-bottom: 8px;">• Secondary participant stabilising share despite reduced inventory.</div>
-                <div>• Smaller boutique participants leveraging niche positioning.</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
-
-<div class="slide cross-vertical-intelligence">
-    <div class="slide-header">
-        <h2 class="slide-title">Cross-Vertical Intelligence</h2>
-        <div class="slide-meta">Luxury Asset Classes<br>{{ report_date }}</div>
-    </div>
-    
-    <div class="slide-content">
-        <div class="cross-vertical-container">
-            <!-- 4 CARDS IN ROW -->
-            <div class="cross-vertical-grid">
-                <!-- CARD 1: LUXURY GOODS -->
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">💎</div>
-                    <h3 class="cross-vertical-title">Luxury Goods</h3>
-                    <p class="cross-vertical-text">
-                        High-net-worth mobility patterns mirror ultra-prime asset demand.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>Correlation: 0.87 with £10M+ sales {{ velocity_metric_label|lower }}</li>
-                        <li>Forward demand signals tracking UHNW spend patterns</li>
-                        <li>High-net-worth mobility up 23% YoY</li>
-                        <li>Spending +11% indicates near-term confidence surge</li>
-                    </ul>
-                </div>
-                
-                <!-- CARD 2: PRIVATE EQUITY -->
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">📊</div>
-                    <h3 class="cross-vertical-title">Private Equity</h3>
-                    <p class="cross-vertical-text">
-                        Deal flow intensity predicts prime market liquidity 6-9 months ahead.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>London deal volume up 23% YoY</li>
-                        <li>Dry powder at £47B awaiting deployment</li>
-                        <li>Deal velocity accelerating in Q4 2025</li>
-                        <li>Signals sustained institutional capital deployment</li>
-                    </ul>
-                </div>
-                
-                <!-- CARD 3: WEALTH MANAGEMENT -->
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">🏦</div>
-                    <h3 class="cross-vertical-title">Wealth Management</h3>
-                    <p class="cross-vertical-text">
-                        Asset allocation shifts indicate capital rotation into alternative assets.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>£2.3B moving into {{ vertical_name }} Q4 2025</li>
-                        <li>Risk-on sentiment strengthening</li>
-                        <li>Flow of funds favoring tangible assets</li>
-                        <li>Family office inflows accelerating</li>
-                    </ul>
-                </div>
-                
-                <!-- CARD 4: PREDICTIVE SUMMARY -->
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">⚡</div>
-                    <h3 class="cross-vertical-title">Predictive Summary</h3>
-                    <p class="cross-vertical-text">
-                        Combined 90-day forward signal from cross-vertical intelligence.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li><strong>Forecast:</strong> +12% demand pressure increase</li>
-                        <li><strong>Confidence:</strong> 84% (high conviction)</li>
-                        <li><strong>Primary Driver:</strong> Private equity capital flows</li>
-                        <li>Strong forward momentum across all verticals</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- MOMENTUM CORRELATION PANEL — HORIZONTAL FLOW -->
-            <div class="momentum-correlation-panel">
-                <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
-                <div class="momentum-correlation-flow">
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">Luxury goods spending +11% → short-term confidence boost</div>
-                    </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">PE deal flow +22% → liquidity rotation within 90-120 days</div>
-                    </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">Charter activity +7% YoY → UHNW mobility patterns</div>
-                    </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">Wealth fund flows → strong 90-day forward demand</div>
-                    </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">Capital rotation alignment → synchronized entry</div>
-                    </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
-                        <div class="momentum-signal-text">Cross-vertical momentum → bullish 90-day outlook (84%)</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- GOLD SUMMARY BAR WITH LIGHT TEXT -->
-            <div class="cross-vertical-summary-bar">
-                <p class="cross-vertical-summary-text">
-                    Cross-Vertical Composite Forecast: Strong forward demand indicated across luxury goods (+11%), PE dealflow (+23%), and wealth allocation shifts (+18%) — 90-day outlook bullish with 84% confidence
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 7: MARKET DEPTH ANALYSIS -->
-
-<div class="slide market-depth-analysis">
-    <div class="slide-header">
-        <h2 class="slide-title">Market Depth Analysis</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <div class="property-type-heatmap">
-            <h3 class="chart-title">Segment Performance Heatmap</h3>
-            <p class="chart-context">{{ velocity_metric_label }} scoring (0-100 scale) measures market absorption speed — higher scores indicate stronger demand signals</p>
-            <table class="heatmap-table">
-                <thead>
-                    <tr>
-                        <th>Segment Type</th>
-                        <th>Avg {{ value_metric_label }}</th>
-                        <th>{{ velocity_metric_label }} Score</th>
-                        <th>Market Signal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if market_depth.property_type_performance %}
-                    {% for ptype in market_depth.property_type_performance %}
-                    <tr>
-                        <td class="property-type-name">{{ ptype.type or "Unknown" }}</td>
-                        <td>£{{ "{:,.0f}".format(ptype.avg_price or 0) }}</td>
-                        <td>
-                            <span class="velocity-badge velocity-{{ 'high' if (ptype.velocity_score or 0) >= 70 else 'medium' if (ptype.velocity_score or 0) >= 50 else 'low' }}">
-                                {{ ptype.velocity_score or 0 }}
+                        
+                        <!-- Right: Velocity badge -->
+                        <div class="competitor-right-executive">
+                            <span class="velocity-badge-executive velocity-{{ 'high-exec' if (comp.velocity or 0) >= 70 else 'medium-exec' if (comp.velocity or 0) >= 50 else 'weak-exec' }}">
+                                {{ comp.velocity or 0 }}
                             </span>
-                        </td>
-                        <td class="signal-text">{{ "Strong Demand" if (ptype.velocity_score or 0) >= 70 else "Moderate" if (ptype.velocity_score or 0) >= 50 else "Weak" }}</td>
-                    </tr>
+                        </div>
+                    </div>
                     {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
-            <p class="chart-source">Source: Voxmill Forecast Engine — Updated {{ report_date }}</p>
+                </div>
+            </div>
         </div>
         
-        <div class="depth-metrics">
-            <div class="depth-card">
-                <div class="depth-label">Voxmill Liquidity Index</div>
-                <div class="depth-value">{{ market_depth.liquidity_index }}</div>
-                <div class="depth-bar">
-                    <div class="depth-bar-fill" style="width: {{ market_depth.liquidity_index }}%"></div>
-                </div>
-                <div class="depth-note">Higher = Faster Transaction {{ velocity_metric_label }}</div>
+        <!-- Competitive Insights Strip -->
+        <div class="competitive-insights-strip">
+            {% for insight in competitive_insights[:3] %}
+            <div class="competitive-insight-point">
+                <span class="competitive-insight-icon">→</span>
+                <span class="competitive-insight-text">{{ insight }}</span>
             </div>
-            <div class="depth-card">
-                <div class="depth-label">Demand Pressure Index</div>
-                <div class="depth-value">{{ market_depth.demand_pressure }}</div>
-                <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- SLIDE 8: STRATEGIC FORECAST -->
-
+<!-- ============================================
+SLIDE 6: CROSS-VERTICAL MOMENTUM
+============================================ -->
 <div class="slide">
-    <div class="watermark">VOXMILL INTELLIGENCE</div>
     <div class="slide-header">
-        <h2 class="slide-title">Strategic Forecast</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <div class="forecast-grid-2x2">
-            <!-- TOP LEFT: 30-DAY MOMENTUM — ULTRA-LUXURY REDESIGN -->
-            <div class="forecast-card-v2 forecast-card-executive">
-                <h3 class="forecast-card-title-executive">30-DAY {{ forward_indicator_label|upper }}</h3>
-                <div class="forecast-card-body-executive">
-                    <div class="forecast-primary-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-                    <div class="forecast-direction-indicator">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
-                    <div class="forecast-confidence-bar">
-                        <div class="confidence-fill" style="width: {{ '85' if forecast.day_30 and forecast.day_30.confidence else '0' }}%"></div>
-                    </div>
-                    <div class="forecast-meta-label">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
-                </div>
-            </div>
-            
-            <!-- TOP RIGHT: 90-DAY TREND CONE — ULTRA-LUXURY REDESIGN -->
-            <div class="forecast-card-v2 forecast-card-executive">
-                <h3 class="forecast-card-title-executive">90-DAY TREND CONE</h3>
-                <div class="forecast-card-body-executive">
-                    <div class="cone-range-executive">
-                        <div class="cone-value-executive cone-high-exec">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
-                        <div class="cone-separator"></div>
-                        <div class="cone-value-executive cone-mid-exec">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
-                        <div class="cone-separator"></div>
-                        <div class="cone-value-executive cone-low-exec">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
-                    </div>
-                    <div class="cone-label-executive">High · Median · Low</div>
-                    <div class="forecast-meta-label">Projected Probability Range</div>
-                </div>
-            </div>
-            
-            <!-- BOTTOM LEFT: MARKET SENTIMENT -->
-            <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Market Sentiment</h3>
-                <div class="forecast-card-body">
-                    <div class="sentiment-display sentiment-{{ (forecast.sentiment|lower) if forecast.sentiment else 'neutral' }}">
-                        {{ forecast.sentiment or "Neutral" }}
-                    </div>
-                    <div class="forecast-label-text">AI-Derived Composite Signal</div>
-                </div>
-            </div>
-            
-            <!-- BOTTOM RIGHT: VOXMILL INDEX -->
-            <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
-                <div class="forecast-card-body">
-                    <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
-                    <div class="voxmill-index-bar-container">
-                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
-                    </div>
-                    <div class="voxmill-index-caption">Composite Market Strength (0-100)</div>
-                    <div class="forecast-label-text">Blend of liquidity, demand pressure, and {{ forward_indicator_label|lower }}</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="macro-context">
-            <h4 class="macro-title">📊 Macro Context</h4>
-            <p class="macro-text">
-                Inflation cooling in Q4 2025 → potential yield compression risk in H1 2026. 
-                Bank of England rate holds at 4.75% support stable mortgage availability. 
-                Global capital flows into London premium assets remain robust, sustaining demand fundamentals.
-            </p>
-        </div>
-        
-        <div style="margin-top: 52px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 20px; font-weight: 600; text-align: center;">Portfolio Bias Recommendation</h4>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #4CAF50; font-weight: 600; margin-bottom: 12px;">ACQUIRE</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_1 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(strong liquidity + undervalued band)</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #FFC107; font-weight: 600; margin-bottom: 12px;">HOLD</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_2 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(stable {{ velocity_metric_label|lower }}, no downside risk)</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #F44336; font-weight: 600; margin-bottom: 12px;">ROTATE OUT</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_3 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(weakening liquidity bands)</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 9: EXECUTIVE INTELLIGENCE -->
-
-<div class="slide executive-intelligence">
-    <div class="slide-header">
-        <h2 class="slide-title">Executive Intelligence</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Cross-Vertical Momentum</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
     
     <div class="slide-content">
-        <div class="executive-intelligence-container">
-            <div class="executive-intelligence-layout">
-                <div class="executive-insights-list">
-                    <div class="executive-insight-item">
-                        <div class="executive-insight-number">1</div>
-                        <div class="executive-insight-text">
-                            Premium segment {{ inventory_label|lower }} {{ velocity_metric_label|lower }} increased 18% QoQ, indicating strong participant confidence despite macroeconomic headwinds.
-                        </div>
-                    </div>
-                    
-                    <div class="executive-insight-item">
-                        <div class="executive-insight-number">2</div>
-                        <div class="executive-insight-text">
-                            £10M+ transactions demonstrate 6.2% {{ value_metric_label|lower }} resilience vs. broader market, confirming ultra-prime segment decoupling.
-                        </div>
-                    </div>
-                    
-                    <div class="executive-insight-item">
-                        <div class="executive-insight-number">3</div>
-                        <div class="executive-insight-text">
-                            Foreign capital inflows concentrated in premium segments, with Middle Eastern participants representing 34% of total volume.
-                        </div>
-                    </div>
-                    
-                    <div class="executive-insight-item">
-                        <div class="executive-insight-number">4</div>
-                        <div class="executive-insight-text">
-                            Competitive intensity suggests 90-120 day {{ acquisition_label|lower }} window for optimal positioning before Q1 2026 {{ value_metric_label|lower }} adjustments.
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="executive-summary-card">
-                    <h3 class="executive-summary-title">Summary Signal</h3>
-                    <div class="executive-summary-icon">⚡</div>
-                    <p class="executive-summary-text">
-                        Market conditions favor aggressive positioning in ultra-prime segment.
-                    </p>
-                    <p class="executive-summary-text">
-                        {{ acquisition_label }} timing critical for Q4 2025 entry.
-                    </p>
-                    <div class="executive-summary-highlight">
-                        Confidence: 87%
-                    </div>
-                </div>
+        <!-- Cross-Vertical Grid -->
+        <div class="cross-vertical-grid">
+            {% for vertical in cross_vertical_data %}
+            <div class="cross-vertical-card">
+                <div class="cross-vertical-icon">{{ vertical.icon }}</div>
+                <div class="cross-vertical-title">{{ vertical.title }}</div>
+                <div class="cross-vertical-text">{{ vertical.description }}</div>
+                <ul class="cross-vertical-bullets">
+                    {% for bullet in vertical.bullets %}
+                    <li>{{ bullet }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            
-            <div class="executive-bottom-strip">
-                <p class="executive-bottom-text">
-                    Intelligence Synthesis: Voxmill proprietary multi-signal analysis indicates strong {{ acquisition_label|lower }} conditions through Q1 2026
-                </p>
-            </div>
-            
-            <!-- REDESIGNED ACTION WINDOW -->
-            <div class="action-window">
-                <h4 class="action-window-title">Strategic Action Window</h4>
-                <div class="action-window-grid">
-                    <div class="action-window-item">
-                        <div class="action-window-label">Optimal Entry Window</div>
-                        <div class="action-window-value">30–45 days</div>
-                    </div>
-                    <div class="action-window-item">
-                        <div class="action-window-label">Pricing Posture</div>
-                        <div class="action-window-value">Neutral-to-Firm</div>
-                    </div>
-                    <div class="action-window-item">
-                        <div class="action-window-label">Participant Behaviour</div>
-                        <div class="action-window-value">Activity elevated in target segments</div>
-                    </div>
-                    <div class="action-window-item">
-                        <div class="action-window-label">Risk Note</div>
-                        <div class="action-window-value">Liquidity strong; negotiate firmly</div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Momentum Correlation Panel -->
+        <div class="momentum-correlation-panel">
+            <div class="panel-title">Momentum Correlation Analysis</div>
+            <div class="panel-text">{{ momentum_correlation_text }}</div>
         </div>
     </div>
 </div>
 
-<!-- SLIDE 10: TOP OPPORTUNITIES -->
-
-<div class="slide top-market-opportunities">
+<!-- ============================================
+SLIDE 7: MARKET DEPTH ANALYSIS
+============================================ -->
+<div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">Top Market Opportunities</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Market Depth Analysis</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
+    
     <div class="slide-content">
-        <div class="opportunities-table">
-            <div class="opportunities-table-header">
-                <p style="font-size: 14px; color: var(--vm-text-body); font-style: italic;">
-                    Top-ranked assets identified by Voxmill predictive {{ acquisition_label|lower }} model
-                </p>
+        <!-- Heatmap Table -->
+        <table class="heatmap-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding-left: 24px;">Segment Type</th>
+                    <th>Avg {{ value_metric_label }}</th>
+                    <th>{{ velocity_metric_label }} Score</th>
+                    <th>Market Signal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if market_depth.property_type_performance %}
+                {% for ptype in market_depth.property_type_performance %}
+                <tr>
+                    <td class="property-type-name" style="text-align: left; padding-left: 24px;">{{ ptype.type or "Unknown" }}</td>
+                    <td>£{{ "{:,.0f}".format(ptype.avg_price or 0) }}</td>
+                    <td>
+                        <span class="velocity-badge velocity-{{ 'high' if (ptype.velocity_score or 0) >= 70 else 'medium' if (ptype.velocity_score or 0) >= 50 else 'low' }}">
+                            {{ ptype.velocity_score or 0 }}
+                        </span>
+                    </td>
+                    <td class="signal-text">{{ "Strong Demand" if (ptype.velocity_score or 0) >= 70 else "Moderate" if (ptype.velocity_score or 0) >= 50 else "Weak" }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        
+        <!-- Depth Metrics Grid -->
+        <div class="depth-metrics">
+            {% for depth in depth_metrics %}
+            <div class="depth-card">
+                <div class="depth-label">{{ depth.label }}</div>
+                <div class="depth-value">{{ depth.value }}</div>
+                <div class="depth-bar">
+                    <div class="depth-bar-fill" style="width: {{ depth.percentage }}%"></div>
+                </div>
+                <div class="depth-note">{{ depth.note }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 8: STRATEGIC FORECAST
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Strategic Forecast</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Forecast Grid 2x2 - REDESIGNED Top Two Cards -->
+        <div class="forecast-grid-2x2">
+            <!-- Top Left: 30-Day Momentum Forecast - REDESIGNED -->
+            <div class="forecast-card-v2 forecast-card-momentum">
+                <div class="forecast-card-header-v2">
+                    <div class="forecast-card-title">30-Day Momentum Forecast</div>
+                    <div class="forecast-card-subtitle">Market velocity & demand pressure projection</div>
+                </div>
+                
+                <div class="forecast-card-body-v2">
+                    <div class="forecast-primary-section">
+                        <div class="forecast-primary-label">PROJECTED {{ velocity_metric_label|upper }}</div>
+                        <div class="forecast-primary-value">{{ forecast.momentum_30d.value or 0 }}</div>
+                        <div class="forecast-primary-change {{ 'positive' if (forecast.momentum_30d.change or 0) >= 0 else 'negative' }}">
+                            {{ '+' if (forecast.momentum_30d.change or 0) >= 0 else '' }}{{ forecast.momentum_30d.change or 0 }}% from current
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-confidence-bar">
+                        <div class="forecast-confidence-label">Confidence</div>
+                        <div class="momentum-confidence-fill" style="width: {{ forecast.momentum_30d.confidence or 0 }}%"></div>
+                        <span class="forecast-confidence-value">{{ forecast.momentum_30d.confidence or 0 }}%</span>
+                    </div>
+                    
+                    <div class="forecast-meta-label">Model: {{ forecast.momentum_30d.model or "Voxmill Momentum Engine" }}</div>
+                </div>
             </div>
             
-            <div class="opportunities-section-divider"></div>
+            <!-- Top Right: 90-Day Trend Cone - REDESIGNED -->
+            <div class="forecast-card-v2 forecast-card-cone">
+                <div class="forecast-card-header-v2">
+                    <div class="forecast-card-title">90-Day Trend Cone</div>
+                    <div class="forecast-card-subtitle">Probabilistic {{ value_metric_label|lower }} movement range</div>
+                </div>
+                
+                <div class="forecast-card-body-v2">
+                    <div class="cone-range-display">
+                        <div class="cone-value-executive cone-high">
+                            <div class="cone-label-executive">OPTIMISTIC</div>
+                            <div class="cone-value-number">£{{ "{:,.0f}".format(forecast.trend_cone_90d.high or 0) }}</div>
+                        </div>
+                        
+                        <div class="cone-separator"></div>
+                        
+                        <div class="cone-value-executive cone-base">
+                            <div class="cone-label-executive">BASE CASE</div>
+                            <div class="cone-value-number">£{{ "{:,.0f}".format(forecast.trend_cone_90d.base or 0) }}</div>
+                        </div>
+                        
+                        <div class="cone-separator"></div>
+                        
+                        <div class="cone-value-executive cone-low">
+                            <div class="cone-label-executive">CONSERVATIVE</div>
+                            <div class="cone-value-number">£{{ "{:,.0f}".format(forecast.trend_cone_90d.low or 0) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-meta-label">Confidence Band: ±{{ forecast.trend_cone_90d.band or 15 }}% | Model: Voxmill Trend Cone</div>
+                </div>
+            </div>
             
-            {% if top_opportunities and top_opportunities|length > 0 %}
+            <!-- Bottom Left: Risk Dial -->
+            <div class="risk-dial-card">
+                <div class="risk-dial-title">Market Risk Index</div>
+                <div class="risk-dial-value">{{ forecast.risk_index or 0 }}</div>
+                <div class="risk-dial-gauge">
+                    <div class="risk-dial-fill" style="width: {{ forecast.risk_index or 0 }}%"></div>
+                </div>
+                <div class="risk-dial-status">{{ "High Risk" if (forecast.risk_index or 0) >= 70 else "Moderate Risk" if (forecast.risk_index or 0) >= 40 else "Low Risk" }}</div>
+            </div>
+            
+            <!-- Bottom Right: Voxmill Predictive Index -->
+            <div class="forecast-card-v2">
+                <div class="forecast-card-title">Voxmill Predictive Index</div>
+                <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
+                <div class="voxmill-index-bar-container">
+                    <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
+                </div>
+                <div class="voxmill-index-caption">Composite Market Strength (0-100)</div>
+                <div class="forecast-label-text">Blend of liquidity, demand pressure, and {{ forward_indicator_label|lower }}</div>
+            </div>
+        </div>
+        
+        <!-- Macro Context -->
+        <div class="macro-context">
+            <div class="macro-title">Macro Context & Strategic Implications</div>
+            <div class="macro-text">{{ macro_context_text }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 9: EXECUTIVE INTELLIGENCE
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Executive Intelligence</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Executive Intelligence Layout - REDESIGNED Bullets -->
+        <div class="executive-intelligence-layout">
+            <div class="executive-insights-list">
+                {% for insight in executive_insights %}
+                <div class="executive-insight-item">
+                    <div class="executive-insight-number">{{ loop.index }}</div>
+                    <div class="executive-insight-content">
+                        <div class="executive-insight-label">{{ insight.category|upper }}</div>
+                        <div class="executive-insight-text">{{ insight.text }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Strategic Action Window - REDESIGNED (4-column layout) -->
+        <div class="action-window">
+            <div class="action-window-header">
+                <div class="action-window-title">Strategic Action Window</div>
+                <div class="action-window-subtitle">Recommended immediate tactical moves</div>
+            </div>
+            
+            <div class="action-window-grid">
+                {% for action in strategic_actions %}
+                <div class="action-window-item">
+                    <div class="action-window-label">{{ action.category|upper }}</div>
+                    <div class="action-window-text">{{ action.text }}</div>
+                    <div class="action-window-divider"></div>
+                    <div class="action-window-timeline">{{ action.timeline }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Executive Bottom Strip -->
+        <div class="executive-bottom-strip">
+            <div class="executive-bottom-text">{{ executive_bottom_note }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 10: TOP MARKET OPPORTUNITIES
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Top Market Opportunities</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Opportunities Table -->
+        <div class="chart-section">
             <table class="table-luxury">
                 <thead>
                     <tr>
-                        <th>Asset</th>
+                        <th style="text-align: left; padding-left: 24px;">Asset</th>
                         <th>Type</th>
                         <th>Size</th>
                         <th>{{ value_metric_label }}</th>
                         <th>£/{{ unit_metric }}</th>
                         <th>Days</th>
-                        <th>Score</th>
+                        <th style="text-align: center; padding-right: 24px;">Score</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for opportunity in top_opportunities[:8] %}
                     <tr>
-                        <td class="property-address">{{ (opportunity.address or "Address not available")[:45] }}</td>
+                        <td class="property-address" style="text-align: left; padding-left: 24px;">{{ (opportunity.address or "Address not available")[:45] }}</td>
                         <td>{{ opportunity.property_type or "N/A" }}</td>
                         <td class="align-right">{{ "{:,}".format(opportunity.size or 0) }} {{ unit_metric }}</td>
                         <td class="align-right">£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
                         <td class="align-right">£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
                         <td class="align-center">{{ opportunity.days_listed or 0 }}</td>
-                        <td class="align-center">
+                        <td class="align-center" style="padding-right: 24px;">
                             <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">{{ opportunity.score or 0 }}</span>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            
-            <div class="opportunities-section-divider"></div>
-            
-            <p style="font-size: 12px; color: var(--vm-muted); text-align: center; margin-top: 20px; font-style: italic;">
-                Scores represent composite ranking from 47 weighted {{ acquisition_label|lower }} signals
-            </p>
-            
-            <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px;">
-                <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Appreciation Forecast (Q1 2026)</h4>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_1 }}</div>
-                        <div style="font-size: 14px; color: var(--vm-text-body);">+2.1% expected uplift</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_2 }}</div>
-                        <div style="font-size: 14px; color: var(--vm-text-body);">+1.4% stable appreciation</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_3 }}</div>
-                        <div style="font-size: 14px; color: var(--vm-text-body);">+0.9% soft but positive</div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="panel">
-                <p class="panel-text">No opportunity data available for this report period. Contact Voxmill Intelligence for custom analysis.</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 11: METHODOLOGY -->
-
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">Methodology & Model Architecture</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-
-    <div class="slide-content">
-        <div class="methodology-grid">
-            <div class="methodology-panel">
-                <h3 class="methodology-title">Data Sources</h3>
-                <ul class="methodology-list">
-                    <li>Rightmove API — Real-time listing feeds with 15-minute latency</li>
-                    <li>Zoopla Premium Data — Historical transaction archives (12-month rolling)</li>
-                    <li>Outscraper — Competitive intelligence & participant positioning</li>
-                    <li>Land Registry — Official sale completions & ownership transfers</li>
-                    <li>Voxmill Internal DB — Proprietary enrichment & cross-validation layer</li>
-                </ul>
-            </div>
-
-            <div class="methodology-panel">
-                <h3 class="methodology-title">Forecast Logic</h3>
-                <ul class="methodology-list">
-                    <li>30-Day: Linear regression weighted by recent {{ velocity_metric_label|lower }} trends</li>
-                    <li>90-Day: Monte Carlo simulation (10,000 iterations) with confidence bands</li>
-                    <li>Sentiment: Multi-factor composite ({{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, inventory)</li>
-                    <li>Voxmill Index: Proprietary blend (40% liquidity, 30% demand, 30% momentum)</li>
-                    <li>Update Cadence: Daily refresh at 06:00 UTC with real-time alert triggers</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="model-pipeline">
-            <h3 class="methodology-title">Intelligence Pipeline</h3>
-            <div class="pipeline-flow">
-                <div class="pipeline-step">
-                    <div class="pipeline-box">INGEST</div>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-box">ENRICH</div>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-box">ANALYZE</div>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-box">FORECAST</div>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-box">DELIVER</div>
-                </div>
-            </div>
-            <p style="font-size: 13px; color: var(--vm-muted); margin-top: 20px; font-style: italic;">
-                Multi-API data federation → Automated cleaning & deduplication → Statistical modeling → Predictive analytics → Executive-grade PDF generation
-            </p>
-        </div>
-
-        <!-- GOLD BAR WITH LIGHT TEXT -->
-        <div class="proprietary-badge">
-            <div class="proprietary-badge-text">VOXMILL FORECAST ENGINE V2.1 — PROPRIETARY ARCHITECTURE</div>
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 12: MACRO RISK DASHBOARD -->
-
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">Macro Risk Dashboard</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-
-    <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 40px;">Real-time macro risk indicators — Interest rates, policy environment, liquidity conditions, and investor sentiment calibration</p>
-        
-        <div class="macro-risk-grid">
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Interest Rate Pressure</h3>
-                <div class="risk-dial-value">4.75%</div>
-                <div class="risk-dial-status">Moderate — BoE holding pattern sustained</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Current 4.75% base rate maintains historical average positioning. No imminent hikes projected through Q1 2026, supporting mortgage availability at current pricing levels.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Policy Risk</h3>
-                <div class="risk-dial-value">Low</div>
-                <div class="risk-dial-status">Stable — No major legislative disruption</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Regulatory environment remains predictable with no anticipated capital gains or stamp duty modifications. Planning policy stable across prime London boroughs.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Liquidity Conditions</h3>
-                <div class="risk-dial-value">Strong</div>
-                <div class="risk-dial-status">Robust — Institutional capital flows sustained</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    International participant activity remains elevated, particularly Middle Eastern and Asian sovereign wealth allocations. Transaction volumes support continued market depth.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Investor Sentiment</h3>
-                <div class="risk-dial-value">Bullish</div>
-                <div class="risk-dial-status">Positive — Confidence indicators elevated</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Prime London maintains safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} {{ acquisition_label|lower }} strategies.
-                </p>
-            </div>
-        </div>
-
-        <div class="macro-context" style="margin-top: 74px;">
-            <h4 class="macro-title">📈 Composite Risk Assessment</h4>
-            <p class="macro-text">
-                <strong>Overall Market Risk: LOW-MODERATE</strong> — Macro fundamentals support continued prime market resilience. Interest rate stability, policy predictability, robust liquidity, and positive sentiment converge to create favorable {{ acquisition_label|lower }} environment. Primary risk vectors remain geopolitical (Middle East, US-China relations) and potential currency volatility (GBP weakness vs USD/EUR). Recommend maintaining diversified portfolio positioning with 20-30% cash reserves for opportunistic deployment during short-term volatility windows.
-            </p>
         </div>
         
-        <!-- EXTENDED RISK MAP CONTAINER -->
-        <div class="macro-risk-map-extended">
-            <h4 class="macro-title" style="color: #C8AA6E; margin-bottom: 20px;">30-Day {{ forward_indicator_label }} Risk Map</h4>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Interest Rates</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Stable — No rate movement expected.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Liquidity</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Improving — Capital inflows strengthening.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Capital Flows</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Bullish — Cross-border activity rising.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Volatility</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Contained — No destabilising macro threats.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN -->
-
-<div class="slide">
-    <div class="slide-header">
-        <h2 class="slide-title">Segment Performance Breakdown</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
-    </div>
-    <div class="slide-content">
-        <p class="chart-context">Segment category performance analysis — {{ segment_label_1 }} | {{ segment_label_2 }} | {{ segment_label_3 }}</p>
+        <div class="opportunities-section-divider"></div>
         
-        <!-- CENTERED THREE-CARD ROW WITH CONTAINED GREEN BARS -->
-        <div class="submarket-grid-v2">
-            {% if submarket_breakdown %}
-            {% for submarket in submarket_breakdown %}
-            <div class="submarket-card-v2">
-                <div class="submarket-header">{{ submarket.category or "Unknown" }}</div>
-                <div class="submarket-metrics">
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Avg {{ value_metric_label }}</div>
-                        <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket.avg_price or 0) / 1000) }}K</div>
-                        <div class="submarket-micro-label">{{ "Premium tier" if (submarket.avg_price or 0) > 3000000 else "Core segment" }}</div>
-                    </div>
-                    
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">{{ value_metric_label }}/{{ unit_metric }}</div>
-                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft or 0) }}</div>
-                        <div class="submarket-micro-label">{{ "Above market avg" if (submarket.price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
-                    </div>
-                    
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
-                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket.velocity_score or 0) >= 70 else '#FFC107' if (submarket.velocity_score or 0) >= 50 else '#F44336' }}">
-                            {{ submarket.velocity_score or 0 }}/100
-                        </div>
-                        <div class="submarket-micro-label">{{ "Fast-moving" if (submarket.velocity_score or 0) >= 70 else "Moderate pace" if (submarket.velocity_score or 0) >= 50 else "Slow absorption" }}</div>
-                    </div>
-                </div>
-                <div class="submarket-listing-count">{{ submarket.count or 0 }} {{ inventory_label|lower }}</div>
+        <!-- Opportunity Insights -->
+        <div class="insight-cards">
+            {% for insight in opportunity_insights[:3] %}
+            <div class="insight-card">
+                <div class="insight-title">{{ insight.title }}</div>
+                <div class="insight-text">{{ insight.text }}</div>
             </div>
             {% endfor %}
-            {% endif %}
         </div>
-        
-        <div class="momentum-streets-panel">
-            <div class="momentum-title">🔍 High-Momentum Segments</div>
-            <ul class="momentum-list">
-                <li>Premium segment — {{ segment_label_1 }} showing 22% faster turnover vs. area average</li>
-                <li>Core segment — {{ segment_label_3 }} {{ velocity_metric_label|lower }} +18% (avg 28 days on market)</li>
-                <li>Luxury segment — {{ segment_label_2 }} commanding £2,800/{{ unit_metric }} with 12% {{ value_metric_label|lower }} appreciation</li>
-            </ul>
-        </div>
-        
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Capital Rotation Guidance</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">{{ segment_label_1 }}:</strong> Near-term inflows from UHNW overseas participants.</div>
-                <div style="margin-bottom: 8px;"><strong style="color: #C8AA6E;">{{ segment_label_2 }}:</strong> Strong domestic liquidity, stable demand.</div>
-                <div><strong style="color: #C8AA6E;">{{ segment_label_3 }}:</strong> Deep-value band emerging — negotiate aggressively.</div>
-            </div>
-        </div>
-        
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Sub-Market Intelligence — Updated {{ report_date }}</p>
     </div>
 </div>
 
-<!-- SLIDE 14: AI-IDENTIFIED OPPORTUNITIES -->
-
-<div class="slide ai-identified-opportunities">
+<!-- ============================================
+SLIDE 11: METHODOLOGY & DATA INTELLIGENCE
+============================================ -->
+<div class="slide">
     <div class="slide-header">
-        <h2 class="slide-title">AI-Identified {{ acquisition_label }} Opportunities</h2>
-        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
+        <h1 class="slide-title">Methodology & Data Intelligence</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
     </div>
+    
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged assets showing {{ market_signal_label }} — Underpricing or extended listing periods</p>
-        
-        <div class="acquisition-flagging-header">
-            Flagging Logic: Underpricing | Time-on-Market | Momentum Shift
+        <!-- Methodology Grid -->
+        <div class="methodology-grid">
+            <div class="methodology-panel">
+                <div class="methodology-title">Data Sources</div>
+                <ul class="methodology-list">
+                    {% for source in data_sources %}
+                    <li>{{ source }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="methodology-panel">
+                <div class="methodology-title">Analysis Framework</div>
+                <ul class="methodology-list">
+                    {% for framework in analysis_framework %}
+                    <li>{{ framework }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
         
-        {% if acquisition_signals and acquisition_signals|length > 0 %}
+        <!-- Intelligence Pipeline -->
+        <div class="model-pipeline">
+            <div class="panel-title">Voxmill Intelligence Pipeline</div>
+            <div class="pipeline-flow">
+                {% for stage in intelligence_pipeline %}
+                <div class="pipeline-stage">
+                    <div class="pipeline-stage-number">{{ loop.index }}</div>
+                    <div class="pipeline-stage-label">{{ stage.label }}</div>
+                    <div class="pipeline-stage-desc">{{ stage.description }}</div>
+                </div>
+                {% if not loop.last %}
+                <div class="pipeline-arrow">→</div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 12: MACRO RISK MAP
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Macro Risk Map</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Macro Risk Grid -->
+        <div class="macro-risk-grid">
+            {% for risk in macro_risks %}
+            <div class="risk-dial-card">
+                <div class="risk-dial-title">{{ risk.title }}</div>
+                <div class="risk-dial-value">{{ risk.score }}</div>
+                <div class="risk-dial-gauge">
+                    <div class="risk-dial-fill" style="width: {{ risk.score }}%"></div>
+                </div>
+                <div class="risk-dial-status">{{ risk.status }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Extended Risk Map -->
+        <div class="macro-risk-map-extended">
+            <div class="panel-title">Risk Correlation Matrix</div>
+            <div class="panel-text">{{ risk_correlation_text }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 13: SUBMARKET SEGMENTATION
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Submarket Segmentation</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Submarket Grid -->
+        <div class="submarket-grid-v2">
+            {% for submarket in submarkets %}
+            <div class="submarket-card-v2">
+                <div class="submarket-header">{{ submarket.name }}</div>
+                <div class="submarket-metric">
+                    <div class="submarket-metric-label">Median {{ value_metric_label }}</div>
+                    <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarket.median_price or 0) }}</div>
+                </div>
+                <div class="submarket-metric">
+                    <div class="submarket-metric-label">Active Listings</div>
+                    <div class="submarket-metric-value">{{ "{:,}".format(submarket.listings or 0) }}</div>
+                </div>
+                <div class="submarket-metric">
+                    <div class="submarket-metric-label">{{ velocity_metric_label }}</div>
+                    <div class="submarket-metric-value">{{ submarket.velocity or 0 }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Momentum Streets Panel -->
+        <div class="momentum-streets-panel">
+            <div class="momentum-title">High-Momentum Streets</div>
+            <div class="momentum-list">
+                {% for street in high_momentum_streets %}
+                <div class="momentum-signal-box">
+                    <div class="momentum-signal-name">{{ street.name }}</div>
+                    <div class="momentum-signal-text">{{ street.description }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+SLIDE 14: ACQUISITION FLAGGING SYSTEM
+============================================ -->
+<div class="slide">
+    <div class="slide-header">
+        <h1 class="slide-title">Acquisition Flagging System</h1>
+        <div class="slide-meta">{{ report_date }}<br/>{{ market_name }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <!-- Acquisition Flagging Header -->
+        <div class="acquisition-flagging-header">
+            <div class="acquisition-flagging-title">Live Signal Board</div>
+            <div class="acquisition-flagging-subtitle">Real-time acquisition opportunities ranked by composite scoring</div>
+        </div>
+        
+        <!-- Signal Board -->
         <div class="signal-board-v2">
             {% for signal in acquisition_signals %}
             <div class="signal-card-v2">
-                <div class="signal-content-v2">
-                    <div class="signal-property-title">{{ signal.address or "Address not available" }}</div>
-                    <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price or 0) }} | £{{ "{:,}".format(signal.price_per_sqft or 0) }}/{{ unit_metric }}</div>
-                    <div class="ai-flag-reason">
-                        <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — provider flexibility indicated" }}
-                    </div>
+                <div class="signal-header-v2">
+                    <div class="signal-label-v2">{{ signal.category|upper }}</div>
+                    <div class="signal-score-v2">{{ signal.score }}</div>
                 </div>
-                <div class="signal-badges-v2">
-                    <div class="signal-badge-v2 badge-risk">Risk: {{ signal.risk if signal.risk else 'Low' }}</div>
-                    <div class="signal-badge-v2 badge-confidence">{{ signal.confidence if signal.confidence else 78 }}%</div>
-                    <div class="signal-badge-v2 badge-trigger">{{ signal.trigger if signal.trigger else '>60d' }}</div>
+                <div class="signal-address-v2">{{ signal.address }}</div>
+                <div class="signal-metrics-v2">
+                    <span>£{{ "{:,.0f}".format(signal.price or 0) }}</span>
+                    <span>{{ signal.size }} {{ unit_metric }}</span>
+                    <span>{{ signal.days }} days</span>
                 </div>
+                <div class="signal-reason-v2">{{ signal.reason }}</div>
             </div>
             {% endfor %}
         </div>
-        {% else %}
-        <div class="panel">
-            <p class="panel-text">No {{ acquisition_label|lower }} signals detected in current market scan. Market pricing appears efficient with minimal arbitrage opportunities. Consider expanding search radius or adjusting criteria parameters.</p>
-        </div>
-        {% endif %}
         
+        <!-- Acquisition Strategy Ribbon -->
         <div class="acquisition-strategy-ribbon">
-            <div class="acquisition-strategy-text">
-                <strong>{{ acquisition_label }} Strategy:</strong> 
-                Flagged assets demonstrate {{ "significant value potential" if (acquisition_signals and acquisition_signals|length >= 3) else "limited value signals" }}. 
-                Recommended action: {{ "Aggressive outreach within 48-72 hours on top-ranked opportunities" if (acquisition_signals and acquisition_signals|length >= 3) else "Monitor market for emerging opportunities while maintaining selectivity" }}. 
-                Due diligence priority: {{ "Immediate site visits and provider motivation assessment" if (acquisition_signals and acquisition_signals|length >= 3) else "Standard acquisition protocols apply" }}.
-            </div>
+            <div class="acquisition-strategy-title">Strategic Acquisition Guidance</div>
+            <div class="acquisition-strategy-text">{{ acquisition_strategy_text }}</div>
         </div>
-        
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px; margin-bottom: 48px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Provider Acceptance Probability (VAP) Indicators</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Stale {{ inventory_label }}:</strong> 60–90 days → High acceptance likelihood.</div>
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
-                <div>• <strong style="color: #C8AA6E;">Vacant Assets:</strong> Fastest acceptance due to carrying cost pressure.</div>
-            </div>
-        </div>
-        
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
 </div>
 
