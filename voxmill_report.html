@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1920, initial-scale=1.0">
     <title>Voxmill Executive Intelligence Deck</title>
-    <link rel="stylesheet" href="voxmill_style_v5_3_FINAL_POLISH.css">
+    <link rel="stylesheet" href="voxmill_style_v5_6_FINAL_QUALITY.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -586,30 +586,31 @@
                 </div>
             </div>
             
+            <!-- REFINEMENT 3: MOMENTUM CORRELATION — EQUAL WIDTH/HEIGHT, EDGE-TO-EDGE -->
             <div class="momentum-correlation-panel">
                 <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
-                <div class="momentum-correlation-flow">
-                    <div class="momentum-signal-box">
+                <div class="momentum-correlation-flow-refined">
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">Luxury goods spending +11% → short-term confidence boost</div>
                     </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
+                    <div class="momentum-arrow-refined">→</div>
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">PE deal flow +22% → liquidity rotation within 90-120 days</div>
                     </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
+                    <div class="momentum-arrow-refined">→</div>
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">Charter activity +7% YoY → UHNW mobility patterns</div>
                     </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
+                    <div class="momentum-arrow-refined">→</div>
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">Wealth fund flows → strong 90-day forward demand</div>
                     </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
+                    <div class="momentum-arrow-refined">→</div>
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">Capital rotation alignment → synchronized entry</div>
                     </div>
-                    <div class="momentum-arrow">→</div>
-                    <div class="momentum-signal-box">
+                    <div class="momentum-arrow-refined">→</div>
+                    <div class="momentum-signal-box-refined">
                         <div class="momentum-signal-text">Cross-vertical momentum → bullish 90-day outlook (84%)</div>
                     </div>
                 </div>
@@ -691,8 +692,9 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
+        <!-- REFINEMENT 1 & 4: STRATEGIC FORECAST — PERFECT GRID ALIGNMENT -->
         <div class="forecast-grid-2x2">
-            <!-- TOP LEFT: 30-DAY MOMENTUM — PREMIUM REDESIGN -->
+            <!-- TOP LEFT: 30-DAY MOMENTUM -->
             <div class="forecast-card-premium">
                 <div class="forecast-premium-header">
                     <div class="forecast-premium-label">Short-Term Outlook</div>
@@ -708,30 +710,32 @@
                 </div>
             </div>
             
-            <!-- TOP RIGHT: 90-DAY TREND CONE — PREMIUM REDESIGN -->
-            <div class="forecast-card-premium">
+            <!-- TOP RIGHT: 90-DAY VOLATILITY WINDOW — COMPLETELY REDESIGNED -->
+            <div class="forecast-card-premium forecast-volatility-window">
                 <div class="forecast-premium-header">
                     <div class="forecast-premium-label">Medium-Term Projection</div>
-                    <div class="forecast-premium-title">90-Day Trend Cone</div>
+                    <div class="forecast-premium-title">90-Day Volatility Window</div>
                 </div>
                 <div class="forecast-premium-body">
-                    <div class="forecast-premium-cone-container">
-                        <div class="forecast-premium-cone-row">
-                            <div class="forecast-premium-cone-label">High</div>
-                            <div class="forecast-premium-cone-value">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
-                        </div>
-                        <div class="forecast-premium-cone-divider"></div>
-                        <div class="forecast-premium-cone-row">
-                            <div class="forecast-premium-cone-label">Median</div>
-                            <div class="forecast-premium-cone-value forecast-premium-cone-value-mid">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
-                        </div>
-                        <div class="forecast-premium-cone-divider"></div>
-                        <div class="forecast-premium-cone-row">
-                            <div class="forecast-premium-cone-label">Low</div>
-                            <div class="forecast-premium-cone-value">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
+                    <div class="volatility-window-container">
+                        <div class="volatility-range-bar">
+                            <div class="volatility-marker volatility-marker-low" style="left: 15%;">
+                                <div class="volatility-marker-value">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
+                                <div class="volatility-marker-label">Low</div>
+                            </div>
+                            <div class="volatility-marker volatility-marker-mid" style="left: 50%;">
+                                <div class="volatility-marker-value volatility-value-median">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
+                                <div class="volatility-marker-label">Median</div>
+                            </div>
+                            <div class="volatility-marker volatility-marker-high" style="left: 85%;">
+                                <div class="volatility-marker-value">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
+                                <div class="volatility-marker-label">High</div>
+                            </div>
+                            <div class="volatility-cone-fill"></div>
+                            <div class="volatility-baseline"></div>
                         </div>
                     </div>
-                    <div class="forecast-premium-confidence-label" style="margin-top: 16px;">Projected Probability Range</div>
+                    <div class="forecast-premium-confidence-label" style="margin-top: 24px;">Projected Probability Range</div>
                 </div>
             </div>
             
@@ -866,36 +870,31 @@
                 </p>
             </div>
             
-            <!-- STRATEGIC ACTION WINDOW — PREMIUM 4-COLUMN -->
-            <div class="action-window-premium">
-                <div class="action-window-premium-header">
-                    <div class="action-window-premium-title">Strategic Action Window</div>
-                    <div class="action-window-premium-subtitle">Optimal Deployment Parameters</div>
-                </div>
-                
-                <div class="action-window-premium-grid">
-                    <div class="action-item-premium">
-                        <div class="action-item-label-premium">Optimal Entry</div>
-                        <div class="action-item-value-premium">30–45 Days</div>
-                        <div class="action-item-description-premium">Prime acquisition window before Q1 2026 pricing adjustments</div>
+            <!-- REFINEMENT 2: STRATEGIC ACTION WINDOW — COMPLETELY REDESIGNED -->
+            <div class="action-window-luxury">
+                <div class="action-window-luxury-grid">
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Optimal Entry</div>
+                        <div class="action-item-luxury-value">30–45 Days</div>
+                        <div class="action-item-luxury-subtitle">Prime acquisition window before Q1 2026 pricing adjustments</div>
                     </div>
                     
-                    <div class="action-item-premium">
-                        <div class="action-item-label-premium">Pricing Posture</div>
-                        <div class="action-item-value-premium">Neutral-to-Firm</div>
-                        <div class="action-item-description-premium">Balanced negotiation leverage in current market conditions</div>
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Pricing Posture</div>
+                        <div class="action-item-luxury-value">Neutral-to-Firm</div>
+                        <div class="action-item-luxury-subtitle">Balanced negotiation leverage in current market conditions</div>
                     </div>
                     
-                    <div class="action-item-premium">
-                        <div class="action-item-label-premium">Participant Activity</div>
-                        <div class="action-item-value-premium">Elevated</div>
-                        <div class="action-item-description-premium">Institutional interest concentrated in target segments</div>
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Participant Activity</div>
+                        <div class="action-item-luxury-value">Elevated</div>
+                        <div class="action-item-luxury-subtitle">Institutional interest concentrated in target segments</div>
                     </div>
                     
-                    <div class="action-item-premium">
-                        <div class="action-item-label-premium">Risk Assessment</div>
-                        <div class="action-item-value-premium">Low-Moderate</div>
-                        <div class="action-item-description-premium">Liquidity robust; negotiate with measured confidence</div>
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Risk Assessment</div>
+                        <div class="action-item-luxury-value">Low-Moderate</div>
+                        <div class="action-item-luxury-subtitle">Liquidity robust; negotiate with measured confidence</div>
                     </div>
                 </div>
             </div>
@@ -1141,7 +1140,7 @@
         
         <div class="submarket-grid-v2">
             {% if submarket_breakdown %}
-            {% for submarket in submarket_breakdown %}
+            {% for submarket in submarket_breakdown[:3] %}
             <div class="submarket-card-v2">
                 <div class="submarket-header">{{ submarket.category or "Unknown" }}</div>
                 <div class="submarket-metrics">
