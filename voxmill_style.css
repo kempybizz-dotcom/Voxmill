@@ -1,6 +1,6 @@
 /* ============================================
 VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.0 FINAL PRODUCTION
-COMPLETE REDESIGN — GLOBAL SYMMETRY + ALL CHANGES
+COMPLETE REDESIGN — GLOBAL SYMMETRY + ALL CHANGES + ULTRA-LUXURY UPDATES
 ============================================ */
 
 :root {
@@ -285,6 +285,40 @@ MATCHING MARKET OVERVIEW ALIGNMENT
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+/* ============================================
+GLOBAL CONTAINER HEIGHT INCREASE + 5PX DOWNWARD ADJUSTMENT (PAGES 3-11)
+============================================ */
+
+.slide:nth-child(n+3):nth-child(-n+11) .kpi-card,
+.slide:nth-child(n+3):nth-child(-n+11) .chart-container,
+.slide:nth-child(n+3):nth-child(-n+11) .chart-panel,
+.slide:nth-child(n+3):nth-child(-n+11) .movement-mini-card,
+.slide:nth-child(n+3):nth-child(-n+11) .executive-summary-bullet,
+.slide:nth-child(n+3):nth-child(-n+11) .insight-card,
+.slide:nth-child(n+3):nth-child(-n+11) .cross-vertical-card,
+.slide:nth-child(n+3):nth-child(-n+11) .methodology-panel,
+.slide:nth-child(n+3):nth-child(-n+11) .panel,
+.slide:nth-child(n+3):nth-child(-n+11) .depth-card,
+.slide:nth-child(n+3):nth-child(-n+11) .risk-dial-card,
+.slide:nth-child(n+3):nth-child(-n+11) .submarket-card-v2,
+.slide:nth-child(n+3):nth-child(-n+11) .forecast-card-v2 {
+    min-height: calc(100% + 5px);
+}
+
+.slide:nth-child(n+3):nth-child(-n+11) .kpi-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .chart-container > *,
+.slide:nth-child(n+3):nth-child(-n+11) .chart-panel > *,
+.slide:nth-child(n+3):nth-child(-n+11) .movement-mini-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .insight-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .cross-vertical-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .methodology-panel > *,
+.slide:nth-child(n+3):nth-child(-n+11) .depth-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .risk-dial-card > *,
+.slide:nth-child(n+3):nth-child(-n+11) .submarket-card-v2 > *,
+.slide:nth-child(n+3):nth-child(-n+11) .forecast-card-v2 > * {
+    transform: translateY(5px);
 }
 
 /* ============================================
@@ -656,6 +690,8 @@ MINIMALIST ELEGANT CARD SYSTEM
     align-items: center;
     justify-content: center;
     flex: 1;
+    padding: 20px 15px;
+    min-height: 420px;
 }
 
 .competitive-radial-value {
@@ -677,7 +713,166 @@ MINIMALIST ELEGANT CARD SYSTEM
     font-family: var(--font-display);
 }
 
-/* LUXURY COMPETITOR INVENTORY CARDS */
+/* MICRO LEGEND BELOW GAUGE */
+.radial-micro-legend {
+    display: flex;
+    gap: 28px;
+    margin-top: 24px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(212,182,121,0.5);
+}
+
+.legend-text {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(230,230,230,0.6);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+/* ============================================
+COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
+============================================ */
+
+.competitive-inventory-executive-panel {
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
+    border: 1px solid rgba(212,182,121,0.28);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* TITLE BAR - GOLD STRIP */
+.inventory-title-bar {
+    background: linear-gradient(90deg, rgba(212,182,121,0.25), rgba(181,152,84,0.15));
+    border-bottom: 1px solid rgba(212,182,121,0.3);
+    padding: 12px 22px;
+}
+
+.inventory-bar-text {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #D4B679;
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+    text-align: center;
+}
+
+/* COMPETITOR ROW */
+.competitor-row-executive {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 16px 22px;
+    gap: 20px;
+    transition: background 0.2s ease;
+}
+
+.competitor-row-executive:hover {
+    background: rgba(212,182,121,0.05);
+}
+
+.competitor-left-executive {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.competitor-name-exec {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #E6E6E6;
+    letter-spacing: 0.3px;
+    line-height: 1.3;
+}
+
+.competitor-inventory-count {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(212,182,121,0.7);
+    letter-spacing: 0.5px;
+}
+
+.competitor-right-executive {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* VELOCITY BADGE - RIGHT ALIGNED */
+.velocity-badge-executive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    border: 1px solid;
+    min-width: 95px;
+    text-align: center;
+}
+
+.velocity-strong-exec {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.08);
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.velocity-moderate-exec {
+    color: #FFC107;
+    background: rgba(255, 193, 7, 0.08);
+    border-color: rgba(255, 193, 7, 0.4);
+}
+
+.velocity-weak-exec {
+    color: #F44336;
+    background: rgba(244, 67, 54, 0.08);
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+/* SEPARATOR LINE */
+.competitor-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,182,121,0.15), transparent);
+    margin: 0 22px;
+}
+
+/* MINI FOOTER */
+.inventory-mini-footer {
+    padding: 14px 22px;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(212,182,121,0.15);
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.5);
+    text-align: center;
+    font-style: italic;
+    letter-spacing: 0.5px;
+}
+
+/* LEGACY LUXURY COMPETITOR INVENTORY CARDS (FALLBACK) */
 .competitive-inventory-luxury-grid {
     display: flex;
     flex-direction: column;
@@ -1289,8 +1484,7 @@ MARKET DEPTH ANALYSIS — PANEL GAP FROM TOP
 }
 
 /* ============================================
-STRATEGIC FORECAST — TOP TWO CARDS COMPLETE REDESIGN
-MATCHING BOTTOM CARDS AESTHETIC
+STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1316,8 +1510,171 @@ MATCHING BOTTOM CARDS AESTHETIC
     box-shadow: 0 4px 20px rgba(191, 166, 112, 0.35);
 }
 
+/* ULTRA-LUXURY EXECUTIVE CARDS */
+.forecast-card-executive {
+    background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
+    border: 1px solid rgba(212,182,121,0.28);
+    border-radius: 12px;
+    padding: 16px 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.forecast-card-executive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(212,182,121,0.08) 40px, rgba(212,182,121,0.08) 42px);
+    opacity: 0.12;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.forecast-card-title-executive {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #D4B679;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 10px;
+    z-index: 1;
+}
+
+.forecast-card-title-executive::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #D4B679, transparent);
+    opacity: 0.6;
+}
+
+.forecast-card-body-executive {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    position: relative;
+    z-index: 1;
+    padding: 8px 15px;
+}
+
+/* PRIMARY VALUE - CENTERED LARGE NUMBER */
+.forecast-primary-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 82px;
+    font-weight: 700;
+    color: #D4B679;
+    line-height: 1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+    text-shadow: 0 3px 18px rgba(212,182,121,0.8);
+}
+
+/* DIRECTION INDICATOR */
+.forecast-direction-indicator {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #E6E6E6;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+/* CONFIDENCE BAR */
+.forecast-confidence-bar {
+    width: 180px;
+    height: 4px;
+    background: rgba(59, 59, 59, 0.4);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.confidence-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #D4B679, #B59854);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(212,182,121,0.6);
+}
+
+/* META LABEL */
+.forecast-meta-label {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.6);
+    letter-spacing: 0.8px;
+    text-align: center;
+}
+
+/* 90-DAY CONE RANGE - VERTICAL STACKED */
+.cone-range-executive {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.cone-value-executive {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 38px;
+    font-weight: 700;
+    color: #D4B679;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 10px rgba(212,182,121,0.5);
+}
+
+.cone-high-exec {
+    font-size: 42px;
+}
+
+.cone-mid-exec {
+    font-size: 48px;
+}
+
+.cone-low-exec {
+    font-size: 42px;
+}
+
+.cone-separator {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,182,121,0.3), transparent);
+}
+
+.cone-label-executive {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(230,230,230,0.5);
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+/* LEGACY FORECAST CARD STYLES (BOTTOM TWO CARDS) */
 .forecast-card-title {
-    font-family: var(--font-display);
     font-size: 20px;
     color: var(--vm-bronze);
     text-transform: uppercase;
@@ -1345,44 +1702,6 @@ MATCHING BOTTOM CARDS AESTHETIC
     width: 100%;
 }
 
-/* REDESIGNED TOP TWO CARDS — CENTERED LIKE BOTTOM CARDS */
-.forecast-percentage-redesigned {
-    font-size: 72px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    line-height: 1;
-    margin-bottom: 16px;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 3px 16px rgba(191, 166, 112, 0.7);
-    text-align: center;
-}
-
-.forecast-arrow-redesigned {
-    font-size: 56px;
-    color: var(--vm-gold);
-    margin-bottom: 12px;
-    line-height: 1;
-    filter: drop-shadow(0 4px 12px rgba(191, 166, 112, 0.6));
-}
-
-.forecast-label-redesigned {
-    font-size: 16px;
-    color: var(--vm-text);
-    margin-top: 12px;
-    text-align: center;
-    line-height: 1.4;
-}
-
-.forecast-confidence-redesigned {
-    font-size: 14px;
-    color: var(--vm-muted);
-    margin-top: 12px;
-    text-align: center;
-    font-style: italic;
-}
-
-/* BOTTOM TWO CARDS — KEEP ORIGINAL */
 .cone-range-display {
     display: flex;
     flex-direction: column;
@@ -2232,20 +2551,12 @@ footer,
 }
 
 /* ============================================
-END VOXMILL V5.0 — GLOBAL SYMMETRY COMPLETE
-✅ Executive summary: titles left-aligned
-✅ Universal padding: 8px top/bottom, 15px left/right
-✅ Market overview alignment: applied globally
-✅ Competitor table: luxury redesign (gradient cards with hover)
-✅ Cross-vertical: title lines adjusted (10px gap from edges)
-✅ Momentum correlation: horizontal flow (6 boxes in row)
-✅ Market depth: panel gap from top added
-✅ Strategic forecast: top 2 cards redesigned (centered like bottom)
-✅ Macro context: moved up 20px
-✅ Executive intelligence: bullets + action window redesigned
-✅ Pipeline: increased spacing + larger text
-✅ Macro risk map: extended container
-✅ AI opportunities: left-to-right alignment
-✅ Background opacity: reduced 8% (0.29 → 0.21)
-✅ Global symmetry: achieved throughout
+END VOXMILL V5.0 — ULTRA-LUXURY COMPLETE
+✅ All container heights increased 5px (pages 3-11)
+✅ All card/text content moved down 5px (pages 3-11)
+✅ Strategic Forecast: Ultra-luxury top two cards
+✅ Participant Market Share: Multi-ring radial gauge
+✅ Competitor Inventory: Executive comparison panel
+✅ Bloomberg-meets-Goldman aesthetic achieved
+✅ Fortune-500 boardroom ready
 ============================================ */
