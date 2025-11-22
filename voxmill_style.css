@@ -1,6 +1,6 @@
 /* ============================================
 VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.0 FINAL PRODUCTION
-COMPLETE REDESIGN — GLOBAL SYMMETRY + ALL CHANGES + ULTRA-LUXURY UPDATES
+SURGICAL REFINEMENT COMPLETE — BOARDROOM READY
 ============================================ */
 
 :root {
@@ -48,7 +48,16 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 }
 
 /* ============================================
-BRONZE PATTERN — OPACITY REDUCED BY 8% (0.29 → 0.21)
+GLOBAL CONTAINER PADDING UTILITY — CONSISTENT SPACING
+============================================ */
+
+.card-content,
+.card-inner {
+    padding: 10px 20px !important;
+}
+
+/* ============================================
+BRONZE PATTERN BACKGROUND
 ============================================ */
 
 body {
@@ -252,8 +261,7 @@ COVER PAGE
 }
 
 /* ============================================
-GLOBAL CONTAINER PADDING — UNIVERSAL 8PX TOP/BOTTOM, 15PX LEFT/RIGHT
-MATCHING MARKET OVERVIEW ALIGNMENT
+GLOBAL CONTAINER ALIGNMENT — MINIMUM PADDING ENFORCED
 ============================================ */
 
 .kpi-card,
@@ -276,49 +284,10 @@ MATCHING MARKET OVERVIEW ALIGNMENT
 .signal-card-v2,
 .competitive-insights-strip,
 .executive-summary-card,
-.competitive-inventory-card-luxury,
 .momentum-streets-panel,
 .acquisition-flagging-header,
 .acquisition-strategy-ribbon {
-    padding: 8px 15px !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ============================================
-GLOBAL CONTAINER HEIGHT INCREASE + 5PX DOWNWARD ADJUSTMENT (PAGES 3-11)
-============================================ */
-
-.slide:nth-child(n+3):nth-child(-n+11) .kpi-card,
-.slide:nth-child(n+3):nth-child(-n+11) .chart-container,
-.slide:nth-child(n+3):nth-child(-n+11) .chart-panel,
-.slide:nth-child(n+3):nth-child(-n+11) .movement-mini-card,
-.slide:nth-child(n+3):nth-child(-n+11) .executive-summary-bullet,
-.slide:nth-child(n+3):nth-child(-n+11) .insight-card,
-.slide:nth-child(n+3):nth-child(-n+11) .cross-vertical-card,
-.slide:nth-child(n+3):nth-child(-n+11) .methodology-panel,
-.slide:nth-child(n+3):nth-child(-n+11) .panel,
-.slide:nth-child(n+3):nth-child(-n+11) .depth-card,
-.slide:nth-child(n+3):nth-child(-n+11) .risk-dial-card,
-.slide:nth-child(n+3):nth-child(-n+11) .submarket-card-v2,
-.slide:nth-child(n+3):nth-child(-n+11) .forecast-card-v2 {
-    min-height: calc(100% + 5px);
-}
-
-.slide:nth-child(n+3):nth-child(-n+11) .kpi-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .chart-container > *,
-.slide:nth-child(n+3):nth-child(-n+11) .chart-panel > *,
-.slide:nth-child(n+3):nth-child(-n+11) .movement-mini-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .insight-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .cross-vertical-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .methodology-panel > *,
-.slide:nth-child(n+3):nth-child(-n+11) .depth-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .risk-dial-card > *,
-.slide:nth-child(n+3):nth-child(-n+11) .submarket-card-v2 > *,
-.slide:nth-child(n+3):nth-child(-n+11) .forecast-card-v2 > * {
-    transform: translateY(5px);
+    padding: 10px 20px !important;
 }
 
 /* ============================================
@@ -340,7 +309,6 @@ EXECUTIVE SUMMARY BULLETS — TITLES LEFT-ALIGNED
     border-radius: 8px;
     min-height: 110px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-    align-items: flex-start !important;
 }
 
 .executive-bullet-title {
@@ -411,6 +379,7 @@ WEEKLY MOVEMENT DASHBOARD
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    padding: 12px 18px !important;
 }
 
 .movement-label {
@@ -472,10 +441,14 @@ KPI GRID — MARKET OVERVIEW (REFERENCE ALIGNMENT)
     border-radius: 12px;
     min-height: 164px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .kpi-content {
     width: 100%;
+    padding: 8px 0;
 }
 
 .kpi-label {
@@ -546,6 +519,9 @@ CHART SECTION
     page-break-inside: avoid;
     width: 100%;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    padding: 15px 20px !important;
 }
 
 .chart-title {
@@ -636,6 +612,8 @@ TWO COLUMN CHARTS
     width: 100%;
     page-break-inside: avoid;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
 }
 
 /* ============================================
@@ -658,6 +636,9 @@ INSIGHT CARDS
     min-height: 110px;
     height: 110px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .insight-title {
@@ -676,8 +657,8 @@ INSIGHT CARDS
 }
 
 /* ============================================
-COMPETITOR ACTIVE INVENTORY — COMPLETE LUXURY REDESIGN
-MINIMALIST ELEGANT CARD SYSTEM
+COMPETITIVE LANDSCAPE — PARTICIPANT MARKET SHARE
+CLEAN RADIAL GAUGE (NO BACKGROUND TEXT)
 ============================================ */
 
 .competitive-landscape-slide .two-column {
@@ -689,28 +670,8 @@ MINIMALIST ELEGANT CARD SYSTEM
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
     padding: 20px 15px;
     min-height: 420px;
-}
-
-.competitive-radial-value {
-    font-family: var(--font-display);
-    font-size: 72px;
-    font-weight: 700;
-    color: #BFA670;
-    line-height: 1;
-    margin-bottom: 12px;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
-}
-
-.competitive-radial-label {
-    font-size: 14px;
-    color: rgba(184, 184, 184, 0.65);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    font-style: italic;
-    font-family: var(--font-display);
 }
 
 /* MICRO LEGEND BELOW GAUGE */
@@ -744,7 +705,7 @@ MINIMALIST ELEGANT CARD SYSTEM
 }
 
 /* ============================================
-COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
+COMPETITOR ACTIVE INVENTORY — EXECUTIVE PANEL (WIDER TABLE)
 ============================================ */
 
 .competitive-inventory-executive-panel {
@@ -753,14 +714,16 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     border-radius: 12px;
     overflow: hidden;
     margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 92%;
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
-/* TITLE BAR - GOLD STRIP */
 .inventory-title-bar {
     background: linear-gradient(90deg, rgba(212,182,121,0.25), rgba(181,152,84,0.15));
     border-bottom: 1px solid rgba(212,182,121,0.3);
-    padding: 12px 22px;
+    padding: 12px 28px;
 }
 
 .inventory-bar-text {
@@ -773,13 +736,12 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     text-align: center;
 }
 
-/* COMPETITOR ROW */
 .competitor-row-executive {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1.8fr auto;
     align-items: center;
-    padding: 16px 22px;
-    gap: 20px;
+    padding: 18px 28px;
+    gap: 32px;
     transition: background 0.2s ease;
 }
 
@@ -795,16 +757,16 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
 
 .competitor-name-exec {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: #E6E6E6;
     letter-spacing: 0.3px;
-    line-height: 1.3;
+    line-height: 1.4;
 }
 
 .competitor-inventory-count {
     font-family: 'IBM Plex Mono', 'Courier New', monospace;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     color: rgba(212,182,121,0.7);
     letter-spacing: 0.5px;
@@ -816,12 +778,11 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     justify-content: flex-end;
 }
 
-/* VELOCITY BADGE - RIGHT ALIGNED */
 .velocity-badge-executive {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 18px;
+    padding: 9px 20px;
     border-radius: 6px;
     font-family: 'Inter', Arial, sans-serif;
     font-size: 11px;
@@ -829,7 +790,7 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     text-transform: uppercase;
     letter-spacing: 0.9px;
     border: 1px solid;
-    min-width: 95px;
+    min-width: 100px;
     text-align: center;
 }
 
@@ -851,16 +812,14 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     border-color: rgba(244, 67, 54, 0.4);
 }
 
-/* SEPARATOR LINE */
 .competitor-separator {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(212,182,121,0.15), transparent);
-    margin: 0 22px;
+    margin: 0 28px;
 }
 
-/* MINI FOOTER */
 .inventory-mini-footer {
-    padding: 14px 22px;
+    padding: 14px 28px;
     background: rgba(0,0,0,0.3);
     border-top: 1px solid rgba(212,182,121,0.15);
     font-family: 'Inter', Arial, sans-serif;
@@ -870,127 +829,6 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
     text-align: center;
     font-style: italic;
     letter-spacing: 0.5px;
-}
-
-/* LEGACY LUXURY COMPETITOR INVENTORY CARDS (FALLBACK) */
-.competitive-inventory-luxury-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 30px;
-}
-
-.competitive-inventory-card-luxury {
-    background: linear-gradient(135deg, rgba(191, 166, 112, 0.05), rgba(12, 12, 12, 0.6));
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(191, 166, 112, 0.25);
-    border-radius: 10px;
-    display: grid;
-    grid-template-columns: 2.5fr 1fr 1.5fr;
-    gap: 24px;
-    align-items: center;
-    min-height: 80px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.competitive-inventory-card-luxury::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(180deg, var(--vm-gold), var(--vm-gold-secondary));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.competitive-inventory-card-luxury:hover {
-    background: linear-gradient(135deg, rgba(191, 166, 112, 0.12), rgba(12, 12, 12, 0.8));
-    border-color: rgba(191, 166, 112, 0.5);
-    transform: translateX(4px);
-}
-
-.competitive-inventory-card-luxury:hover::before {
-    opacity: 1;
-}
-
-.competitor-name-luxury {
-    font-family: var(--font-display);
-    font-size: 17px;
-    font-weight: 600;
-    color: #BFA670;
-    letter-spacing: 0.02em;
-    line-height: 1.4;
-    padding-left: 8px;
-}
-
-.competitor-stats-luxury {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.competitor-stat-label-luxury {
-    font-size: 9px;
-    color: rgba(184, 184, 184, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-weight: 500;
-}
-
-.competitor-stat-value-luxury {
-    font-size: 28px;
-    font-weight: 700;
-    color: #BFA670;
-    font-family: var(--font-mono);
-    line-height: 1;
-    text-shadow: 0 2px 6px rgba(191, 166, 112, 0.4);
-}
-
-.competitor-velocity-luxury {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.velocity-indicator-luxury {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: rgba(12, 12, 12, 0.7);
-    border: 1.5px solid;
-}
-
-.velocity-strong-luxury {
-    color: #4CAF50;
-    border-color: rgba(76, 175, 80, 0.5);
-    background: rgba(76, 175, 80, 0.08);
-}
-
-.velocity-moderate-luxury {
-    color: #FFC107;
-    border-color: rgba(255, 193, 7, 0.5);
-    background: rgba(255, 193, 7, 0.08);
-}
-
-.velocity-weak-luxury {
-    color: #F44336;
-    border-color: rgba(244, 67, 54, 0.5);
-    background: rgba(244, 67, 54, 0.08);
-}
-
-.velocity-icon-luxury {
-    font-size: 14px;
 }
 
 .competitive-insights-strip {
@@ -1028,7 +866,7 @@ COMPETITOR ACTIVE INVENTORY — EXECUTIVE COMPARISON PANEL
 }
 
 /* ============================================
-CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
+CROSS-VERTICAL INTELLIGENCE — BALANCED CENTERED CONTENT
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
@@ -1054,12 +892,15 @@ CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
     border-radius: 10px;
     min-height: 360px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-    padding: 8px 20px !important;
+    padding: 22px 20px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .cross-vertical-icon {
     font-size: 48px;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 16px;
     line-height: 1;
     color: var(--vm-gold);
     text-align: center;
@@ -1070,7 +911,7 @@ CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
     font-size: 19px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 14px;
     letter-spacing: 0.05em;
     text-align: center;
     position: relative;
@@ -1091,9 +932,9 @@ CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
 .cross-vertical-text {
     font-size: 13px;
     color: var(--vm-text-body);
-    line-height: 1.65;
-    margin-bottom: var(--spacing-xs);
-    text-align: left;
+    line-height: 1.75;
+    margin-bottom: 16px;
+    text-align: center;
 }
 
 .cross-vertical-bullets {
@@ -1105,11 +946,11 @@ CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
 .cross-vertical-bullets li {
     font-size: 12px;
     color: var(--vm-text-body);
-    margin-bottom: 10px;
+    margin-bottom: 11px;
     padding-left: 20px;
     position: relative;
     text-align: left;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 .cross-vertical-bullets li::before {
@@ -1122,7 +963,7 @@ CROSS-VERTICAL INTELLIGENCE — TITLE LINES ADJUSTED
 }
 
 /* ============================================
-MOMENTUM CORRELATION — HORIZONTAL LAYOUT (PIPELINE STYLE)
+MOMENTUM CORRELATION — HORIZONTAL FLOW (EVEN SPACING)
 ============================================ */
 
 .momentum-correlation-panel {
@@ -1146,9 +987,10 @@ MOMENTUM CORRELATION — HORIZONTAL LAYOUT (PIPELINE STYLE)
 .momentum-correlation-flow {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: space-evenly;
+    gap: 14px;
     flex-wrap: nowrap;
+    padding: 0 10px;
 }
 
 .momentum-signal-box {
@@ -1156,18 +998,19 @@ MOMENTUM CORRELATION — HORIZONTAL LAYOUT (PIPELINE STYLE)
     background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.6));
     border: 1px solid rgba(191, 166, 112, 0.3);
     border-radius: 8px;
-    padding: 16px 12px;
+    padding: 18px 14px;
     text-align: center;
-    min-height: 90px;
+    min-height: 95px;
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: 240px;
 }
 
 .momentum-signal-text {
     font-size: 11px;
     color: var(--vm-text-body);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .momentum-arrow {
@@ -1259,7 +1102,7 @@ METHODOLOGY
 }
 
 /* ============================================
-INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER TEXT
+INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
 ============================================ */
 
 .model-pipeline {
@@ -1274,8 +1117,8 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER TEXT
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 24px 0;
-    gap: 24px;
+    margin: 28px 0;
+    gap: 32px;
 }
 
 .pipeline-step {
@@ -1288,18 +1131,21 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER TEXT
 .pipeline-box {
     background: linear-gradient(90deg, #C9A86A, #B59854);
     color: #F5F5F5;
-    padding: 22px 36px;
+    padding: 24px 40px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
-    min-width: 180px;
+    min-width: 190px;
     box-shadow: 0 4px 12px rgba(191, 166, 112, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pipeline-arrow {
-    font-size: 40px;
+    font-size: 42px;
     color: var(--vm-gold);
     margin: 0;
     flex-shrink: 0;
@@ -1322,7 +1168,7 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER TEXT
 }
 
 /* ============================================
-MARKET DEPTH ANALYSIS — PANEL GAP FROM TOP
+MARKET DEPTH ANALYSIS
 ============================================ */
 
 .market-depth-analysis .slide-content {
@@ -1437,6 +1283,9 @@ MARKET DEPTH ANALYSIS — PANEL GAP FROM TOP
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .depth-label {
@@ -1484,7 +1333,7 @@ MARKET DEPTH ANALYSIS — PANEL GAP FROM TOP
 }
 
 /* ============================================
-STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
+STRATEGIC FORECAST — TITLE ALIGNMENT MATCHED
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1502,6 +1351,8 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
 }
 
 .forecast-card-highlight {
@@ -1510,12 +1361,11 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     box-shadow: 0 4px 20px rgba(191, 166, 112, 0.35);
 }
 
-/* ULTRA-LUXURY EXECUTIVE CARDS */
 .forecast-card-executive {
     background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(18,18,18,0.9) 100%);
     border: 1px solid rgba(212,182,121,0.28);
     border-radius: 12px;
-    padding: 16px 22px;
+    padding: 18px 24px;
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -1566,13 +1416,12 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 160px;
+    flex: 1;
     position: relative;
     z-index: 1;
     padding: 8px 15px;
 }
 
-/* PRIMARY VALUE - CENTERED LARGE NUMBER */
 .forecast-primary-value {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 82px;
@@ -1584,7 +1433,6 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     text-shadow: 0 3px 18px rgba(212,182,121,0.8);
 }
 
-/* DIRECTION INDICATOR */
 .forecast-direction-indicator {
     font-family: 'Inter', Arial, sans-serif;
     font-size: 15px;
@@ -1595,7 +1443,6 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     text-align: center;
 }
 
-/* CONFIDENCE BAR */
 .forecast-confidence-bar {
     width: 180px;
     height: 4px;
@@ -1616,7 +1463,6 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     box-shadow: 0 0 8px rgba(212,182,121,0.6);
 }
 
-/* META LABEL */
 .forecast-meta-label {
     font-family: 'Inter', Arial, sans-serif;
     font-size: 12px;
@@ -1626,7 +1472,6 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     text-align: center;
 }
 
-/* 90-DAY CONE RANGE - VERTICAL STACKED */
 .cone-range-executive {
     display: flex;
     flex-direction: column;
@@ -1673,7 +1518,6 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     text-align: center;
 }
 
-/* LEGACY FORECAST CARD STYLES (BOTTOM TWO CARDS) */
 .forecast-card-title {
     font-size: 20px;
     color: var(--vm-bronze);
@@ -1683,7 +1527,7 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
     text-align: center;
     width: 100%;
     position: relative;
-    padding-bottom: 10px;
+    padding: 18px 0 10px 0;
 }
 
 .forecast-card-title::after {
@@ -1700,6 +1544,12 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
 
 .forecast-card-body {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 10px 20px;
 }
 
 .cone-range-display {
@@ -1794,7 +1644,7 @@ STRATEGIC FORECAST — TOP TWO CARDS ULTRA-LUXURY REDESIGN
 }
 
 /* ============================================
-MACRO CONTEXT — MOVED UP 20PX
+MACRO CONTEXT
 ============================================ */
 
 .macro-context {
@@ -1837,7 +1687,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
 .executive-insights-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 22px;
 }
 
 .executive-insight-item {
@@ -1846,10 +1696,12 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 5px solid var(--vm-gold);
     border-radius: 10px;
-    min-height: 80px;
-    display: flex;
+    min-height: 90px;
+    display: grid;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
+    padding: 16px 22px !important;
     transition: all 0.2s ease;
 }
 
@@ -1859,10 +1711,10 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
 }
 
 .executive-insight-number {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: var(--vm-gold);
+    background: linear-gradient(135deg, var(--vm-gold), var(--vm-gold-secondary));
     color: var(--vm-dark);
     display: flex;
     align-items: center;
@@ -1871,14 +1723,27 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     font-size: 20px;
     font-weight: 800;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
+    box-shadow: 0 3px 10px rgba(191, 166, 112, 0.5);
+}
+
+.executive-insight-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.executive-insight-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
 }
 
 .executive-insight-text {
     font-size: 14px;
     color: var(--vm-text-body);
     line-height: 1.65;
-    flex: 1;
 }
 
 .executive-summary-card {
@@ -1888,6 +1753,9 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 6px 16px rgba(191, 166, 112, 0.25);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .executive-summary-title {
@@ -1936,7 +1804,7 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
     font-style: italic;
 }
 
-/* REDESIGNED ACTION WINDOW */
+/* STRATEGIC ACTION WINDOW — 3-COLUMN PLAYBOOK */
 .action-window {
     background: rgba(12, 12, 12, 0.35);
     backdrop-filter: blur(2px);
@@ -1959,32 +1827,38 @@ EXECUTIVE INTELLIGENCE — REDESIGNED BULLETS + ACTION WINDOW
 
 .action-window-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
 }
 
-.action-window-item {
+.action-window-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 20px;
     background: rgba(191, 166, 112, 0.05);
     border: 1px solid rgba(191, 166, 112, 0.2);
     border-radius: 8px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
-.action-window-label {
-    font-size: 10px;
+.action-column-label {
+    font-size: 9px;
     color: rgba(191, 166, 112, 0.7);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.action-window-value {
+.action-column-main {
     font-size: 15px;
     color: var(--vm-text);
     font-weight: 600;
+    line-height: 1.4;
+}
+
+.action-column-support {
+    font-size: 12px;
+    color: var(--vm-text-body);
     line-height: 1.5;
 }
 
@@ -2125,7 +1999,7 @@ TOP MARKET OPPORTUNITIES
 }
 
 /* ============================================
-MACRO RISK DASHBOARD — RISK MAP EXTENDED
+MACRO RISK DASHBOARD — INCREASED PADDING + EXTENDED RISK MAP
 ============================================ */
 
 .macro-risk-grid {
@@ -2142,6 +2016,10 @@ MACRO RISK DASHBOARD — RISK MAP EXTENDED
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 24px !important;
 }
 
 .risk-dial-title {
@@ -2167,13 +2045,12 @@ MACRO RISK DASHBOARD — RISK MAP EXTENDED
     font-weight: 400;
 }
 
-/* EXTENDED RISK MAP CONTAINER */
 .macro-risk-map-extended {
     background: rgba(12, 12, 12, 0.35);
     backdrop-filter: blur(2px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 32px;
+    padding: 38px 32px;
     margin-top: 60px;
     margin-bottom: 60px;
 }
@@ -2202,6 +2079,9 @@ SEGMENT PERFORMANCE
     min-height: 360px;
     flex: 0 0 480px;
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .submarket-header {
@@ -2295,7 +2175,7 @@ SEGMENT PERFORMANCE
 }
 
 /* ============================================
-AI OPPORTUNITIES — LEFT-TO-RIGHT ALIGNMENT
+AI OPPORTUNITIES — CONSISTENT PADDING
 ============================================ */
 
 .acquisition-flagging-header {
@@ -2551,12 +2431,16 @@ footer,
 }
 
 /* ============================================
-END VOXMILL V5.0 — ULTRA-LUXURY COMPLETE
-✅ All container heights increased 5px (pages 3-11)
-✅ All card/text content moved down 5px (pages 3-11)
-✅ Strategic Forecast: Ultra-luxury top two cards
-✅ Participant Market Share: Multi-ring radial gauge
-✅ Competitor Inventory: Executive comparison panel
-✅ Bloomberg-meets-Goldman aesthetic achieved
-✅ Fortune-500 boardroom ready
+END VOXMILL V5.0 — SURGICAL REFINEMENT COMPLETE
+✅ Global padding rules enforced (≥8px top/bottom, ≥15px sides)
+✅ Competitor table widened, ghost text removed
+✅ Cross-vertical cards balanced and centered
+✅ Momentum correlation evenly spaced
+✅ Strategic forecast titles aligned
+✅ Executive intelligence bullets redesigned
+✅ Action window rebuilt as 3-column playbook
+✅ Intelligence pipeline spacing increased
+✅ Macro risk dashboard padding enhanced
+✅ All containers follow Market Overview alignment
+✅ Production-ready boardroom quality
 ============================================ */
