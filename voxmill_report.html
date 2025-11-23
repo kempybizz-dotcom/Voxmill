@@ -692,68 +692,48 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-       <!-- TOP LEFT: 30-DAY MOMENTUM -->
-<div class="forecast-card-premium">
-    <div class="forecast-premium-header">
-        <div class="forecast-premium-label">Short-Term Outlook</div>
-        <div class="forecast-premium-title">30-Day {{ forward_indicator_label }}</div>
+       <!-- STRATEGIC FORECAST GRID — 2×2 ALIGNED LIKE MACRO DASHBOARD -->
+<div class="forecast-grid-2x2">
+    <!-- CARD 1: 30-DAY MOMENTUM -->
+    <div class="risk-dial-card">
+        <h3 class="risk-dial-title">30-Day {{ forward_indicator_label }}</h3>
+        <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+        <div class="risk-dial-status">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} — Short-term trajectory</div>
+        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+            Linear regression weighted by recent {{ velocity_metric_label|lower }} trends. Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}. Immediate market momentum indicator for tactical positioning.
+        </p>
     </div>
-    <div class="forecast-premium-body">
-        <div class="forecast-premium-value-large">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-        <div class="forecast-premium-direction">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
-        <div class="forecast-premium-confidence-bar">
-            <div class="forecast-premium-confidence-fill"></div>
-        </div>
-        <div class="forecast-premium-confidence-label">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
-    </div>
-</div>
 
-<!-- TOP RIGHT: 90-DAY PROJECTION -->
-<div class="forecast-card-premium">
-    <div class="forecast-premium-header">
-        <div class="forecast-premium-label">Medium-Term Projection</div>
-        <div class="forecast-premium-title">90-Day Outlook</div>
+    <!-- CARD 2: 90-DAY PROJECTION -->
+    <div class="risk-dial-card">
+        <h3 class="risk-dial-title">90-Day Outlook</h3>
+        <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
+        <div class="risk-dial-status">Baseline Trend — Medium-term projection</div>
+        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+            Range: {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}% (low) to {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}% (high). Monte Carlo simulation with 10,000 iterations establishing probabilistic bands.
+        </p>
     </div>
-    <div class="forecast-premium-body">
-        <div class="forecast-projection-row">
-            <div class="forecast-projection-label">Baseline Trend</div>
-            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
-        </div>
-        <div class="forecast-projection-row">
-            <div class="forecast-projection-label">Upper Bound</div>
-            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
-        </div>
-        <div class="forecast-projection-row">
-            <div class="forecast-projection-label">Lower Bound</div>
-            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
-        </div>
-        <div class="forecast-premium-confidence-label">Probabilistic range based on Monte Carlo simulation</div>
+
+    <!-- CARD 3: MARKET SENTIMENT -->
+    <div class="risk-dial-card">
+        <h3 class="risk-dial-title">Market Sentiment</h3>
+        <div class="risk-dial-value">{{ forecast.sentiment or "Neutral" }}</div>
+        <div class="risk-dial-status">AI-Derived — Composite signal analysis</div>
+        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+            Multi-factor composite incorporating {{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, and inventory fundamentals. Real-time sentiment calibration across institutional participants.
+        </p>
+    </div>
+
+    <!-- CARD 4: VOXMILL INDEX -->
+    <div class="risk-dial-card">
+        <h3 class="risk-dial-title">Voxmill Predictive Index</h3>
+        <div class="risk-dial-value">{{ forecast.voxmill_index or 0 }}</div>
+        <div class="risk-dial-status">{{ "Strong" if (forecast.voxmill_index or 0) >= 70 else "Moderate" if (forecast.voxmill_index or 0) >= 50 else "Weak" }} — Composite strength (0-100)</div>
+        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+            Proprietary blend: 40% liquidity index, 30% demand pressure, 30% {{ forward_indicator_label|lower }}. Aggregated market health indicator for strategic capital deployment timing.
+        </p>
     </div>
 </div>
-            <!-- BOTTOM LEFT: MARKET SENTIMENT -->
-            <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Market Sentiment</h3>
-                <div class="forecast-card-body">
-                    <div class="sentiment-display sentiment-{{ (forecast.sentiment|lower) if forecast.sentiment else 'neutral' }}">
-                        {{ forecast.sentiment or "Neutral" }}
-                    </div>
-                    <div class="forecast-label-text">AI-Derived Composite Signal</div>
-                </div>
-            </div>
-            
-            <!-- BOTTOM RIGHT: VOXMILL INDEX -->
-            <div class="forecast-card-v2 forecast-card-highlight">
-                <h3 class="forecast-card-title">Voxmill Predictive Index</h3>
-                <div class="forecast-card-body">
-                    <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
-                    <div class="voxmill-index-bar-container">
-                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
-                    </div>
-                    <div class="voxmill-index-caption">Composite Market Strength (0-100)</div>
-                    <div class="forecast-label-text">Blend of liquidity, demand pressure, and {{ forward_indicator_label|lower }}</div>
-                </div>
-            </div>
-        </div>
         
         <div class="macro-context">
             <h4 class="macro-title">📊 Macro Context</h4>
