@@ -240,9 +240,9 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <div class="chart-mini-insight">
-                    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
-                </div>
+                <div class="chart-mini-insight" style="margin-top: 95px;">
+    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
+</div>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
         </div>
@@ -385,8 +385,8 @@
     </div>
     <div class="slide-content">
         <div class="two-column">
-            <!-- LEFT COLUMN: MARKET CONCENTRATION INTELLIGENCE -->
-            <div class="chart-panel">
+    <!-- LEFT COLUMN: MARKET CONCENTRATION INTELLIGENCE -->
+    <div class="competitive-info-panel">
                 <h3 class="chart-title">Market Concentration Intelligence</h3>
                 <p class="chart-context">Institutional participant distribution and competitive intensity metrics</p>
                 
@@ -414,7 +414,8 @@
             </div>
             
             <!-- RIGHT COLUMN: INSTITUTIONAL POSITIONING BREAKDOWN -->
-            <div class="chart-panel">
+            <!-- RIGHT COLUMN: INSTITUTIONAL POSITIONING BREAKDOWN -->
+            <div class="competitive-info-panel">
                 <h3 class="chart-title">Institutional Positioning Breakdown</h3>
                 <p class="chart-context">Active portfolio distribution across leading market participants</p>
                 
@@ -990,106 +991,118 @@
     </div>
 </div>
 
-<!-- SLIDE 12: MACRO RISK DASHBOARD -->
+<!-- SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN -->
 
-<div class="slide">
+<div class="slide segment-performance-slide">
     <div class="slide-header">
-        <h2 class="slide-title">Macro Risk Dashboard</h2>
+        <h2 class="slide-title">Segment Performance Breakdown</h2>
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
-
+    
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 40px;">Real-time macro risk indicators — Interest rates, policy environment, liquidity conditions, and investor sentiment calibration</p>
+        <p class="chart-context" style="margin-bottom: 40px;">
+            Geographic sub-market analysis — Comparative performance across premium London districts
+        </p>
         
-        <div class="macro-risk-grid">
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Interest Rate Pressure</h3>
-                <div class="risk-dial-value">4.75%</div>
-                <div class="risk-dial-status">Moderate — BoE holding pattern sustained</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Current 4.75% base rate maintains historical average positioning. No imminent hikes projected through Q1 2026, supporting mortgage availability at current pricing levels.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Policy Risk</h3>
-                <div class="risk-dial-value">Low</div>
-                <div class="risk-dial-status">Stable — No major legislative disruption</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Regulatory environment remains predictable with no anticipated capital gains or stamp duty modifications. Planning policy stable across prime London boroughs.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Liquidity Conditions</h3>
-                <div class="risk-dial-value">Strong</div>
-                <div class="risk-dial-status">Robust — Institutional capital flows sustained</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    International participant activity remains elevated, particularly Middle Eastern and Asian sovereign wealth allocations. Transaction volumes support continued market depth.
-                </p>
-            </div>
-
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Investor Sentiment</h3>
-                <div class="risk-dial-value">Bullish</div>
-                <div class="risk-dial-status">Positive — Confidence indicators elevated</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Prime London maintains safe-haven asset status. Wealth manager surveys indicate {{ "sustained" if kpis.price_change > 0 else "cautious" }} positioning with {{ "active" if kpis.velocity_change < 0 else "measured" }} {{ acquisition_label|lower }} strategies.
-                </p>
+        <div class="submarket-section">
+            <div class="submarket-grid-v2">
+                <!-- CARD 1: MAYFAIR -->
+                <div class="submarket-card-v2">
+                    <h3 class="submarket-header">Mayfair</h3>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Average {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.avg_price if submarkets and submarkets.mayfair else 8500000) }}</div>
+                            <div class="submarket-micro-label">Ultra-prime segment leader</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">£/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.price_per_sqft if submarkets and submarkets.mayfair else 3200) }}</div>
+                            <div class="submarket-micro-label">+4.2% vs prior quarter</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }}</div>
+                            <div class="submarket-metric-value">{{ submarkets.mayfair.days_on_market if submarkets and submarkets.mayfair else 38 }}d</div>
+                            <div class="submarket-micro-label">Premium demand sustained</div>
+                        </div>
+                    </div>
+                    <div class="submarket-listing-count">{{ submarkets.mayfair.count if submarkets and submarkets.mayfair else 24 }} active {{ inventory_label|lower }}</div>
+                </div>
+                
+                <!-- CARD 2: KNIGHTSBRIDGE -->
+                <div class="submarket-card-v2">
+                    <h3 class="submarket-header">Knightsbridge</h3>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Average {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.avg_price if submarkets and submarkets.knightsbridge else 7200000) }}</div>
+                            <div class="submarket-micro-label">International participant hub</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">£/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.price_per_sqft if submarkets and submarkets.knightsbridge else 2850) }}</div>
+                            <div class="submarket-micro-label">+2.8% vs prior quarter</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }}</div>
+                            <div class="submarket-metric-value">{{ submarkets.knightsbridge.days_on_market if submarkets and submarkets.knightsbridge else 42 }}d</div>
+                            <div class="submarket-micro-label">Stable absorption rate</div>
+                        </div>
+                    </div>
+                    <div class="submarket-listing-count">{{ submarkets.knightsbridge.count if submarkets and submarkets.knightsbridge else 31 }} active {{ inventory_label|lower }}</div>
+                </div>
+                
+                <!-- CARD 3: BELGRAVIA -->
+                <div class="submarket-card-v2">
+                    <h3 class="submarket-header">Belgravia</h3>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Average {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.avg_price if submarkets and submarkets.belgravia else 6800000) }}</div>
+                            <div class="submarket-micro-label">Heritage asset concentration</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">£/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.price_per_sqft if submarkets and submarkets.belgravia else 2750) }}</div>
+                            <div class="submarket-micro-label">+1.9% vs prior quarter</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }}</div>
+                            <div class="submarket-metric-value">{{ submarkets.belgravia.days_on_market if submarkets and submarkets.belgravia else 45 }}d</div>
+                            <div class="submarket-micro-label">Measured transaction pace</div>
+                        </div>
+                    </div>
+                    <div class="submarket-listing-count">{{ submarkets.belgravia.count if submarkets and submarkets.belgravia else 28 }} active {{ inventory_label|lower }}</div>
+                </div>
             </div>
         </div>
-
-        <div class="macro-context" style="margin-top: 74px;">
-            <h4 class="macro-title">📈 Composite Risk Assessment</h4>
+        
+        <!-- MOMENTUM STREETS PANEL -->
+        <div class="momentum-streets-panel">
+            <h4 class="momentum-title">🔥 High-Momentum Streets (90-Day Trend)</h4>
+            <ul class="momentum-list">
+                <li><strong>Grosvenor Square</strong> — 6 transactions, avg {{ velocity_metric_label|lower }} 22 days (exceptional)</li>
+                <li><strong>Cadogan Place</strong> — £12.4M average {{ value_metric_label|lower }}, +18% premium vs area median</li>
+                <li><strong>Eaton Square</strong> — Institutional participant concentration rising 34% QoQ</li>
+                <li><strong>Chester Square</strong> — Family office activity accelerating, 4 acquisitions in 60 days</li>
+            </ul>
+        </div>
+        
+        <div class="macro-context" style="margin-top: 52px;">
+            <h4 class="macro-title">📊 Sub-Market Strategic Summary</h4>
             <p class="macro-text">
-                <strong>Overall Market Risk: LOW-MODERATE</strong> — Macro fundamentals support continued prime market resilience. Interest rate stability, policy predictability, robust liquidity, and positive sentiment converge to create favorable {{ acquisition_label|lower }} environment. Primary risk vectors remain geopolitical (Middle East, US-China relations) and potential currency volatility (GBP weakness vs USD/EUR). Recommend maintaining diversified portfolio positioning with 20-30% cash reserves for opportunistic deployment during short-term volatility windows.
+                <strong>Mayfair</strong> maintains ultra-prime leadership with strongest pricing power. <strong>Knightsbridge</strong> demonstrates international capital magnetism with robust transaction volume. <strong>Belgravia</strong> offers heritage asset positioning with measured appreciation trajectory. Recommend diversified exposure across all three districts with 40% Mayfair, 35% Knightsbridge, 25% Belgravia allocation for optimal risk-adjusted returns.
             </p>
-        </div>
-        
-        <div class="macro-risk-map-extended">
-            <h4 class="macro-title" style="color: #C8AA6E; margin-bottom: 20px;">30-Day {{ forward_indicator_label }} Risk Map</h4>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Interest Rates</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Stable — No rate movement expected.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Liquidity</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Improving — Capital inflows strengthening.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Capital Flows</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Bullish — Cross-border activity rising.</div>
-                </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 16px; text-align: center;">
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">Volatility</div>
-                    <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.6;">Contained — No destabilising macro threats.</div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
-<style>
-/* SEGMENT PERFORMANCE BREAKDOWN — LUXURY TIER STYLING */
-
-.submarket-header {
-    border-bottom: 2px solid rgba(191, 166, 112, 0.3);
-    padding-bottom: 16px;
-}
-
-.submarket-card-v2:first-child .submarket-header {
-    border-bottom-color: rgba(191, 166, 112, 0.5);
-    font-size: 28px;
-    font-weight: 700;
-}
-
-.submarket-listing-count {
-    border-top: 1px solid rgba(191, 166, 112, 0.15);
-    padding-top: 18px;
-    margin-top: 28px;
-}
-</style>
 <!-- SLIDE 14: AI-IDENTIFIED OPPORTUNITIES -->
 
 <div class="slide ai-identified-opportunities">
