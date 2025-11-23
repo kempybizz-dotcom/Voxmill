@@ -750,59 +750,89 @@
     <div class="slide-content">
         <div class="executive-intelligence-container">
             <div class="executive-intelligence-layout">
-                <div class="executive-insights-list">
-                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
-                        <div class="insight-luxury-marker">1</div>
-                        <div class="insight-luxury-content">
-                            <div class="insight-luxury-label">Market Momentum Signal</div>
-                            <div class="insight-luxury-text">
-                                Premium segment {{ inventory_label|lower }} {{ velocity_metric_label|lower }} increased 18% QoQ, indicating strong participant confidence despite macroeconomic headwinds.
-                            </div>
+                <!-- LEFT: PREMIUM INSIGHT GRID -->
+                <div class="executive-insights-premium-grid">
+                    <div class="insight-card-elite">
+                        <div class="insight-elite-header">
+                            <div class="insight-elite-number">01</div>
+                            <div class="insight-elite-category">Market Momentum Signal</div>
+                        </div>
+                        <div class="insight-elite-divider"></div>
+                        <div class="insight-elite-body">
+                            Premium segment {{ inventory_label|lower }} {{ velocity_metric_label|lower }} increased 18% QoQ, indicating strong participant confidence despite macroeconomic headwinds.
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
-                        <div class="insight-luxury-marker">2</div>
-                        <div class="insight-luxury-content">
-                            <div class="insight-luxury-label">Pricing Resilience</div>
-                            <div class="insight-luxury-text">
-                                £10M+ transactions demonstrate 6.2% {{ value_metric_label|lower }} resilience vs. broader market, confirming ultra-prime segment decoupling.
-                            </div>
+                    <div class="insight-card-elite">
+                        <div class="insight-elite-header">
+                            <div class="insight-elite-number">02</div>
+                            <div class="insight-elite-category">Pricing Resilience</div>
+                        </div>
+                        <div class="insight-elite-divider"></div>
+                        <div class="insight-elite-body">
+                            £10M+ transactions demonstrate 6.2% {{ value_metric_label|lower }} resilience vs. broader market, confirming ultra-prime segment decoupling.
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
-                        <div class="insight-luxury-marker">3</div>
-                        <div class="insight-luxury-content">
-                            <div class="insight-luxury-label">Capital Flow Concentration</div>
-                            <div class="insight-luxury-text">
-                                Foreign capital inflows concentrated in premium segments, with Middle Eastern participants representing 34% of total volume.
-                            </div>
+                    <div class="insight-card-elite">
+                        <div class="insight-elite-header">
+                            <div class="insight-elite-number">03</div>
+                            <div class="insight-elite-category">Capital Flow Concentration</div>
+                        </div>
+                        <div class="insight-elite-divider"></div>
+                        <div class="insight-elite-body">
+                            Foreign capital inflows concentrated in premium segments, with Middle Eastern participants representing 34% of total volume.
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
-                        <div class="insight-luxury-marker">4</div>
-                        <div class="insight-luxury-content">
-                            <div class="insight-luxury-label">Timing Intelligence</div>
-                            <div class="insight-luxury-text">
-                                Competitive intensity suggests 90-120 day {{ acquisition_label|lower }} window for optimal positioning before Q1 2026 {{ value_metric_label|lower }} adjustments.
-                            </div>
+                    <div class="insight-card-elite">
+                        <div class="insight-elite-header">
+                            <div class="insight-elite-number">04</div>
+                            <div class="insight-elite-category">Timing Intelligence</div>
+                        </div>
+                        <div class="insight-elite-divider"></div>
+                        <div class="insight-elite-body">
+                            Competitive intensity suggests 90-120 day {{ acquisition_label|lower }} window for optimal positioning before Q1 2026 {{ value_metric_label|lower }} adjustments.
                         </div>
                     </div>
                 </div>
                 
-                <div class="executive-summary-card" style="padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; align-self: center;">
-                    <h3 class="executive-summary-title">Summary Signal</h3>
-                    <div class="executive-summary-icon">⚡</div>
-                    <p class="executive-summary-text">
-                        Market conditions favor aggressive positioning in ultra-prime segment.
-                    </p>
-                    <p class="executive-summary-text">
-                        {{ acquisition_label }} timing critical for Q4 2025 entry.
-                    </p>
-                    <div class="executive-summary-highlight">
-                        Confidence: 87%
+                <!-- RIGHT: EXECUTIVE VERDICT PANEL -->
+                <div class="executive-verdict-panel">
+                    <div class="verdict-panel-border">
+                        <div class="verdict-seal">
+                            <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="40" cy="40" r="35" fill="none" stroke="url(#goldGradientSeal)" stroke-width="2"/>
+                                <circle cx="40" cy="40" r="30" fill="none" stroke="url(#goldGradientSeal)" stroke-width="1" opacity="0.5"/>
+                                <path d="M40,15 L45,30 L60,30 L48,40 L53,55 L40,45 L27,55 L32,40 L20,30 L35,30 Z" fill="url(#goldGradientSeal)" opacity="0.9"/>
+                                <defs>
+                                    <linearGradient id="goldGradientSeal" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#B59854;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        
+                        <div class="verdict-label">EXECUTIVE VERDICT</div>
+                        
+                        <div class="verdict-rating">
+                            <div class="verdict-stars">★ ★ ★ ★ ★</div>
+                            <div class="verdict-score">87% Confidence</div>
+                        </div>
+                        
+                        <div class="verdict-statement">
+                            Market conditions favor aggressive positioning in ultra-prime segment.
+                        </div>
+                        
+                        <div class="verdict-substatement">
+                            {{ acquisition_label }} timing critical for Q4 2025 entry.
+                        </div>
+                        
+                        <div class="verdict-recommendation">
+                            <div class="verdict-rec-label">RECOMMENDED ACTION</div>
+                            <div class="verdict-rec-value">Immediate Deployment</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -812,6 +842,38 @@
                     Intelligence Synthesis: Voxmill proprietary multi-signal analysis indicates strong {{ acquisition_label|lower }} conditions through Q1 2026
                 </p>
             </div>
+            
+            <!-- STRATEGIC ACTION WINDOW -->
+            <div class="action-window-luxury">
+                <div class="action-window-luxury-grid">
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Optimal Entry</div>
+                        <div class="action-item-luxury-value">30–45 Days</div>
+                        <div class="action-item-luxury-subtitle">Prime acquisition window before Q1 2026 pricing adjustments</div>
+                    </div>
+                    
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Pricing Posture</div>
+                        <div class="action-item-luxury-value">Neutral-to-Firm</div>
+                        <div class="action-item-luxury-subtitle">Balanced negotiation leverage in current market conditions</div>
+                    </div>
+                    
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Participant Activity</div>
+                        <div class="action-item-luxury-value">Elevated</div>
+                        <div class="action-item-luxury-subtitle">Institutional interest concentrated in target segments</div>
+                    </div>
+                    
+                    <div class="action-item-luxury">
+                        <div class="action-item-luxury-title">Risk Assessment</div>
+                        <div class="action-item-luxury-value">Low-Moderate</div>
+                        <div class="action-item-luxury-subtitle">Liquidity robust; negotiate with measured confidence</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             
             <!-- REFINEMENT 2: STRATEGIC ACTION WINDOW — COMPLETELY REDESIGNED -->
             <div class="action-window-luxury">
