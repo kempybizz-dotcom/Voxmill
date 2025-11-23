@@ -692,65 +692,42 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <!-- REFINEMENT 1 & 4: STRATEGIC FORECAST — PERFECT GRID ALIGNMENT -->
-       <div class="forecast-card-premium" style="height: 80px; padding: 6px 10px; display: flex; flex-direction: column; justify-content: center;">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <div style="font-family: var(--font-body); font-size: 11px; font-weight: 600; color: rgba(191,166,112,0.7); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Short-Term Market Behaviour</div>
-        <div style="font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #BFA670; letter-spacing: 0.6px;">30-Day Momentum</div>
+       <!-- TOP LEFT: 30-DAY MOMENTUM -->
+<div class="forecast-card-premium">
+    <div class="forecast-premium-header">
+        <div class="forecast-premium-label">Short-Term Outlook</div>
+        <div class="forecast-premium-title">30-Day {{ forward_indicator_label }}</div>
     </div>
-    
-    <div style="text-align: center; margin: 32px 0;">
-        <div style="font-family: var(--font-display); font-size: 68px; font-weight: 700; color: #BFA670; line-height: 1; margin-bottom: 18px; text-shadow: 0 3px 16px rgba(191,166,112,0.6);">
-            {{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 2.8) }}%
+    <div class="forecast-premium-body">
+        <div class="forecast-premium-value-large">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+        <div class="forecast-premium-direction">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} Trajectory</div>
+        <div class="forecast-premium-confidence-bar">
+            <div class="forecast-premium-confidence-fill"></div>
         </div>
-        <div style="font-family: var(--font-body); font-size: 15px; font-weight: 500; color: rgba(230,230,230,0.85); letter-spacing: 1px; margin-bottom: 24px;">
-            {{ forecast.day_30.direction if forecast.day_30 else "Upward" }} Trajectory
-        </div>
-        <div style="width: 220px; height: 5px; background: rgba(59, 59, 59, 0.4); border-radius: 2px; overflow: hidden; margin: 0 auto 12px;">
-            <div style="height: 5px; width: {{ '82' if forecast.day_30 and forecast.day_30.confidence else '82' }}%; background: linear-gradient(90deg, #BFA670, #B59854); border-radius: 2px; box-shadow: 0 0 10px rgba(191,166,112,0.5);"></div>
-        </div>
-        <div style="font-family: var(--font-body); font-size: 11px; font-weight: 400; color: rgba(230,230,230,0.55); letter-spacing: 1.2px;">
-            Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "82%" }}
-        </div>
-    </div>
-    
-    <div style="font-family: var(--font-body); font-size: 13px; color: rgba(234,234,234,0.75); line-height: 1.75; text-align: center; padding: 0 16px;">
-        Near-term market behaviour indicates {{ "accelerating" if (forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 2.8) > 2.0 else "stable" }} momentum with sustained participant interest across premium segments.
+        <div class="forecast-premium-confidence-label">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}</div>
     </div>
 </div>
-            
-            <!-- TOP RIGHT: 90-DAY VOLATILITY WINDOW — COMPLETELY REDESIGNED -->
-            <div class="forecast-card-premium" style="height: 80px; padding: 6px 10px; display: flex; flex-direction: column; justify-content: center;">
-    <div style="text-align: center; margin-bottom: 28px;">
-        <div style="font-family: var(--font-body); font-size: 11px; font-weight: 600; color: rgba(191,166,112,0.7); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Medium-Term Market Outlook</div>
-        <div style="font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #BFA670; letter-spacing: 0.6px;">90-Day Projection</div>
+
+<!-- TOP RIGHT: 90-DAY PROJECTION -->
+<div class="forecast-card-premium">
+    <div class="forecast-premium-header">
+        <div class="forecast-premium-label">Medium-Term Projection</div>
+        <div class="forecast-premium-title">90-Day Outlook</div>
     </div>
-    
-    <div style="display: flex; flex-direction: column; gap: 18px; padding: 0 20px;">
-        <div style="border-left: 3px solid #BFA670; padding: 16px 20px; background: rgba(191,166,112,0.08); border-radius: 6px;">
-            <div style="font-family: var(--font-body); font-size: 11px; font-weight: 600; color: rgba(191,166,112,0.8); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">Baseline Trend</div>
-            <div style="font-family: var(--font-body); font-size: 16px; font-weight: 500; color: #E6E6E6; line-height: 1.5;">
-                {{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 4.2) }}% projected appreciation — sustained institutional interest
-            </div>
+    <div class="forecast-premium-body">
+        <div class="forecast-projection-row">
+            <div class="forecast-projection-label">Baseline Trend</div>
+            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
         </div>
-        
-        <div style="border-left: 3px solid rgba(191,166,112,0.6); padding: 16px 20px; background: rgba(191,166,112,0.05); border-radius: 6px;">
-            <div style="font-family: var(--font-body); font-size: 11px; font-weight: 600; color: rgba(191,166,112,0.7); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">Upper Bound</div>
-            <div style="font-family: var(--font-body); font-size: 16px; font-weight: 500; color: rgba(230,230,230,0.85); line-height: 1.5;">
-                {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 6.8) }}% in accelerated capital deployment scenario
-            </div>
+        <div class="forecast-projection-row">
+            <div class="forecast-projection-label">Upper Bound</div>
+            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
         </div>
-        
-        <div style="border-left: 3px solid rgba(191,166,112,0.4); padding: 16px 20px; background: rgba(191,166,112,0.03); border-radius: 6px;">
-            <div style="font-family: var(--font-body); font-size: 11px; font-weight: 600; color: rgba(191,166,112,0.6); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">Lower Bound</div>
-            <div style="font-family: var(--font-body); font-size: 16px; font-weight: 500; color: rgba(230,230,230,0.75); line-height: 1.5;">
-                {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 1.9) }}% under conservative liquidity conditions
-            </div>
+        <div class="forecast-projection-row">
+            <div class="forecast-projection-label">Lower Bound</div>
+            <div class="forecast-projection-value">{{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}%</div>
         </div>
-    </div>
-    
-    <div style="font-family: var(--font-body); font-size: 12px; color: rgba(234,234,234,0.65); line-height: 1.65; text-align: center; padding: 0 16px; margin-top: 20px; font-style: italic;">
-        Probabilistic range reflects macro sensitivity and participant behaviour variance
+        <div class="forecast-premium-confidence-label">Probabilistic range based on Monte Carlo simulation</div>
     </div>
 </div>
             <!-- BOTTOM LEFT: MARKET SENTIMENT -->
