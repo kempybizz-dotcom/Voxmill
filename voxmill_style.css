@@ -554,16 +554,23 @@ CHART SECTION — CONSISTENT SPACING
 }
 
 .chart-container {
-    height: 420px;
+    height: auto;
+    min-height: 520px;
     page-break-inside: avoid;
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
-    justify-content: space-between;
+    padding: 32px 30px 28px 30px;
+    justify-content: flex-start;
+    gap: 20px;
 }
 
-.chart-container svg,
+.chart-container svg {
+    display: block;
+    margin: 20px auto 0 auto;
+    max-width: 100%;
+}
+
 .chart-panel svg {
     display: block;
     margin: 0 auto;
@@ -571,17 +578,17 @@ CHART SECTION — CONSISTENT SPACING
 
 .chart-title {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
-    color: #D6D6D6;
+    color: #EAEAEA;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
     text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     position: relative;
-    padding-bottom: 12px;
-    padding-top: 8px;
+    padding-bottom: 14px;
+    padding-top: 0;
 }
 
 .chart-title::after {
@@ -590,22 +597,21 @@ CHART SECTION — CONSISTENT SPACING
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 140px;
+    width: 160px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.7;
-    margin-top: 0;
+    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.8), transparent);
+    opacity: 0.8;
 }
 
 .chart-context {
     font-family: var(--font-body);
-    font-size: 11px;
-    color: #D6D6D6;
+    font-size: 12px;
+    color: rgba(234, 234, 234, 0.75);
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     font-style: italic;
     line-height: 1.8;
-    max-width: 900px;
+    max-width: 1000px;
     font-weight: 400;
     margin-left: auto;
     margin-right: auto;
@@ -614,36 +620,41 @@ CHART SECTION — CONSISTENT SPACING
 .chart-source {
     font-family: var(--font-body);
     font-size: 11px;
-    color: #D6D6D6;
+    color: rgba(234, 234, 234, 0.7);
     opacity: 0.9;
     text-align: center;
-    margin-top: auto;
+    margin-top: 20px;
     font-style: italic;
-    padding-top: 14px;
+    padding-top: 0;
     font-weight: 400;
 }
 
 .chart-axis-label {
     font-family: var(--font-body);
-    font-size: 14px;
-    color: #D6D6D6;
-    opacity: 0.9;
+    font-size: 16px;
+    color: rgba(234, 234, 234, 0.9);
+    opacity: 1;
     font-weight: 600;
     letter-spacing: 0.08em;
 }
 
 .chart-mini-insight {
-    background: rgba(191, 166, 112, 0.1);
+    background: rgba(191, 166, 112, 0.12);
     border-left: 4px solid var(--vm-gold);
-    padding: 16px 26px;
-    margin-top: 45px;
+    padding: 18px 28px;
+    margin-top: 28px;
     border-radius: 8px;
     font-family: var(--font-body);
     font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.7;
+    color: rgba(234, 234, 234, 0.9);
+    line-height: 1.8;
     font-weight: 400;
-    box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
+    box-shadow: inset 0 1px 4px rgba(191, 166, 112, 0.25);
+}
+
+.chart-mini-insight strong {
+    color: var(--vm-gold);
+    font-weight: 600;
 }
 
 /* Chart stroke enhancements */
@@ -652,7 +663,7 @@ svg line[stroke-dasharray] {
 }
 
 svg line:not([stroke-dasharray]) {
-    stroke-width: 1.5px !important;
+    stroke-width: 2px !important;
 }
 
 svg circle[r="6"] {
@@ -672,13 +683,12 @@ svg circle[fill="#C5A46D"] {
 
 svg rect[fill*="barGradient"],
 svg rect[fill*="horizontalGradient"] {
-    filter: drop-shadow(0 3px 10px rgba(198, 161, 91, 0.45)) !important;
+    filter: drop-shadow(0 3px 10px rgba(198, 161, 91, 0.5)) !important;
 }
 
 svg line[stroke*="rgba(255,255,255"] {
     stroke-width: 2px !important;
 }
-
 /* ============================================
 TWO COLUMN CHARTS
 ============================================ */
@@ -1492,41 +1502,43 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
 }
 
 /* ============================================
-MARKET DEPTH ANALYSIS — TOP GAP ADDED
+MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
 ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 225px;
+    top: 185px;
 }
 
 .property-type-heatmap {
-    margin-top: var(--spacing-md);
+    margin-top: 60px;
+    margin-bottom: 40px;
 }
 
 .heatmap-table {
     width: 100%;
-    margin-top: 62px;
+    margin-top: 40px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: var(--card-radius);
     overflow: hidden;
     table-layout: fixed;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
 .heatmap-table th {
-    background: linear-gradient(90deg, var(--vm-bronze), var(--vm-gold));
-    color: var(--vm-dark);
-    padding: 18px 12px;
+    background: linear-gradient(90deg, #A77B3A 0%, #BFA670 50%, #A77B3A 100%);
+    color: #0C0C0C;
+    padding: 20px 16px;
     text-transform: uppercase;
     font-family: var(--font-body);
     font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
     text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.heatmap-table th:first-child,
-.heatmap-table th:nth-child(1) {
+.heatmap-table th:first-child {
     text-align: left;
     width: 34%;
 }
@@ -1539,12 +1551,12 @@ MARKET DEPTH ANALYSIS — TOP GAP ADDED
 
 .heatmap-table th:nth-child(4) {
     width: 22%;
-    text-align: left;
+    text-align: center;
 }
 
 .heatmap-table td {
-    padding: 18px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px 16px;
+    border-bottom: 1px solid rgba(191, 166, 112, 0.12);
     font-family: var(--font-body);
     font-size: 14px;
     color: var(--vm-text);
@@ -1566,55 +1578,66 @@ MARKET DEPTH ANALYSIS — TOP GAP ADDED
 
 .heatmap-table td:nth-child(4) {
     width: 22%;
-    text-align: left;
-    padding-left: 12px;
+    text-align: center;
 }
 
 .heatmap-table tbody tr:last-child td {
     border-bottom: none;
 }
 
+.heatmap-table tbody tr:hover {
+    background: rgba(191, 166, 112, 0.06);
+}
+
 .property-type-name {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--vm-gold);
+    letter-spacing: 0.3px;
 }
 
 .velocity-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px;
+    padding: 10px 18px;
     border-radius: 6px;
     font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 13px;
-    background: #0B0B0B;
+    font-weight: 700;
+    font-size: 14px;
+    background: rgba(12, 12, 12, 0.6);
+    border: 1.5px solid;
+    min-width: 60px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .velocity-high {
     color: #4CAF50;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+    border-color: rgba(76, 175, 80, 0.5);
+    background: rgba(76, 175, 80, 0.08);
 }
 
 .velocity-medium {
     color: #FFC107;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.08);
 }
 
 .velocity-low {
-    color: rgba(244, 67, 54, 0.85);
-    border: 1px solid rgba(191, 166, 112, 0.4);
+    color: rgba(244, 67, 54, 0.9);
+    border-color: rgba(244, 67, 54, 0.5);
+    background: rgba(244, 67, 54, 0.08);
 }
 
 .signal-text {
     font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-md);
-    margin-top: 94px;
+    margin-top: 80px;
     margin-bottom: 65px;
     align-items: stretch;
 }
@@ -1623,40 +1646,46 @@ MARKET DEPTH ANALYSIS — TOP GAP ADDED
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 28px 30px;
-    min-height: 180px;
+    padding: 32px 30px;
+    min-height: 200px;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .depth-label {
     font-family: var(--font-body);
-    font-size: 14px;
-    color: rgba(184, 184, 184, 0.75);
+    font-size: 13px;
+    color: rgba(184, 184, 184, 0.8);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: var(--spacing-xs);
-    font-weight: 500;
+    letter-spacing: 0.14em;
+    margin-bottom: 16px;
+    font-weight: 600;
     position: relative;
 }
 
 .depth-value {
     font-family: var(--font-body);
-    font-size: 52px;
-    font-weight: 700;
+    font-size: 58px;
+    font-weight: 800;
     color: var(--vm-gold);
-    margin-bottom: 22px;
+    margin-bottom: 24px;
     line-height: 1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
 }
 
 .depth-bar {
     width: 100%;
     max-width: 100%;
-    height: 8px;
+    height: 10px;
     background: rgba(59, 59, 59, 0.5);
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
-    margin: 8px 0 0 0;
+    margin: 0;
     position: relative;
 }
 
@@ -1664,17 +1693,19 @@ MARKET DEPTH ANALYSIS — TOP GAP ADDED
     position: absolute;
     top: 0;
     left: 0;
-    height: 8px;
-    border-radius: 4px;
+    height: 10px;
+    border-radius: 5px;
     background: linear-gradient(90deg, #6ECB63 0%, #5AB852 100%);
+    box-shadow: 0 0 12px rgba(110, 203, 99, 0.5);
 }
 
 .depth-note {
     font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--vm-muted);
-    margin-top: 14px;
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.65);
+    margin-top: 16px;
     font-weight: 400;
+    line-height: 1.6;
 }
 
 /* ============================================
