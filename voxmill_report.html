@@ -808,7 +808,7 @@
         <div class="executive-intelligence-container">
             <div class="executive-intelligence-layout">
                 <div class="executive-insights-list">
-                    <div class="executive-insight-luxury">
+                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
                         <div class="insight-luxury-marker">1</div>
                         <div class="insight-luxury-content">
                             <div class="insight-luxury-label">Market Momentum Signal</div>
@@ -818,7 +818,7 @@
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury">
+                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
                         <div class="insight-luxury-marker">2</div>
                         <div class="insight-luxury-content">
                             <div class="insight-luxury-label">Pricing Resilience</div>
@@ -828,7 +828,7 @@
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury">
+                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
                         <div class="insight-luxury-marker">3</div>
                         <div class="insight-luxury-content">
                             <div class="insight-luxury-label">Capital Flow Concentration</div>
@@ -838,7 +838,7 @@
                         </div>
                     </div>
                     
-                    <div class="executive-insight-luxury">
+                    <div class="executive-insight-luxury" style="min-height: 164px; padding: 26px 30px;">
                         <div class="insight-luxury-marker">4</div>
                         <div class="insight-luxury-content">
                             <div class="insight-luxury-label">Timing Intelligence</div>
@@ -849,7 +849,7 @@
                     </div>
                 </div>
                 
-                <div class="executive-summary-card">
+                <div class="executive-summary-card" style="padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; align-self: center;">
                     <h3 class="executive-summary-title">Summary Signal</h3>
                     <div class="executive-summary-icon">⚡</div>
                     <p class="executive-summary-text">
@@ -1138,36 +1138,88 @@
     <div class="slide-content">
         <p class="chart-context">Segment category performance analysis — {{ segment_label_1 }} | {{ segment_label_2 }} | {{ segment_label_3 }}</p>
         
-        <div class="submarket-grid-v2">
-            {% if submarket_breakdown %}
-            {% for submarket in submarket_breakdown[:3] %}
-            <div class="submarket-card-v2">
-                <div class="submarket-header">{{ submarket.category or "Unknown" }}</div>
-                <div class="submarket-metrics">
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">Avg {{ value_metric_label }}</div>
-                        <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket.avg_price or 0) / 1000) }}K</div>
-                        <div class="submarket-micro-label">{{ "Premium tier" if (submarket.avg_price or 0) > 3000000 else "Core segment" }}</div>
-                    </div>
-                    
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">{{ value_metric_label }}/{{ unit_metric }}</div>
-                        <div class="submarket-metric-value">£{{ "{:,}".format(submarket.price_per_sqft or 0) }}</div>
-                        <div class="submarket-micro-label">{{ "Above market avg" if (submarket.price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
-                    </div>
-                    
-                    <div class="submarket-metric-row">
-                        <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
-                        <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket.velocity_score or 0) >= 70 else '#FFC107' if (submarket.velocity_score or 0) >= 50 else '#F44336' }}">
-                            {{ submarket.velocity_score or 0 }}/100
+        <div class="submarket-section">
+            <div class="submarket-grid-v2">
+                {% if submarket_breakdown and submarket_breakdown|length >= 3 %}
+                <div class="submarket-card-v2">
+                    <div class="submarket-header">{{ submarket_breakdown[0].category or "Unknown" }}</div>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Avg {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket_breakdown[0].avg_price or 0) / 1000) }}K</div>
+                            <div class="submarket-micro-label">{{ "Premium tier" if (submarket_breakdown[0].avg_price or 0) > 3000000 else "Core segment" }}</div>
                         </div>
-                        <div class="submarket-micro-label">{{ "Fast-moving" if (submarket.velocity_score or 0) >= 70 else "Moderate pace" if (submarket.velocity_score or 0) >= 50 else "Slow absorption" }}</div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ value_metric_label }}/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,}".format(submarket_breakdown[0].price_per_sqft or 0) }}</div>
+                            <div class="submarket-micro-label">{{ "Above market avg" if (submarket_breakdown[0].price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
+                            <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket_breakdown[0].velocity_score or 0) >= 70 else '#FFC107' if (submarket_breakdown[0].velocity_score or 0) >= 50 else '#F44336' }}">
+                                {{ submarket_breakdown[0].velocity_score or 0 }}/100
+                            </div>
+                            <div class="submarket-micro-label">{{ "Fast-moving" if (submarket_breakdown[0].velocity_score or 0) >= 70 else "Moderate pace" if (submarket_breakdown[0].velocity_score or 0) >= 50 else "Slow absorption" }}</div>
+                        </div>
                     </div>
+                    <div class="submarket-listing-count">{{ submarket_breakdown[0].count or 0 }} {{ inventory_label|lower }}</div>
                 </div>
-                <div class="submarket-listing-count">{{ submarket.count or 0 }} {{ inventory_label|lower }}</div>
+                
+                <div class="submarket-card-v2">
+                    <div class="submarket-header">{{ submarket_breakdown[1].category or "Unknown" }}</div>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Avg {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket_breakdown[1].avg_price or 0) / 1000) }}K</div>
+                            <div class="submarket-micro-label">{{ "Premium tier" if (submarket_breakdown[1].avg_price or 0) > 3000000 else "Core segment" }}</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ value_metric_label }}/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,}".format(submarket_breakdown[1].price_per_sqft or 0) }}</div>
+                            <div class="submarket-micro-label">{{ "Above market avg" if (submarket_breakdown[1].price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
+                            <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket_breakdown[1].velocity_score or 0) >= 70 else '#FFC107' if (submarket_breakdown[1].velocity_score or 0) >= 50 else '#F44336' }}">
+                                {{ submarket_breakdown[1].velocity_score or 0 }}/100
+                            </div>
+                            <div class="submarket-micro-label">{{ "Fast-moving" if (submarket_breakdown[1].velocity_score or 0) >= 70 else "Moderate pace" if (submarket_breakdown[1].velocity_score or 0) >= 50 else "Slow absorption" }}</div>
+                        </div>
+                    </div>
+                    <div class="submarket-listing-count">{{ submarket_breakdown[1].count or 0 }} {{ inventory_label|lower }}</div>
+                </div>
+                
+                <div class="submarket-card-v2">
+                    <div class="submarket-header">{{ submarket_breakdown[2].category or "Unknown" }}</div>
+                    <div class="submarket-metrics">
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">Avg {{ value_metric_label }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,.0f}".format((submarket_breakdown[2].avg_price or 0) / 1000) }}K</div>
+                            <div class="submarket-micro-label">{{ "Premium tier" if (submarket_breakdown[2].avg_price or 0) > 3000000 else "Core segment" }}</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ value_metric_label }}/{{ unit_metric }}</div>
+                            <div class="submarket-metric-value">£{{ "{:,}".format(submarket_breakdown[2].price_per_sqft or 0) }}</div>
+                            <div class="submarket-micro-label">{{ "Above market avg" if (submarket_breakdown[2].price_per_sqft or 0) > kpis.avg_price_per_sqft else "Competitive" }}</div>
+                        </div>
+                        
+                        <div class="submarket-metric-row">
+                            <div class="submarket-metric-label">{{ velocity_metric_label }} Score</div>
+                            <div class="submarket-metric-value" style="color: {{ '#4CAF50' if (submarket_breakdown[2].velocity_score or 0) >= 70 else '#FFC107' if (submarket_breakdown[2].velocity_score or 0) >= 50 else '#F44336' }}">
+                                {{ submarket_breakdown[2].velocity_score or 0 }}/100
+                            </div>
+                            <div class="submarket-micro-label">{{ "Fast-moving" if (submarket_breakdown[2].velocity_score or 0) >= 70 else "Moderate pace" if (submarket_breakdown[2].velocity_score or 0) >= 50 else "Slow absorption" }}</div>
+                        </div>
+                    </div>
+                    <div class="submarket-listing-count">{{ submarket_breakdown[2].count or 0 }} {{ inventory_label|lower }}</div>
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
-            {% endif %}
         </div>
         
         <div class="momentum-streets-panel">
