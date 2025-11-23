@@ -2725,7 +2725,39 @@ PRINT OPTIMIZATION
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+
 }
+
+<style>
+
+/* ------------------------------------------ */
+/* AREA 2 — Executive Intelligence — Safe Fix */
+/* ------------------------------------------ */
+
+/* 1. Fix bullet box internal padding + equal heights */
+.executive-insight-luxury {
+    padding: 26px 30px !important;
+    min-height: 160px; /* safe baseline height for equalization */
+}
+
+/* 2. Correct spacing between bullet boxes */
+.executive-insights-list > .executive-insight-luxury {
+    margin-bottom: var(--spacing-md);
+}
+
+/* 3. Nudge Summary Signal card down slightly */
+.executive-summary-card {
+    margin-top: 18px;
+}
+
+/* 4. Keep original section baseline */
+.executive-intelligence-layout {
+    margin-top: 0px !important;
+    align-items: flex-start !important; /* prevent global centering */
+}
+
+</style>
+
 
 /* ============================================
 END VOXMILL V5.6 COMPLETE
