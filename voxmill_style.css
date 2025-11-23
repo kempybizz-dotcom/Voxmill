@@ -1982,16 +1982,13 @@ MACRO CONTEXT
 EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 ============================================ */
 
-.executive-intelligence-container {
-    padding: 0 48px;
-}
-
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     gap: 42px;
     margin-top: 70px;
-    align-items: stretch; /* CRITICAL: Force equal heights */
+    margin-bottom: 0;
+    align-items: stretch;
 }
 
 /* LEFT PANEL: PREMIUM INSIGHT GRID */
@@ -2000,25 +1997,24 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 32px;
-    align-items: stretch; /* Force cards to fill grid cells */
-    height: 100%; /* Fill parent height */
+    align-items: stretch;
+    height: 100%;
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 30px 28px; /* Increased padding for better spacing */
+    padding: 28px 26px;
     display: flex;
     flex-direction: column;
-    height: 100%; /* CRITICAL: Fill grid cell completely */
-    min-height: 220px;
+    height: 100%;
+    min-height: 210px;
     position: relative;
     overflow: hidden;
     box-shadow: 
         0 4px 16px rgba(0,0,0,0.25),
         inset 0 1px 0 rgba(255,255,255,0.03);
-    transition: all 0.3s ease;
 }
 
 .insight-card-elite::before {
@@ -2032,21 +2028,12 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     opacity: 0.4;
 }
 
-.insight-card-elite:hover {
-    border-color: rgba(191,166,112,0.4);
-    transform: translateY(-2px);
-    box-shadow: 
-        0 8px 24px rgba(0,0,0,0.3),
-        0 0 30px rgba(191,166,112,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
-}
-
 .insight-elite-header {
     display: flex;
     align-items: center;
     gap: 14px;
-    margin-bottom: 14px;
-    flex-shrink: 0; /* Prevent header from shrinking */
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
 .insight-elite-number {
@@ -2075,7 +2062,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     height: 1px;
     background: linear-gradient(90deg, var(--vm-gold), transparent);
     opacity: 0.3;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     flex-shrink: 0;
 }
 
@@ -2084,29 +2071,32 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     font-size: 14px;
     font-weight: 400;
     color: rgba(234,234,234,0.85);
-    line-height: 1.85; /* Increased for better readability */
+    line-height: 1.85;
     letter-spacing: 0.02em;
-    flex: 1; /* Fill remaining space */
+    flex: 1;
     display: flex;
-    align-items: center; /* CRITICAL: Vertically center text */
+    align-items: center;
 }
 
 /* RIGHT PANEL: EXECUTIVE VERDICT */
 .executive-verdict-panel {
     display: flex;
-    align-items: center; /* Vertically center */
+    align-items: stretch;
     justify-content: center;
     padding: 0;
-    height: 100%; /* CRITICAL: Match left grid height */
+    height: 100%;
 }
 
 .verdict-panel-border {
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 2px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 42px 32px; /* Increased padding */
+    padding: 40px 32px;
     text-align: center;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     box-shadow: 
         0 8px 32px rgba(0,0,0,0.35),
         0 0 60px rgba(191,166,112,0.2),
@@ -2138,7 +2128,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 }
 
 .verdict-seal {
-    margin: 0 auto 24px;
+    margin: 0 auto 22px;
     display: flex;
     justify-content: center;
     filter: drop-shadow(0 4px 16px rgba(191,166,112,0.5));
@@ -2151,12 +2141,12 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 2.5px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     opacity: 0.9;
 }
 
 .verdict-rating {
-    margin-bottom: 28px;
+    margin-bottom: 26px;
 }
 
 .verdict-stars {
@@ -2191,7 +2181,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     font-weight: 400;
     color: rgba(234,234,234,0.75);
     line-height: 1.7;
-    margin-bottom: 28px;
+    margin-bottom: 26px;
     padding: 0 8px;
 }
 
@@ -2200,7 +2190,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     border: 1px solid rgba(191,166,112,0.3);
     border-radius: 6px;
     padding: 16px 20px;
-    margin-top: 24px;
+    margin-top: 22px;
 }
 
 .verdict-rec-label {
@@ -2222,10 +2212,10 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     text-shadow: 0 2px 8px rgba(191,166,112,0.4);
 }
 
-/* BOTTOM SECTIONS - PROPER SPACING */
+/* BOTTOM SECTIONS */
 .executive-bottom-strip {
-    margin-top: 52px; /* Reduced from 48px for tighter spacing */
-    margin-bottom: 32px; /* Reduced from 65px */
+    margin-top: 52px;
+    margin-bottom: 32px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
@@ -2243,6 +2233,63 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     font-weight: 400;
 }
 
+/* STRATEGIC ACTION WINDOW */
+.action-window-luxury {
+    margin-top: 42px;
+    margin-bottom: 65px;
+}
+
+.action-window-luxury-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    width: 100%;
+}
+
+.action-item-luxury {
+    background: linear-gradient(135deg, rgba(12,12,12,0.5) 0%, rgba(18,18,18,0.4) 100%);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(191,166,112,0.15);
+    border-left: 4px solid var(--vm-gold);
+    border-radius: var(--card-radius);
+    padding: 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 140px;
+    justify-content: center;
+    box-shadow: var(--card-shadow);
+}
+
+.action-item-luxury-title {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(191,166,112,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    text-align: left;
+}
+
+.action-item-luxury-value {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: #E6E6E6;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+    text-align: left;
+}
+
+.action-item-luxury-subtitle {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(230,230,230,0.65);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    text-align: left;
+}
 /* ============================================
 STRATEGIC ACTION WINDOW — LUXURY 4-COLUMN
 ============================================ */
@@ -2527,100 +2574,213 @@ SEGMENT PERFORMANCE BREAKDOWN — PREMIUM REDESIGN
 
 .district-card-premium {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.2);
+    border: 1px solid rgba(191,166,112,0.25);
     border-radius: var(--card-radius);
     padding: 0;
     display: flex;
     flex-direction: column;
     box-shadow: 
         0 6px 20px rgba(0,0,0,0.3),
+        0 0 40px rgba(191,166,112,0.08),
         inset 0 1px 0 rgba(255,255,255,0.03);
     overflow: hidden;
+    position: relative;
+}
+
+.district-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
+    opacity: 0.5;
 }
 
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 24px 28px;
+    padding: 26px 28px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+}
+
+.district-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .district-name {
     font-family: var(--font-display);
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.5px;
     margin: 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 8px rgba(191,166,112,0.3);
 }
 
 .district-tier-badge {
     font-family: var(--font-body);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    color: rgba(191,166,112,0.8);
+    color: rgba(191,166,112,0.85);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    background: rgba(191,166,112,0.1);
+    letter-spacing: 1.8px;
+    background: rgba(191,166,112,0.12);
     padding: 6px 14px;
     border-radius: 4px;
-    border: 1px solid rgba(191,166,112,0.3);
+    border: 1px solid rgba(191,166,112,0.35);
+    display: inline-block;
+    align-self: flex-start;
 }
 
 .district-metrics-grid {
     padding: 32px 28px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 30px;
     flex: 1;
+}
+
+.district-metric-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+}
+
+.district-metric-divider {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(180deg, transparent, rgba(191,166,112,0.3), transparent);
+}
+
+.district-metric-row-single {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    background: rgba(191,166,112,0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(191,166,112,0.1);
 }
 
 .district-metric-block {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-items: center;
+    text-align: center;
 }
 
 .district-metric-label {
     font-family: var(--font-body);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     color: rgba(184,184,184,0.7);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.8px;
 }
 
 .district-metric-value {
     font-family: var(--font-body);
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 700;
-    color: var(--vm-text);
+    color: var(--vm-gold);
     line-height: 1.1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 6px rgba(191,166,112,0.3);
+}
+
+.district-metric-value-large {
+    font-family: var(--font-body);
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--vm-gold);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 10px rgba(191,166,112,0.4);
+}
+
+.metric-unit {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(191,166,112,0.7);
+    margin-left: 6px;
+    letter-spacing: 0.5px;
 }
 
 .district-metric-note {
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 400;
-    color: rgba(234,234,234,0.6);
+    color: rgba(234,234,234,0.55);
     line-height: 1.5;
     font-style: italic;
+    margin-top: 4px;
 }
 
-.district-inventory-footer {
-    background: rgba(0,0,0,0.3);
-    border-top: 1px solid rgba(191,166,112,0.15);
-    padding: 18px 28px;
+.district-summary-insight {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: rgba(191,166,112,0.08);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.insight-icon {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.insight-text {
     font-family: var(--font-body);
     font-size: 12px;
     font-weight: 500;
+    color: rgba(234,234,234,0.85);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+}
+
+.district-inventory-footer {
+    background: rgba(0,0,0,0.35);
+    border-top: 1px solid rgba(191,166,112,0.2);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.inventory-count {
+    font-family: var(--font-body);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 8px rgba(191,166,112,0.3);
+}
+
+.inventory-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
     color: rgba(184,184,184,0.8);
-    text-align: center;
-    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    line-height: 1.4;
 }
 
 .momentum-streets-panel {
@@ -2665,7 +2825,6 @@ SEGMENT PERFORMANCE BREAKDOWN — PREMIUM REDESIGN
     color: var(--vm-gold);
     font-size: 18px;
 }
-
 /* ============================================
 AI OPPORTUNITIES
 ============================================ */
