@@ -2694,6 +2694,30 @@ footer,
 }
 
 /* ============================================
+SEGMENT PERFORMANCE BREAKDOWN — ENHANCED STYLING
+============================================ */
+
+/* Override first card header for visual hierarchy */
+.submarket-card-v2:first-child .submarket-header {
+    border-bottom-color: rgba(191, 166, 112, 0.5);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Enhanced header border */
+.submarket-header {
+    border-bottom: 2px solid rgba(191, 166, 112, 0.3);
+    padding-bottom: 16px;
+}
+
+/* Refined listing count divider */
+.submarket-listing-count {
+    border-top: 1px solid rgba(191, 166, 112, 0.15);
+    padding-top: 18px;
+    margin-top: 28px;
+}
+
+/* ============================================
 GLOBAL MICRO-FIXES
 ============================================ */
 
@@ -2706,6 +2730,8 @@ GLOBAL MICRO-FIXES
 .macro-context + div {
     margin-top: 52px !important;
 }
+
+
 
 /* ============================================
 PRINT OPTIMIZATION
@@ -2729,6 +2755,27 @@ PRINT OPTIMIZATION
 }
 
 <style>
+
+/* ============================================
+COMPETITIVE LANDSCAPE — CUSTOM PANELS
+============================================ */
+
+.competitive-info-panel {
+    width: 100%;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    padding: 26px 30px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.competitive-info-panel .chart-title,
+.competitive-info-panel .chart-context,
+.competitive-info-panel .chart-source {
+    /* Inherit existing chart styling */
+}
 
 /* ------------------------------------------ */
 /* AREA 2 — Executive Intelligence — Safe Fix */
