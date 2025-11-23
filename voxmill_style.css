@@ -1023,17 +1023,29 @@ COMPETITOR ACTIVE INVENTORY — PREMIUM TABLE
     border: 1px solid var(--vm-gold);
 }
 
+/* ============================================
+IMAGE 2 FIX: COMPETITIVE INSIGHTS STRIP
+============================================ */
+
+.competitive-insights-strip {
+    margin-top: 80px;
+    margin-bottom: 65px;
+    border: 1px solid var(--vm-gold);
+    padding: 26px 30px; /* Ensure consistent padding */
+}
+
 .competitive-insights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    align-items: center;
+    gap: 32px;
+    align-items: stretch; /* Changed from center - force equal heights */
 }
 
 .competitive-insight-point {
     display: flex;
-    align-items: flex-start;
+    align-items: flex-start; /* Top-align content */
     gap: 16px;
+    min-height: 95px; /* Force consistent minimum height */
 }
 
 .competitive-insight-icon {
@@ -1041,23 +1053,31 @@ COMPETITOR ACTIVE INVENTORY — PREMIUM TABLE
     color: var(--vm-gold);
     line-height: 1;
     padding-right: 2px;
+    flex-shrink: 0; /* Prevent arrow from shrinking */
+    padding-top: 3px; /* Align arrow with text baseline */
 }
 
 .competitive-insight-text {
     font-family: var(--font-body);
     font-size: 13px;
     color: #F5F5F5;
-    line-height: 1.7;
+    line-height: 1.75; /* Increased from 1.7 */
     flex: 1;
     font-weight: 400;
+    display: flex;
+    align-items: center; /* Vertically center text within its container */
 }
 
 /* ============================================
 CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
 ============================================ */
 
+/* ============================================
+IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
+============================================ */
+
 .cross-vertical-intelligence .slide-content {
-    top: 225px;
+    top: 225px; /* Keep existing */
 }
 
 .cross-vertical-container {
@@ -1070,26 +1090,34 @@ CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
     gap: 28px;
     margin-top: 80px;
     margin-bottom: 65px;
-    align-items: stretch;
+    align-items: stretch; /* CRITICAL: Force equal heights */
 }
 
 .cross-vertical-card {
     border-left: 4px solid var(--vm-gold);
-    min-height: 380px;
-    padding: 18px 22px;
+    min-height: 440px; /* Increased from 380px for better proportions */
+    padding: 28px 24px; /* Adjusted padding */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Changed from center */
     text-align: center;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border: var(--card-border);
+    border-left: 4px solid var(--vm-gold); /* Restore left border */
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .cross-vertical-icon {
     font-size: 50px;
-    margin-bottom: 18px;
+    margin-top: 8px; /* Add top spacing */
+    margin-bottom: 22px; /* Increased from 18px */
     line-height: 1;
     color: var(--vm-gold);
     text-align: center;
+    flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
 .cross-vertical-title {
@@ -1097,25 +1125,25 @@ CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
     font-size: 30px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 14px;
+    margin-bottom: 16px; /* Increased from 14px */
     letter-spacing: 0.05em;
     position: relative;
-    padding-bottom: 12px;
+    padding-bottom: 14px; /* Increased from 12px */
     width: 100%;
-    text-align: auto;
+    text-align: center; /* Changed from auto */
+    flex-shrink: 0;
 }
 
 .cross-vertical-title::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0%;
+    left: 50%; /* Centered */
     transform: translateX(-50%);
     width: 100px;
     height: 2px;
     background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.7), transparent);
     opacity: 0.6;
-    margin-top: 0;
 }
 
 .cross-vertical-text {
@@ -1123,30 +1151,29 @@ CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
     font-size: 13px;
     color: var(--vm-text-body);
     line-height: 1.8;
-    margin-bottom: 16px;
+    margin-bottom: 18px; /* Increased from 16px */
     font-weight: 400;
-    text-align: auto;
+    text-align: center; /* Changed from auto */
     width: 100%;
-    max-width: 1050px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0 4px;
+    max-width: 100%; /* Remove restriction */
+    flex-shrink: 0;
 }
 
 .cross-vertical-bullets {
     list-style: none;
-    margin-top: 20px;
+    margin-top: 24px; /* Increased from 20px */
     padding-left: 0;
-    margin: 0;
+    margin-bottom: 0;
     width: 100%;
     max-width: 280px;
+    flex-grow: 1; /* Allow bullets to fill remaining space */
 }
 
 .cross-vertical-bullets li {
     font-family: var(--font-body);
     font-size: 12px;
     color: var(--vm-text-body);
-    margin-bottom: 12px;
+    margin-bottom: 14px; /* Increased from 12px */
     padding-left: 22px;
     position: relative;
     text-align: left;
@@ -1161,6 +1188,10 @@ CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
     color: var(--vm-gold);
     font-weight: 700;
     font-size: 20px;
+}
+
+.cross-vertical-bullets li:last-child {
+    margin-bottom: 0; /* Remove margin from last bullet */
 }
 
 /* ============================================
@@ -1959,25 +1990,29 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     gap: 42px;
-    margin-top: 95px; /* Lowered by 25px from 70px */
+    margin-top: 70px;
+    align-items: stretch; /* CRITICAL: Force equal heights */
 }
 
+/* LEFT PANEL: PREMIUM INSIGHT GRID */
 .executive-insights-premium-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 32px;
-    align-items: stretch; /* ADDED - ensures cards stretch to fill grid cells */
+    align-items: stretch; /* Force cards to fill grid cells */
+    height: 100%; /* Fill parent height */
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 28px 26px;
+    padding: 30px 28px; /* Increased padding for better spacing */
     display: flex;
     flex-direction: column;
-    height: 220px; /* FIXED HEIGHT - changed from min-height */
+    height: 100%; /* CRITICAL: Fill grid cell completely */
+    min-height: 220px;
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2011,6 +2046,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     align-items: center;
     gap: 14px;
     margin-bottom: 14px;
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .insight-elite-number {
@@ -2040,31 +2076,35 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     background: linear-gradient(90deg, var(--vm-gold), transparent);
     opacity: 0.3;
     margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .insight-elite-body {
     font-family: var(--font-body);
-    font-size: 14px; /* Increased from 13px */
+    font-size: 14px;
     font-weight: 400;
     color: rgba(234,234,234,0.85);
-    line-height: 1.8; /* Increased from 1.7 */
+    line-height: 1.85; /* Increased for better readability */
     letter-spacing: 0.02em;
-    flex: 1;
+    flex: 1; /* Fill remaining space */
+    display: flex;
+    align-items: center; /* CRITICAL: Vertically center text */
 }
 
 /* RIGHT PANEL: EXECUTIVE VERDICT */
 .executive-verdict-panel {
     display: flex;
-    align-items: center;
+    align-items: center; /* Vertically center */
     justify-content: center;
     padding: 0;
+    height: 100%; /* CRITICAL: Match left grid height */
 }
 
 .verdict-panel-border {
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 2px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 40px 32px;
+    padding: 42px 32px; /* Increased padding */
     text-align: center;
     width: 100%;
     box-shadow: 
@@ -2182,10 +2222,10 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     text-shadow: 0 2px 8px rgba(191,166,112,0.4);
 }
 
-
+/* BOTTOM SECTIONS - PROPER SPACING */
 .executive-bottom-strip {
-    margin-top: 48px; /* REDUCED from 225px */
-    margin-bottom: 65px;
+    margin-top: 52px; /* Reduced from 48px for tighter spacing */
+    margin-bottom: 32px; /* Reduced from 65px */
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
@@ -2208,10 +2248,15 @@ STRATEGIC ACTION WINDOW — LUXURY 4-COLUMN
 ============================================ */
 
 .action-window-luxury {
-    margin-top: 150px;
+    margin-top: 42px; /* REDUCED from 150px */
     margin-bottom: 65px;
     background: transparent;
     padding: 0;
+}
+
+/* HIDE DUPLICATE ACTION WINDOW IF IT EXISTS */
+.executive-intelligence .action-window-luxury:nth-of-type(2) {
+    display: none !important;
 }
 
 .action-window-luxury-grid {
@@ -2729,7 +2774,7 @@ AI OPPORTUNITIES
     background: var(--vm-gold);
     border-radius: 8px;
     margin-top: 44px;
-    margin-bottom: 65px;
+    margin-bottom: 32px; /* Reduced from 65px for tighter spacing to VAP panel */
     padding: 22px 30px;
 }
 
@@ -2747,6 +2792,49 @@ AI OPPORTUNITIES
 
 .acquisition-strategy-text strong {
     font-weight: 700;
+}
+
+/* ============================================
+IMAGE 5 FIX: VAP INDICATORS - BULLET ALIGNMENT
+============================================ */
+
+/* Target the VAP Indicators panel (comes after acquisition strategy ribbon) */
+.acquisition-strategy-ribbon + div {
+    background: rgba(12, 12, 12, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    padding: 26px 32px !important; /* Increased from 24px */
+    margin-top: 46px !important; /* Increased from 42px */
+    margin-bottom: 48px !important;
+}
+
+.acquisition-strategy-ribbon + div h4 {
+    font-size: 16px !important;
+    color: #C8AA6E !important;
+    margin-bottom: 18px !important; /* Increased from 16px */
+    font-weight: 600 !important;
+}
+
+/* VAP Indicators bullet list styling */
+.acquisition-strategy-ribbon + div > div {
+    font-size: 14px !important;
+    color: var(--vm-text-body) !important;
+    line-height: 1.85 !important; /* Increased from 1.8 */
+}
+
+.acquisition-strategy-ribbon + div > div > div {
+    margin-bottom: 12px !important; /* Increased from 8px */
+    padding-left: 0 !important;
+}
+
+.acquisition-strategy-ribbon + div > div > div:last-child {
+    margin-bottom: 0 !important; /* Remove margin from last bullet */
+}
+
+/* Ensure strong tags (bullet labels) are properly styled */
+.acquisition-strategy-ribbon + div strong {
+    color: #C8AA6E !important;
+    font-weight: 600 !important;
 }
 
 /* ============================================
@@ -2817,7 +2905,6 @@ PANELS
     font-weight: 700;
     font-size: 20px;
 }
-
 /* ============================================
 WATERMARK
 ============================================ */
