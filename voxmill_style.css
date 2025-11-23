@@ -1977,9 +1977,9 @@ EXECUTIVE INTELLIGENCE — LUXURY BULLETS
 .executive-summary-card {
     border: 2px solid var(--vm-gold);
     width: 80%;
-    text-align: center;
+    text-align: right;
     box-shadow: 0 6px 18px rgba(191, 166, 112, 0.25);
-    padding: 28px 32px;
+    padding: 28px 28px;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -2027,7 +2027,7 @@ EXECUTIVE INTELLIGENCE — LUXURY BULLETS
 }
 
 .executive-bottom-strip {
-    margin-top: 150px;
+    margin-top: 200px;
     margin-bottom: 65px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
@@ -2051,7 +2051,7 @@ STRATEGIC ACTION WINDOW — LUXURY 4-COLUMN
 ============================================ */
 
 .action-window-luxury {
-    margin-top: 80px;
+    margin-top: 150px;
     margin-bottom: 65px;
     background: transparent;
     padding: 0;
@@ -2541,7 +2541,7 @@ AI OPPORTUNITIES
 .acquisition-strategy-ribbon {
     background: var(--vm-gold);
     border-radius: 8px;
-    margin-top: 84px;
+    margin-top: 64px;
     margin-bottom: 65px;
     padding: 22px 30px;
 }
@@ -2567,7 +2567,7 @@ PANELS
 ============================================ */
 
 .panel {
-    margin-top: 94px;
+    margin-top: 74px;
     padding: 28px 32px;
 }
 
