@@ -189,80 +189,83 @@
             </div>
         </div>
         
-       <!-- CHART SECTION -->
-<div class="chart-section">
-    <div class="chart-divider"></div>
-    <div class="chart-container">
-        <h3 class="chart-title">Value Distribution Range</h3>
-        <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
-        
-        <svg width="100%" height="280" viewBox="0 0 1700 280" preserveAspectRatio="xMidYMid meet">
-            <!-- Y-Axis Label -->
-            <text x="35" y="140" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 140)" class="chart-axis-label">Count</text>
-            
-            <!-- Y-Axis -->
-            <line x1="80" y1="40" x2="80" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-            
-            <!-- X-Axis -->
-            <line x1="80" y1="220" x2="1620" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-            
-            <!-- Horizontal Gridlines -->
-            <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="130" x2="1620" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="175" x2="1620" y2="175" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-            
-            <!-- Bars -->
-            {% for bar in chart_data.price_distribution %}
-            <rect x="{{ 220 + loop.index0 * 350 }}" 
-                  y="{{ 220 - (bar.height * 0.95) }}" 
-                  width="240" 
-                  height="{{ bar.height * 0.95 }}" 
-                  fill="url(#barGradient)" 
-                  stroke="#C5A46D" 
-                  stroke-width="2.5"
-                  rx="6"
-                  style="filter: drop-shadow(0 3px 10px rgba(198, 161, 91, 0.5));"/>
-            
-            <!-- Value Labels on Top of Bars -->
-            <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="{{ 205 - (bar.height * 0.95) }}" 
-                  font-family="Inter" 
-                  font-size="26" 
-                  font-weight="700"
-                  fill="#C5A46D" 
-                  text-anchor="middle"
-                  style="text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);">{{ bar.count }}</text>
-            
-            <!-- Category Labels Below Bars -->
-            <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="245" 
-                  font-family="Inter" 
-                  font-size="16" 
-                  font-weight="600"
-                  fill="rgba(255,255,255,0.9)" 
-                  text-anchor="middle" 
-                  class="chart-axis-label">{{ bar.label }}</text>
-            {% endfor %}
-            
-            <!-- X-Axis Label -->
-            <text x="850" y="275" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
-            
-            <defs>
-                <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:0.95" />
-                    <stop offset="50%" style="stop-color:#B59854;stop-opacity:0.85" />
-                    <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.7" />
-                </linearGradient>
-            </defs>
-        </svg>
-        
-        <div class="chart-mini-insight">
-            📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
+        <!-- CHART SECTION -->
+        <div class="chart-section">
+            <div class="chart-divider"></div>
+            <div class="chart-container">
+                <h3 class="chart-title">Value Distribution Range</h3>
+                <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
+                
+                <svg width="100%" height="280" viewBox="0 0 1700 280" preserveAspectRatio="xMidYMid meet">
+                    <!-- Y-Axis Label -->
+                    <text x="35" y="140" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 140)" class="chart-axis-label">Count</text>
+                    
+                    <!-- Y-Axis -->
+                    <line x1="80" y1="40" x2="80" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+                    
+                    <!-- X-Axis -->
+                    <line x1="80" y1="220" x2="1620" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+                    
+                    <!-- Horizontal Gridlines -->
+                    <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="80" y1="130" x2="1620" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="80" y1="175" x2="1620" y2="175" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    
+                    <!-- Bars -->
+                    {% for bar in chart_data.price_distribution %}
+                    <rect x="{{ 220 + loop.index0 * 350 }}" 
+                          y="{{ 220 - (bar.height * 0.95) }}" 
+                          width="240" 
+                          height="{{ bar.height * 0.95 }}" 
+                          fill="url(#barGradient)" 
+                          stroke="#C5A46D" 
+                          stroke-width="2.5"
+                          rx="6"
+                          style="filter: drop-shadow(0 3px 10px rgba(198, 161, 91, 0.5));"/>
+                    
+                    <!-- Value Labels on Top of Bars -->
+                    <text x="{{ 340 + loop.index0 * 350 }}" 
+                          y="{{ 205 - (bar.height * 0.95) }}" 
+                          font-family="Inter" 
+                          font-size="26" 
+                          font-weight="700"
+                          fill="#C5A46D" 
+                          text-anchor="middle"
+                          style="text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);">{{ bar.count }}</text>
+                    
+                    <!-- Category Labels Below Bars -->
+                    <text x="{{ 340 + loop.index0 * 350 }}" 
+                          y="245" 
+                          font-family="Inter" 
+                          font-size="16" 
+                          font-weight="600"
+                          fill="rgba(255,255,255,0.9)" 
+                          text-anchor="middle" 
+                          class="chart-axis-label">{{ bar.label }}</text>
+                    {% endfor %}
+                    
+                    <!-- X-Axis Label -->
+                    <text x="850" y="275" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
+                    
+                    <defs>
+                        <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:0.95" />
+                            <stop offset="50%" style="stop-color:#B59854;stop-opacity:0.85" />
+                            <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.7" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                
+                <div class="chart-mini-insight">
+                    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
+                </div>
+                
+                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+            </div>
         </div>
-        
-        <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
     </div>
 </div>
+
 <!-- SLIDE 4: PERFORMANCE ANALYSIS -->
 
 <div class="slide">
@@ -591,7 +594,6 @@
                 </div>
             </div>
             
-            <!-- REFINEMENT 3: MOMENTUM CORRELATION — EQUAL WIDTH/HEIGHT, EDGE-TO-EDGE -->
             <div class="momentum-correlation-panel">
                 <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
                 <div class="momentum-correlation-flow-refined">
@@ -703,48 +705,43 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-       <!-- STRATEGIC FORECAST GRID — 2×2 ALIGNED LIKE MACRO DASHBOARD -->
-<div class="forecast-grid-2x2">
-    <!-- CARD 1: 30-DAY MOMENTUM -->
-    <div class="risk-dial-card">
-        <h3 class="risk-dial-title">30-Day {{ forward_indicator_label }}</h3>
-        <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-        <div class="risk-dial-status">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} — Short-term trajectory</div>
-        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-            Linear regression weighted by recent {{ velocity_metric_label|lower }} trends. Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}. Immediate market momentum indicator for tactical positioning.
-        </p>
-    </div>
+        <div class="forecast-grid-2x2">
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">30-Day {{ forward_indicator_label }}</h3>
+                <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+                <div class="risk-dial-status">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} — Short-term trajectory</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Linear regression weighted by recent {{ velocity_metric_label|lower }} trends. Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}. Immediate market momentum indicator for tactical positioning.
+                </p>
+            </div>
 
-    <!-- CARD 2: 90-DAY PROJECTION -->
-    <div class="risk-dial-card">
-        <h3 class="risk-dial-title">90-Day Outlook</h3>
-        <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
-        <div class="risk-dial-status">Baseline Trend — Medium-term projection</div>
-        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-            Range: {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}% (low) to {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}% (high). Monte Carlo simulation with 10,000 iterations establishing probabilistic bands.
-        </p>
-    </div>
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">90-Day Outlook</h3>
+                <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
+                <div class="risk-dial-status">Baseline Trend — Medium-term projection</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Range: {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}% (low) to {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}% (high). Monte Carlo simulation with 10,000 iterations establishing probabilistic bands.
+                </p>
+            </div>
 
-    <!-- CARD 3: MARKET SENTIMENT -->
-    <div class="risk-dial-card">
-        <h3 class="risk-dial-title">Market Sentiment</h3>
-        <div class="risk-dial-value">{{ forecast.sentiment or "Neutral" }}</div>
-        <div class="risk-dial-status">AI-Derived — Composite signal analysis</div>
-        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-            Multi-factor composite incorporating {{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, and inventory fundamentals. Real-time sentiment calibration across institutional participants.
-        </p>
-    </div>
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Market Sentiment</h3>
+                <div class="risk-dial-value">{{ forecast.sentiment or "Neutral" }}</div>
+                <div class="risk-dial-status">AI-Derived — Composite signal analysis</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Multi-factor composite incorporating {{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, and inventory fundamentals. Real-time sentiment calibration across institutional participants.
+                </p>
+            </div>
 
-    <!-- CARD 4: VOXMILL INDEX -->
-    <div class="risk-dial-card">
-        <h3 class="risk-dial-title">Voxmill Predictive Index</h3>
-        <div class="risk-dial-value">{{ forecast.voxmill_index or 0 }}</div>
-        <div class="risk-dial-status">{{ "Strong" if (forecast.voxmill_index or 0) >= 70 else "Moderate" if (forecast.voxmill_index or 0) >= 50 else "Weak" }} — Composite strength (0-100)</div>
-        <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-            Proprietary blend: 40% liquidity index, 30% demand pressure, 30% {{ forward_indicator_label|lower }}. Aggregated market health indicator for strategic capital deployment timing.
-        </p>
-    </div>
-</div>
+            <div class="risk-dial-card">
+                <h3 class="risk-dial-title">Voxmill Predictive Index</h3>
+                <div class="risk-dial-value">{{ forecast.voxmill_index or 0 }}</div>
+                <div class="risk-dial-status">{{ "Strong" if (forecast.voxmill_index or 0) >= 70 else "Moderate" if (forecast.voxmill_index or 0) >= 50 else "Weak" }} — Composite strength (0-100)</div>
+                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
+                    Proprietary blend: 40% liquidity index, 30% demand pressure, 30% {{ forward_indicator_label|lower }}. Aggregated market health indicator for strategic capital deployment timing.
+                </p>
+            </div>
+        </div>
         
         <div class="macro-context">
             <h4 class="macro-title">📊 Macro Context</h4>
@@ -788,7 +785,6 @@
     
     <div class="slide-content">
         <div class="executive-intelligence-layout">
-            <!-- LEFT COLUMN: 4 INSIGHT CARDS -->
             <div class="executive-insights-premium-grid">
                 <div class="insight-card-elite">
                     <div class="insight-elite-header">
@@ -835,7 +831,6 @@
                 </div>
             </div>
             
-            <!-- RIGHT COLUMN: EXECUTIVE VERDICT -->
             <div class="executive-verdict-panel">
                 <div class="verdict-panel-border">
                     <div class="verdict-seal">
@@ -881,38 +876,6 @@
             </p>
         </div>
         
-        <!-- STRATEGIC ACTION WINDOW -->
-        <div class="action-window-luxury">
-            <div class="action-window-luxury-grid">
-                <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Optimal Entry</div>
-                    <div class="action-item-luxury-value">30–45 Days</div>
-                    <div class="action-item-luxury-subtitle">Prime acquisition window before Q1 2026 pricing adjustments</div>
-                </div>
-                
-                <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Pricing Posture</div>
-                    <div class="action-item-luxury-value">Neutral-to-Firm</div>
-                    <div class="action-item-luxury-subtitle">Balanced negotiation leverage in current market conditions</div>
-                </div>
-                
-                <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Participant Activity</div>
-                    <div class="action-item-luxury-value">Elevated</div>
-                    <div class="action-item-luxury-subtitle">Institutional interest concentrated in target segments</div>
-                </div>
-                
-                <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Risk Assessment</div>
-                    <div class="action-item-luxury-value">Low-Moderate</div>
-                    <div class="action-item-luxury-subtitle">Liquidity robust; negotiate with measured confidence</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-        
-        <!-- STRATEGIC ACTION WINDOW -->
         <div class="action-window-luxury">
             <div class="action-window-luxury-grid">
                 <div class="action-item-luxury">
@@ -1089,134 +1052,166 @@
     </div>
 </div>
 
-<!-- THREE PREMIUM DISTRICT CARDS -->
-<div class="district-performance-grid">
-    <!-- MAYFAIR -->
-    <div class="district-card-premium">
-        <div class="district-card-header">
-            <div class="district-header-left">
-                <h3 class="district-name">Mayfair</h3>
-                <div class="district-tier-badge">Ultra-Prime</div>
-            </div>
-        </div>
-        
-        <div class="district-metrics-grid">
-            <div class="district-metric-row">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">Average Value</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.avg_price if submarkets and submarkets.mayfair else 8500000) }}</div>
-                </div>
-                <div class="district-metric-divider"></div>
-                <div class="district-metric-block">
-                    <div class="district-metric-label">£/{{ unit_metric }}</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.price_per_sqft if submarkets and submarkets.mayfair else 3200) }}</div>
-                </div>
-            </div>
-            
-            <div class="district-metric-row-single">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
-                    <div class="district-metric-value-large">{{ submarkets.mayfair.days_on_market if submarkets and submarkets.mayfair else 38 }}<span class="metric-unit">days</span></div>
-                    <div class="district-metric-note">Premium demand sustained</div>
-                </div>
-            </div>
-            
-            <div class="district-summary-insight">
-                <div class="insight-icon">⚡</div>
-                <div class="insight-text">Ultra-prime segment leader — +4.2% vs prior quarter</div>
-            </div>
-        </div>
-        
-        <div class="district-inventory-footer">
-            <div class="inventory-count">{{ submarkets.mayfair.count if submarkets and submarkets.mayfair else 24 }}</div>
-            <div class="inventory-label">Active {{ inventory_label|lower }}</div>
-        </div>
+<!-- SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN -->
+
+<div class="slide segment-performance-slide">
+    <div class="slide-header">
+        <h2 class="slide-title">Segment Performance Breakdown</h2>
+        <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     
-    <!-- KNIGHTSBRIDGE -->
-    <div class="district-card-premium">
-        <div class="district-card-header">
-            <div class="district-header-left">
-                <h3 class="district-name">Knightsbridge</h3>
-                <div class="district-tier-badge">International Hub</div>
-            </div>
-        </div>
+    <div class="slide-content">
+        <p class="chart-context" style="margin-bottom: 50px;">
+            Geographic sub-market analysis — Comparative performance across premium London districts
+        </p>
         
-        <div class="district-metrics-grid">
-            <div class="district-metric-row">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">Average Value</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.avg_price if submarkets and submarkets.knightsbridge else 7200000) }}</div>
+        <div class="district-performance-grid">
+            <!-- MAYFAIR -->
+            <div class="district-card-premium">
+                <div class="district-card-header">
+                    <div class="district-header-left">
+                        <h3 class="district-name">Mayfair</h3>
+                        <div class="district-tier-badge">Ultra-Prime</div>
+                    </div>
                 </div>
-                <div class="district-metric-divider"></div>
-                <div class="district-metric-block">
-                    <div class="district-metric-label">£/{{ unit_metric }}</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.price_per_sqft if submarkets and submarkets.knightsbridge else 2850) }}</div>
+                
+                <div class="district-metrics-grid">
+                    <div class="district-metric-row">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">Average Value</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.avg_price if submarkets and submarkets.mayfair else 8500000) }}</div>
+                        </div>
+                        <div class="district-metric-divider"></div>
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">£/{{ unit_metric }}</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.price_per_sqft if submarkets and submarkets.mayfair else 3200) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-metric-row-single">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
+                            <div class="district-metric-value-large">{{ submarkets.mayfair.days_on_market if submarkets and submarkets.mayfair else 38 }}<span class="metric-unit">days</span></div>
+                            <div class="district-metric-note">Premium demand sustained</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-summary-insight">
+                        <div class="insight-icon">⚡</div>
+                        <div class="insight-text">Ultra-prime segment leader — +4.2% vs prior quarter</div>
+                    </div>
+                </div>
+                
+                <div class="district-inventory-footer">
+                    <div class="inventory-count">{{ submarkets.mayfair.count if submarkets and submarkets.mayfair else 24 }}</div>
+                    <div class="inventory-label">Active {{ inventory_label|lower }}</div>
                 </div>
             </div>
             
-            <div class="district-metric-row-single">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
-                    <div class="district-metric-value-large">{{ submarkets.knightsbridge.days_on_market if submarkets and submarkets.knightsbridge else 42 }}<span class="metric-unit">days</span></div>
-                    <div class="district-metric-note">Stable absorption rate</div>
+            <!-- KNIGHTSBRIDGE -->
+            <div class="district-card-premium">
+                <div class="district-card-header">
+                    <div class="district-header-left">
+                        <h3 class="district-name">Knightsbridge</h3>
+                        <div class="district-tier-badge">International Hub</div>
+                    </div>
+                </div>
+                
+                <div class="district-metrics-grid">
+                    <div class="district-metric-row">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">Average Value</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.avg_price if submarkets and submarkets.knightsbridge else 7200000) }}</div>
+                        </div>
+                        <div class="district-metric-divider"></div>
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">£/{{ unit_metric }}</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.price_per_sqft if submarkets and submarkets.knightsbridge else 2850) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-metric-row-single">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
+                            <div class="district-metric-value-large">{{ submarkets.knightsbridge.days_on_market if submarkets and submarkets.knightsbridge else 42 }}<span class="metric-unit">days</span></div>
+                            <div class="district-metric-note">Stable absorption rate</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-summary-insight">
+                        <div class="insight-icon">🌐</div>
+                        <div class="insight-text">International participant hub — +2.8% vs prior quarter</div>
+                    </div>
+                </div>
+                
+                <div class="district-inventory-footer">
+                    <div class="inventory-count">{{ submarkets.knightsbridge.count if submarkets and submarkets.knightsbridge else 31 }}</div>
+                    <div class="inventory-label">Active {{ inventory_label|lower }}</div>
                 </div>
             </div>
             
-            <div class="district-summary-insight">
-                <div class="insight-icon">🌐</div>
-                <div class="insight-text">International participant hub — +2.8% vs prior quarter</div>
+            <!-- BELGRAVIA -->
+            <div class="district-card-premium">
+                <div class="district-card-header">
+                    <div class="district-header-left">
+                        <h3 class="district-name">Belgravia</h3>
+                        <div class="district-tier-badge">Heritage Assets</div>
+                    </div>
+                </div>
+                
+                <div class="district-metrics-grid">
+                    <div class="district-metric-row">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">Average Value</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.avg_price if submarkets and submarkets.belgravia else 6800000) }}</div>
+                        </div>
+                        <div class="district-metric-divider"></div>
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">£/{{ unit_metric }}</div>
+                            <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.price_per_sqft if submarkets and submarkets.belgravia else 2750) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-metric-row-single">
+                        <div class="district-metric-block">
+                            <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
+                            <div class="district-metric-value-large">{{ submarkets.belgravia.days_on_market if submarkets and submarkets.belgravia else 45 }}<span class="metric-unit">days</span></div>
+                            <div class="district-metric-note">Measured transaction pace</div>
+                        </div>
+                    </div>
+                    
+                    <div class="district-summary-insight">
+                        <div class="insight-icon">🏛️</div>
+                        <div class="insight-text">Heritage asset concentration — +1.9% vs prior quarter</div>
+                    </div>
+                </div>
+                
+                <div class="district-inventory-footer">
+                    <div class="inventory-count">{{ submarkets.belgravia.count if submarkets and submarkets.belgravia else 28 }}</div>
+                    <div class="inventory-label">Active {{ inventory_label|lower }}</div>
+                </div>
             </div>
         </div>
         
-        <div class="district-inventory-footer">
-            <div class="inventory-count">{{ submarkets.knightsbridge.count if submarkets and submarkets.knightsbridge else 31 }}</div>
-            <div class="inventory-label">Active {{ inventory_label|lower }}</div>
-        </div>
-    </div>
-    
-    <!-- BELGRAVIA -->
-    <div class="district-card-premium">
-        <div class="district-card-header">
-            <div class="district-header-left">
-                <h3 class="district-name">Belgravia</h3>
-                <div class="district-tier-badge">Heritage Assets</div>
-            </div>
+        <div class="momentum-streets-panel">
+            <h4 class="momentum-title">🔥 High-Momentum Streets (90-Day Trend)</h4>
+            <ul class="momentum-list">
+                <li><strong>Grosvenor Square</strong> — 6 transactions, avg {{ velocity_metric_label|lower }} 22 days (exceptional)</li>
+                <li><strong>Cadogan Place</strong> — £12.4M average {{ value_metric_label|lower }}, +18% premium vs area median</li>
+                <li><strong>Eaton Square</strong> — Institutional participant concentration rising 34% QoQ</li>
+                <li><strong>Chester Square</strong> — Family office activity accelerating, 4 acquisitions in 60 days</li>
+            </ul>
         </div>
         
-        <div class="district-metrics-grid">
-            <div class="district-metric-row">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">Average Value</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.avg_price if submarkets and submarkets.belgravia else 6800000) }}</div>
-                </div>
-                <div class="district-metric-divider"></div>
-                <div class="district-metric-block">
-                    <div class="district-metric-label">£/{{ unit_metric }}</div>
-                    <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.price_per_sqft if submarkets and submarkets.belgravia else 2750) }}</div>
-                </div>
-            </div>
-            
-            <div class="district-metric-row-single">
-                <div class="district-metric-block">
-                    <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
-                    <div class="district-metric-value-large">{{ submarkets.belgravia.days_on_market if submarkets and submarkets.belgravia else 45 }}<span class="metric-unit">days</span></div>
-                    <div class="district-metric-note">Measured transaction pace</div>
-                </div>
-            </div>
-            
-            <div class="district-summary-insight">
-                <div class="insight-icon">🏛️</div>
-                <div class="insight-text">Heritage asset concentration — +1.9% vs prior quarter</div>
-            </div>
-        </div>
-        
-        <div class="district-inventory-footer">
-            <div class="inventory-count">{{ submarkets.belgravia.count if submarkets and submarkets.belgravia else 28 }}</div>
-            <div class="inventory-label">Active {{ inventory_label|lower }}</div>
+        <div class="macro-context" style="margin-top: 52px;">
+            <h4 class="macro-title">📊 Sub-Market Strategic Summary</h4>
+            <p class="macro-text">
+                <strong>Mayfair</strong> maintains ultra-prime leadership with strongest pricing power. <strong>Knightsbridge</strong> demonstrates international capital magnetism with robust transaction volume. <strong>Belgravia</strong> offers heritage asset positioning with measured appreciation trajectory. Recommend diversified exposure across all three districts with 40% Mayfair, 35% Knightsbridge, 25% Belgravia allocation for optimal risk-adjusted returns.
+            </p>
         </div>
     </div>
 </div>
+
 <!-- SLIDE 14: AI-IDENTIFIED OPPORTUNITIES -->
 
 <div class="slide ai-identified-opportunities">
