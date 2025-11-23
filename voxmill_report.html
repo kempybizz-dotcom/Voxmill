@@ -1029,12 +1029,11 @@
             Geographic sub-market analysis — Comparative performance across premium London districts
         </p>
         
-        <!-- THREE PREMIUM DISTRICT CARDS -->
         <div class="district-performance-grid">
-            <!-- MAYFAIR -->
+            <!-- PREMIUM TIER -->
             <div class="district-card-premium">
                 <div class="district-card-header">
-                    <h3 class="district-name">Mayfair</h3>
+                    <h3 class="district-name">Premium Tier</h3>
                     <div class="district-tier-badge">Ultra-Prime</div>
                 </div>
                 
@@ -1042,7 +1041,7 @@
                     <div class="district-metric-block">
                         <div class="district-metric-label">AVERAGE VALUE</div>
                         <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.mayfair.avg_price if submarkets and submarkets.mayfair else 8500000) }}</div>
-                        <div class="district-metric-note">Ultra-prime segment leader</div>
+                        <div class="district-metric-note">Mayfair, Knightsbridge, Belgravia core</div>
                     </div>
                     
                     <div class="district-metric-block">
@@ -1054,64 +1053,64 @@
                     <div class="district-metric-block">
                         <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
                         <div class="district-metric-value">{{ submarkets.mayfair.days_on_market if submarkets and submarkets.mayfair else 38 }}d</div>
-                        <div class="district-metric-note">Premium demand sustained</div>
+                        <div class="district-metric-note">Strong institutional demand</div>
                     </div>
                 </div>
                 
                 <div class="district-inventory-footer">
-                    {{ submarkets.mayfair.count if submarkets and submarkets.mayfair else 24 }} active {{ inventory_label|lower }}
+                    {{ submarkets.mayfair.count if submarkets and submarkets.mayfair else 24 }} active {{ inventory_label|lower }} · 31% of total · Depth score: 94
                 </div>
             </div>
             
-            <!-- KNIGHTSBRIDGE -->
+            <!-- CORE TIER -->
             <div class="district-card-premium">
                 <div class="district-card-header">
-                    <h3 class="district-name">Knightsbridge</h3>
-                    <div class="district-tier-badge">International Hub</div>
+                    <h3 class="district-name">Core Tier</h3>
+                    <div class="district-tier-badge">Established</div>
                 </div>
                 
                 <div class="district-metrics-grid">
                     <div class="district-metric-block">
                         <div class="district-metric-label">AVERAGE VALUE</div>
-                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.avg_price if submarkets and submarkets.knightsbridge else 7200000) }}</div>
-                        <div class="district-metric-note">International participant hub</div>
+                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.avg_price if submarkets and submarkets.knightsbridge else 4200000) }}</div>
+                        <div class="district-metric-note">Chelsea, Kensington, South Ken</div>
                     </div>
                     
                     <div class="district-metric-block">
                         <div class="district-metric-label">£/{{ unit_metric }}</div>
-                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.price_per_sqft if submarkets and submarkets.knightsbridge else 2850) }}</div>
+                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.knightsbridge.price_per_sqft if submarkets and submarkets.knightsbridge else 2100) }}</div>
                         <div class="district-metric-note">+2.8% vs prior quarter</div>
                     </div>
                     
                     <div class="district-metric-block">
                         <div class="district-metric-label">{{ velocity_metric_label|upper }}</div>
                         <div class="district-metric-value">{{ submarkets.knightsbridge.days_on_market if submarkets and submarkets.knightsbridge else 42 }}d</div>
-                        <div class="district-metric-note">Stable absorption rate</div>
+                        <div class="district-metric-note">Stable absorption dynamics</div>
                     </div>
                 </div>
                 
                 <div class="district-inventory-footer">
-                    {{ submarkets.knightsbridge.count if submarkets and submarkets.knightsbridge else 31 }} active {{ inventory_label|lower }}
+                    {{ submarkets.knightsbridge.count if submarkets and submarkets.knightsbridge else 47 }} active {{ inventory_label|lower }} · 48% of total · Depth score: 81
                 </div>
             </div>
             
-            <!-- BELGRAVIA -->
+            <!-- VALUE TIER -->
             <div class="district-card-premium">
                 <div class="district-card-header">
-                    <h3 class="district-name">Belgravia</h3>
-                    <div class="district-tier-badge">Heritage Assets</div>
+                    <h3 class="district-name">Value Tier</h3>
+                    <div class="district-tier-badge">Emerging</div>
                 </div>
                 
                 <div class="district-metrics-grid">
                     <div class="district-metric-block">
                         <div class="district-metric-label">AVERAGE VALUE</div>
-                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.avg_price if submarkets and submarkets.belgravia else 6800000) }}</div>
-                        <div class="district-metric-note">Heritage asset concentration</div>
+                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.avg_price if submarkets and submarkets.belgravia else 2800000) }}</div>
+                        <div class="district-metric-note">Fulham, Battersea, Wandsworth</div>
                     </div>
                     
                     <div class="district-metric-block">
                         <div class="district-metric-label">£/{{ unit_metric }}</div>
-                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.price_per_sqft if submarkets and submarkets.belgravia else 2750) }}</div>
+                        <div class="district-metric-value">£{{ "{:,.0f}".format(submarkets.belgravia.price_per_sqft if submarkets and submarkets.belgravia else 1650) }}</div>
                         <div class="district-metric-note">+1.9% vs prior quarter</div>
                     </div>
                     
@@ -1123,12 +1122,11 @@
                 </div>
                 
                 <div class="district-inventory-footer">
-                    {{ submarkets.belgravia.count if submarkets and submarkets.belgravia else 28 }} active {{ inventory_label|lower }}
+                    {{ submarkets.belgravia.count if submarkets and submarkets.belgravia else 21 }} active {{ inventory_label|lower }} · 21% of total · Depth score: 72
                 </div>
             </div>
         </div>
         
-        <!-- MOMENTUM STREETS PANEL -->
         <div class="momentum-streets-panel">
             <h4 class="momentum-title">🔥 High-Momentum Streets (90-Day Trend)</h4>
             <ul class="momentum-list">
@@ -1142,7 +1140,7 @@
         <div class="macro-context" style="margin-top: 52px;">
             <h4 class="macro-title">📊 Sub-Market Strategic Summary</h4>
             <p class="macro-text">
-                <strong>Mayfair</strong> maintains ultra-prime leadership with strongest pricing power. <strong>Knightsbridge</strong> demonstrates international capital magnetism with robust transaction volume. <strong>Belgravia</strong> offers heritage asset positioning with measured appreciation trajectory. Recommend diversified exposure across all three districts with 40% Mayfair, 35% Knightsbridge, 25% Belgravia allocation for optimal risk-adjusted returns.
+                <strong>Premium Tier</strong> maintains ultra-prime leadership with strongest pricing power and institutional magnetism. <strong>Core Tier</strong> demonstrates reliable transaction volume with balanced risk-return profile. <strong>Value Tier</strong> offers entry-point positioning with emerging appreciation trajectory. Recommend diversified exposure: 40% Premium, 35% Core, 25% Value for optimal risk-adjusted returns.
             </p>
         </div>
     </div>
