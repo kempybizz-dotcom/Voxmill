@@ -280,39 +280,40 @@
                 <h3 class="chart-title">Value Range Distribution</h3>
                 <p class="chart-context">Portfolio composition by value bracket — strategic positioning across market segments (Based on {{ kpis.total_properties }} assets)</p>
                 <svg width="100%" height="440" viewBox="0 0 700 440">
-                    <line x1="280" y1="40" x2="280" y2="380" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
-                    <line x1="350" y1="40" x2="350" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="420" y1="40" x2="420" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="490" y1="40" x2="490" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="560" y1="40" x2="560" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-                    <line x1="630" y1="40" x2="630" y2="380" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <line x1="280" y1="40" x2="280" y2="380" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+                    <line x1="350" y1="40" x2="350" y2="380" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <line x1="420" y1="40" x2="420" y2="380" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <line x1="490" y1="40" x2="490" y2="380" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <line x1="560" y1="40" x2="560" y2="380" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <line x1="630" y1="40" x2="630" y2="380" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
                     
-                    <text x="5" y="210" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" transform="rotate(-90, 5, 210)" class="chart-axis-label">% of Assets</text>
+                    <text x="15" y="210" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 15, 210)" class="chart-axis-label">% of Assets</text>
                     
                     {% for item in chart_data.price_ranges %}
-                    <text x="25" y="{{ 90 + loop.index0 * 70 }}" font-family="Inter" font-size="16" fill="#EAEAEA">{{ item.range }}</text>
+                    <text x="25" y="{{ 90 + loop.index0 * 70 }}" font-family="Inter" font-size="16" font-weight="500" fill="#EAEAEA">{{ item.range }}</text>
                     <rect x="280" 
                           y="{{ 75 + loop.index0 * 70 }}" 
                           width="{{ item.percentage * 3.5 }}" 
                           height="28" 
                           fill="url(#horizontalGradient)" 
-                          stroke="#B59854" 
-                          stroke-width="2.2"
+                          stroke="#C5A46D" 
+                          stroke-width="2.5"
                           rx="6"/>
                     <text x="{{ 290 + item.percentage * 3.5 }}" 
                           y="{{ 95 + loop.index0 * 70 }}" 
                           font-family="Inter" 
-                          font-size="16" 
-                          font-weight="600"
-                          fill="#C5A46D">{{ item.percentage }}%</text>
+                          font-size="17" 
+                          font-weight="700"
+                          fill="#C5A46D"
+                          style="text-shadow: 0 2px 6px rgba(191, 166, 112, 0.5);">{{ item.percentage }}%</text>
                     {% endfor %}
                     
-                    <text x="480" y="425" font-family="Inter" font-size="18" fill="rgba(255,255,255,0.85)" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
+                    <text x="480" y="425" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Percentage (%)</text>
                     
                     <defs>
                         <linearGradient id="horizontalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#B59854;stop-opacity:0.7" />
-                            <stop offset="100%" style="stop-color:#C5A46D;stop-opacity:0.95" />
+                            <stop offset="0%" style="stop-color:#B59854;stop-opacity:0.8" />
+                            <stop offset="100%" style="stop-color:#C5A46D;stop-opacity:1" />
                         </linearGradient>
                     </defs>
                 </svg>
@@ -323,42 +324,42 @@
                 <h3 class="chart-title">Weekly Trend: Unit Economics (£/{{ unit_metric }})</h3>
                 <p class="chart-context">7-day rolling average of price-per-{{ unit_metric }} — micro-trend velocity indicator</p>
                 <svg width="100%" height="440" viewBox="0 0 700 440">
-                    <text x="15" y="225" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 15, 225)" letter-spacing="0.8">£/{{ unit_metric }}</text>
+                    <text x="20" y="225" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 20, 225)" letter-spacing="0.8" class="chart-axis-label">£/{{ unit_metric }}</text>
                     
-                    <line x1="60" y1="40" x2="60" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                    <line x1="60" y1="40" x2="60" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+                    <line x1="60" y1="410" x2="650" y2="410" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
                     
-                    <line x1="60" y1="90" x2="650" y2="90" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="240" x2="650" y2="240" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="60" y1="315" x2="650" y2="315" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="90" x2="650" y2="90" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="165" x2="650" y2="165" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="240" x2="650" y2="240" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="60" y1="315" x2="650" y2="315" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
                     
                     <polyline 
                         points="{% for point in chart_data.weekly_trend %}{{ 80 + loop.index0 * 120 }},{{ 410 - point.value }}{% if not loop.last %} {% endif %}{% endfor %}" 
                         fill="none" 
                         stroke="#C5A46D" 
-                        stroke-width="2.5"
-                        style="filter: drop-shadow(0 1px 3px rgba(197, 164, 109, 0.4));"/>
+                        stroke-width="3.5"
+                        style="filter: drop-shadow(0 2px 6px rgba(197, 164, 109, 0.6));"/>
                     
                     {% for point in chart_data.weekly_trend %}
                     <circle cx="{{ 80 + loop.index0 * 120 }}" 
                             cy="{{ 410 - point.value }}" 
-                            r="6" 
+                            r="7" 
                             fill="#C5A46D" 
                             stroke="#0C0C0C" 
-                            stroke-width="2"
-                            style="filter: drop-shadow(0 2px 6px rgba(197, 164, 109, 0.6));"/>
+                            stroke-width="2.5"
+                            style="filter: drop-shadow(0 3px 8px rgba(197, 164, 109, 0.7));"/>
                     <text x="{{ 80 + loop.index0 * 120 }}" 
-                          y="430" 
+                          y="435" 
                           font-family="Inter" 
-                          font-size="12" 
+                          font-size="14" 
                           font-weight="600"
                           fill="rgba(255,255,255,0.9)" 
                           text-anchor="middle" 
                           letter-spacing="0.5">{{ point.label }}</text>
                     {% endfor %}
                     
-                    <text x="350" y="455" font-family="Inter" font-size="12" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="0.8">Day of Week</text>
+                    <text x="350" y="465" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="0.8" class="chart-axis-label">Day of Week</text>
                 </svg>
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
@@ -381,9 +382,9 @@
             </div>
         </div>
         
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Momentum Drivers (Explained)</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
+        <div class="context-panel">
+            <h4>Momentum Drivers (Explained)</h4>
+            <div>
                 <div style="margin-bottom: 8px;">• Weekly pricing stable due to balanced demand-supply ratios.</div>
                 <div style="margin-bottom: 8px;">• {{ velocity_metric_label }} influenced by prime-segment absorption (42-day cycle).</div>
                 <div>• Value band concentration leads to predictable negotiation windows.</div>
