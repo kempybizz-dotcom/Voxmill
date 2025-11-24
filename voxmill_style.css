@@ -770,7 +770,7 @@ INSIGHT CARDS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — PREMIUM REBUILD
+COMPETITIVE LANDSCAPE — SURGICAL FIX
 ============================================ */
 
 .competitive-landscape-slide .slide-content {
@@ -780,10 +780,10 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 .competitive-landscape-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 42px;
+    gap: 36px;
     margin-top: 60px;
     margin-bottom: 65px;
-    align-items: stretch; /* CHANGED: Force equal height containers */
+    align-items: start;
 }
 
 /* LEFT COLUMN: MARKET CONCENTRATION INTELLIGENCE */
@@ -791,14 +791,13 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 28px 30px; /* REDUCED from 32px */
+    padding: 28px 30px;
     box-shadow: 
         0 6px 20px rgba(0,0,0,0.3),
         inset 0 1px 0 rgba(255,255,255,0.03);
     display: flex;
     flex-direction: column;
-    gap: 28px; /* REDUCED from 32px */
-    gap: 32px;
+    gap: 28px;
 }
 
 .concentration-header {
@@ -827,7 +826,7 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 .concentration-score-block {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     padding: 24px;
     background: rgba(191,166,112,0.04);
     border-left: 4px solid var(--vm-gold);
@@ -958,13 +957,18 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     gap: 24px;
 }
 
+.rankings-header {
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(191,166,112,0.2);
+}
+
 .rankings-title {
     font-family: var(--font-display);
     font-size: 22px;
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.5px;
-    margin: 0;
+    margin: 0 0 8px 0;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
 }
 
@@ -981,8 +985,7 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 .competitive-rankings-grid {
     display: flex;
     flex-direction: column;
-    gap: 18px; /* REDUCED from 20px */
-    margin-top: 10px;
+    gap: 20px;
 }
 
 .competitor-card-elite {
@@ -993,7 +996,7 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     box-shadow: 
         0 4px 16px rgba(0,0,0,0.25),
         inset 0 1px 0 rgba(255,255,255,0.03);
-    min-height: 142px; /* ADDED: Force consistent height */
+    min-height: 140px;
 }
 
 .competitor-card-header {
@@ -1032,30 +1035,16 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 }
 
 .competitor-card-body {
-    padding: 20px 24px; /* REDUCED top/bottom from 24px */
+    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px; /* REDUCED from 20px */
+    gap: 16px;
 }
 
-.concentration-score-block {
+.competitor-name-block {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* REDUCED from 14px */
-    padding: 18px 24px; /* REDUCED top/bottom from 24px */
-    background: rgba(191,166,112,0.04);
-    border-left: 4px solid var(--vm-gold);
-    border-radius: 8px;
-}
-
-.concentration-label {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(184,184,184,0.7);
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    margin-bottom: 0; /* ADDED: Remove default margin */
+    gap: 6px;
 }
 
 .competitor-name {
@@ -1112,7 +1101,7 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 18px; /* REDUCED padding for consistency */
+    padding: 8px 18px;
     border-radius: 6px;
     font-family: var(--font-body);
     font-size: 10px;
@@ -1121,8 +1110,8 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     letter-spacing: 1.4px;
     border: 1.5px solid;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    min-width: 100px; /* ADDED: Force consistent width */
-    height: 32px; /* ADDED: Force consistent height */
+    min-width: 100px;
+    height: 32px;
 }
 
 .badge-dominant {
@@ -1145,10 +1134,10 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 
 /* COMPETITIVE INSIGHTS STRIP */
 .competitive-insights-strip {
-    margin-top: 52px; /* REDUCED from 80px */
+    margin-top: 52px;
     margin-bottom: 65px;
     border: 1px solid var(--vm-gold);
-    padding: 24px 28px; /* REDUCED padding */
+    padding: 24px 28px;
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border-radius: var(--card-radius);
@@ -1158,15 +1147,15 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
 .competitive-insights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px; /* REDUCED from 32px */
+    gap: 28px;
     align-items: stretch;
 }
 
 .competitive-insight-point {
     display: flex;
     align-items: flex-start;
-    gap: 14px; /* REDUCED from 16px */
-    min-height: 90px; /* REDUCED from 95px */
+    gap: 14px;
+    min-height: 85px;
 }
 
 .competitive-insight-icon {
@@ -1187,6 +1176,7 @@ COMPETITIVE LANDSCAPE — PREMIUM REBUILD
     font-weight: 400;
     display: flex;
     align-items: center;
+}
 }
 /* ============================================
 CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
