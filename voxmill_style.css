@@ -34,7 +34,7 @@ Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements
 }
 
 @page {
-    size: 1920px 1580px;
+    size: 1920px 1680px;
     margin: 0;
     padding: 0;
 }
@@ -2136,7 +2136,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 36px;
-    margin-top: 50px;
+    margin-top: 70px;
     margin-bottom: 0;
     align-items: start; /* CHANGED: Force top alignment */
 }
