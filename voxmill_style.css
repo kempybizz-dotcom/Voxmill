@@ -228,6 +228,11 @@ SLIDE HEADER — CONSISTENT SPACING
     min-height: calc(1480px - 205px - 120px) !important;
 }
 
+/* EXCEPTION for Cross-Vertical Intelligence */
+.cross-vertical-intelligence .slide-content {
+    top: 225px;
+}
+
 .slide-header {
     position: absolute;
     top: 60px;
@@ -297,44 +302,27 @@ UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 .chart-container,
 .chart-panel,
 .movement-mini-card,
-.executive-summary-bullet,
 .insight-card,
 .cross-vertical-card,
 .momentum-correlation-panel,
 .methodology-panel,
-.model-pipeline,
 .panel,
 .depth-card,
-.risk-dial-card,
-.submarket-card-v2,
-.competitive-insights-strip,
-.executive-summary-card,
-.momentum-streets-panel,
-.acquisition-flagging-header,
-.acquisition-strategy-ribbon,
-.forecast-card-v2,
 .forecast-card-premium,
-.action-window-premium,
-.executive-insight-luxury,
-.competitive-inventory-premium,
-.signal-card-v2 {
+.action-item-luxury,
+.competitive-insights-strip {
+    padding: 26px 30px !important;
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
-    padding: 26px 30px;
 }
 
-/* Enhanced luxury float for premium cards */
-.forecast-card-premium,
-.executive-summary-card,
-.action-window-premium,
-.competitive-inventory-premium {
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04),
-        0 0 40px rgba(191, 166, 112, 0.08) !important;
+.insight-card-elite,
+.competitor-card-body,
+.district-card-premium {
+    padding: 22px 24px !important;
 }
 
 /* ============================================
@@ -417,7 +405,7 @@ WEEKLY MOVEMENT DASHBOARD
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
+    gap: 28px !important;
     margin-top: 80px;
     margin-bottom: 65px;
     padding: 26px;
@@ -613,7 +601,7 @@ VALUE DISTRIBUTION CHART — SURGICAL FIX
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 160px;
+    width: 120px;
     height: 2px;
     background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.8), transparent);
     opacity: 0.8;
@@ -746,12 +734,11 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     font-style: italic;
 }
 
-.insight-cards {
+.insight-cards,
+.competitive-insights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 0;
-    margin-bottom: 48px;
+    gap: 32px !important;
 }
 
 .insight-card {
@@ -1474,7 +1461,7 @@ METHODOLOGY
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100px;
+    width: 120px;
     height: 2px;
     background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
     opacity: 0.7;
@@ -2563,19 +2550,19 @@ TOP MARKET OPPORTUNITIES
     color: var(--vm-gold);
 }
 
-.score-badge {
-    display: inline-flex !important;
+.score-badge,
+.velocity-badge,
+.competitor-classification-badge,
+.signal-badge-v2 {
+    padding: 8px 16px !important;
+    min-width: 80px;
+    height: 32px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 7px 15px !important;
-    min-width: 72px !important;
     border-radius: 6px;
     font-family: var(--font-mono);
-    font-size: 14px !important;
     font-weight: 700;
-    letter-spacing: 0.3px;
-    background: #0B0B0B;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .score-high, .score-excellent {
@@ -3386,6 +3373,68 @@ COMPETITIVE LANDSCAPE — CUSTOM PANELS
 .executive-intelligence-layout {
     margin-top: 0px !important;
     align-items: flex-start !important; /* prevent global centering */
+}
+
+/* GLOBAL CONSISTENCY PATCH - Micro-heading letter-spacing */
+.concentration-label,
+.metric-card-label,
+.forecast-premium-label,
+.action-item-luxury-title,
+.insight-elite-category,
+.competitor-tier-label,
+.district-metric-label,
+.verdict-label,
+.insight-label {
+    letter-spacing: 1.8px !important;
+}
+
+/* GLOBAL CONSISTENCY PATCH - First content block margins */
+.kpi-grid,
+.weekly-movement-dashboard,
+.two-column,
+.competitive-landscape-layout,
+.cross-vertical-grid,
+.property-type-heatmap,
+.forecast-grid-2x2,
+.executive-intelligence-layout,
+.district-performance-grid,
+.methodology-grid {
+    margin-top: 70px !important;
+}
+
+/* GLOBAL CONSISTENCY PATCH - Bottom margins */
+.insight-cards,
+.competitive-insights-strip,
+.momentum-correlation-panel,
+.depth-metrics,
+.action-window-luxury,
+.momentum-streets-panel,
+.model-pipeline,
+.opportunities-table {
+    margin-bottom: 65px !important;
+}
+
+/* GLOBAL CONSISTENCY PATCH - Context panel standardization */
+.context-panel {
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--card-radius);
+    padding: 26px 30px;
+    margin-top: 42px;
+    margin-bottom: 32px;
+}
+
+.context-panel h4 {
+    font-size: 16px;
+    color: #C8AA6E;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.context-panel div {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
 }
 
 </style>
