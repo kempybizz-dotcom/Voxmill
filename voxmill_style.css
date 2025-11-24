@@ -91,7 +91,7 @@ body::before {
     page-break-inside: avoid;
     overflow: visible !important;
     border: 3px solid var(--vm-gold);
-    padding: 64px 48px 120px 48px; /* INCREASED bottom from 104px to 140px */
+    padding: 64px 48px 104px 48px; /* INCREASED bottom from 104px to 140px */
 }
 
 .slide::after {
@@ -275,7 +275,7 @@ SLIDE HEADER — CONSISTENT SPACING
     page-break-inside: avoid;
     overflow: visible !important;
     border: 3px solid var(--vm-gold);
-    padding: 64px 48px 140px 48px; /* INCREASED bottom from 104px to 140px */
+    padding: 64px 48px 120px 48px; /* INCREASED bottom from 104px to 140px */
 }
 
 /* ============================================
