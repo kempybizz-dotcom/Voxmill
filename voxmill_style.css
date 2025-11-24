@@ -1739,44 +1739,33 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
 }
 
 /* ============================================
-STRATEGIC FORECAST — PREMIUM CARDS
+STRATEGIC FORECAST — SURGICAL FIX
 ============================================ */
 
 .forecast-grid-2x2 {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: repeat(2, 1fr) !important;
-    gap: var(--spacing-md) !important;
-    height: 520px !important;
-    margin-top: 60px !important;
-    margin-bottom: 65px !important;
-    align-items: stretch !important;
-}
-
-.forecast-card-v2 {
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 28px 32px !important;
-    justify-content: space-between !important;
-}
-
-.forecast-card-highlight {
-    border-color: #BFA670;
-    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(18, 18, 18, 0.95));
-    box-shadow: 0 4px 20px rgba(191, 166, 112, 0.35);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 32px;
+    margin-top: 60px;
+    margin-bottom: 0;
+    align-items: stretch;
 }
 
 .forecast-card-premium {
     background: linear-gradient(135deg, rgba(12,12,12,0.9) 0%, rgba(18,18,18,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.25);
     border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 30px 34px !important;
-    justify-content: space-between !important;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 40px rgba(191, 166, 112, 0.08);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
     position: relative;
     overflow: hidden;
+    min-height: 280px;
 }
 
 .forecast-card-premium::before {
@@ -1794,8 +1783,9 @@ STRATEGIC FORECAST — PREMIUM CARDS
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-bottom: 16px;
+    padding: 20px 24px 16px 24px;
     border-bottom: 1px solid rgba(191,166,112,0.15);
+    gap: 6px;
 }
 
 .forecast-premium-label {
@@ -1805,34 +1795,32 @@ STRATEGIC FORECAST — PREMIUM CARDS
     color: rgba(191,166,112,0.7);
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 10px;
 }
 
 .forecast-premium-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    color: #BFA670;
-    letter-spacing: 0.6px;
-    position: relative;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(234,234,234,0.65);
+    letter-spacing: 0.5px;
 }
 
 .forecast-premium-body {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: 1 !important;
-    padding: 22px 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 24px 20px;
+    gap: 12px;
 }
 
 .forecast-premium-value-large {
     font-family: var(--font-display);
-    font-size: 76px;
+    font-size: 64px;
     font-weight: 700;
     color: #BFA670;
     line-height: 1;
-    margin-bottom: 14px;
     text-shadow: 0 3px 16px rgba(191,166,112,0.6);
 }
 
@@ -1842,17 +1830,15 @@ STRATEGIC FORECAST — PREMIUM CARDS
     font-weight: 500;
     color: rgba(230,230,230,0.85);
     letter-spacing: 1px;
-    margin-bottom: 22px;
 }
 
 .forecast-premium-confidence-bar {
-    width: 240px;
+    width: 200px;
     height: 5px;
     background: rgba(59, 59, 59, 0.4);
     border-radius: 2px;
     overflow: hidden;
     position: relative;
-    margin-bottom: 10px;
 }
 
 .forecast-premium-confidence-fill {
@@ -1873,138 +1859,27 @@ STRATEGIC FORECAST — PREMIUM CARDS
     letter-spacing: 1.2px;
 }
 
-/* 90-DAY VOLATILITY WINDOW (REDESIGNED) */
-.forecast-volatility-window {
-    background: linear-gradient(135deg, rgba(12,12,12,0.9) 0%, rgba(18,18,18,0.85) 100%) !important;
+.forecast-premium-footer {
+    padding: 16px 24px 20px 24px;
+    border-top: 1px solid rgba(191,166,112,0.1);
 }
 
-.volatility-window-container {
-    width: 100%;
-    padding: 20px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.volatility-range-bar {
-    position: relative;
-    width: 100%;
-    max-width: 380px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.volatility-baseline {
-    position: absolute;
-    bottom: 40px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(191,166,112,0.3), transparent);
-}
-
-.volatility-cone-fill {
-    position: absolute;
-    bottom: 40px;
-    left: 15%;
-    right: 15%;
-    height: 60px;
-    background: linear-gradient(180deg, rgba(191,166,112,0.15) 0%, rgba(191,166,112,0.05) 100%);
-    clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
-    border-left: 1px solid rgba(191,166,112,0.25);
-    border-right: 1px solid rgba(191,166,112,0.25);
-}
-
-.volatility-marker {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.volatility-marker-low {
-    bottom: 36px;
-}
-
-.volatility-marker-mid {
-    bottom: 92px;
-}
-
-.volatility-marker-high {
-    bottom: 36px;
-}
-
-.volatility-marker-value {
+.forecast-premium-footer p {
     font-family: var(--font-body);
-    font-size: 28px;
-    font-weight: 700;
-    color: #BFA670;
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-shadow: 0 2px 8px rgba(191,166,112,0.5);
-}
-
-.volatility-value-median {
-    font-size: 34px;
-    color: #C9A86A;
-}
-
-.volatility-marker-label {
-    font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 500;
-    color: rgba(184,184,184,0.6);
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-}
-
-.forecast-card-title {
-    font-family: var(--font-body);
-    font-size: 20px;
-    color: var(--vm-bronze);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: var(--spacing-sm);
-    text-align: center !important;
-    width: 100%;
-    position: relative;
-    padding: 20px 0 12px 0 !important;
-    font-weight: 600;
-}
-
-.forecast-card-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.7;
-    margin-top: 0;
-}
-
-.forecast-card-body {
-    width: 100%;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: 1 !important;
-    padding: 12px 24px !important;
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.6);
+    line-height: 1.6;
+    text-align: center;
+    margin: 0;
 }
 
 .sentiment-display {
     font-family: var(--font-body);
-    font-size: 42px;
+    font-size: 36px;
     font-weight: 600;
-    padding: var(--spacing-sm) 52px;
+    padding: 16px 40px;
     border-radius: 8px;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 8px;
 }
 
 .sentiment-bullish {
@@ -2025,34 +1900,24 @@ STRATEGIC FORECAST — PREMIUM CARDS
     border: 1px solid rgba(244, 67, 54, 0.5);
 }
 
-.sentiment-bullish,
-.sentiment-neutral,
-.sentiment-bearish {
-    box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-}
-
 .voxmill-index-number {
     font-family: var(--font-body);
-    font-size: 76px;
+    font-size: 64px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
-    margin-bottom: var(--spacing-sm);
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
 }
 
 .voxmill-index-bar-container {
-    width: 100%;
-    max-width: 420px;
+    width: 200px;
     height: 8px;
     background: rgba(59, 59, 59, 0.5);
     border-radius: 4px;
     overflow: hidden;
-    margin: 10px auto 0;
+    margin-top: 4px;
     position: relative;
 }
 
@@ -2065,22 +1930,94 @@ STRATEGIC FORECAST — PREMIUM CARDS
     border-radius: 4px;
 }
 
-.voxmill-index-caption {
+.macro-context {
+    margin-top: 48px;
+    margin-bottom: 0;
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid #BFA670;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
+    padding: 22px 26px;
+}
+
+.macro-title {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: var(--vm-muted);
-    margin-top: 14px;
-    font-style: italic;
+    font-size: 19px;
+    color: #BFA670;
+    margin-bottom: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.macro-text {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.9;
     font-weight: 400;
 }
 
-.forecast-label-text {
-    font-family: var(--font-body);
+.portfolio-recommendations {
+    margin-top: 48px;
+    margin-bottom: 65px;
+}
+
+.recommendations-title {
     font-size: 16px;
-    color: var(--vm-text);
-    margin-top: 20px;
+    color: #C8AA6E;
+    margin-bottom: 24px;
+    font-weight: 600;
     text-align: center;
-    font-weight: 400;
+}
+
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.recommendation-card {
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 140px;
+    justify-content: center;
+}
+
+.recommendation-action {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.recommendation-acquire .recommendation-action {
+    color: #4CAF50;
+}
+
+.recommendation-hold .recommendation-action {
+    color: #FFC107;
+}
+
+.recommendation-rotate .recommendation-action {
+    color: #F44336;
+}
+
+.recommendation-segment {
+    font-size: 13px;
+    color: #C8AA6E;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.recommendation-rationale {
+    font-size: 13px;
+    color: var(--vm-text-body);
+    line-height: 1.6;
 }
 
 /* ============================================
