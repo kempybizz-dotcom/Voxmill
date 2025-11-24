@@ -593,19 +593,18 @@ VALUE DISTRIBUTION CHART — SURGICAL FIX
     max-width: 100%;
 }
 
-.chart-title {
+.chart-title,
+.methodology-title,
+.macro-title,
+.momentum-correlation-title,
+.momentum-title,
+.concentration-title,
+.rankings-title {
     font-family: var(--font-body);
     font-size: 18px;
     font-weight: 600;
-    color: #EAEAEA;
-    text-transform: uppercase;
+    color: var(--vm-gold);
     letter-spacing: 0.12em;
-    margin-bottom: 0;
-    text-align: center;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    position: relative;
-    padding-bottom: 14px;
-    padding-top: 0;
 }
 
 .chart-title::after {
