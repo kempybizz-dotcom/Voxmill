@@ -702,48 +702,89 @@ svg rect[fill*="horizontalGradient"] {
 svg line[stroke*="rgba(255,255,255"] {
     stroke-width: 2px !important;
 }
+
 /* ============================================
-TWO COLUMN CHARTS
+PERFORMANCE ANALYSIS — SURGICAL FIX
 ============================================ */
 
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-md);
-    height: auto;
+    gap: 36px;
     margin-top: 70px;
-    margin-bottom: 65px;
+    margin-bottom: 48px;
 }
 
 .chart-panel {
-    height: 630px;
+    height: auto;
+    min-height: 630px;
     width: 100%;
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
     padding: 26px 30px;
     justify-content: space-between;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
-/* ============================================
-INSIGHT CARDS
-============================================ */
+.chart-panel .chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #EAEAEA;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
+    text-align: center;
+    padding-bottom: 14px;
+}
+
+.chart-panel .chart-context {
+    font-size: 12px;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.8;
+}
+
+.chart-panel svg {
+    display: block;
+    margin: 0 auto;
+    flex: 1;
+}
+
+.chart-panel .chart-source {
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin-top: 16px;
+    font-style: italic;
+}
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md);
-    margin-top: 70px;
-    margin-bottom: 65px;
+    gap: 32px;
+    margin-top: 0;
+    margin-bottom: 48px;
 }
 
 .insight-card {
     border-left: 5px solid var(--vm-gold);
-    min-height: 108px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 120px;
     height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 26px 30px;
 }
 
 .insight-title {
@@ -753,8 +794,7 @@ INSIGHT CARDS
     color: #BFA670;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 14px;
-    position: relative;
+    margin-bottom: 16px;
 }
 
 .insight-text {
@@ -763,10 +803,28 @@ INSIGHT CARDS
     color: var(--vm-text-body);
     line-height: 1.7;
     font-weight: 400;
-    max-width: 1050px;
-    margin-left: 0;
-    margin-right: auto;
-    padding: 0 4px;
+}
+
+.context-panel {
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--card-radius);
+    padding: 26px 30px;
+    margin-top: 0;
+    margin-bottom: 65px;
+}
+
+.context-panel h4 {
+    font-size: 16px;
+    color: #C8AA6E;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.context-panel div {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
 }
 
 /* ============================================
