@@ -235,8 +235,9 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .cross-vertical-intelligence .slide-content,
 .market-depth-analysis .slide-content,
-.top-market-opportunities .slide-content {
-    top: 185px;
+.top-market-opportunities .slide-content,
+.segment-performance-slide .slide-content {
+    top: 170px;
 }
 
 .segment-performance-slide .slide-content {
@@ -245,15 +246,14 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-header {
     position: absolute;
-    top: 60px;
+    top: 64px;
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 22px;
+    padding-bottom: 20px;
     z-index: 5;
-    margin-bottom: var(--spacing-lg);
 }
 
 .slide-header::after {
@@ -517,7 +517,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-top: 48px;
+    margin-top: 52px;
     margin-bottom: 76px;
     page-break-inside: avoid;
 }
@@ -587,7 +587,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 0 0 44px 0;
+    margin: 0 0 48px 0;
     opacity: 1;
 }
 
@@ -677,7 +677,7 @@ PERFORMANCE ANALYSIS
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     height: auto;
-    margin-top: 48px;
+    margin-top: 52px;
     margin-bottom: 56px;
 }
 
@@ -789,7 +789,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 ============================================ */
 
 .competitive-landscape-slide .two-column {
-    margin-top: 20px;
+    margin-top: 52px;
     gap: 32px;
     align-items: stretch;
 }
@@ -973,7 +973,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .competitive-insights-strip {
-    margin-top: 56px;
+    margin-top: 60px;
     margin-bottom: 0;
     border: 1px solid var(--vm-gold);
     padding: 24px 30px;
@@ -1014,7 +1014,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .bottom-callout-box {
-    margin-top: 56px;
+    margin-top: 60px;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -1064,7 +1064,16 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 28px;
-    margin-top: 56px;
+    margin-top: 60px;
+    margin-bottom: 0;
+    align-items: stretch;
+}
+
+.cross-vertical-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    margin-top: 60px;
     margin-bottom: 0;
     align-items: stretch;
 }
@@ -1086,6 +1095,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
 }
+
 
 .cross-vertical-icon {
     font-size: 50px;
@@ -1183,7 +1193,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
 }
 
 .momentum-correlation-panel {
-    margin-top: 56px;
+    margin-top: 60px;
     margin-bottom: 0;
     border: 1px solid rgba(191, 166, 112, 0.2);
     padding: 26px 30px;
@@ -1250,7 +1260,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
 }
 
 .cross-vertical-summary-bar {
-    margin-top: 56px;
+    margin-top: 60px;
     margin-bottom: 0;
     padding: 24px 34px;
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 100%);
@@ -1280,7 +1290,7 @@ METHODOLOGY
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    margin-top: 48px;
+    margin-top: 52px;
     margin-bottom: 0;
 }
 
@@ -1338,7 +1348,7 @@ METHODOLOGY
 
 .model-pipeline {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 56px;
+    margin-top: 60px;
     margin-bottom: 0;
     text-align: center;
     padding: 26px 30px;
@@ -1389,7 +1399,7 @@ METHODOLOGY
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
     padding: 20px 36px;
     border-radius: 8px;
-    margin-top: 44px;
+    margin-top: 48px;
     text-align: center;
 }
 
@@ -1409,10 +1419,6 @@ MARKET DEPTH ANALYSIS — REFINED
     top: 185px;
 }
 
-.property-type-heatmap {
-    margin-top: 32px;
-}
-
 .property-type-heatmap .chart-title {
     font-family: var(--font-body);
     font-size: 18px;
@@ -1424,18 +1430,21 @@ MARKET DEPTH ANALYSIS — REFINED
     text-align: center;
 }
 
+.property-type-heatmap {
+    margin-top: 36px;
+}
+
 .property-type-heatmap .chart-context {
     font-family: var(--font-body);
     font-size: 13px;
     color: rgba(234, 234, 234, 0.75);
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 52px;
     margin-top: 0;
     font-style: italic;
     line-height: 1.8;
     font-weight: 400;
 }
-
 .heatmap-table {
     width: 100%;
     margin-top: 0;
@@ -1581,7 +1590,7 @@ MARKET DEPTH ANALYSIS — REFINED
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    margin-top: 76px;
+    margin-top: 80px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -1664,8 +1673,8 @@ STRATEGIC FORECAST — REFINED
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 520px;
-    margin-top: 48px;
-    margin-bottom: 56px;
+    margin-top: 52px;
+    margin-bottom: 60px;
     align-items: stretch;
 }
 
@@ -1854,7 +1863,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .macro-context {
-    margin-top: 44px;
+    margin-top: 48px;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -1882,7 +1891,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .portfolio-recommendations {
-    margin-top: 44px;
+    margin-top: 48px;
     margin-bottom: 0;
 }
 
@@ -1953,7 +1962,7 @@ EXECUTIVE INTELLIGENCE — REFINED
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    margin-top: 64px;
+    margin-top: 68px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -2165,8 +2174,8 @@ EXECUTIVE INTELLIGENCE — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 48px;
-    margin-bottom: 28px;
+    margin-top: 52px;
+    margin-bottom: 32px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
@@ -2386,8 +2395,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 48px;
-    margin-bottom: 56px;
+    margin-top: 52px;
+    margin-bottom: 60px;
 }
 
 .district-card-premium {
@@ -2610,8 +2619,8 @@ SEGMENT PERFORMANCE BREAKDOWN
 
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 56px;
-    margin-bottom: 56px;
+    margin-top: 60px;
+    margin-bottom: 60px;
     padding: 22px 30px;
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
@@ -2716,8 +2725,8 @@ AI OPPORTUNITIES
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-top: 20px;
+    gap: 18px;
+    margin-top: 24px;
     margin-bottom: 0;
 }
 
@@ -2812,7 +2821,7 @@ AI OPPORTUNITIES
 .acquisition-strategy-ribbon {
     background: var(--vm-gold);
     border-radius: 8px;
-    margin-top: 40px;
+    margin-top: 44px;
     margin-bottom: 0;
     padding: 20px 30px;
 }
