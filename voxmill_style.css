@@ -2129,7 +2129,7 @@ MACRO CONTEXT
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
+EXECUTIVE INTELLIGENCE — SURGICAL FIX
 ============================================ */
 
 .executive-intelligence-layout {
@@ -2138,17 +2138,14 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     gap: 36px;
     margin-top: 70px;
     margin-bottom: 0;
-    align-items: start; /* CHANGED: Force top alignment */
+    align-items: start;
 }
 
-/* LEFT PANEL: PREMIUM INSIGHT GRID */
-.executive-insights-premium-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto; /* CHANGED: Auto rows for content-based height */
-    gap: 24px; /* REDUCED from 28px */
-    align-items: start;
-    height: auto; /* CHANGED: Remove fixed height */
+/* LEFT COLUMN: STACKED INSIGHT CARDS */
+.executive-insights-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .insight-card-elite {
@@ -2158,9 +2155,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     padding: 22px 24px;
     display: flex;
     flex-direction: column;
-    height: auto; /* CHANGED: Remove fixed height */
-    min-height: 180px;
-    max-height: 180px; /* ADDED: Force exact height */
+    min-height: 160px;
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2178,7 +2173,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 
 .insight-elite-number {
     font-family: var(--font-display);
-    font-size: 28px; /* REDUCED from 32px */
+    font-size: 28px;
     font-weight: 300;
     color: var(--vm-gold);
     line-height: 1;
@@ -2188,7 +2183,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 
 .insight-elite-category {
     font-family: var(--font-body);
-    font-size: 10px; /* REDUCED from 11px */
+    font-size: 10px;
     font-weight: 700;
     color: rgba(191,166,112,0.8);
     text-transform: uppercase;
@@ -2203,31 +2198,23 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     background: linear-gradient(90deg, var(--vm-gold), transparent);
     opacity: 0.3;
     margin-bottom: 10px;
-    margin-top: 2px; /* ADDED: Space from header */
     flex-shrink: 0;
 }
 
 .insight-elite-body {
     font-family: var(--font-body);
-    font-size: 13px; /* REDUCED from 14px */
+    font-size: 13px;
     font-weight: 400;
     color: rgba(234,234,234,0.85);
-    line-height: 1.7; /* REDUCED from 1.85 */
+    line-height: 1.7;
     letter-spacing: 0.02em;
     flex: 1;
-    display: flex;
-    align-items: flex-start; /* CHANGED: Top align text */
-    overflow: hidden; /* ADDED: Prevent overflow */
 }
 
-/* RIGHT PANEL: EXECUTIVE VERDICT */
-.executive-verdict-panel {
+/* RIGHT COLUMN: VERDICT PANEL */
+.executive-verdict-column {
     display: flex;
     align-items: stretch;
-    justify-content: center;
-    padding: 0;
-    height: auto; /* CHANGED: Remove fixed height */
-    min-height: 384px; /* ADDED: Match 2 left cards (180px x 2 + 24px gap) */
 }
 
 .verdict-panel-border {
@@ -2239,14 +2226,13 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* CHANGED: Space content evenly */
+    justify-content: space-between;
     box-shadow: 
         0 8px 32px rgba(0,0,0,0.35),
         0 0 60px rgba(191,166,112,0.2),
         inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
-    min-height: 384px; /* MATCH left panel */
 }
 
 .verdict-panel-border::before {
@@ -2279,7 +2265,7 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 }
 
 .verdict-seal svg {
-    width: 70px; /* REDUCED from 80px */
+    width: 70px;
     height: 70px;
 }
 
@@ -2339,7 +2325,6 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     border: 1px solid rgba(191,166,112,0.3);
     border-radius: 6px;
     padding: 12px 18px;
-    margin-top: 0; /* REMOVED top margin */
 }
 
 .verdict-rec-label {
@@ -2382,7 +2367,6 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     font-weight: 400;
 }
 
-/* STRATEGIC ACTION WINDOW */
 .action-window-luxury {
     margin-top: 42px;
     margin-bottom: 65px;
@@ -2392,7 +2376,6 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 32px;
-    width: 100%;
 }
 
 .action-item-luxury {
