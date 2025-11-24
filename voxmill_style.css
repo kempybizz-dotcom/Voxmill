@@ -508,7 +508,7 @@ WEEKLY MOVEMENT DASHBOARD
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW
+KPI GRID — MARKET OVERVIEW (REFINED)
 ============================================ */
 
 .kpi-grid {
@@ -524,9 +524,11 @@ KPI GRID — MARKET OVERVIEW
 
 .kpi-card {
     min-height: 164px;
+    height: 164px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 26px 30px;
 }
 
 .kpi-content {
@@ -535,6 +537,7 @@ KPI GRID — MARKET OVERVIEW
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: flex-start;
 }
 
 .kpi-label {
@@ -554,7 +557,7 @@ KPI GRID — MARKET OVERVIEW
     font-weight: 800;
     color: #BFA670;
     line-height: 1;
-    margin: 0;
+    margin: 0 0 14px 0;
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
@@ -567,22 +570,12 @@ KPI GRID — MARKET OVERVIEW
     padding: 4px 12px;
     border-radius: 4px;
     font-weight: 600;
-    margin-top: 14px;
+    margin-top: 0;
     line-height: 1.4;
 }
 
-.kpi-change.positive {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.08);
-}
-
-.kpi-change.negative {
-    color: rgba(244, 67, 54, 0.85);
-    background: rgba(244, 67, 54, 0.08);
-}
-
 /* ============================================
-VALUE DISTRIBUTION CHART
+VALUE DISTRIBUTION CHART (REFINED)
 ============================================ */
 
 .chart-section {
@@ -607,7 +600,33 @@ VALUE DISTRIBUTION CHART
     flex-direction: column;
     padding: 28px 30px 26px 30px;
     justify-content: flex-start;
-    gap: 18px;
+    gap: 0;
+}
+
+.chart-container .chart-title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.chart-container .chart-context {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
+    margin-bottom: 0;
+    margin-top: 0;
+    font-style: italic;
+    line-height: 1.8;
+    max-width: 1200px;
+    font-weight: 400;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .chart-container svg {
@@ -636,16 +655,17 @@ VALUE DISTRIBUTION CHART
     font-weight: 600;
 }
 
-svg line[stroke-dasharray] {
-    stroke-width: 1px !important;
-}
-
-svg line:not([stroke-dasharray]) {
-    stroke-width: 2px !important;
-}
-
-svg rect[fill*="barGradient"] {
-    filter: drop-shadow(0 3px 12px rgba(198, 161, 91, 0.6)) !important;
+.chart-container .chart-source {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.7);
+    opacity: 0.9;
+    text-align: center;
+    margin-top: 16px;
+    margin-bottom: 0;
+    font-style: italic;
+    padding-top: 0;
+    font-weight: 400;
 }
 
 /* ============================================
@@ -765,7 +785,7 @@ PERFORMANCE ANALYSIS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
+COMPETITIVE LANDSCAPE — REFINED VERSION
 ============================================ */
 
 .competitive-landscape-slide .two-column {
@@ -803,7 +823,7 @@ COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
     font-size: 12px;
     color: rgba(234, 234, 234, 0.75);
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 0;
     line-height: 1.8;
 }
 
@@ -823,16 +843,13 @@ COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
     justify-content: center;
     padding: 22px 24px;
     min-height: 168px;
+    height: 168px;
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
     box-shadow: 
         0 4px 16px rgba(0,0,0,0.2),
         inset 0 1px 0 rgba(255,255,255,0.03);
-    margin-bottom: 20px;
-}
-
-.risk-dial-card:last-of-type {
     margin-bottom: 0;
 }
 
@@ -862,6 +879,7 @@ COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
     font-size: 13px;
     color: var(--vm-text-body);
     font-weight: 400;
+    line-height: 1.4;
 }
 
 .competitor-rank {
@@ -1031,11 +1049,11 @@ COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
 }
 
 /* ============================================
-CROSS-VERTICAL INTELLIGENCE
+CROSS-VERTICAL INTELLIGENCE — REFINED
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 225px;
+    top: 185px;
 }
 
 .cross-vertical-container {
@@ -1058,8 +1076,15 @@ CROSS-VERTICAL INTELLIGENCE
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border-right: var(--card-border);
+    border-top: var(--card-border);
+    border-bottom: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .cross-vertical-icon {
@@ -1074,6 +1099,7 @@ CROSS-VERTICAL INTELLIGENCE
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 .cross-vertical-title {
@@ -1161,20 +1187,10 @@ CROSS-VERTICAL INTELLIGENCE
     margin-bottom: 0;
     border: 1px solid rgba(191, 166, 112, 0.2);
     padding: 26px 30px;
-}
-
-.momentum-signal-box-refined {
-    flex: 1;
-    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.6));
-    border: 1px solid rgba(191, 166, 112, 0.3);
-    border-radius: 8px;
-    padding: 18px 16px;
-    text-align: center;
-    min-height: 90px;
-    max-height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .momentum-correlation-title {
@@ -1183,7 +1199,7 @@ CROSS-VERTICAL INTELLIGENCE
     color: var(--vm-gold);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 32px;
     text-align: center;
     font-weight: 600;
 }
@@ -1196,6 +1212,21 @@ CROSS-VERTICAL INTELLIGENCE
     flex-wrap: nowrap;
     padding: 0;
     width: 100%;
+}
+
+.momentum-signal-box-refined {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.6));
+    border: 1px solid rgba(191, 166, 112, 0.3);
+    border-radius: 8px;
+    padding: 18px 16px;
+    text-align: center;
+    min-height: 90px;
+    max-height: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .momentum-signal-text {
@@ -1238,6 +1269,7 @@ CROSS-VERTICAL INTELLIGENCE
     font-weight: 600;
     letter-spacing: 0.4px;
     line-height: 1.8;
+    margin: 0;
 }
 
 /* ============================================
@@ -1370,7 +1402,7 @@ METHODOLOGY
 }
 
 /* ============================================
-MARKET DEPTH ANALYSIS
+MARKET DEPTH ANALYSIS — REFINED
 ============================================ */
 
 .market-depth-analysis .slide-content {
@@ -1381,9 +1413,32 @@ MARKET DEPTH ANALYSIS
     margin-top: 32px;
 }
 
+.property-type-heatmap .chart-title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.property-type-heatmap .chart-context {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
+    margin-bottom: 48px;
+    margin-top: 0;
+    font-style: italic;
+    line-height: 1.8;
+    font-weight: 400;
+}
+
 .heatmap-table {
     width: 100%;
-    margin-top: 48px;
+    margin-top: 0;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: var(--card-radius);
@@ -1402,6 +1457,7 @@ MARKET DEPTH ANALYSIS
     letter-spacing: 0.14em;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    height: 56px;
 }
 
 .heatmap-table th:first-child {
@@ -1409,7 +1465,11 @@ MARKET DEPTH ANALYSIS
     width: 34%;
 }
 
-.heatmap-table th:nth-child(2),
+.heatmap-table th:nth-child(2) {
+    width: 22%;
+    text-align: center;
+}
+
 .heatmap-table th:nth-child(3) {
     width: 22%;
     text-align: center;
@@ -1429,6 +1489,7 @@ MARKET DEPTH ANALYSIS
     vertical-align: middle;
     text-align: center;
     font-weight: 400;
+    height: 56px;
 }
 
 .heatmap-table td:nth-child(1) {
@@ -1436,7 +1497,11 @@ MARKET DEPTH ANALYSIS
     text-align: left;
 }
 
-.heatmap-table td:nth-child(2),
+.heatmap-table td:nth-child(2) {
+    width: 22%;
+    text-align: center;
+}
+
 .heatmap-table td:nth-child(3) {
     width: 22%;
     text-align: center;
@@ -1473,6 +1538,7 @@ MARKET DEPTH ANALYSIS
     background: rgba(12, 12, 12, 0.6);
     border: 1.5px solid;
     min-width: 60px;
+    height: 32px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
@@ -1499,13 +1565,25 @@ MARKET DEPTH ANALYSIS
     letter-spacing: 0.3px;
 }
 
+.property-type-heatmap .chart-source {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.7);
+    opacity: 0.9;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 0;
+    font-style: italic;
+    font-weight: 400;
+}
+
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     margin-top: 76px;
     margin-bottom: 0;
-    align-items: stretch;
+    align-items: start;
 }
 
 .depth-card {
@@ -1514,6 +1592,12 @@ MARKET DEPTH ANALYSIS
     justify-content: center;
     padding: 32px 30px;
     min-height: 200px;
+    height: 200px;
+    background: var(--card-bg);
+    backdrop-filter: blur(2px);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
 }
 
 .depth-label {
@@ -1565,12 +1649,13 @@ MARKET DEPTH ANALYSIS
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     margin-top: 16px;
+    margin-bottom: 0;
     font-weight: 400;
     line-height: 1.6;
 }
 
 /* ============================================
-STRATEGIC FORECAST
+STRATEGIC FORECAST — REFINED
 ============================================ */
 
 .forecast-grid-2x2 {
@@ -1590,7 +1675,7 @@ STRATEGIC FORECAST
     border-radius: var(--card-radius);
     box-shadow: 
         0 8px 24px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255,255,255,0.04),
         0 0 40px rgba(191, 166, 112, 0.08);
     display: flex;
     flex-direction: column;
@@ -1598,6 +1683,7 @@ STRATEGIC FORECAST
     position: relative;
     overflow: hidden;
     min-height: 244px;
+    height: 244px;
 }
 
 .forecast-card-premium::before {
@@ -1618,6 +1704,7 @@ STRATEGIC FORECAST
     padding: 20px 24px 16px 24px;
     border-bottom: 1px solid rgba(191,166,112,0.15);
     gap: 6px;
+    flex-shrink: 0;
 }
 
 .forecast-premium-label {
@@ -1694,6 +1781,7 @@ STRATEGIC FORECAST
 .forecast-premium-footer {
     padding: 16px 24px 20px 24px;
     border-top: 1px solid rgba(191,166,112,0.1);
+    flex-shrink: 0;
 }
 
 .forecast-premium-footer p {
@@ -1712,6 +1800,9 @@ STRATEGIC FORECAST
     padding: 16px 40px;
     border-radius: 8px;
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sentiment-bullish {
@@ -1787,6 +1878,7 @@ STRATEGIC FORECAST
     color: var(--vm-text-body);
     line-height: 1.8;
     font-weight: 400;
+    margin: 0;
 }
 
 .portfolio-recommendations {
@@ -1818,6 +1910,7 @@ STRATEGIC FORECAST
     flex-direction: column;
     gap: 10px;
     min-height: 136px;
+    height: 136px;
     justify-content: center;
 }
 
@@ -1853,7 +1946,7 @@ STRATEGIC FORECAST
 }
 
 /* ============================================
-EXECUTIVE INTELLIGENCE
+EXECUTIVE INTELLIGENCE — REFINED
 ============================================ */
 
 .executive-intelligence-layout {
@@ -1879,11 +1972,13 @@ EXECUTIVE INTELLIGENCE
     display: flex;
     flex-direction: column;
     min-height: 156px;
+    height: 156px;
     position: relative;
     overflow: hidden;
     box-shadow: 
         0 4px 16px rgba(0,0,0,0.25),
         inset 0 1px 0 rgba(255,255,255,0.03);
+    justify-content: center;
 }
 
 .insight-elite-header {
@@ -1948,13 +2043,14 @@ EXECUTIVE INTELLIGENCE
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     box-shadow: 
         0 8px 32px rgba(0,0,0,0.35),
         0 0 60px rgba(191,166,112,0.2),
         inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
+    gap: 16px;
 }
 
 .verdict-panel-border::before {
@@ -2086,17 +2182,14 @@ EXECUTIVE INTELLIGENCE
     line-height: 1.6;
     font-style: italic;
     font-weight: 400;
+    margin: 0;
 }
 
 .action-window-luxury {
-    margin-top: 56px;
+    margin-top: 0;
     margin-bottom: 0;
     background: transparent;
     padding: 0;
-}
-
-.executive-intelligence .action-window-luxury:nth-of-type(2) {
-    display: none !important;
 }
 
 .action-window-luxury-grid {
@@ -2117,6 +2210,7 @@ EXECUTIVE INTELLIGENCE
     flex-direction: column;
     gap: 12px;
     min-height: 130px;
+    height: 130px;
     justify-content: center;
     box-shadow: var(--card-shadow);
 }
