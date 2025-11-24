@@ -189,80 +189,79 @@
             </div>
         </div>
         
-        <!-- CHART SECTION -->
-        <div class="chart-section">
-            <div class="chart-divider"></div>
-            <div class="chart-container">
-                <h3 class="chart-title">Value Distribution Range</h3>
-                <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
-                
-                <svg width="100%" height="280" viewBox="0 0 1700 280" preserveAspectRatio="xMidYMid meet">
-                    <!-- Y-Axis Label -->
-                    <text x="35" y="140" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 140)" class="chart-axis-label">Count</text>
-                    
-                    <!-- Y-Axis -->
-                    <line x1="80" y1="40" x2="80" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-                    
-                    <!-- X-Axis -->
-                    <line x1="80" y1="220" x2="1620" y2="220" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-                    
-                    <!-- Horizontal Gridlines -->
-                    <line x1="80" y1="85" x2="1620" y2="85" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="80" y1="130" x2="1620" y2="130" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    <line x1="80" y1="175" x2="1620" y2="175" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-                    
-                    <!-- Bars -->
-                    {% for bar in chart_data.price_distribution %}
-                    <rect x="{{ 220 + loop.index0 * 350 }}" 
-                          y="{{ 220 - (bar.height * 0.95) }}" 
-                          width="240" 
-                          height="{{ bar.height * 0.95 }}" 
-                          fill="url(#barGradient)" 
-                          stroke="#C5A46D" 
-                          stroke-width="2.5"
-                          rx="6"
-                          style="filter: drop-shadow(0 3px 10px rgba(198, 161, 91, 0.5));"/>
-                    
-                    <!-- Value Labels on Top of Bars -->
-                    <text x="{{ 340 + loop.index0 * 350 }}" 
-                          y="{{ 205 - (bar.height * 0.95) }}" 
-                          font-family="Inter" 
-                          font-size="26" 
-                          font-weight="700"
-                          fill="#C5A46D" 
-                          text-anchor="middle"
-                          style="text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);">{{ bar.count }}</text>
-                    
-                    <!-- Category Labels Below Bars -->
-                    <text x="{{ 340 + loop.index0 * 350 }}" 
-                          y="245" 
-                          font-family="Inter" 
-                          font-size="16" 
-                          font-weight="600"
-                          fill="rgba(255,255,255,0.9)" 
-                          text-anchor="middle" 
-                          class="chart-axis-label">{{ bar.label }}</text>
-                    {% endfor %}
-                    
-                    <!-- X-Axis Label -->
-                    <text x="850" y="275" font-family="Inter" font-size="16" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
-                    
-                    <defs>
-                        <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:0.95" />
-                            <stop offset="50%" style="stop-color:#B59854;stop-opacity:0.85" />
-                            <stop offset="100%" style="stop-color:#8B7045;stop-opacity:0.7" />
-                        </linearGradient>
-                    </defs>
-                </svg>
-                
-                <div class="chart-mini-insight">
-                    📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
-                </div>
-                
-                <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
-            </div>
+        <!-- VALUE DISTRIBUTION CHART BLOCK (MARKET OVERVIEW SLIDE) -->
+
+<div class="chart-section">
+    <div class="chart-divider"></div>
+    <div class="chart-container">
+        <h3 class="chart-title">Value Distribution Range</h3>
+        <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
+        
+        <svg width="100%" height="320" viewBox="0 0 1700 320" preserveAspectRatio="xMidYMid meet">
+            <!-- Y-Axis Label -->
+            <text x="35" y="160" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 160)" class="chart-axis-label">Count</text>
+            
+            <!-- Y-Axis -->
+            <line x1="80" y1="40" x2="80" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            
+            <!-- X-Axis -->
+            <line x1="80" y1="260" x2="1620" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            
+            <!-- Horizontal Gridlines -->
+            <line x1="80" y1="95" x2="1620" y2="95" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="150" x2="1620" y2="150" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="205" x2="1620" y2="205" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            
+            <!-- Bars -->
+            {% for bar in chart_data.price_distribution %}
+            <rect x="{{ 220 + loop.index0 * 350 }}" 
+                  y="{{ 260 - (bar.height * 1.1) }}" 
+                  width="240" 
+                  height="{{ bar.height * 1.1 }}" 
+                  fill="url(#barGradient)" 
+                  stroke="#C5A46D" 
+                  stroke-width="2.5"
+                  rx="6"
+                  style="filter: drop-shadow(0 3px 12px rgba(198, 161, 91, 0.6));"/>
+            
+            <!-- Value Labels on Top of Bars -->
+            <text x="{{ 340 + loop.index0 * 350 }}" 
+                  y="{{ 245 - (bar.height * 1.1) }}" 
+                  font-family="Inter" 
+                  font-size="28" 
+                  font-weight="700"
+                  fill="#C5A46D" 
+                  text-anchor="middle"
+                  style="text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);">{{ bar.count }}</text>
+            
+            <!-- Category Labels Below Bars -->
+            <text x="{{ 340 + loop.index0 * 350 }}" 
+                  y="285" 
+                  font-family="Inter" 
+                  font-size="17" 
+                  font-weight="600"
+                  fill="rgba(255,255,255,0.9)" 
+                  text-anchor="middle" 
+                  class="chart-axis-label">{{ bar.label }}</text>
+            {% endfor %}
+            
+            <!-- X-Axis Label -->
+            <text x="850" y="315" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
+            
+            <defs>
+                <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#B59854;stop-opacity:0.9" />
+                    <stop offset="100%" style="stop-color:#9E7B47;stop-opacity:0.75" />
+                </linearGradient>
+            </defs>
+        </svg>
+        
+        <div class="chart-mini-insight">
+            📊 <strong>Concentration Signal:</strong> {{ "Premium segment (£2M+) comprises" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "Entry-level inventory (£0-500k) dominates with" }} {{ chart_data.price_distribution[3].count if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else chart_data.price_distribution[0].count }} assets — {{ "ultra-high-net-worth focus evident" if chart_data.price_distribution[3].count > chart_data.price_distribution[0].count else "broad market accessibility maintained" }}.
         </div>
+        
+        <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
     </div>
 </div>
 
