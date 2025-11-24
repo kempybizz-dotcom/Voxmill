@@ -708,40 +708,73 @@
     </div>
     <div class="slide-content">
         <div class="forecast-grid-2x2">
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">30-Day {{ forward_indicator_label }}</h3>
-                <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
-                <div class="risk-dial-status">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }} — Short-term trajectory</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Linear regression weighted by recent {{ velocity_metric_label|lower }} trends. Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "N/A" }}. Immediate market momentum indicator for tactical positioning.
-                </p>
+            <div class="forecast-card-premium">
+                <div class="forecast-premium-header">
+                    <div class="forecast-premium-label">30-Day {{ forward_indicator_label }}</div>
+                    <div class="forecast-premium-title">Short-Term Trajectory</div>
+                </div>
+                <div class="forecast-premium-body">
+                    <div class="forecast-premium-value-large">{{ "%.1f"|format(forecast.day_30.percentage if forecast.day_30 and forecast.day_30.percentage else 0) }}%</div>
+                    <div class="forecast-premium-direction">{{ forecast.day_30.direction if forecast.day_30 else "Neutral" }}</div>
+                    <div class="forecast-premium-confidence-bar">
+                        <div class="forecast-premium-confidence-fill" style="width: {{ forecast.day_30.confidence_pct if forecast.day_30 and forecast.day_30.confidence_pct else 75 }}%"></div>
+                    </div>
+                    <div class="forecast-premium-confidence-label">Confidence: {{ forecast.day_30.confidence if forecast.day_30 else "High" }}</div>
+                </div>
+                <div class="forecast-premium-footer">
+                    <p>Linear regression weighted by recent {{ velocity_metric_label|lower }} trends. Immediate momentum indicator for tactical positioning.</p>
+                </div>
             </div>
 
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">90-Day Outlook</h3>
-                <div class="risk-dial-value">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
-                <div class="risk-dial-status">Baseline Trend — Medium-term projection</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Range: {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}% (low) to {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}% (high). Monte Carlo simulation with 10,000 iterations establishing probabilistic bands.
-                </p>
+            <div class="forecast-card-premium">
+                <div class="forecast-premium-header">
+                    <div class="forecast-premium-label">90-Day Outlook</div>
+                    <div class="forecast-premium-title">Medium-Term Projection</div>
+                </div>
+                <div class="forecast-premium-body">
+                    <div class="forecast-premium-value-large">{{ "%.1f"|format(forecast.day_90.mid if forecast.day_90 and forecast.day_90.mid else 0) }}%</div>
+                    <div class="forecast-premium-direction">Baseline Trend</div>
+                    <div class="forecast-premium-confidence-bar">
+                        <div class="forecast-premium-confidence-fill" style="width: 82%"></div>
+                    </div>
+                    <div class="forecast-premium-confidence-label">Range: {{ "%.1f"|format(forecast.day_90.low if forecast.day_90 and forecast.day_90.low else 0) }}% – {{ "%.1f"|format(forecast.day_90.high if forecast.day_90 and forecast.day_90.high else 0) }}%</div>
+                </div>
+                <div class="forecast-premium-footer">
+                    <p>Monte Carlo simulation with 10,000 iterations establishing probabilistic confidence bands.</p>
+                </div>
             </div>
 
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Market Sentiment</h3>
-                <div class="risk-dial-value">{{ forecast.sentiment or "Neutral" }}</div>
-                <div class="risk-dial-status">AI-Derived — Composite signal analysis</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Multi-factor composite incorporating {{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, and inventory fundamentals. Real-time sentiment calibration across institutional participants.
-                </p>
+            <div class="forecast-card-premium">
+                <div class="forecast-premium-header">
+                    <div class="forecast-premium-label">Market Sentiment</div>
+                    <div class="forecast-premium-title">Composite Signal Analysis</div>
+                </div>
+                <div class="forecast-premium-body">
+                    <div class="sentiment-display sentiment-{{ 'bullish' if forecast.sentiment == 'Bullish' else 'neutral' if forecast.sentiment == 'Neutral' else 'bearish' }}">
+                        {{ forecast.sentiment or "Neutral" }}
+                    </div>
+                    <div class="forecast-premium-direction">AI-Derived</div>
+                </div>
+                <div class="forecast-premium-footer">
+                    <p>Multi-factor composite incorporating {{ forward_indicator_label|lower }}, {{ velocity_metric_label|lower }}, and inventory fundamentals.</p>
+                </div>
             </div>
 
-            <div class="risk-dial-card">
-                <h3 class="risk-dial-title">Voxmill Predictive Index</h3>
-                <div class="risk-dial-value">{{ forecast.voxmill_index or 0 }}</div>
-                <div class="risk-dial-status">{{ "Strong" if (forecast.voxmill_index or 0) >= 70 else "Moderate" if (forecast.voxmill_index or 0) >= 50 else "Weak" }} — Composite strength (0-100)</div>
-                <p style="font-size: 12px; color: var(--vm-muted); margin-top: 16px; line-height: 1.6;">
-                    Proprietary blend: 40% liquidity index, 30% demand pressure, 30% {{ forward_indicator_label|lower }}. Aggregated market health indicator for strategic capital deployment timing.
-                </p>
+            <div class="forecast-card-premium">
+                <div class="forecast-premium-header">
+                    <div class="forecast-premium-label">Voxmill Predictive Index</div>
+                    <div class="forecast-premium-title">Composite Strength (0-100)</div>
+                </div>
+                <div class="forecast-premium-body">
+                    <div class="voxmill-index-number">{{ forecast.voxmill_index or 0 }}</div>
+                    <div class="forecast-premium-direction">{{ "Strong" if (forecast.voxmill_index or 0) >= 70 else "Moderate" if (forecast.voxmill_index or 0) >= 50 else "Weak" }}</div>
+                    <div class="voxmill-index-bar-container">
+                        <div class="voxmill-index-bar-fill" style="width: {{ forecast.voxmill_index or 0 }}%"></div>
+                    </div>
+                </div>
+                <div class="forecast-premium-footer">
+                    <p>Proprietary blend: 40% liquidity, 30% demand pressure, 30% {{ forward_indicator_label|lower }}.</p>
+                </div>
             </div>
         </div>
         
@@ -754,23 +787,23 @@
             </p>
         </div>
         
-        <div style="margin-top: 52px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 20px; font-weight: 600; text-align: center;">Portfolio Bias Recommendation</h4>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #4CAF50; font-weight: 600; margin-bottom: 12px;">ACQUIRE</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_1 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(strong liquidity + undervalued band)</div>
+        <div class="portfolio-recommendations">
+            <h4 class="recommendations-title">Portfolio Bias Recommendation</h4>
+            <div class="recommendations-grid">
+                <div class="recommendation-card recommendation-acquire">
+                    <div class="recommendation-action">ACQUIRE</div>
+                    <div class="recommendation-segment">{{ segment_label_1 }}</div>
+                    <div class="recommendation-rationale">Strong liquidity + undervalued band</div>
                 </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #FFC107; font-weight: 600; margin-bottom: 12px;">HOLD</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_2 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(stable {{ velocity_metric_label|lower }}, no downside risk)</div>
+                <div class="recommendation-card recommendation-hold">
+                    <div class="recommendation-action">HOLD</div>
+                    <div class="recommendation-segment">{{ segment_label_2 }}</div>
+                    <div class="recommendation-rationale">Stable {{ velocity_metric_label|lower }}, no downside risk</div>
                 </div>
-                <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px; text-align: center;">
-                    <div style="font-size: 14px; color: #F44336; font-weight: 600; margin-bottom: 12px;">ROTATE OUT</div>
-                    <div style="font-size: 13px; color: #C8AA6E; font-weight: 600; margin-bottom: 8px;">{{ segment_label_3 }}</div>
-                    <div style="font-size: 13px; color: var(--vm-text-body); line-height: 1.6;">(weakening liquidity bands)</div>
+                <div class="recommendation-card recommendation-rotate">
+                    <div class="recommendation-action">ROTATE OUT</div>
+                    <div class="recommendation-segment">{{ segment_label_3 }}</div>
+                    <div class="recommendation-rationale">Weakening liquidity bands</div>
                 </div>
             </div>
         </div>
