@@ -100,38 +100,36 @@
         </div>
 
         <!-- KPI DASHBOARD -->
-        <div class="weekly-movement-dashboard">
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ inventory_label }}</div>
-                <div class="movement-value">{{ kpis.total_properties }}</div>
-                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">£/{{ unit_metric }}</div>
-                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ velocity_metric_label }}</div>
-                <div class="movement-value">{{ kpis.days_on_market }}d</div>
-                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">Demand Pressure</div>
-                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-                </div>
-            </div>
+       <div class="weekly-movement-dashboard">
+    <div class="movement-mini-card">
+        <div class="movement-label">{{ inventory_label }}</div>
+        <div class="movement-value">{{ kpis.total_properties }}</div>
+        <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+        </div>
+    </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">£/{{ unit_metric }}</div>
+        <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+        <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
+        </div>
+    </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">{{ velocity_metric_label }}</div>
+        <div class="movement-value">{{ kpis.days_on_market }}d</div>
+        <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
+        </div>
+    </div>
+    
+    <div class="movement-mini-card">
+        <div class="movement-label">Demand Pressure</div>
+        <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+        <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
         </div>
     </div>
 </div>
@@ -197,25 +195,25 @@
         <h3 class="chart-title">Value Distribution Range</h3>
         <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
         
-        <svg width="100%" height="320" viewBox="0 0 1700 320" preserveAspectRatio="xMidYMid meet">
+        <svg width="100%" height="300" viewBox="0 0 1700 300" preserveAspectRatio="xMidYMid meet">
             <!-- Y-Axis Label -->
-            <text x="35" y="160" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 160)" class="chart-axis-label">Count</text>
+            <text x="35" y="150" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 150)" class="chart-axis-label">Count</text>
             
             <!-- Y-Axis -->
-            <line x1="80" y1="40" x2="80" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <line x1="80" y1="30" x2="80" y2="245" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
             
             <!-- X-Axis -->
-            <line x1="80" y1="260" x2="1620" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <line x1="80" y1="245" x2="1620" y2="245" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
             
             <!-- Horizontal Gridlines -->
-            <line x1="80" y1="95" x2="1620" y2="95" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="150" x2="1620" y2="150" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="205" x2="1620" y2="205" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="80" x2="1620" y2="80" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="135" x2="1620" y2="135" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="190" x2="1620" y2="190" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
             
             <!-- Bars -->
             {% for bar in chart_data.price_distribution %}
             <rect x="{{ 220 + loop.index0 * 350 }}" 
-                  y="{{ 260 - (bar.height * 1.1) }}" 
+                  y="{{ 245 - (bar.height * 1.1) }}" 
                   width="240" 
                   height="{{ bar.height * 1.1 }}" 
                   fill="url(#barGradient)" 
@@ -226,7 +224,7 @@
             
             <!-- Value Labels on Top of Bars -->
             <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="{{ 245 - (bar.height * 1.1) }}" 
+                  y="{{ 230 - (bar.height * 1.1) }}" 
                   font-family="Inter" 
                   font-size="28" 
                   font-weight="700"
@@ -236,7 +234,7 @@
             
             <!-- Category Labels Below Bars -->
             <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="285" 
+                  y="268" 
                   font-family="Inter" 
                   font-size="17" 
                   font-weight="600"
@@ -246,7 +244,7 @@
             {% endfor %}
             
             <!-- X-Axis Label -->
-            <text x="850" y="315" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
+            <text x="850" y="293" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
             
             <defs>
                 <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -262,8 +260,6 @@
         </div>
         
         <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
-    </div>
-</div>
     </div>
 </div>
 
