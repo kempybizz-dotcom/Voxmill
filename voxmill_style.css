@@ -84,14 +84,14 @@ body::before {
 .slide {
     width: 1920px;
     height: auto;
-    min-height: 1660px; /* INCREASED from 1480px (+180px) */
+    min-height: 1660px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
     page-break-inside: avoid;
     overflow: visible !important;
     border: 3px solid var(--vm-gold);
-    padding: 64px 48px 104px 48px;
+    padding: 64px 48px 120px 48px;
 }
 
 .slide::after {
@@ -127,6 +127,11 @@ body::before {
     z-index: 10;
 }
 
+/* Remove ghost backgrounds (except cover) */
+.slide:not(.slide-cover) {
+    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
+}
+
 /* ============================================
 COVER PAGE
 ============================================ */
@@ -136,8 +141,8 @@ COVER PAGE
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 1660px !important; /* INCREASED from 1480px */
-    height: 1660px !important; /* INCREASED from 1480px */
+    min-height: 1660px !important;
+    height: 1660px !important;
 }
 
 .slide-cover::after {
@@ -219,7 +224,7 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-content {
     position: absolute;
-    top: 170px; /* UNIFIED — was 185px, causing inconsistent rhythm */
+    top: 170px;
     left: 48px;
     right: 48px;
     bottom: 80px;
@@ -228,11 +233,14 @@ SLIDE HEADER — CONSISTENT SPACING
     min-height: calc(1480px - 170px - 80px) !important;
 }
 
-/* Override for slides with extra context needs */
 .cross-vertical-intelligence .slide-content,
 .market-depth-analysis .slide-content,
 .top-market-opportunities .slide-content {
-    top: 185px; /* Slightly lower for dense content slides */
+    top: 185px;
+}
+
+.segment-performance-slide .slide-content {
+    top: 185px;
 }
 
 .slide-header {
@@ -283,19 +291,6 @@ SLIDE HEADER — CONSISTENT SPACING
     align-self: baseline;
 }
 
-.slide {
-    width: 1920px;
-    height: auto;
-    min-height: 1480px;
-    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
-    position: relative;
-    page-break-after: always;
-    page-break-inside: avoid;
-    overflow: visible !important;
-    border: 3px solid var(--vm-gold);
-    padding: 64px 48px 120px 48px; /* INCREASED bottom from 104px to 140px */
-}
-
 /* ============================================
 UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 ============================================ */
@@ -313,7 +308,7 @@ UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 .forecast-card-premium,
 .action-item-luxury,
 .competitive-insights-strip {
-    padding: 26px 30px !important;
+    padding: 26px 30px;
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
@@ -321,10 +316,56 @@ UNIVERSAL CARD STYLING — FLOATING AESTHETIC
     box-shadow: var(--card-shadow);
 }
 
-.insight-card-elite,
-.competitor-card-body,
-.district-card-premium {
-    padding: 22px 24px !important;
+/* ============================================
+GLOBAL CHART STYLING
+============================================ */
+
+.chart-title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.chart-context {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
+    margin-bottom: 0;
+    margin-top: 0;
+    font-style: italic;
+    line-height: 1.8;
+    max-width: 1200px;
+    font-weight: 400;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chart-source {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.7);
+    opacity: 0.9;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-style: italic;
+    padding-top: 0;
+    font-weight: 400;
+}
+
+.chart-axis-label {
+    font-family: var(--font-body);
+    font-size: 18px;
+    color: rgba(234, 234, 234, 0.9);
+    opacity: 1;
+    font-weight: 600;
+    letter-spacing: 0.08em;
 }
 
 /* ============================================
@@ -334,8 +375,8 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 28px; /* UNIFIED — was var(--spacing-md) which equals 32px */
-    margin-top: 52px; /* REDUCED from var(--spacing-lg) for better rhythm */
+    gap: 26px;
+    margin-top: 48px;
 }
 
 .executive-summary-bullet {
@@ -345,7 +386,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 22px 30px; /* ADDED explicit padding for consistency */
+    padding: 22px 30px;
 }
 
 .executive-bullet-title {
@@ -384,7 +425,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     max-width: 1050px;
     margin-left: 0;
     margin-right: auto;
-    padding: 0 22px; /* INCREASED from 4px - moves text away from left edge */
+    padding: 0 22px;
 }
 
 .killer-insight {
@@ -409,22 +450,22 @@ WEEKLY MOVEMENT DASHBOARD
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 22px;
-    margin-top: 60px; /* REDUCED from 80px for tighter rhythm */
-    margin-bottom: 60px; /* REDUCED from 65px */
-    padding: 26px;
-    background: rgba(191, 166, 112, 0.04);
-    border-radius: var(--card-radius);
-    border: var(--card-border);
+    margin-top: 56px;
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    border: none;
 }
 
 .movement-mini-card {
     text-align: center;
-    min-height: 130px; /* INCREASED from 108px */
+    min-height: 132px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 26px 18px; /* INCREASED top/bottom from 20px */
+    padding: 24px 18px;
 }
 
 .movement-label {
@@ -467,17 +508,17 @@ WEEKLY MOVEMENT DASHBOARD
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW (REFERENCE STANDARD)
+KPI GRID — MARKET OVERVIEW
 ============================================ */
 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    gap: 32px;
     height: 360px;
-    margin-top: 52px; /* REDUCED from 70px */
-    margin-bottom: 80px; /* REDUCED from 94px */
+    margin-top: 48px;
+    margin-bottom: 76px;
     page-break-inside: avoid;
 }
 
@@ -490,7 +531,7 @@ KPI GRID — MARKET OVERVIEW (REFERENCE STANDARD)
 
 .kpi-content {
     width: 100%;
-    padding: 14px 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -541,115 +582,46 @@ KPI GRID — MARKET OVERVIEW (REFERENCE STANDARD)
 }
 
 /* ============================================
-CHART SECTION — CONSISTENT SPACING
-============================================ */
-
-/* ============================================
-VALUE DISTRIBUTION CHART — SURGICAL FIX
+VALUE DISTRIBUTION CHART
 ============================================ */
 
 .chart-section {
-    margin-top: 80px; /* REDUCED from 120px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 76px;
+    margin-bottom: 0;
     page-break-inside: avoid;
 }
 
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 48px 0; /* REDUCED from 52px */
+    margin: 0 0 44px 0;
     opacity: 1;
 }
 
 .chart-container {
     height: auto;
-    min-height: 520px;
+    min-height: 500px;
     page-break-inside: avoid;
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 32px 30px 28px 30px;
+    padding: 28px 30px 26px 30px;
     justify-content: flex-start;
-    gap: 20px;
-    background: var(--card-bg);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
+    gap: 18px;
 }
 
 .chart-container svg {
     display: block;
-    margin: 20px auto 0 auto;
+    margin: 16px auto 0 auto;
     max-width: 100%;
-}
-
-.chart-title,
-.methodology-title,
-.macro-title,
-.momentum-correlation-title,
-.momentum-title,
-.concentration-title,
-.rankings-title {
-    font-family: var(--font-body);
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.12em;
-}
-
-.chart-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.8), transparent);
-    opacity: 0.8;
-}
-
-.chart-context {
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(234, 234, 234, 0.75);
-    text-align: center;
-    margin-bottom: 0;
-    font-style: italic;
-    line-height: 1.8;
-    max-width: 1200px;
-    font-weight: 400;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.chart-source {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(234, 234, 234, 0.7);
-    opacity: 0.9;
-    text-align: center;
-    margin-top: 20px;
-    font-style: italic;
-    padding-top: 0;
-    font-weight: 400;
-}
-
-.chart-axis-label {
-    font-family: var(--font-body);
-    font-size: 18px;
-    color: rgba(234, 234, 234, 0.9);
-    opacity: 1;
-    font-weight: 600;
-    letter-spacing: 0.08em;
 }
 
 .chart-mini-insight {
     background: rgba(191, 166, 112, 0.12);
     border-left: 4px solid var(--vm-gold);
-    padding: 20px 28px;
-    margin-top: 28px;
+    padding: 18px 26px;
+    margin-top: 22px;
+    margin-bottom: 0;
     border-radius: 8px;
     font-family: var(--font-body);
     font-size: 14px;
@@ -664,7 +636,6 @@ VALUE DISTRIBUTION CHART — SURGICAL FIX
     font-weight: 600;
 }
 
-/* Enhanced SVG element visibility */
 svg line[stroke-dasharray] {
     stroke-width: 1px !important;
 }
@@ -676,17 +647,18 @@ svg line:not([stroke-dasharray]) {
 svg rect[fill*="barGradient"] {
     filter: drop-shadow(0 3px 12px rgba(198, 161, 91, 0.6)) !important;
 }
+
 /* ============================================
-PERFORMANCE ANALYSIS — SURGICAL FIX
+PERFORMANCE ANALYSIS
 ============================================ */
 
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-md);
+    gap: 32px;
     height: auto;
-    margin-top: 52px; /* REDUCED from 70px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 48px;
+    margin-bottom: 56px;
 }
 
 .chart-panel {
@@ -697,12 +669,7 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     display: flex;
     flex-direction: column;
     padding: 26px 30px;
-    justify-content: space-between;
-    background: var(--card-bg);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
+    justify-content: flex-start;
 }
 
 .chart-panel .chart-title {
@@ -713,20 +680,20 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     letter-spacing: 0.12em;
     margin-bottom: 0;
     text-align: center;
-    padding-bottom: 14px;
+    padding-bottom: 12px;
 }
 
 .chart-panel .chart-context {
     font-size: 12px;
     color: rgba(234, 234, 234, 0.75);
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     line-height: 1.8;
 }
 
 .chart-panel svg {
     display: block;
-    margin: 0 auto;
+    margin: 8px auto;
     flex: 1;
 }
 
@@ -734,16 +701,17 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     font-size: 11px;
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
-    margin-top: 16px;
+    margin-top: auto;
+    padding-top: 16px;
     font-style: italic;
 }
 
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md);
-    margin-top: 52px; /* REDUCED from 70px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    gap: 32px;
+    margin-top: 48px;
+    margin-bottom: 0;
 }
 
 .insight-card {
@@ -753,7 +721,7 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 22px 30px; /* ADDED explicit padding */
+    padding: 22px 30px;
 }
 
 .insight-title {
@@ -778,15 +746,15 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
-    padding: 26px 30px;
+    padding: 24px 30px;
     margin-top: 0;
-    margin-bottom: 65px;
+    margin-bottom: 0;
 }
 
 .context-panel h4 {
     font-size: 16px;
     color: #C8AA6E;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-weight: 600;
 }
 
@@ -797,23 +765,15 @@ PERFORMANCE ANALYSIS — SURGICAL FIX
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — SURGICAL FIX
+COMPETITIVE LANDSCAPE — COMPLETE REFINED VERSION
 ============================================ */
 
 .competitive-landscape-slide .two-column {
-    margin-top: 24px;
+    margin-top: 20px;
+    gap: 32px;
+    align-items: stretch;
 }
 
-.competitive-landscape-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 36px;
-    margin-top: 60px;
-    margin-bottom: 65px;
-    align-items: start;
-}
-
-/* LEFT COLUMN: MARKET CONCENTRATION INTELLIGENCE */
 .competitive-info-panel {
     width: 100%;
     page-break-inside: avoid;
@@ -825,223 +785,88 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
+    min-height: 720px;
 }
 
-.concentration-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid rgba(191,166,112,0.2);
-}
-
-.concentration-icon {
-    font-size: 32px;
-    line-height: 1;
-}
-
-.concentration-title {
-    font-family: var(--font-display);
-    font-size: 22px;
+.competitive-info-panel .chart-title {
+    font-size: 18px;
     font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.5px;
-    margin: 0;
-    text-shadow: 0 2px 8px rgba(191,166,112,0.3);
-}
-
-.concentration-score-block {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 24px;
-    background: rgba(191,166,112,0.04);
-    border-left: 4px solid var(--vm-gold);
-    border-radius: 8px;
-}
-
-.concentration-label {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(184,184,184,0.7);
+    color: #EAEAEA;
     text-transform: uppercase;
-    letter-spacing: 1.8px;
+    letter-spacing: 0.12em;
+    margin-bottom: 0;
+    text-align: center;
+    padding-bottom: 14px;
 }
 
-.concentration-value {
-    font-family: var(--font-body);
-    font-size: 56px;
-    font-weight: 800;
-    color: var(--vm-gold);
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 10px rgba(191,166,112,0.5);
-}
-
-.concentration-bar {
-    width: 100%;
-    height: 10px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 5px;
-    overflow: hidden;
-    position: relative;
-    margin-top: 8px;
-}
-
-.concentration-bar-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 10px;
-    background: linear-gradient(90deg, #BFA670, #B59854);
-    border-radius: 5px;
-    box-shadow: 0 0 12px rgba(191,166,112,0.6);
-}
-
-.concentration-note {
-    font-family: var(--font-body);
+.competitive-info-panel .chart-context {
     font-size: 12px;
-    font-weight: 400;
-    color: rgba(234,234,234,0.65);
-    line-height: 1.6;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.8;
+}
+
+.competitive-info-panel .chart-source {
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin-top: auto;
+    padding-top: 20px;
     font-style: italic;
 }
 
-.concentration-metrics-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.concentration-metric-card {
-    background: rgba(12,12,12,0.4);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: 8px;
-    padding: 26px 18px; /* INCREASED from 20px */
+.risk-dial-card {
     text-align: center;
-    min-height: 140px; /* ADDED - prevents overlap */
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-
-.metric-card-label {
-    font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 600;
-    color: rgba(184,184,184,0.7);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 12px;
-}
-
-.metric-card-value {
-    font-family: var(--font-body);
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    line-height: 1;
-    margin-bottom: 8px;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 8px rgba(191,166,112,0.4);
-}
-
-.metric-card-note {
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 400;
-    color: rgba(234,234,234,0.6);
-    line-height: 1.4;
-}
-
-.concentration-insight {
-    padding: 20px 24px;
-    background: rgba(191,166,112,0.06);
+    padding: 22px 24px;
+    min-height: 168px;
+    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.15);
-    border-radius: 8px;
+    border-radius: var(--card-radius);
+    box-shadow: 
+        0 4px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+    margin-bottom: 20px;
 }
 
-.insight-label {
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(191,166,112,0.8);
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    margin-bottom: 12px;
+.risk-dial-card:last-of-type {
+    margin-bottom: 0;
 }
 
-.insight-body {
+.risk-dial-title {
     font-family: var(--font-body);
     font-size: 13px;
-    font-weight: 400;
-    color: rgba(234,234,234,0.85);
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-}
-
-/* RIGHT COLUMN: COMPETITIVE RANKINGS */
-.competitive-rankings-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.rankings-header {
-    padding-bottom: 20px;
-    border-bottom: 2px solid rgba(191,166,112,0.2);
-}
-
-.rankings-title {
-    font-family: var(--font-display);
-    font-size: 22px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    margin-bottom: 14px;
     font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.5px;
-    margin: 0 0 8px 0;
-    text-shadow: 0 2px 8px rgba(191,166,112,0.3);
+    padding-top: 0;
 }
 
-.rankings-subtitle {
+.risk-dial-value {
     font-family: var(--font-body);
-    font-size: 12px;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--vm-gold);
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
+    line-height: 1;
+}
+
+.risk-dial-status {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--vm-text-body);
     font-weight: 400;
-    color: rgba(184,184,184,0.7);
-    line-height: 1.6;
-    margin: 0;
-    font-style: italic;
 }
 
-.competitive-rankings-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.competitor-card-elite {
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.2);
-    border-radius: var(--card-radius);
-    overflow: hidden;
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.25),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-    min-height: 140px;
-}
-
-.competitor-card-header {
-    background: linear-gradient(135deg, rgba(191,166,112,0.12), rgba(181,152,84,0.06));
-    border-bottom: 1px solid rgba(191,166,112,0.2);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.competitor-rank-badge {
-    width: 36px;
-    height: 36px;
+.competitor-rank {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(191,166,112,0.3), rgba(181,152,84,0.2));
     border: 2px solid var(--vm-gold);
@@ -1049,45 +874,24 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     align-items: center;
     justify-content: center;
     font-family: var(--font-body);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--vm-gold);
     box-shadow: 0 2px 8px rgba(191,166,112,0.4);
     flex-shrink: 0;
 }
 
-.competitor-tier-label {
+.competitor-premium-name {
     font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(191,166,112,0.8);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
-
-.competitor-card-body {
-    padding: 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.competitor-name-block {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.competitor-name {
-    font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: #E6E6E6;
     letter-spacing: 0.4px;
     line-height: 1.3;
+    margin-bottom: 6px;
 }
 
-.competitor-inventory {
+.competitor-premium-count {
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 500;
@@ -1095,32 +899,19 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     letter-spacing: 0.8px;
 }
 
-.competitor-metrics-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid rgba(191,166,112,0.1);
-}
-
-.competitor-metric {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.competitor-metric-label {
+.metric-label {
     font-family: var(--font-body);
     font-size: 9px;
     font-weight: 600;
     color: rgba(184,184,184,0.7);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.8px;
+    margin-bottom: 6px;
 }
 
-.competitor-metric-value {
+.metric-value {
     font-family: var(--font-body);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--vm-gold);
     line-height: 1;
@@ -1128,49 +919,46 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
 }
 
-.competitor-classification-badge {
+.competitor-premium-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 18px;
+    padding: 6px 14px;
     border-radius: 6px;
     font-family: var(--font-body);
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.4px;
+    letter-spacing: 1.2px;
     border: 1.5px solid;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    min-width: 100px;
-    height: 32px;
+    min-width: 90px;
+    height: 28px;
 }
 
-.badge-dominant {
+.badge-premium-strong {
     color: #4CAF50;
     background: rgba(76, 175, 80, 0.1);
     border-color: rgba(76, 175, 80, 0.4);
 }
 
-.badge-rising {
+.badge-premium-moderate {
     color: #FFC107;
     background: rgba(255, 193, 7, 0.1);
     border-color: rgba(255, 193, 7, 0.4);
 }
 
-.badge-emerging {
+.badge-premium-weak {
     color: rgba(244, 67, 54, 0.85);
     background: rgba(244, 67, 54, 0.1);
     border-color: rgba(244, 67, 54, 0.4);
 }
 
-/* COMPETITIVE INSIGHTS STRIP */
 .competitive-insights-strip {
-    margin-top: 60px; /* REDUCED from 80px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 56px;
+    margin-bottom: 0;
     border: 1px solid var(--vm-gold);
-    padding: 26px 30px; /* ADDED explicit padding */
-    background: var(--card-bg);
-    border-radius: var(--card-radius);
+    padding: 24px 30px;
 }
 
 .competitive-insights-grid {
@@ -1184,7 +972,7 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    min-height: 85px;
+    min-height: 82px;
 }
 
 .competitive-insight-icon {
@@ -1206,17 +994,48 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     display: flex;
     align-items: center;
 }
+
+.bottom-callout-box {
+    margin-top: 56px;
+    margin-bottom: 0;
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid #BFA670;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
+    padding: 22px 30px;
 }
-/* ============================================
-CROSS-VERTICAL INTELLIGENCE — PERFECTLY CENTERED
-============================================ */
+
+.bottom-callout-title {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: #BFA670;
+    margin-bottom: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.bottom-callout-text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+    font-weight: 400;
+}
+
+.bottom-callout-text > div {
+    margin-bottom: 8px;
+}
+
+.bottom-callout-text > div:last-child {
+    margin-bottom: 0;
+}
 
 /* ============================================
-IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
+CROSS-VERTICAL INTELLIGENCE
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 225px; /* Keep existing */
+    top: 225px;
 }
 
 .cross-vertical-container {
@@ -1227,15 +1046,15 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 28px;
-    margin-top: 60px; /* REDUCED from 80px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 56px;
+    margin-bottom: 0;
     align-items: stretch;
 }
 
 .cross-vertical-card {
     border-left: 4px solid var(--vm-gold);
     min-height: 380px;
-    padding: 22px 26px; /* REFINED — was 18px 22px */
+    padding: 22px 26px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1245,13 +1064,13 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
 
 .cross-vertical-icon {
     font-size: 50px;
-    margin-top: 6px; /* REDUCED from 8px for tighter top alignment */
-    margin-bottom: 20px; /* REDUCED from 22px */
+    margin-top: 6px;
+    margin-bottom: 20px;
     line-height: 1;
     color: var(--vm-gold);
     text-align: center;
     flex-shrink: 0;
-    height: 50px; /* ADDED: Force consistent height */
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1259,11 +1078,11 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
 
 .cross-vertical-title {
     font-family: var(--font-display);
-    font-size: 34px; /* INCREASED from 30px */
-    font-weight: 700; /* INCREASED from 600 */
+    font-size: 34px;
+    font-weight: 700;
     color: var(--vm-gold);
     margin-bottom: 14px;
-    letter-spacing: 0.08em; /* INCREASED from 0.05em */
+    letter-spacing: 0.08em;
     position: relative;
     padding-bottom: 12px;
     width: 100%;
@@ -1273,7 +1092,7 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.4); /* ADDED glow */
+    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.4);
 }
 
 .cross-vertical-title::after {
@@ -1293,18 +1112,18 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
     font-size: 13px;
     color: var(--vm-text-body);
     line-height: 1.8;
-    margin-bottom: 16px; /* REDUCED from 18px */
+    margin-bottom: 16px;
     font-weight: 400;
     text-align: center;
     width: 100%;
     max-width: 100%;
     flex-shrink: 0;
-    min-height: 48px; /* ADDED: Force consistent text block height */
+    min-height: 48px;
 }
 
 .cross-vertical-bullets {
     list-style: none;
-    margin-top: 20px; /* REDUCED from 24px */
+    margin-top: 20px;
     padding-left: 0;
     margin-bottom: 0;
     width: 100%;
@@ -1316,7 +1135,7 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
     font-family: var(--font-body);
     font-size: 12px;
     color: var(--vm-text-body);
-    margin-bottom: 12px; /* REDUCED from 14px */
+    margin-bottom: 12px;
     padding-left: 22px;
     position: relative;
     text-align: left;
@@ -1334,20 +1153,14 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
 }
 
 .cross-vertical-bullets li:last-child {
-    margin-bottom: 0; /* Remove margin from last bullet */
+    margin-bottom: 0;
 }
 
-/* ============================================
-MOMENTUM CORRELATION — EVENLY SPACED LIKE PIPELINE
-============================================ */
-
 .momentum-correlation-panel {
-    margin-top: 60px; /* REDUCED from 80px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 56px;
+    margin-bottom: 0;
     border: 1px solid rgba(191, 166, 112, 0.2);
-    padding: 26px 30px; /* ADDED explicit padding */
-    background: var(--card-bg);
-    border-radius: var(--card-radius);
+    padding: 26px 30px;
 }
 
 .momentum-signal-box-refined {
@@ -1355,9 +1168,9 @@ MOMENTUM CORRELATION — EVENLY SPACED LIKE PIPELINE
     background: linear-gradient(135deg, rgba(191, 166, 112, 0.08), rgba(12, 12, 12, 0.6));
     border: 1px solid rgba(191, 166, 112, 0.3);
     border-radius: 8px;
-    padding: 18px 16px; /* REFINED — was 22px 18px */
+    padding: 18px 16px;
     text-align: center;
-    min-height: 90px; /* REDUCED from 100px */
+    min-height: 90px;
     max-height: 90px;
     display: flex;
     align-items: center;
@@ -1406,8 +1219,8 @@ MOMENTUM CORRELATION — EVENLY SPACED LIKE PIPELINE
 }
 
 .cross-vertical-summary-bar {
-    margin-top: 80px;
-    margin-bottom: 65px;
+    margin-top: 56px;
+    margin-bottom: 0;
     padding: 24px 34px;
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 100%);
     border-radius: 8px;
@@ -1434,13 +1247,13 @@ METHODOLOGY
 .methodology-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-lg);
-    margin-top: 60px; /* REDUCED from 90px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    gap: 40px;
+    margin-top: 48px;
+    margin-bottom: 0;
 }
 
 .methodology-panel {
-    padding: 28px 30px;
+    padding: 26px 30px;
 }
 
 .methodology-title {
@@ -1491,16 +1304,12 @@ METHODOLOGY
     font-size: 18px;
 }
 
-/* ============================================
-INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
-============================================ */
-
 .model-pipeline {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 60px; /* REDUCED from 90px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 56px;
+    margin-bottom: 0;
     text-align: center;
-    padding: 28px 30px;
+    padding: 26px 30px;
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
 }
@@ -1546,9 +1355,9 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
 
 .proprietary-badge {
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
-    padding: 22px 36px;
+    padding: 20px 36px;
     border-radius: 8px;
-    margin-top: 48px; /* REDUCED from 52px */
+    margin-top: 44px;
     text-align: center;
 }
 
@@ -1561,7 +1370,7 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
 }
 
 /* ============================================
-MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
+MARKET DEPTH ANALYSIS
 ============================================ */
 
 .market-depth-analysis .slide-content {
@@ -1569,12 +1378,12 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
 }
 
 .property-type-heatmap {
-    margin-top: 32px; /* REDUCED from var(--spacing-md) */
+    margin-top: 32px;
 }
 
 .heatmap-table {
     width: 100%;
-    margin-top: 48px; /* REDUCED from 62px */
+    margin-top: 48px;
     border-collapse: collapse;
     background: rgba(18, 18, 18, 0.95);
     border-radius: var(--card-radius);
@@ -1693,9 +1502,9 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-md);
-    margin-top: 80px; /* REDUCED from 94px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    gap: 32px;
+    margin-top: 76px;
+    margin-bottom: 0;
     align-items: stretch;
 }
 
@@ -1705,11 +1514,6 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
     justify-content: center;
     padding: 32px 30px;
     min-height: 200px;
-    background: var(--card-bg);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
 }
 
 .depth-label {
@@ -1717,7 +1521,7 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
     font-size: 13px;
     color: rgba(184, 184, 184, 0.8);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 1.8px;
     margin-bottom: 16px;
     font-weight: 600;
     position: relative;
@@ -1766,18 +1570,18 @@ MARKET DEPTH ANALYSIS — ENHANCED VISIBILITY
 }
 
 /* ============================================
-STRATEGIC FORECAST — SURGICAL FIX
+STRATEGIC FORECAST
 ============================================ */
 
 .forecast-grid-2x2 {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: repeat(2, 1fr) !important;
-    gap: var(--spacing-md) !important;
-    height: 520px !important;
-    margin-top: 52px !important; /* REDUCED from 60px */
-    margin-bottom: 60px !important; /* REDUCED from 65px */
-    align-items: stretch !important;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 32px;
+    height: 520px;
+    margin-top: 48px;
+    margin-bottom: 56px;
+    align-items: stretch;
 }
 
 .forecast-card-premium {
@@ -1793,7 +1597,7 @@ STRATEGIC FORECAST — SURGICAL FIX
     padding: 0;
     position: relative;
     overflow: hidden;
-    min-height: 280px;
+    min-height: 244px;
 }
 
 .forecast-card-premium::before {
@@ -1822,7 +1626,7 @@ STRATEGIC FORECAST — SURGICAL FIX
     font-weight: 600;
     color: rgba(191,166,112,0.7);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1.8px;
 }
 
 .forecast-premium-title {
@@ -1959,18 +1763,18 @@ STRATEGIC FORECAST — SURGICAL FIX
 }
 
 .macro-context {
-    margin-top: 48px;
+    margin-top: 44px;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
     border-radius: 8px;
     box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
-    padding: 22px 26px;
+    padding: 20px 28px;
 }
 
 .macro-title {
     font-family: var(--font-body);
-    font-size: 19px;
+    font-size: 16px;
     color: #BFA670;
     margin-bottom: 14px;
     font-weight: 600;
@@ -1979,15 +1783,15 @@ STRATEGIC FORECAST — SURGICAL FIX
 
 .macro-text {
     font-family: var(--font-body);
-    font-size: 15px;
+    font-size: 14px;
     color: var(--vm-text-body);
-    line-height: 1.9;
+    line-height: 1.8;
     font-weight: 400;
 }
 
 .portfolio-recommendations {
-    margin-top: 48px;
-    margin-bottom: 65px;
+    margin-top: 44px;
+    margin-bottom: 0;
 }
 
 .recommendations-title {
@@ -2008,12 +1812,12 @@ STRATEGIC FORECAST — SURGICAL FIX
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 24px 20px;
+    padding: 22px 20px;
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 140px;
+    min-height: 136px;
     justify-content: center;
 }
 
@@ -2049,68 +1853,32 @@ STRATEGIC FORECAST — SURGICAL FIX
 }
 
 /* ============================================
-MACRO CONTEXT
-============================================ */
-
-/* Universal bottom callout styling */
-.macro-context,
-.bottom-callout-box {
-    margin-top: 60px; /* UNIFIED — was 135px in some places */
-    margin-bottom: 60px; /* UNIFIED — was 65px */
-    background: rgba(191, 166, 112, 0.08);
-    border-left: 4px solid #BFA670;
-    border-radius: 8px;
-    box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
-    padding: 22px 30px; /* UNIFIED padding */
-}
-
-.macro-title,
-.bottom-callout-title {
-    font-family: var(--font-body);
-    font-size: 16px; /* UNIFIED — was 19px in some places */
-    color: #BFA670;
-    margin-bottom: 14px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-}
-
-.macro-text,
-.bottom-callout-text {
-    font-family: var(--font-body);
-    font-size: 14px; /* UNIFIED — was 15px in some places */
-    color: var(--vm-text-body);
-    line-height: 1.8; /* UNIFIED — was 1.9 */
-    font-weight: 400;
-}
-
-/* ============================================
-EXECUTIVE INTELLIGENCE — SURGICAL FIX
+EXECUTIVE INTELLIGENCE
 ============================================ */
 
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 36px;
-    margin-top: 70px;
+    gap: 32px;
+    margin-top: 64px;
     margin-bottom: 0;
     align-items: start;
 }
 
-/* LEFT COLUMN: STACKED INSIGHT CARDS */
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 22px;
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 22px 24px;
+    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    min-height: 160px;
+    min-height: 156px;
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2142,7 +1910,7 @@ EXECUTIVE INTELLIGENCE — SURGICAL FIX
     font-weight: 700;
     color: rgba(191,166,112,0.8);
     text-transform: uppercase;
-    letter-spacing: 1.3px;
+    letter-spacing: 1.8px;
     line-height: 1.3;
     flex: 1;
 }
@@ -2166,7 +1934,6 @@ EXECUTIVE INTELLIGENCE — SURGICAL FIX
     flex: 1;
 }
 
-/* RIGHT COLUMN: VERDICT PANEL */
 .executive-verdict-column {
     display: flex;
     align-items: stretch;
@@ -2230,7 +1997,7 @@ EXECUTIVE INTELLIGENCE — SURGICAL FIX
     font-weight: 700;
     color: var(--vm-gold);
     text-transform: uppercase;
-    letter-spacing: 2.2px;
+    letter-spacing: 1.8px;
     margin-bottom: 12px;
     opacity: 0.9;
 }
@@ -2301,15 +2068,14 @@ EXECUTIVE INTELLIGENCE — SURGICAL FIX
     text-shadow: 0 2px 8px rgba(191,166,112,0.4);
 }
 
-/* BOTTOM SECTIONS */
 .executive-bottom-strip {
-    margin-top: 52px;
-    margin-bottom: 32px;
+    margin-top: 48px;
+    margin-bottom: 28px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 22px 26px;
+    padding: 20px 26px;
 }
 
 .executive-bottom-text {
@@ -2323,72 +2089,12 @@ EXECUTIVE INTELLIGENCE — SURGICAL FIX
 }
 
 .action-window-luxury {
-    margin-top: 42px;
-    margin-bottom: 65px;
-}
-
-.action-window-luxury-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
-}
-
-.action-item-luxury {
-    background: linear-gradient(135deg, rgba(12,12,12,0.5) 0%, rgba(18,18,18,0.4) 100%);
-    backdrop-filter: blur(2px);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-left: 4px solid var(--vm-gold);
-    border-radius: var(--card-radius);
-    padding: 26px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    min-height: 140px;
-    justify-content: center;
-    box-shadow: var(--card-shadow);
-}
-
-.action-item-luxury-title {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(191,166,112,0.7);
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    text-align: left;
-}
-
-.action-item-luxury-value {
-    font-family: var(--font-body);
-    font-size: 18px;
-    font-weight: 600;
-    color: #E6E6E6;
-    line-height: 1.4;
-    letter-spacing: 0.3px;
-    text-align: left;
-}
-
-.action-item-luxury-subtitle {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 400;
-    color: rgba(230,230,230,0.65);
-    line-height: 1.7;
-    letter-spacing: 0.02em;
-    text-align: left;
-}
-/* ============================================
-STRATEGIC ACTION WINDOW — LUXURY 4-COLUMN
-============================================ */
-
-.action-window-luxury {
-    margin-top: 60px; /* REDUCED from 150px */
-    margin-bottom: 60px; /* REDUCED from 65px */
+    margin-top: 56px;
+    margin-bottom: 0;
     background: transparent;
     padding: 0;
 }
 
-/* HIDE DUPLICATE ACTION WINDOW IF IT EXISTS */
 .executive-intelligence .action-window-luxury:nth-of-type(2) {
     display: none !important;
 }
@@ -2406,11 +2112,11 @@ STRATEGIC ACTION WINDOW — LUXURY 4-COLUMN
     border: 1px solid rgba(191,166,112,0.15);
     border-left: 4px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 24px 22px; /* REFINED — was 26px 24px */
+    padding: 24px 22px;
     display: flex;
     flex-direction: column;
-    gap: 12px; /* REDUCED from 14px */
-    min-height: 130px; /* REDUCED from 140px */
+    gap: 12px;
+    min-height: 130px;
     justify-content: center;
     box-shadow: var(--card-shadow);
 }
@@ -2454,8 +2160,8 @@ TOP MARKET OPPORTUNITIES
 }
 
 .opportunities-table {
-    padding-left: 0; /* REMOVED — was 48px */
-    padding-right: 0; /* REMOVED — was 48px */
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .opportunities-table-header {
@@ -2467,7 +2173,7 @@ TOP MARKET OPPORTUNITIES
 .opportunities-section-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.15);
-    margin: 28px 0; /* REDUCED from 34px */
+    margin: 28px 0;
 }
 
 .table-luxury {
@@ -2551,11 +2257,8 @@ TOP MARKET OPPORTUNITIES
     color: var(--vm-gold);
 }
 
-.score-badge,
-.velocity-badge,
-.competitor-classification-badge,
-.signal-badge-v2 {
-    padding: 8px 16px !important;
+.score-badge {
+    padding: 8px 16px;
     min-width: 80px;
     height: 32px;
     display: inline-flex;
@@ -2582,80 +2285,15 @@ TOP MARKET OPPORTUNITIES
 }
 
 /* ============================================
-MACRO RISK DASHBOARD
-============================================ */
-
-.macro-risk-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-    margin-top: 70px;
-    margin-bottom: 65px;
-}
-
-.risk-dial-card {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 24px 28px; /* REFINED padding */
-    min-height: 180px; /* REDUCED from 240px for tighter stacking */
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.risk-dial-title {
-    font-family: var(--font-body);
-    font-size: 13px; /* REDUCED from 16px for consistency */
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 14px; /* REDUCED from var(--spacing-sm) */
-    font-weight: 600;
-    padding-top: 0; /* REMOVED extra padding */
-}
-
-.risk-dial-value {
-    font-family: var(--font-body);
-    font-size: 48px; /* REDUCED from 56px for better proportion */
-    font-weight: 800;
-    color: var(--vm-gold);
-    margin-bottom: 12px; /* REDUCED from 14px */
-    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
-}
-
-.risk-dial-status {
-    font-family: var(--font-body);
-    font-size: 13px; /* REDUCED from 14px */
-    color: var(--vm-text-body);
-    font-weight: 400;
-}
-
-.macro-risk-map-extended {
-    background: var(--card-bg);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    padding: 40px 34px;
-    margin-top: 60px;
-    margin-bottom: 60px;
-    box-shadow: var(--card-shadow);
-}
-
-/* ============================================
-SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
+SEGMENT PERFORMANCE BREAKDOWN
 ============================================ */
 
 .district-performance-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 52px; /* REDUCED from 60px */
-    margin-bottom: 60px; /* REDUCED from 70px */
+    margin-top: 48px;
+    margin-bottom: 56px;
 }
 
 .district-card-premium {
@@ -2688,8 +2326,8 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 24px 28px;
-    min-height: 100px;
+    padding: 22px 26px;
+    min-height: 96px;
     display: flex;
     align-items: center;
 }
@@ -2728,10 +2366,10 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
 }
 
 .district-metrics-grid {
-    padding: 28px 28px;
+    padding: 26px 26px;
     display: flex;
     flex-direction: column;
-    gap: 26px;
+    gap: 24px;
     flex: 1;
 }
 
@@ -2740,7 +2378,7 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     grid-template-columns: 1fr auto 1fr;
     gap: 20px;
     align-items: center;
-    min-height: 80px;
+    min-height: 76px;
 }
 
 .district-metric-divider {
@@ -2753,11 +2391,11 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 18px 0;
+    padding: 16px 0;
     background: rgba(191,166,112,0.04);
     border-radius: 8px;
     border: 1px solid rgba(191,166,112,0.1);
-    min-height: 120px;
+    min-height: 116px;
 }
 
 .district-metric-block {
@@ -2823,11 +2461,11 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 20px;
+    padding: 16px 20px;
     background: rgba(191,166,112,0.08);
     border-left: 3px solid var(--vm-gold);
     border-radius: 6px;
-    min-height: 75px;
+    min-height: 72px;
 }
 
 .insight-icon {
@@ -2848,12 +2486,12 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
 .district-inventory-footer {
     background: rgba(0,0,0,0.35);
     border-top: 1px solid rgba(191,166,112,0.2);
-    padding: 20px 28px;
+    padding: 18px 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    min-height: 80px;
+    min-height: 76px;
 }
 
 .inventory-count {
@@ -2876,19 +2514,11 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     line-height: 1.4;
 }
 
-.district-performance-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 52px; /* REDUCED from 60px */
-    margin-bottom: 60px; /* REDUCED from 70px */
-}
-
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 60px; /* REDUCED from 84px */
-    margin-bottom: 60px; /* REDUCED from 65px */
-    padding: 24px 30px; /* REFINED — was 24px 28px */
+    margin-top: 56px;
+    margin-bottom: 56px;
+    padding: 22px 30px;
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
 }
@@ -2942,16 +2572,16 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     border-left: 4px solid #BFA670;
     border-radius: 8px;
     box-shadow: inset 0 1px 3px rgba(191, 166, 112, 0.2);
-    padding: 26px 30px;
-    margin-top: 0;
-    margin-bottom: 65px;
+    padding: 24px 30px;
+    margin-top: -3px;
+    margin-bottom: 0;
 }
 
 .summary-band-title {
     font-family: var(--font-body);
     font-size: 18px;
     color: #BFA670;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     font-weight: 600;
     letter-spacing: 0.06em;
 }
@@ -2960,7 +2590,7 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     font-family: var(--font-body);
     font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.9;
+    line-height: 1.85;
     font-weight: 400;
     margin: 0;
 }
@@ -2969,6 +2599,7 @@ SEGMENT PERFORMANCE BREAKDOWN — FINAL POLISH
     color: var(--vm-gold);
     font-weight: 600;
 }
+
 /* ============================================
 AI OPPORTUNITIES
 ============================================ */
@@ -2977,21 +2608,36 @@ AI OPPORTUNITIES
     font-family: var(--font-body);
     font-size: 14px;
     color: var(--vm-gold);
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    margin-top: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 8px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-align: left;
-    padding: 22px 30px; /* UNIFIED padding */
+    padding: 20px 30px;
 }
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 24px;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+.signal-card-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 28px;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    min-height: 124px;
 }
 
 .signal-content-v2 {
@@ -3004,7 +2650,7 @@ AI OPPORTUNITIES
     font-size: 17px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
@@ -3014,6 +2660,7 @@ AI OPPORTUNITIES
     color: var(--vm-muted);
     text-align: left;
     font-weight: 500;
+    margin-bottom: 10px;
 }
 
 .ai-flag-reason {
@@ -3021,7 +2668,7 @@ AI OPPORTUNITIES
     font-size: 12px;
     color: var(--vm-text-body);
     font-style: italic;
-    margin-top: 10px;
+    margin-top: 0;
     padding-left: 12px;
     border-left: 2px solid rgba(191, 166, 112, 0.3);
     line-height: 1.7;
@@ -3032,20 +2679,25 @@ AI OPPORTUNITIES
 .signal-badges-v2 {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 8px;
     align-items: flex-end;
+    flex-shrink: 0;
 }
 
 .signal-badge-v2 {
     font-family: var(--font-body);
     font-size: 11px;
     font-weight: 600;
-    padding: 6px 14px;
+    padding: 7px 14px;
     border-radius: 6px;
     white-space: nowrap;
     background: #0B0B0B;
     min-width: 92px;
     text-align: center;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .badge-risk {
@@ -3066,9 +2718,9 @@ AI OPPORTUNITIES
 .acquisition-strategy-ribbon {
     background: var(--vm-gold);
     border-radius: 8px;
-    margin-top: 44px;
-    margin-bottom: 60px; /* REDUCED from 65px */
-    padding: 22px 30px;
+    margin-top: 40px;
+    margin-bottom: 0;
+    padding: 20px 30px;
 }
 
 .acquisition-strategy-text {
@@ -3078,58 +2730,49 @@ AI OPPORTUNITIES
     line-height: 1.7;
     font-weight: 400;
     text-align: center;
-    max-width: 1050px;
-    margin-left: 0;
-    margin-right: auto;
+    margin: 0;
 }
 
 .acquisition-strategy-text strong {
     font-weight: 700;
 }
 
-/* ============================================
-IMAGE 5 FIX: VAP INDICATORS - BULLET ALIGNMENT
-============================================ */
-
-/* Target the VAP Indicators panel (comes after acquisition strategy ribbon) */
 .acquisition-strategy-ribbon + div {
-    background: rgba(12, 12, 12, 0.35) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 10px !important;
-    padding: 26px 32px !important;
-    margin-top: 46px !important;
-    margin-bottom: 80px !important; /* INCREASED from 48px to 80px */
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 24px 32px;
+    margin-top: 40px;
+    margin-bottom: 76px;
 }
 
 .acquisition-strategy-ribbon + div h4 {
-    font-size: 16px !important;
-    color: #C8AA6E !important;
-    margin-bottom: 18px !important; /* Increased from 16px */
-    font-weight: 600 !important;
+    font-size: 16px;
+    color: #C8AA6E;
+    margin-bottom: 18px;
+    font-weight: 600;
 }
 
-/* VAP Indicators bullet list styling */
 .acquisition-strategy-ribbon + div > div {
-    font-size: 14px !important;
-    color: var(--vm-text-body) !important;
-    line-height: 1.85 !important;
-    padding-bottom: 8px !important; /* ADDED: Extra bottom padding for clearance */
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+    padding-bottom: 8px;
 }
 
 .acquisition-strategy-ribbon + div > div > div {
-    margin-bottom: 14px !important; /* INCREASED from 12px */
-    padding-left: 0 !important;
-    min-height: 24px !important; /* ADDED: Ensure minimum height per bullet */
+    margin-bottom: 14px;
+    padding-left: 0;
+    min-height: 24px;
 }
 
 .acquisition-strategy-ribbon + div > div > div:last-child {
-    margin-bottom: 0 !important; /* Remove margin from last bullet */
+    margin-bottom: 0;
 }
 
-/* Ensure strong tags (bullet labels) are properly styled */
 .acquisition-strategy-ribbon + div strong {
-    color: #C8AA6E !important;
-    font-weight: 600 !important;
+    color: #C8AA6E;
+    font-weight: 600;
 }
 
 /* ============================================
@@ -3138,7 +2781,7 @@ PANELS
 
 .panel {
     margin-top: 34px;
-    padding: 28px 32px;
+    padding: 26px 30px;
 }
 
 .panel-title {
@@ -3146,10 +2789,10 @@ PANELS
     font-size: 28px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 16px;
     position: relative;
     padding-bottom: 12px;
-    padding-top: 8px;
+    padding-top: 0;
 }
 
 .panel-title::after {
@@ -3161,146 +2804,77 @@ PANELS
     height: 2px;
     background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
     opacity: 0.7;
-    margin-top: 0;
 }
 
 .panel-text {
     font-family: var(--font-body);
     font-size: 15px;
     color: var(--vm-text-body);
-    line-height: 1.7;
-    font-weight: 400;
-    max-width: 1050px;
-    margin-left: 0;
-    margin-right: auto;
-    padding: 0 4px;
-}
-
-.bullet-list {
-    list-style: none;
-    margin-top: 46px;
-}
-
-.bullet-list li {
-    position: relative;
-    padding-left: 26px;
-    margin-bottom: var(--spacing-xs);
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.7;
+    line-height: 1.85;
     font-weight: 400;
 }
 
-.bullet-list li::before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: var(--vm-bronze);
-    font-weight: 700;
-    font-size: 20px;
+.panel-text strong {
+    color: var(--vm-gold);
+    font-weight: 600;
 }
+
 /* ============================================
-WATERMARK
+FOOTER
 ============================================ */
 
-.watermark {
+.slide-footer {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-family: var(--font-display);
-    font-size: 140px;
-    font-weight: 700;
-    color: rgba(167, 123, 58, 0.03);
-    letter-spacing: 0.15em;
-    z-index: 1;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    display: none;
+    bottom: 32px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(184, 184, 184, 0.75);
+    z-index: 10;
 }
 
-.slide:nth-child(2) .watermark,
-.slide:nth-child(4) .watermark,
-.slide:nth-child(6) .watermark,
-.slide:nth-child(9) .watermark {
-    display: block;
+.footer-left {
+    font-weight: 400;
+}
+
+.footer-center {
+    text-align: center;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.footer-right {
+    text-align: right;
+    font-weight: 600;
 }
 
 /* ============================================
 UTILITY CLASSES
 ============================================ */
 
-.text-center { text-align: center; }
-.text-gold { color: var(--vm-gold); }
-.text-bronze { color: var(--vm-bronze); }
-.text-muted { color: var(--vm-muted); }
-.align-right { text-align: right; }
-.align-center { text-align: center; }
-
-.positive {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.08);
+.text-gold {
+    color: var(--vm-gold);
 }
 
-.negative {
-    color: rgba(244, 67, 54, 0.85);
-    background: rgba(244, 67, 54, 0.08);
+.text-bronze {
+    color: var(--vm-bronze);
 }
 
-/* ============================================
-FOOTERS HIDDEN
-============================================ */
-
-.slide-footer-branded,
-.pdf-footer,
-.slide-footer,
-footer,
-.final-footer,
-.slide-micro-footer-note {
-    display: none !important;
+.text-muted {
+    color: var(--vm-muted);
 }
 
-/* ============================================
-SEGMENT PERFORMANCE BREAKDOWN — ENHANCED STYLING
-============================================ */
-
-/* Override first card header for visual hierarchy */
-.submarket-card-v2:first-child .submarket-header {
-    border-bottom-color: rgba(191, 166, 112, 0.5);
-    font-size: 28px;
-    font-weight: 700;
+.mb-0 {
+    margin-bottom: 0 !important;
 }
 
-/* Enhanced header border */
-.submarket-header {
-    border-bottom: 2px solid rgba(191, 166, 112, 0.3);
-    padding-bottom: 16px;
+.mt-0 {
+    margin-top: 0 !important;
 }
-
-/* Refined listing count divider */
-.submarket-listing-count {
-    border-top: 1px solid rgba(191, 166, 112, 0.15);
-    padding-top: 18px;
-    margin-top: 28px;
-}
-
-/* ============================================
-GLOBAL MICRO-FIXES
-============================================ */
-
-/* Remove ghost backgrounds (except cover) */
-.slide:not(.slide-cover) {
-    background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%) !important;
-}
-
-/* Baseline alignment for bottom sections */
-.macro-context + div {
-    margin-top: 52px !important;
-}
-
-
 
 /* ============================================
 PRINT OPTIMIZATION
@@ -3310,142 +2884,47 @@ PRINT OPTIMIZATION
     body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+        color-adjust: exact;
     }
-
+    
     .slide {
+        page-break-after: always;
         page-break-inside: avoid;
     }
     
-    * {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+    .slide:last-child {
+        page-break-after: auto;
     }
-
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
 }
 
-<style>
-
 /* ============================================
-COMPETITIVE LANDSCAPE — CUSTOM PANELS
+WEBKIT/BLINK RENDERING FIXES
 ============================================ */
 
+.slide,
+.kpi-card,
+.chart-container,
+.chart-panel,
+.cross-vertical-card,
+.district-card-premium,
+.forecast-card-premium,
 .competitive-info-panel {
-    width: 100%;
-    page-break-inside: avoid;
-    display: flex;
-    flex-direction: column;
-    padding: 26px 30px;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
 }
 
-.competitive-info-panel .chart-title,
-.competitive-info-panel .chart-context,
-.competitive-info-panel .chart-source {
-    /* Inherit existing chart styling */
+svg {
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
 }
-
-/* ------------------------------------------ */
-/* AREA 2 — Executive Intelligence — Safe Fix */
-/* ------------------------------------------ */
-
-/* 1. Fix bullet box internal padding + equal heights */
-.executive-insight-luxury {
-    padding: 26px 30px !important;
-    min-height: 160px; /* safe baseline height for equalization */
-}
-
-/* 2. Correct spacing between bullet boxes */
-.executive-insights-list > .executive-insight-luxury {
-    margin-bottom: var(--spacing-md);
-}
-
-/* 3. Nudge Summary Signal card down slightly */
-.executive-summary-card {
-    margin-top: 18px;
-}
-
-/* 4. Keep original section baseline */
-.executive-intelligence-layout {
-    margin-top: 0px !important;
-    align-items: flex-start !important; /* prevent global centering */
-}
-
-/* GLOBAL CONSISTENCY PATCH - Micro-heading letter-spacing */
-.concentration-label,
-.metric-card-label,
-.forecast-premium-label,
-.action-item-luxury-title,
-.insight-elite-category,
-.competitor-tier-label,
-.district-metric-label,
-.verdict-label,
-.insight-label {
-    letter-spacing: 1.8px !important;
-}
-
-/* GLOBAL CONSISTENCY PATCH - First content block margins */
-.kpi-grid,
-.weekly-movement-dashboard,
-.two-column,
-.competitive-landscape-layout,
-.cross-vertical-grid,
-.property-type-heatmap,
-.forecast-grid-2x2,
-.executive-intelligence-layout,
-.district-performance-grid,
-.methodology-grid {
-    margin-top: 70px !important;
-}
-
-/* GLOBAL CONSISTENCY PATCH - Bottom margins */
-.insight-cards,
-.competitive-insights-strip,
-.momentum-correlation-panel,
-.depth-metrics,
-.action-window-luxury,
-.momentum-streets-panel,
-.model-pipeline,
-.opportunities-table {
-    margin-bottom: 65px !important;
-}
-
-/* GLOBAL CONSISTENCY PATCH - Context panel standardization */
-.context-panel {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--card-radius);
-    padding: 26px 30px;
-    margin-top: 42px;
-    margin-bottom: 32px;
-}
-
-.context-panel h4 {
-    font-size: 16px;
-    color: #C8AA6E;
-    margin-bottom: 16px;
-    font-weight: 600;
-}
-
-.context-panel div {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.8;
-}
-
-</style>
-
 
 /* ============================================
-END VOXMILL V5.6 COMPLETE
-✅ V5.5 Base included
-✅ V5.6 Precision structural corrections applied
-✅ Final quality refinements applied
-✅ 90-Day Volatility Window redesigned
-✅ Strategic Action Window luxury rebuild
-✅ Momentum Correlation perfect alignment
-✅ Strategic Forecast grid precision
-✅ Global micro-fixes applied
-✅ All components production-ready
+END OF VOXMILL EXECUTIVE INTELLIGENCE DECK CSS
 ============================================ */
