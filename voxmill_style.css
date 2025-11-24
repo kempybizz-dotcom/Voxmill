@@ -34,7 +34,7 @@ Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements
 }
 
 @page {
-    size: 1920px 1680px;
+    size: 1920px 1860px;
     margin: 0;
     padding: 0;
 }
@@ -84,14 +84,14 @@ body::before {
 .slide {
     width: 1920px;
     height: auto;
-    min-height: 1480px;
+    min-height: 1660px; /* INCREASED from 1480px (+180px) */
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
     page-break-inside: avoid;
     overflow: visible !important;
     border: 3px solid var(--vm-gold);
-    padding: 64px 48px 104px 48px; /* INCREASED bottom from 104px to 140px */
+    padding: 64px 48px 104px 48px;
 }
 
 .slide::after {
@@ -136,8 +136,8 @@ COVER PAGE
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 1480px !important;
-    height: 1480px !important;
+    min-height: 1660px !important; /* INCREASED from 1480px */
+    height: 1660px !important; /* INCREASED from 1480px */
 }
 
 .slide-cover::after {
@@ -332,7 +332,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 42px; /* INCREASED from var(--spacing-md) which was 32px */
     margin-top: var(--spacing-lg);
 }
 
@@ -381,7 +381,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     max-width: 1050px;
     margin-left: 0;
     margin-right: auto;
-    padding: 0 4px;
+    padding: 0 22px; /* INCREASED from 4px - moves text away from left edge */
 }
 
 .killer-insight {
@@ -416,12 +416,12 @@ WEEKLY MOVEMENT DASHBOARD
 
 .movement-mini-card {
     text-align: center;
-    min-height: 108px;
+    min-height: 130px; /* INCREASED from 108px */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 20px 18px;
+    padding: 26px 18px; /* INCREASED top/bottom from 20px */
 }
 
 .movement-label {
@@ -818,13 +818,14 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 28px 30px;
+    padding: 28px 30px 32px 30px; /* INCREASED bottom padding */
     box-shadow: 
         0 6px 20px rgba(0,0,0,0.3),
         inset 0 1px 0 rgba(255,255,255,0.03);
     display: flex;
     flex-direction: column;
     gap: 28px;
+    min-height: 100%; /* ADDED - matches right column height */
 }
 
 .concentration-header {
@@ -918,8 +919,12 @@ COMPETITIVE LANDSCAPE — SURGICAL FIX
     background: rgba(12,12,12,0.4);
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: 8px;
-    padding: 20px 18px;
+    padding: 26px 18px; /* INCREASED from 20px */
     text-align: center;
+    min-height: 140px; /* ADDED - prevents overlap */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .metric-card-label {
@@ -1263,20 +1268,21 @@ IMAGE 3 FIX: CROSS-VERTICAL INTELLIGENCE
 
 .cross-vertical-title {
     font-family: var(--font-display);
-    font-size: 30px;
-    font-weight: 600;
+    font-size: 34px; /* INCREASED from 30px */
+    font-weight: 700; /* INCREASED from 600 */
     color: var(--vm-gold);
-    margin-bottom: 14px; /* REDUCED from 16px */
-    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+    letter-spacing: 0.08em; /* INCREASED from 0.05em */
     position: relative;
-    padding-bottom: 12px; /* REDUCED from 14px */
+    padding-bottom: 12px;
     width: 100%;
     text-align: center;
     flex-shrink: 0;
-    min-height: 42px; /* ADDED: Force consistent title height */
+    min-height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.4); /* ADDED glow */
 }
 
 .cross-vertical-title::after {
@@ -1497,8 +1503,8 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
 
 .model-pipeline {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 90px;
-    margin-bottom: 65px;
+    margin-top: 60px; /* REDUCED from 90px */
+    margin-bottom: 32px; /* REDUCED from 65px */
     text-align: center;
     padding: 28px 30px;
 }
@@ -1546,7 +1552,8 @@ INTELLIGENCE PIPELINE — INCREASED SPACING + LARGER LABELS
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
     padding: 22px 36px;
     border-radius: 8px;
-    margin-top: 52px;
+    margin-top: 32px; /* REDUCED from 52px */
+    margin-bottom: 0; /* ADDED to prevent bottom gap */
     text-align: center;
 }
 
