@@ -100,44 +100,39 @@
         </div>
 
         <!-- KPI DASHBOARD -->
-       <div class="weekly-movement-dashboard">
-    <div class="movement-mini-card">
-        <div class="movement-label">{{ inventory_label }}</div>
-        <div class="movement-value">{{ kpis.total_properties }}</div>
-        <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+        <div class="weekly-movement-dashboard">
+            <div class="movement-mini-card">
+                <div class="movement-label">{{ inventory_label }}</div>
+                <div class="movement-value">{{ kpis.total_properties }}</div>
+                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">£/{{ unit_metric }}</div>
+                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">{{ velocity_metric_label }}</div>
+                <div class="movement-value">{{ kpis.days_on_market }}d</div>
+                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Demand Pressure</div>
+                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">£/{{ unit_metric }}</div>
-        <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-        <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">{{ velocity_metric_label }}</div>
-        <div class="movement-value">{{ kpis.days_on_market }}d</div>
-        <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Demand Pressure</div>
-        <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-        <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-        </div>
-    </div>
-</div>
-
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 2 of 14</div>
     </div>
 </div>
 
@@ -202,25 +197,25 @@
         <h3 class="chart-title">Value Distribution Range</h3>
         <p class="chart-context">Market concentration analysis showing inventory distribution across value bands — reveals premium segment depth (Sample: {{ kpis.total_properties }} assets)</p>
         
-        <svg width="100%" height="300" viewBox="0 0 1700 300" preserveAspectRatio="xMidYMid meet">
+        <svg width="100%" height="320" viewBox="0 0 1700 320" preserveAspectRatio="xMidYMid meet">
             <!-- Y-Axis Label -->
-            <text x="35" y="150" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 150)" class="chart-axis-label">Count</text>
+            <text x="35" y="160" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" transform="rotate(-90, 35, 160)" class="chart-axis-label">Count</text>
             
             <!-- Y-Axis -->
-            <line x1="80" y1="30" x2="80" y2="245" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <line x1="80" y1="40" x2="80" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
             
             <!-- X-Axis -->
-            <line x1="80" y1="245" x2="1620" y2="245" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+            <line x1="80" y1="260" x2="1620" y2="260" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
             
             <!-- Horizontal Gridlines -->
-            <line x1="80" y1="80" x2="1620" y2="80" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="135" x2="1620" y2="135" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
-            <line x1="80" y1="190" x2="1620" y2="190" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="95" x2="1620" y2="95" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="150" x2="1620" y2="150" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="80" y1="205" x2="1620" y2="205" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,4"/>
             
             <!-- Bars -->
             {% for bar in chart_data.price_distribution %}
             <rect x="{{ 220 + loop.index0 * 350 }}" 
-                  y="{{ 245 - (bar.height * 1.1) }}" 
+                  y="{{ 260 - (bar.height * 1.1) }}" 
                   width="240" 
                   height="{{ bar.height * 1.1 }}" 
                   fill="url(#barGradient)" 
@@ -231,7 +226,7 @@
             
             <!-- Value Labels on Top of Bars -->
             <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="{{ 230 - (bar.height * 1.1) }}" 
+                  y="{{ 245 - (bar.height * 1.1) }}" 
                   font-family="Inter" 
                   font-size="28" 
                   font-weight="700"
@@ -241,7 +236,7 @@
             
             <!-- Category Labels Below Bars -->
             <text x="{{ 340 + loop.index0 * 350 }}" 
-                  y="268" 
+                  y="285" 
                   font-family="Inter" 
                   font-size="17" 
                   font-weight="600"
@@ -251,7 +246,7 @@
             {% endfor %}
             
             <!-- X-Axis Label -->
-            <text x="850" y="293" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
+            <text x="850" y="315" font-family="Inter" font-size="18" font-weight="600" fill="rgba(255,255,255,0.9)" text-anchor="middle" class="chart-axis-label">Value Brackets (£)</text>
             
             <defs>
                 <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -269,13 +264,10 @@
         <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
     </div>
 </div>
-
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 3 of 14</div>
     </div>
 </div>
+
+<!-- SLIDE 4: PERFORMANCE ANALYSIS -->
 
 <!-- SLIDE 4: PERFORMANCE ANALYSIS -->
 
@@ -402,12 +394,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 4 of 14</div>
-    </div>
 </div>
 
 <!-- SLIDE 5: COMPETITIVE LANDSCAPE -->
@@ -522,12 +508,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 5 of 14</div>
-    </div>
 </div>
 
 <!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
@@ -634,12 +614,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 6 of 14</div>
-    </div>
 </div>
 
 <!-- SLIDE 7: MARKET DEPTH ANALYSIS -->
@@ -703,12 +677,6 @@
                 <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
             </div>
         </div>
-    </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 7 of 14</div>
     </div>
 </div>
 
@@ -821,12 +789,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 8 of 14</div>
     </div>
 </div>
 
@@ -961,12 +923,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 9 of 14</div>
-    </div>
 </div>
 
 <!-- SLIDE 10: TOP OPPORTUNITIES -->
@@ -1046,12 +1002,6 @@
             {% endif %}
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 10 of 14</div>
-    </div>
 </div>
 
 <!-- SLIDE 11: METHODOLOGY -->
@@ -1119,15 +1069,9 @@
             <div class="proprietary-badge-text">VOXMILL FORECAST ENGINE V2.1 — PROPRIETARY ARCHITECTURE</div>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 11 of 14</div>
-    </div>
 </div>
 
-<!-- SLIDE 12: SEGMENT PERFORMANCE BREAKDOWN -->
+<!-- SLIDE 13: SEGMENT PERFORMANCE BREAKDOWN -->
 
 <div class="slide segment-performance-slide">
     <div class="slide-header">
@@ -1285,15 +1229,9 @@
             </p>
         </div>
     </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 12 of 14</div>
-    </div>
 </div>
 
-<!-- SLIDE 13: AI-IDENTIFIED OPPORTUNITIES -->
+<!-- SLIDE 14: AI-IDENTIFIED OPPORTUNITIES -->
 
 <div class="slide ai-identified-opportunities">
     <div class="slide-header">
@@ -1301,7 +1239,7 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 26px;">Algorithm-flagged assets showing {{ market_signal_label }} — Underpricing or extended listing periods</p>
+        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged assets showing {{ market_signal_label }} — Underpricing or extended listing periods</p>
         
         <div class="acquisition-flagging-header">
             Flagging Logic: Underpricing | Time-on-Market | Momentum Shift
@@ -1341,64 +1279,16 @@
             </div>
         </div>
         
-        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 40px; margin-bottom: 76px;">
-            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 18px; font-weight: 600;">Provider Acceptance Probability (VAP) Indicators</h4>
-            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.85;">
-                <div style="margin-bottom: 14px;">• <strong style="color: #C8AA6E;">Stale {{ inventory_label }}:</strong> 60–90 days → High acceptance likelihood.</div>
-                <div style="margin-bottom: 14px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
-                <div style="margin-bottom: 0;">• <strong style="color: #C8AA6E;">Vacant Assets:</strong> Fastest acceptance due to carrying cost pressure.</div>
+        <div style="background: rgba(12, 12, 12, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 24px 32px; margin-top: 42px; margin-bottom: 48px;">
+            <h4 style="font-size: 16px; color: #C8AA6E; margin-bottom: 16px; font-weight: 600;">Provider Acceptance Probability (VAP) Indicators</h4>
+            <div style="font-size: 14px; color: var(--vm-text-body); line-height: 1.8;">
+                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Stale {{ inventory_label }}:</strong> 60–90 days → High acceptance likelihood.</div>
+                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
+                <div>• <strong style="color: #C8AA6E;">Vacant Assets:</strong> Fastest acceptance due to carrying cost pressure.</div>
             </div>
         </div>
         
-        <p class="chart-source" style="margin-top: 0;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
-    </div>
-    
-    <div class="slide-footer">
-        <div class="footer-left">Voxmill Intelligence Platform</div>
-        <div class="footer-center">Confidential & Proprietary</div>
-        <div class="footer-right">Page 13 of 14</div>
-    </div>
-</div>
-
-<!-- SLIDE 14: BACK COVER -->
-
-<div class="slide slide-cover" style="background: linear-gradient(135deg, #0C0C0C 0%, #111111 100%); position: relative; overflow: hidden;">
-    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; z-index: 0;" width="1920" height="1280" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <pattern id="luxuryPatternBack" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
-                <path d="M75,20 L95,50 L75,80 L55,50 Z" fill="#C5A46D" opacity="0.5"/>
-                <path d="M75,22 L93,50 L75,78 L57,50 Z" fill="#0C0C0C" opacity="0.3"/>
-                <circle cx="75" cy="75" r="3" fill="#C5A46D" opacity="0.4"/>
-                <line x1="0" y1="75" x2="150" y2="75" stroke="#C5A46D" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="0" x2="75" y2="150" stroke="#C5A46D" stroke-width="1" opacity="0.3"/>
-            </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#luxuryPatternBack)"/>
-    </svg>
-
-    <div style="position: relative; z-index: 1;">
-        <div class="logo-container">
-            <img src="voxmill_logo.png" alt="Voxmill" style="width: 216px; height: auto; max-height: 216px; filter: drop-shadow(0 8px 40px rgba(198, 161, 91, 0.9));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <svg class="voxmill-logo" width="216" height="216" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                <path d="M40 10 L60 40 L40 70 L20 40 Z" fill="url(#goldGradientBack)" stroke="#C5A46D" stroke-width="3"/>
-                <text x="40" y="50" font-family="Playfair Display" font-size="42" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
-                <defs>
-                    <linearGradient id="goldGradientBack" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#B59854;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-
-        <h1 class="cover-title">VOXMILL</h1>
-        <div class="cover-subtitle">EXECUTIVE INTELLIGENCE PLATFORM</div>
-        
-        <div class="cover-compiled" style="margin-top: 60px;">
-            <strong>This report is confidential and proprietary.</strong><br>
-            Distribution restricted to authorized recipients only.<br><br>
-            © 2025 Voxmill Intelligence. All rights reserved.
-        </div>
+        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
 </div>
 
