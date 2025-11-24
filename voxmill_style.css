@@ -217,6 +217,17 @@ COVER PAGE
 SLIDE HEADER — CONSISTENT SPACING
 ============================================ */
 
+.slide-content {
+    position: absolute;
+    top: 205px; /* INCREASED from 185px - adds 20px drop */
+    left: 48px;
+    right: 48px;
+    bottom: 120px;
+    overflow: visible !important;
+    z-index: 5;
+    min-height: calc(1480px - 205px - 120px) !important;
+}
+
 .slide-header {
     position: absolute;
     top: 60px;
@@ -2123,33 +2134,33 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 
 .executive-intelligence-layout {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 42px;
-    margin-top: 70px;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    margin-top: 50px;
     margin-bottom: 0;
-    align-items: stretch;
+    align-items: start; /* CHANGED: Force top alignment */
 }
 
 /* LEFT PANEL: PREMIUM INSIGHT GRID */
 .executive-insights-premium-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 28px; /* REDUCED from 32px for tighter grid */
-    align-items: stretch;
-    height: 100%;
-    align-content: start; /* ADDED: Force top alignment */
+    grid-template-rows: auto auto; /* CHANGED: Auto rows for content-based height */
+    gap: 24px; /* REDUCED from 28px */
+    align-items: start;
+    height: auto; /* CHANGED: Remove fixed height */
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 24px 26px; /* REDUCED top/bottom from 28px */
+    padding: 22px 24px;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-height: 195px; /* REDUCED from 210px */
+    height: auto; /* CHANGED: Remove fixed height */
+    min-height: 180px;
+    max-height: 180px; /* ADDED: Force exact height */
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2160,15 +2171,14 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 .insight-elite-header {
     display: flex;
     align-items: center;
-    gap: 12px; /* REDUCED from 14px */
-    margin-bottom: 10px; /* REDUCED from 12px */
+    gap: 10px;
+    margin-bottom: 8px;
     flex-shrink: 0;
-    padding-top: 2px; /* ADDED: Baseline adjustment */
 }
 
 .insight-elite-number {
     font-family: var(--font-display);
-    font-size: 32px;
+    font-size: 28px; /* REDUCED from 32px */
     font-weight: 300;
     color: var(--vm-gold);
     line-height: 1;
@@ -2178,11 +2188,11 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 
 .insight-elite-category {
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: 10px; /* REDUCED from 11px */
     font-weight: 700;
     color: rgba(191,166,112,0.8);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.3px;
     line-height: 1.3;
     flex: 1;
 }
@@ -2192,20 +2202,22 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     height: 1px;
     background: linear-gradient(90deg, var(--vm-gold), transparent);
     opacity: 0.3;
-    margin-bottom: 12px; /* REDUCED from 14px */
+    margin-bottom: 10px;
+    margin-top: 2px; /* ADDED: Space from header */
     flex-shrink: 0;
 }
 
 .insight-elite-body {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 13px; /* REDUCED from 14px */
     font-weight: 400;
     color: rgba(234,234,234,0.85);
-    line-height: 1.85;
+    line-height: 1.7; /* REDUCED from 1.85 */
     letter-spacing: 0.02em;
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* CHANGED: Top align text */
+    overflow: hidden; /* ADDED: Prevent overflow */
 }
 
 /* RIGHT PANEL: EXECUTIVE VERDICT */
@@ -2214,26 +2226,27 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     align-items: stretch;
     justify-content: center;
     padding: 0;
-    height: 100%;
+    height: auto; /* CHANGED: Remove fixed height */
+    min-height: 384px; /* ADDED: Match 2 left cards (180px x 2 + 24px gap) */
 }
 
 .verdict-panel-border {
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 2px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 32px 28px; /* REDUCED from 40px 32px */
+    padding: 26px 24px;
     text-align: center;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* CHANGED from center */
-    padding-top: 28px; /* ADDED: Explicit top padding */
+    justify-content: space-between; /* CHANGED: Space content evenly */
     box-shadow: 
         0 8px 32px rgba(0,0,0,0.35),
         0 0 60px rgba(191,166,112,0.2),
         inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
+    min-height: 384px; /* MATCH left panel */
 }
 
 .verdict-panel-border::before {
@@ -2259,39 +2272,43 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 }
 
 .verdict-seal {
-    margin: 0 auto 18px; /* REDUCED from 22px */
+    margin: 0 auto 14px;
     display: flex;
     justify-content: center;
     filter: drop-shadow(0 4px 16px rgba(191,166,112,0.5));
 }
 
+.verdict-seal svg {
+    width: 70px; /* REDUCED from 80px */
+    height: 70px;
+}
+
 .verdict-label {
     font-family: var(--font-body);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--vm-gold);
     text-transform: uppercase;
-    letter-spacing: 2.5px;
-    margin-bottom: 16px; /* REDUCED from 18px */
-    margin-top: -4px; /* ADDED: Pull up slightly */
+    letter-spacing: 2.2px;
+    margin-bottom: 12px;
     opacity: 0.9;
 }
 
 .verdict-rating {
-    margin-bottom: 22px; /* REDUCED from 26px */
+    margin-bottom: 16px;
 }
 
 .verdict-stars {
-    font-size: 20px;
+    font-size: 18px;
     color: var(--vm-gold);
-    letter-spacing: 4px;
-    margin-bottom: 8px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
     text-shadow: 0 2px 8px rgba(191,166,112,0.4);
 }
 
 .verdict-score {
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: rgba(234,234,234,0.7);
     letter-spacing: 0.5px;
@@ -2299,21 +2316,21 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
 
 .verdict-statement {
     font-family: var(--font-body);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     color: #EAEAEA;
-    line-height: 1.6;
-    margin-bottom: 10px; /* REDUCED from 12px */
+    line-height: 1.5;
+    margin-bottom: 8px;
     padding: 0 8px;
 }
 
 .verdict-substatement {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     color: rgba(234,234,234,0.75);
-    line-height: 1.7;
-    margin-bottom: 20px; /* REDUCED from 26px */
+    line-height: 1.6;
+    margin-bottom: 16px;
     padding: 0 8px;
 }
 
@@ -2321,8 +2338,8 @@ EXECUTIVE INTELLIGENCE — ULTRA-PREMIUM REDESIGN
     background: linear-gradient(90deg, rgba(191,166,112,0.15), rgba(181,152,84,0.1));
     border: 1px solid rgba(191,166,112,0.3);
     border-radius: 6px;
-    padding: 14px 20px; /* REDUCED top/bottom from 16px */
-    margin-top: 18px; /* REDUCED from 22px */
+    padding: 12px 18px;
+    margin-top: 0; /* REMOVED top margin */
 }
 
 .verdict-rec-label {
