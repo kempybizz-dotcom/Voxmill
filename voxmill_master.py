@@ -2,6 +2,7 @@
 VOXMILL MASTER ORCHESTRATOR
 ============================
 One command execution of the entire Voxmill intelligence pipeline
+FULLY UNIVERSAL - Supports all verticals with dynamic terminology
 
 USAGE:
     python voxmill_master.py --vertical uk-real-estate --area Mayfair --city London --email john@agency.com --name "John Smith"
@@ -9,7 +10,7 @@ USAGE:
 WHAT IT DOES:
     1. Collects real market data (Zoopla/Realty APIs)
     2. Analyzes with GPT-4o AI
-    3. Generates elite PDF
+    3. Generates elite PDF with vertical-specific terminology
     4. Sends professional HTML email
 
 ONE COMMAND. FULL EXECUTION.
@@ -17,6 +18,7 @@ ONE COMMAND. FULL EXECUTION.
 
 import os
 import sys
+import json
 import argparse
 import subprocess
 from datetime import datetime
@@ -30,6 +32,54 @@ SCRIPTS = {
     'ai_analyzer': 'ai_analyzer.py',
     'pdf_generator': 'pdf_generator.py',
     'email_sender': 'email_sender.py'
+}
+
+# Vertical configuration mapping
+VERTICAL_CONFIG = {
+    'uk-real-estate': {
+        'type': 'real_estate',
+        'name': 'Real Estate',
+        'unit_metric': 'sqft',
+        'inventory_label': 'Active Listings',
+        'value_metric_label': 'Price',
+        'velocity_metric_label': 'Absorption Rate',
+        'market_signal_label': 'value signals',
+        'acquisition_label': 'Acquisition',
+        'forward_indicator_label': 'Price Momentum'
+    },
+    'miami-real-estate': {
+        'type': 'real_estate',
+        'name': 'Real Estate',
+        'unit_metric': 'sqft',
+        'inventory_label': 'Active Listings',
+        'value_metric_label': 'Price',
+        'velocity_metric_label': 'Absorption Rate',
+        'market_signal_label': 'value signals',
+        'acquisition_label': 'Acquisition',
+        'forward_indicator_label': 'Price Momentum'
+    },
+    'uk-car-rentals': {
+        'type': 'luxury_goods',
+        'name': 'Luxury Vehicle Fleet',
+        'unit_metric': 'unit',
+        'inventory_label': 'Active Fleet',
+        'value_metric_label': 'Daily Rate',
+        'velocity_metric_label': 'Utilization Rate',
+        'market_signal_label': 'opportunity signals',
+        'acquisition_label': 'Fleet Expansion',
+        'forward_indicator_label': 'Demand Pressure'
+    },
+    'chartering': {
+        'type': 'luxury_goods',
+        'name': 'Charter Services',
+        'unit_metric': 'booking',
+        'inventory_label': 'Available Assets',
+        'value_metric_label': 'Charter Rate',
+        'velocity_metric_label': 'Booking Velocity',
+        'market_signal_label': 'market signals',
+        'acquisition_label': 'Asset Acquisition',
+        'forward_indicator_label': 'Seasonal Demand'
+    }
 }
 
 # ============================================================================
@@ -49,13 +99,32 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
     print(f"Recipient: {recipient_name} <{recipient_email}>")
     print("="*70)
     
+    # Get vertical configuration
+    if vertical not in VERTICAL_CONFIG:
+        print(f"\n❌ ERROR: Unsupported vertical '{vertical}'")
+        print(f"Supported verticals: {', '.join(VERTICAL_CONFIG.keys())}")
+        return False
+    
+    vertical_config = VERTICAL_CONFIG[vertical]
+    print(f"\n📋 Vertical Configuration:")
+    print(f"   • Name: {vertical_config['name']}")
+    print(f"   • Type: {vertical_config['type']}")
+    print(f"   • Unit Metric: {vertical_config['unit_metric']}")
+    print(f"   • Inventory Label: {vertical_config['inventory_label']}")
+    print(f"   • Velocity Metric: {vertical_config['velocity_metric_label']}")
+    
     try:
         # Step 1: Data Collection
         print(f"\n[STEP 1/4] DATA COLLECTION")
         print(f"   Collecting real market data...")
+        print(f"   Vertical: {vertical_config['name']}")
+        
+        # Serialize vertical config as JSON
+        vertical_config_json = json.dumps(vertical_config)
         
         result = subprocess.run(
-            [sys.executable, SCRIPTS['data_collector'], vertical, area, city],
+            [sys.executable, SCRIPTS['data_collector'], 
+             vertical, area, city, vertical_config_json],
             capture_output=True,
             text=True
         )
@@ -70,9 +139,13 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         # Step 2: AI Analysis
         print(f"\n[STEP 2/4] AI ANALYSIS")
         print(f"   Analyzing data with GPT-4o...")
+        print(f"   Context: {vertical_config['name']} intelligence")
+        
+        # Pass vertical type to AI analyzer
+        vertical_type = vertical_config['type']
         
         result = subprocess.run(
-            [sys.executable, SCRIPTS['ai_analyzer']],
+            [sys.executable, SCRIPTS['ai_analyzer'], vertical_type],
             capture_output=True,
             text=True
         )
@@ -87,6 +160,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         # Step 3: PDF Generation
         print(f"\n[STEP 3/4] PDF GENERATION")
         print(f"   Creating elite PDF report...")
+        print(f"   Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
         
         result = subprocess.run(
             [sys.executable, SCRIPTS['pdf_generator']],
@@ -116,29 +190,30 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             if result.returncode != 0:
                 print(f"\n⚠️ Email delivery failed:")
                 print(result.stderr)
-                print(f"\n   PDF saved locally: /tmp/Voxmill_Elite_Intelligence.pdf")
+                print(f"\n   PDF saved locally: /tmp/Voxmill_Executive_Intelligence_Deck.pdf")
                 return False
             
             print(result.stdout)
         else:
             print(f"\n[STEP 4/4] EMAIL DELIVERY")
             print(f"   ⚠️ Email skipped (--skip-email flag)")
-            print(f"   PDF saved: /tmp/Voxmill_Elite_Intelligence.pdf")
+            print(f"   PDF saved: /tmp/Voxmill_Executive_Intelligence_Deck.pdf")
         
         # Success
         print("\n" + "="*70)
         print("✅ VOXMILL PIPELINE COMPLETE")
         print("="*70)
         print(f"\n📊 REPORT GENERATED:")
-        print(f"   • Vertical: {vertical}")
+        print(f"   • Vertical: {vertical_config['name']} ({vertical})")
         print(f"   • Location: {area}, {city}")
         print(f"   • Recipient: {recipient_name}")
+        print(f"   • Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
         
         if not skip_email:
             print(f"   • Email: SENT to {recipient_email}")
         else:
             print(f"   • Email: SKIPPED (manual send required)")
-            print(f"   • PDF: /tmp/Voxmill_Elite_Intelligence.pdf")
+            print(f"   • PDF: /tmp/Voxmill_Executive_Intelligence_Deck.pdf")
         
         print(f"\n🎯 NEXT STEP:")
         if skip_email:
@@ -183,10 +258,31 @@ EXAMPLES:
     --email test@test.com --name "Test" --skip-email
 
 SUPPORTED VERTICALS:
-  • uk-real-estate      - UK luxury real estate
-  • miami-real-estate   - Miami luxury real estate
-  • uk-car-rentals      - UK luxury car rental companies
-  • chartering          - Yacht/jet charter companies
+  • uk-real-estate      - UK luxury real estate (sqft, absorption rate, price)
+  • miami-real-estate   - Miami luxury real estate (sqft, absorption rate, price)
+  • uk-car-rentals      - UK luxury vehicle fleet (daily rates, utilization, fleet)
+  • chartering          - Yacht/jet charter services (bookings, booking velocity, charter rates)
+
+VERTICAL-SPECIFIC TERMINOLOGY:
+  Real Estate:
+    - Unit: sqft
+    - Velocity: Absorption Rate
+    - Inventory: Active Listings
+    - Value: Price
+  
+  Luxury Goods (Cars/Charter):
+    - Unit: unit/booking
+    - Velocity: Utilization/Booking Velocity
+    - Inventory: Active Fleet/Available Assets
+    - Value: Daily/Charter Rate
+
+ENVIRONMENT VARIABLES REQUIRED:
+  • RAPIDAPI_KEY        - For UK Real Estate (Rightmove) data
+  • REALTY_US_API_KEY   - For Miami Real Estate data (optional)
+  • OUTSCRAPER_API_KEY  - For fallback scraping (optional)
+  • OPENAI_API_KEY      - For GPT-4o AI analysis
+  • VOXMILL_EMAIL       - For email delivery (optional)
+  • VOXMILL_EMAIL_PASSWORD - For email delivery (optional)
         """
     )
     
@@ -220,6 +316,9 @@ SUPPORTED VERTICALS:
         for var in missing:
             print(f"   • {var}")
         print(f"\nSet these in your Render environment or export locally.")
+        print(f"\nFor local testing, you can export them:")
+        print(f"   export RAPIDAPI_KEY='your_key_here'")
+        print(f"   export OPENAI_API_KEY='your_key_here'")
         sys.exit(1)
     
     if not args.skip_email:
@@ -232,6 +331,14 @@ SUPPORTED VERTICALS:
                 print(f"   • {var}")
             print(f"\n   Will skip email delivery (PDF only mode)")
             args.skip_email = True
+    
+    # Validate vertical
+    if args.vertical not in VERTICAL_CONFIG:
+        print(f"\n❌ ERROR: Unsupported vertical '{args.vertical}'")
+        print(f"\nSupported verticals:")
+        for v, config in VERTICAL_CONFIG.items():
+            print(f"   • {v:20s} - {config['name']}")
+        sys.exit(1)
     
     # Run pipeline
     success = run_pipeline(
