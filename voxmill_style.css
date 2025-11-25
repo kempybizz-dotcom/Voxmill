@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.6 COMPLETE
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.6 COMPLETE + SURGICAL PRECISION UPDATES
 ULTRA-LUXURY AESTHETIC — FORTUNE-500 BOARDROOM QUALITY
-Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements
+Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements + Surgical Polish
 ============================================ */
 
 :root {
@@ -152,6 +152,7 @@ COVER PAGE
 }
 
 .logo-container {
+    margin-top: 5px;
     margin-bottom: 16px;
 }
 
@@ -259,7 +260,7 @@ SLIDE HEADER — CONSISTENT SPACING
 .slide-title {
     font-family: var(--font-display);
     font-size: 50px;
-    font-weight: 700;
+    font-weight: 600;
     color: #BFA670;
     letter-spacing: 0.01em;
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
@@ -385,7 +386,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     color: #BFA670;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 10px;
     position: relative;
     padding-bottom: 10px;
     text-align: left;
@@ -924,6 +925,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     line-height: 1;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
+    min-width: 70px;
+    text-align: left;
 }
 
 .competitor-premium-badge {
@@ -939,7 +942,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     letter-spacing: 1.2px;
     border: 1.5px solid;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    min-width: 90px;
+    min-width: 95px;
+    text-align: center;
     height: 28px;
 }
 
@@ -1055,7 +1059,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
 .cross-vertical-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 28px;
+    gap: 22px;
     margin-top: 64px;
     margin-bottom: 0;
     align-items: stretch;
@@ -1506,11 +1510,13 @@ MARKET DEPTH ANALYSIS — REFINED
 .heatmap-table td:nth-child(3) {
     width: 22%;
     text-align: center;
+    padding-right: 24px;
 }
 
 .heatmap-table td:nth-child(4) {
     width: 22%;
     text-align: center;
+    padding-right: 24px;
 }
 
 .heatmap-table tbody tr:last-child td {
@@ -1547,18 +1553,27 @@ MARKET DEPTH ANALYSIS — REFINED
     color: #4CAF50;
     border-color: rgba(76, 175, 80, 0.5);
     background: rgba(76, 175, 80, 0.08);
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.35);
 }
 
 .velocity-medium {
     color: #FFC107;
     border-color: rgba(255, 193, 7, 0.5);
     background: rgba(255, 193, 7, 0.08);
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.25);
 }
 
 .velocity-low {
     color: rgba(244, 67, 54, 0.9);
     border-color: rgba(244, 67, 54, 0.5);
     background: rgba(244, 67, 54, 0.08);
+    box-shadow: 0 0 6px rgba(244, 67, 54, 0.2);
+}
+
+.heatmap-warning {
+    background: rgba(255, 217, 102, 0.18);
+    color: #FFD966;
+    box-shadow: 0 0 10px rgba(255, 217, 102, 0.25);
 }
 
 .signal-text {
@@ -1627,9 +1642,9 @@ MARKET DEPTH ANALYSIS — REFINED
 .depth-bar {
     width: 100%;
     max-width: 100%;
-    height: 10px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 5px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
     overflow: hidden;
     margin: 0;
     position: relative;
@@ -1639,10 +1654,10 @@ MARKET DEPTH ANALYSIS — REFINED
     position: absolute;
     top: 0;
     left: 0;
-    height: 10px;
-    border-radius: 5px;
-    background: linear-gradient(90deg, #6ECB63 0%, #5AB852 100%);
-    box-shadow: 0 0 12px rgba(110, 203, 99, 0.5);
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #B59854 0%, #C5A46D 100%);
+    transition: width 0.6s ease;
 }
 
 .depth-note {
@@ -1754,21 +1769,20 @@ STRATEGIC FORECAST — REFINED
 
 .forecast-premium-confidence-bar {
     width: 200px;
-    height: 5px;
-    background: rgba(59, 59, 59, 0.4);
-    border-radius: 2px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
+    margin-top: 12px;
 }
 
 .forecast-premium-confidence-fill {
     position: absolute;
     top: 0;
     left: 0;
-    height: 5px;
-    background: linear-gradient(90deg, #BFA670, #B59854);
-    border-radius: 2px;
-    box-shadow: 0 0 10px rgba(191,166,112,0.5);
+    height: 8px;
+    background: linear-gradient(90deg, #C5A46D 0%, #D4AF6A 100%);
 }
 
 .forecast-premium-confidence-label {
@@ -1837,11 +1851,11 @@ STRATEGIC FORECAST — REFINED
 
 .voxmill-index-bar-container {
     width: 200px;
-    height: 8px;
-    background: rgba(59, 59, 59, 0.5);
-    border-radius: 4px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
     overflow: hidden;
-    margin-top: 4px;
+    margin-top: 10px;
     position: relative;
 }
 
@@ -1849,9 +1863,8 @@ STRATEGIC FORECAST — REFINED
     position: absolute;
     top: 0;
     left: 0;
-    height: 8px;
-    background: linear-gradient(90deg, #6ECB63 0%, #5AB852 100%);
-    border-radius: 4px;
+    height: 14px;
+    background: linear-gradient(90deg, #C5A46D 0%, #E8C878 100%);
 }
 
 .macro-context {
@@ -2035,13 +2048,14 @@ EXECUTIVE INTELLIGENCE — REFINED
 .executive-verdict-column {
     display: flex;
     align-items: stretch;
+    margin-top: 3px;
 }
 
 .verdict-panel-border {
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 2px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 26px 24px;
+    padding: 40px 32px;
     text-align: center;
     width: 100%;
     display: flex;
@@ -2672,9 +2686,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 30px;
-    margin-top: -3px;
-    margin-bottom: 0;
+    padding: 22px 32px;
+    margin: 36px 0;
 }
 
 .summary-band-title {
@@ -2735,278 +2748,233 @@ AI OPPORTUNITIES
     padding: 22px 28px;
     background: var(--card-bg);
     border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    min-height: 124px;
+    border-radius: var(--car-radius);
+box-shadow: var(--card-shadow);
+min-height: 120px;
 }
-
 .signal-content-v2 {
-    flex: 1;
-    text-align: left;
+flex: 1;
+text-align: left;
 }
-
 .signal-property-title {
-    font-family: var(--font-body);
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 10px;
-    text-align: left;
+font-family: var(--font-body);
+font-size: 17px;
+font-weight: 600;
+color: var(--vm-gold);
+margin-bottom: 10px;
+text-align: left;
 }
-
 .signal-property-metrics {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    color: var(--vm-muted);
-    text-align: left;
-    font-weight: 500;
-    margin-bottom: 10px;
+font-family: var(--font-mono);
+font-size: 14px;
+color: var(--vm-muted);
+text-align: left;
+font-weight: 500;
+margin-bottom: 10px;
 }
-
 .ai-flag-reason {
-    font-family: var(--font-body);
-    font-size: 12px;
-    color: var(--vm-text-body);
-    font-style: italic;
-    margin-top: 0;
-    padding-left: 12px;
-    border-left: 2px solid rgba(191, 166, 112, 0.3);
-    line-height: 1.7;
-    text-align: left;
-    font-weight: 400;
+font-family: var(--font-body);
+font-size: 12px;
+color: var(--vm-text-body);
+font-style: italic;
+margin-top: 0;
+padding-left: 12px;
+border-left: 2px solid rgba(191, 166, 112, 0.3);
+line-height: 1.7;
+text-align: left;
+font-weight: 400;
 }
-
 .signal-badges-v2 {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
-    flex-shrink: 0;
+display: flex;
+flex-direction: column;
+gap: 8px;
+align-items: flex-end;
+min-width: 100px;
 }
-
 .signal-badge-v2 {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 7px 14px;
-    border-radius: 6px;
-    white-space: nowrap;
-    background: #0B0B0B;
-    min-width: 92px;
-    text-align: center;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+padding: 6px 14px;
+border-radius: 6px;
+font-size: 12px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+text-align: center;
+min-width: 85px;
 }
-
 .badge-risk {
-    color: #4CAF50;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: #4CAF50;
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
-
 .badge-confidence {
-    color: var(--vm-gold);
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: var(--vm-gold);
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
-
 .badge-trigger {
-    color: #FFC107;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: #FFC107;
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
-
 .acquisition-strategy-ribbon {
-    background: var(--vm-gold);
-    border-radius: 8px;
-    margin-top: 44px;
-    margin-bottom: 0;
-    padding: 20px 30px;
+background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
+border-left: 4px solid #BFA670;
+border-radius: 8px;
+padding: 22px 32px;
+margin: 36px 0;
 }
-
 .acquisition-strategy-text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--vm-dark);
-    line-height: 1.7;
-    font-weight: 400;
-    text-align: center;
-    margin: 0;
+font-family: var(--font-body);
+font-size: 15px;
+color: var(--vm-text-body);
+line-height: 1.7;
+font-weight: 400;
+text-align: center;
+margin: 0;
 }
-
 .acquisition-strategy-text strong {
-    font-weight: 700;
+font-weight: 700;
 }
-
 .acquisition-strategy-ribbon + div {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 24px 32px;
-    margin-top: 40px;
-    margin-bottom: 76px;
+background: rgba(12, 12, 12, 0.35);
+border: 1px solid rgba(255, 255, 255, 0.08);
+border-radius: 10px;
+padding: 24px 32px;
+margin-top: 40px;
+margin-bottom: 76px;
 }
-
 .acquisition-strategy-ribbon + div h4 {
-    font-size: 16px;
-    color: #C8AA6E;
-    margin-bottom: 18px;
-    font-weight: 600;
+font-size: 16px;
+color: #C8AA6E;
+margin-bottom: 18px;
+font-weight: 600;
 }
-
 .acquisition-strategy-ribbon + div > div {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.85;
-    padding-bottom: 8px;
+font-size: 14px;
+color: var(--vm-text-body);
+line-height: 1.85;
+padding-bottom: 8px;
 }
-
 .acquisition-strategy-ribbon + div > div > div {
-    margin-bottom: 14px;
-    padding-left: 0;
-    min-height: 24px;
+margin-bottom: 14px;
+padding-left: 0;
+min-height: 24px;
 }
-
 .acquisition-strategy-ribbon + div > div > div:last-child {
-    margin-bottom: 0;
+margin-bottom: 0;
 }
-
 .acquisition-strategy-ribbon + div strong {
-    color: #C8AA6E;
-    font-weight: 600;
+color: #C8AA6E;
+font-weight: 600;
 }
-
 /* ============================================
 PANELS
 ============================================ */
-
 .panel {
-    margin-top: 34px;
-    padding: 26px 30px;
+margin-top: 34px;
+padding: 26px 30px;
 }
-
 .panel-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    position: relative;
-    padding-bottom: 12px;
-    padding-top: 0;
+font-family: var(--font-display);
+font-size: 28px;
+font-weight: 600;
+color: var(--vm-gold);
+margin-bottom: 16px;
+position: relative;
+padding-bottom: 12px;
+padding-top: 0;
 }
-
 .panel-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.7;
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 120px;
+height: 2px;
+background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
+opacity: 0.7;
 }
-
 .panel-text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.85;
-    font-weight: 400;
+font-family: var(--font-body);
+font-size: 15px;
+color: var(--vm-text-body);
+line-height: 1.85;
+font-weight: 400;
 }
-
 .panel-text strong {
-    color: var(--vm-gold);
-    font-weight: 600;
+color: var(--vm-gold);
+font-weight: 600;
 }
-
 /* ============================================
 FOOTER
 ============================================ */
-
 .slide-footer {
-    position: absolute;
-    bottom: 32px;
-    left: 48px;
-    right: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.75);
-    z-index: 10;
+position: absolute;
+bottom: 32px;
+left: 48px;
+right: 48px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-family: var(--font-body);
+font-size: 13px;
+color: rgba(184, 184, 184, 0.75);
+z-index: 10;
 }
-
 .footer-left {
-    font-weight: 400;
+font-weight: 400;
 }
-
 .footer-center {
-    text-align: center;
-    font-style: italic;
-    font-weight: 400;
+text-align: center;
+font-style: italic;
+font-weight: 400;
 }
-
 .footer-right {
-    text-align: right;
-    font-weight: 600;
+text-align: right;
+font-weight: 600;
 }
-
 /* ============================================
 UTILITY CLASSES
 ============================================ */
-
 .text-gold {
-    color: var(--vm-gold);
+color: var(--vm-gold);
 }
-
 .text-bronze {
-    color: var(--vm-bronze);
+color: var(--vm-bronze);
 }
-
 .text-muted {
-    color: var(--vm-muted);
+color: var(--vm-muted);
 }
-
 .mb-0 {
-    margin-bottom: 0 !important;
+margin-bottom: 0 !important;
 }
-
 .mt-0 {
-    margin-top: 0 !important;
+margin-top: 0 !important;
 }
-
 /* ============================================
 PRINT OPTIMIZATION
 ============================================ */
-
 @media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        color-adjust: exact;
-    }
-    
-    .slide {
-        page-break-after: always;
-        page-break-inside: avoid;
-    }
-    
-    .slide:last-child {
-        page-break-after: auto;
-    }
-    
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color-adjust: exact !important;
-    }
+body {
+-webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+color-adjust: exact;
+}
+.slide {
+    page-break-after: always;
+    page-break-inside: avoid;
 }
 
+.slide:last-child {
+    page-break-after: auto;
+}
+
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+}
+}
 /* ============================================
 WEBKIT/BLINK RENDERING FIXES
 ============================================ */
-
 .slide,
 .kpi-card,
 .chart-container,
@@ -3015,16 +2983,14 @@ WEBKIT/BLINK RENDERING FIXES
 .district-card-premium,
 .forecast-card-premium,
 .competitive-info-panel {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
+-webkit-transform: translateZ(0);
+transform: translateZ(0);
+will-change: transform;
 }
-
 svg {
-    shape-rendering: geometricPrecision;
-    text-rendering: geometricPrecision;
+shape-rendering: geometricPrecision;
+text-rendering: geometricPrecision;
 }
-
 /* ============================================
 END OF VOXMILL EXECUTIVE INTELLIGENCE DECK CSS
 ============================================ */
