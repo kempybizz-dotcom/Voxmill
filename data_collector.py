@@ -3,6 +3,7 @@ VOXMILL ELITE DATA COLLECTOR - PRODUCTION VERSION
 ==================================================
 Multi-source data collection with intelligent fallbacks
 NEVER FAILS - Always returns usable data
+FULLY UNIVERSAL - Supports all verticals with dynamic terminology
 """
 
 import os
@@ -16,6 +17,82 @@ REALTY_US_API_KEY = os.environ.get('REALTY_US_API_KEY')
 OUTSCRAPER_API_KEY = os.environ.get('OUTSCRAPER_API_KEY')
 
 OUTPUT_FILE = "/tmp/voxmill_raw_data.json"
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def calculate_days_on_market(listed_date_str):
+    """Calculate days on market from listing date string"""
+    if not listed_date_str:
+        return 42  # Default
+    
+    try:
+        from datetime import datetime
+        if isinstance(listed_date_str, str):
+            # Try multiple date formats
+            for fmt in ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%d/%m/%Y']:
+                try:
+                    listed_date = datetime.strptime(listed_date_str.split('T')[0], fmt)
+                    days = (datetime.now() - listed_date).days
+                    return max(0, min(days, 365))  # Cap at 1 year
+                except:
+                    continue
+    except:
+        pass
+    
+    return 42  # Default fallback
+
+
+def extract_agent_name(name, description):
+    """Extract estate agency name from Outscraper results"""
+    # Look for known agency patterns
+    known_agencies = ['Knight Frank', 'Savills', 'Strutt & Parker', 
+                     'Hamptons', 'Chestertons', 'Foxtons', 'Marsh & Parsons',
+                     'Douglas & Gordon', 'Harrods Estates', 'Beauchamp Estates']
+    
+    combined_text = f"{name} {description}".lower()
+    
+    for agency in known_agencies:
+        if agency.lower() in combined_text:
+            return agency
+    
+    # If name contains estate/property/realty, use it
+    if any(word in name.lower() for word in ['estate', 'property', 'realty', 'homes']):
+        return name
+    
+    return 'Private'
+
+
+def extract_price_from_text(text):
+    """Extract price from text description."""
+    import re
+    
+    if not text:
+        return 2500000  # Default luxury price
+    
+    # Look for UK price patterns
+    patterns = [
+        r'£([\d,]+(?:\.\d{1,2})?)\s*(?:million|m)',  # £2.5 million
+        r'£([\d,]+)',  # £2,500,000
+        r'(\d+(?:\.\d{1,2})?)\s*(?:million|m)',  # 2.5 million
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            price_str = match.group(1).replace(',', '')
+            try:
+                price_num = float(price_str)
+                if 'million' in text.lower() or 'm' in match.group(0).lower():
+                    price_num *= 1000000
+                return int(price_num)
+            except:
+                continue
+    
+    return 2500000  # Default
+
 
 # ============================================================================
 # UK REAL ESTATE - PRIMARY: RIGHTMOVE API
@@ -118,11 +195,23 @@ def collect_rightmove_data(area, max_properties=40):
                         if isinstance(price, str):
                             price = int(''.join(filter(str.isdigit, price)) or 0)
                         
-                        # Address
+                        # Address and submarket extraction
                         address_parts = []
+                        submarket = area  # Default to search area
+                        
                         if prop.get('address'):
                             if isinstance(prop['address'], dict):
-                                address_parts.append(prop['address'].get('displayAddress', ''))
+                                display_addr = prop['address'].get('displayAddress', '')
+                                address_parts.append(display_addr)
+                                
+                                # Extract submarket from address components
+                                if 'area' in prop['address']:
+                                    submarket = prop['address']['area']
+                                elif 'district' in prop['address']:
+                                    submarket = prop['address']['district']
+                                elif 'locality' in prop['address']:
+                                    submarket = prop['address']['locality']
+                                
                             else:
                                 address_parts.append(str(prop['address']))
                         
@@ -155,12 +244,18 @@ def collect_rightmove_data(area, max_properties=40):
                         elif prop.get('branch'):
                             agent = prop['branch'].get('name', 'Private')
                         
+                        # Calculate days on market
+                        listed_date = prop.get('addedOn', prop.get('listingDate', datetime.now().strftime('%Y-%m-%d')))
+                        days_listed = calculate_days_on_market(listed_date)
+                        
                         properties.append({
                             'source': 'Rightmove',
                             'listing_id': str(prop.get('id', prop.get('property_id', f"RM_{len(properties)+1}"))),
                             'address': address,
                             'area': area,
                             'city': 'London',
+                            'submarket': submarket,
+                            'district': submarket,
                             'price': int(price) if price else 0,
                             'beds': int(bedrooms) if bedrooms else 3,
                             'baths': int(bathrooms) if bathrooms else 2,
@@ -171,7 +266,9 @@ def collect_rightmove_data(area, max_properties=40):
                             'url': prop.get('propertyUrl', prop.get('url', '')),
                             'description': (prop.get('summary', prop.get('description', '')))[:200],
                             'image_url': prop.get('mainImage', prop.get('image', '')),
-                            'listed_date': prop.get('addedOn', prop.get('listingDate', datetime.now().strftime('%Y-%m-%d')))
+                            'listed_date': listed_date,
+                            'days_listed': days_listed,
+                            'days_on_market': days_listed
                         })
                     except Exception as e:
                         print(f"   ⚠️  Error parsing property: {str(e)}")
@@ -262,23 +359,33 @@ def collect_outscraper_data(area, max_properties=40):
                         str(item.get('description', ''))
                     )
                     
+                    # Extract agent name
+                    agent = extract_agent_name(
+                        item.get('name', ''),
+                        item.get('description', '')
+                    )
+                    
                     property_data = {
                         'source': 'Outscraper',
                         'listing_id': f"OS_{item.get('place_id', len(all_properties)+1)}",
                         'address': item.get('full_address', item.get('address', f'{area}, London')),
                         'area': area,
                         'city': 'London',
+                        'submarket': area,
+                        'district': area,
                         'price': price,
                         'beds': 3,  # Default - Outscraper doesn't provide this
                         'baths': 2,
                         'sqft': 2500,
                         'price_per_sqft': round(price / 2500, 2) if price > 0 else 0,
                         'property_type': 'Luxury Property',
-                        'agent': item.get('name', 'Estate Agent'),
+                        'agent': agent,
                         'url': item.get('site', ''),
                         'description': str(item.get('description', ''))[:200],
                         'image_url': '',
-                        'listed_date': datetime.now().strftime('%Y-%m-%d')
+                        'listed_date': datetime.now().strftime('%Y-%m-%d'),
+                        'days_listed': 42,
+                        'days_on_market': 42
                     }
                     
                     all_properties.append(property_data)
@@ -297,35 +404,6 @@ def collect_outscraper_data(area, max_properties=40):
     except Exception as e:
         print(f"   ❌ Outscraper error: {str(e)}")
         return None
-
-
-def extract_price_from_text(text):
-    """Extract price from text description."""
-    import re
-    
-    if not text:
-        return 2500000  # Default luxury price
-    
-    # Look for UK price patterns
-    patterns = [
-        r'£([\d,]+(?:\.\d{1,2})?)\s*(?:million|m)',  # £2.5 million
-        r'£([\d,]+)',  # £2,500,000
-        r'(\d+(?:\.\d{1,2})?)\s*(?:million|m)',  # 2.5 million
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            price_str = match.group(1).replace(',', '')
-            try:
-                price_num = float(price_str)
-                if 'million' in text.lower() or 'm' in match.group(0).lower():
-                    price_num *= 1000000
-                return int(price_num)
-            except:
-                continue
-    
-    return 2500000  # Default
 
 
 # ============================================================================
@@ -347,6 +425,9 @@ def generate_demo_properties(area, count=25):
                'Curzon Street', 'Charles Street', 'South Audley Street', 'Davies Street']
     agents = ['Knight Frank', 'Savills', 'Strutt & Parker', 'Hamptons', 'Chestertons']
     
+    # Generate varied submarkets for testing
+    submarkets = [area] * 10 + [f"{area} North", f"{area} South", f"{area} East"] * 5
+    
     properties = []
     
     for i in range(count):
@@ -356,6 +437,7 @@ def generate_demo_properties(area, count=25):
         sqft = random.randint(1500, 5000)
         price = random.randint(1500000, 8000000)
         price_per_sqft = round(price / sqft, 2)
+        days_listed = random.randint(14, 90)
         
         properties.append({
             'source': 'Demo Data (APIs unavailable)',
@@ -363,6 +445,8 @@ def generate_demo_properties(area, count=25):
             'address': f"{random.randint(1, 99)} {random.choice(streets)}, {area}, London W1K",
             'area': area,
             'city': 'London',
+            'submarket': random.choice(submarkets),
+            'district': random.choice(submarkets),
             'price': price,
             'beds': bedrooms,
             'baths': bathrooms,
@@ -373,7 +457,9 @@ def generate_demo_properties(area, count=25):
             'url': 'https://example.com',
             'description': f"Stunning {bedrooms}-bedroom {prop_type.lower()} in prime {area} location with modern finishes and exceptional views.",
             'image_url': '',
-            'listed_date': datetime.now().strftime('%Y-%m-%d')
+            'listed_date': datetime.now().strftime('%Y-%m-%d'),
+            'days_listed': days_listed,
+            'days_on_market': days_listed
         })
     
     print(f"   ✅ Generated {len(properties)} realistic demo properties")
@@ -465,6 +551,8 @@ def collect_miami_real_estate(area, max_properties=40):
         for listing in listings[:max_properties]:
             price = listing.get('price', 0)
             sqft = listing.get('squareFootage', 2000)
+            listed_date = listing.get('listDate', datetime.now().strftime('%Y-%m-%d'))
+            days_listed = calculate_days_on_market(listed_date)
             
             properties.append({
                 'source': 'Realty Mole',
@@ -472,6 +560,8 @@ def collect_miami_real_estate(area, max_properties=40):
                 'address': listing.get('formattedAddress', ''),
                 'area': area,
                 'city': 'Miami',
+                'submarket': area,
+                'district': area,
                 'price': price,
                 'beds': listing.get('bedrooms', 3),
                 'baths': listing.get('bathrooms', 2),
@@ -482,7 +572,9 @@ def collect_miami_real_estate(area, max_properties=40):
                 'url': listing.get('url', ''),
                 'description': '',
                 'image_url': '',
-                'listed_date': listing.get('listDate', '')
+                'listed_date': listed_date,
+                'days_listed': days_listed,
+                'days_on_market': days_listed
             })
         
         print(f"   ✅ Collected {len(properties)} properties")
@@ -497,7 +589,7 @@ def collect_miami_real_estate(area, max_properties=40):
 # MAIN ORCHESTRATOR
 # ============================================================================
 
-def collect_market_data(vertical, area, city):
+def collect_market_data(vertical, area, city, vertical_config_json='{}'):
     """
     Main data collection orchestrator.
     NEVER FAILS - Always returns usable data.
@@ -512,9 +604,18 @@ def collect_market_data(vertical, area, city):
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*70)
     
+    # Parse vertical config
+    import json as json_lib
+    try:
+        vertical_config = json_lib.loads(vertical_config_json)
+        print(f"✅ Vertical Config: {vertical_config.get('name', 'Unknown')}")
+    except:
+        vertical_config = {'type': 'real_estate', 'name': 'Real Estate'}
+        print(f"⚠️  Using default vertical config")
+    
     data = {
         'metadata': {
-            'vertical': vertical,
+            'vertical': vertical_config,  # Store full config object
             'area': area,
             'city': city,
             'timestamp': datetime.now().isoformat(),
@@ -549,6 +650,7 @@ def collect_market_data(vertical, area, city):
         print(f"Output File: {OUTPUT_FILE}")
         print(f"Records Collected: {record_count} properties")
         print(f"Data Source: {properties[0]['source'] if properties else 'None'}")
+        print(f"Vertical: {vertical_config.get('name', 'Unknown')}")
         print("="*70)
         
         return OUTPUT_FILE
@@ -570,16 +672,17 @@ def main():
     import sys
     
     if len(sys.argv) < 4:
-        print("Usage: python data_collector.py <vertical> <area> <city>")
+        print("Usage: python data_collector.py <vertical> <area> <city> [vertical_config_json]")
         print("Example: python data_collector.py uk-real-estate Mayfair London")
         sys.exit(1)
     
     vertical = sys.argv[1]
     area = sys.argv[2]
     city = sys.argv[3]
+    vertical_config_json = sys.argv[4] if len(sys.argv) > 4 else '{}'
     
     try:
-        result = collect_market_data(vertical, area, city)
+        result = collect_market_data(vertical, area, city, vertical_config_json)
         print(f"\n✅ SUCCESS: Data saved to {result}")
         sys.exit(0)
     except Exception as e:
