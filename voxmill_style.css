@@ -1701,8 +1701,8 @@ STRATEGIC FORECAST — REFINED
     padding: 0;
     position: relative;
     overflow: hidden;
-    min-height: 244px;
-    height: 244px;
+    min-height: 260px;  /* INCREASED from 244px */
+    height: 260px;  /* INCREASED from 244px */
 }
 
 .forecast-card-premium::before {
@@ -2382,6 +2382,7 @@ TOP MARKET OPPORTUNITIES
     border-radius: 6px;
     font-family: var(--font-mono);
     font-weight: 700;
+    vertical-align: middle;  /* ADDED */
 }
 
 .score-high, .score-excellent {
