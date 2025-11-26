@@ -793,6 +793,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 PERFORMANCE ANALYSIS
 ============================================ */
 
+/* FIX: Normalize spacing after charts */
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -847,10 +848,11 @@ PERFORMANCE ANALYSIS
     font-style: italic;
 }
 
+/* FIX: Reinforce spacing + ensure visual separation */
 .momentum-drivers-section {
-    margin-top: 50px;
+    margin-top: 56px; /* CHANGED: 50px → 56px (normalized to 8px grid) */
     margin-bottom: 32px;
-    padding: 24px;
+    padding: 24px 30px; /* CHANGED: 24px → 24px 30px (match other cards) */
     background: rgba(203, 161, 53, 0.03);
     border: 1px solid rgba(203, 161, 53, 0.15);
     border-radius: 8px;
@@ -863,6 +865,21 @@ PERFORMANCE ANALYSIS
     margin-bottom: 16px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.momentum-drivers-section div {
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+}
+
+/* FIX: Add bottom spacing to create breathing room */
+.insight-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 56px;
+    margin-bottom: 56px; /* CHANGED: 0 → 56px (ensure gap before next section) */
 }
 
 .insight-title {
@@ -883,12 +900,13 @@ PERFORMANCE ANALYSIS
     font-weight: 400;
 }
 
+/* FIX: Add vertical spacing to prevent collision */
 .context-panel {
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
     padding: 24px 30px;
-    margin-top: 0;
+    margin-top: 56px; /* CHANGED: 0 → 56px */
     margin-bottom: 0;
 }
 
@@ -1060,22 +1078,23 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: left;
 }
 
+/* FIX: Match absorption rate score visual style */
 .competitor-premium-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 6px 14px;
-    border-radius: 6px;
+    border-radius: 4px; /* CHANGED: 6px → 4px */
     font-family: var(--font-body);
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 600; /* CHANGED: 700 → 600 */
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    border: 1.5px solid;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 1px solid; /* CHANGED: 1.5px → 1px */
+    box-shadow: none; /* REMOVED: Heavy shadow */
     min-width: 95px;
     text-align: center;
-    height: 28px;
+    height: 26px; /* CHANGED: 28px → 26px */
     line-height: 1;
     position: relative;
 }
@@ -1087,25 +1106,22 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .badge-premium-strong {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.1);
-    border-color: rgba(76, 175, 80, 0.4);
+    color: #2ECC71; /* CHANGED: Unified green */
+    background: rgba(46, 204, 113, 0.08); /* CHANGED: Subtle tint */
+    border-color: #2ECC71;
 }
 
 .badge-premium-moderate {
-    color: #FFC107;
-    background: rgba(255, 193, 7, 0.1);
-    border-color: rgba(255, 193, 7, 0.4);
+    color: #F1C40F; /* CHANGED: Unified yellow */
+    background: rgba(241, 196, 15, 0.08); /* CHANGED: Subtle tint */
+    border-color: #F1C40F;
 }
 
 .badge-premium-weak {
-    color: rgba(244, 67, 54, 0.85);
-    background: rgba(244, 67, 54, 0.1);
-    border-color: rgba(244, 67, 54, 0.4);
+    color: #E74C3C; /* CHANGED: Unified red */
+    background: rgba(231, 76, 60, 0.08); /* CHANGED: Subtle tint */
+    border-color: #E74C3C;
 }
-```
-
----
 
 ## 📍 **SECTION 4: CROSS-VERTICAL INTELLIGENCE**
 
@@ -1259,26 +1275,26 @@ SLIDE CONTENT POSITIONING
 ✅ NEW: SIGNAL TAG (STATUS BADGE)
 ============================================ */
 
+/* FIX: Match absorption rate score visual style */
 .signal-tag {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 6px 16px;
-    border-radius: 6px;
+    border-radius: 4px; /* CHANGED: 6px → 4px */
     font-family: var(--font-body);
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 600; /* CHANGED: 700 → 600 */
     text-transform: uppercase;
     letter-spacing: 1.2px;
     margin-bottom: 20px;
-    border: 1.5px solid;
+    border: 1px solid; /* CHANGED: 1.5px → 1px */
     min-width: 100px;
     height: 26px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: none; /* REMOVED: Heavy shadow */
     flex-shrink: 0;
 }
 
-/* Block any pseudo-elements to prevent duplicate backgrounds */
 .signal-tag::before,
 .signal-tag::after {
     content: none !important;
@@ -1286,21 +1302,21 @@ SLIDE CONTENT POSITIONING
 }
 
 .signal-tag-bullish {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.12);
-    border-color: rgba(76, 175, 80, 0.4);
+    color: #2ECC71; /* CHANGED: Unified green */
+    background: rgba(46, 204, 113, 0.08); /* CHANGED: Subtle tint */
+    border-color: #2ECC71;
 }
 
 .signal-tag-neutral {
-    color: #FFC107;
-    background: rgba(255, 193, 7, 0.12);
-    border-color: rgba(255, 193, 7, 0.4);
+    color: #F1C40F; /* CHANGED: Unified yellow */
+    background: rgba(241, 196, 15, 0.08); /* CHANGED: Subtle tint */
+    border-color: #F1C40F;
 }
 
 .signal-tag-cautious {
-    color: rgba(244, 67, 54, 0.85);
-    background: rgba(244, 67, 54, 0.12);
-    border-color: rgba(244, 67, 54, 0.4);
+    color: #E74C3C; /* CHANGED: Unified red */
+    background: rgba(231, 76, 60, 0.08); /* CHANGED: Subtle tint */
+    border-color: #E74C3C;
 }
 
 /* ============================================
@@ -1891,17 +1907,19 @@ MARKET DEPTH ANALYSIS — REFINED
 STRATEGIC FORECAST — REFINED
 ============================================ */
 
+/* FIX: Remove height constraint, allow auto-sizing */
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-rows: auto auto; /* CHANGED: 1fr 1fr → auto auto */
     gap: 32px;
-    height: 520px;
+    height: auto; /* CHANGED: 520px → auto */
     margin-top: 56px;
     margin-bottom: 60px;
-    align-items: stretch;
+    align-items: start; /* CHANGED: stretch → start */
 }
 
+/* FIX: Allow content expansion, remove clipping */
 .forecast-card-premium {
     background: linear-gradient(135deg, rgba(12,12,12,0.9) 0%, rgba(18,18,18,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.25);
@@ -1914,9 +1932,9 @@ STRATEGIC FORECAST — REFINED
     flex-direction: column;
     padding: 0;
     position: relative;
-    overflow: hidden;
-    min-height: 272px;  /* ✅ INCREASED by 12% */
-    height: 272px;
+    overflow: visible; /* CHANGED: hidden → visible */
+    min-height: 280px; /* CHANGED: 272px → 280px */
+    height: auto; /* CHANGED: 272px → auto */
 }
 
 .forecast-card-premium::before {
@@ -1940,14 +1958,16 @@ STRATEGIC FORECAST — REFINED
     flex-shrink: 0;
 }
 
+/* FIX: Ensure body has breathing room */
 .forecast-premium-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 28px 20px;  /* ✅ INCREASED padding */
-    gap: 14px;
+    padding: 32px 20px; /* CHANGED: 28px → 32px */
+    gap: 16px; /* CHANGED: 14px → 16px */
+    min-height: 160px; /* ADDED: Minimum body space */
 }
 
 
@@ -2032,6 +2052,12 @@ STRATEGIC FORECAST — REFINED
     margin: 0;
 }
 
+/* FIX: Add specific class override for clipping prevention */
+.forecast-card-premium.sentiment-card {
+    min-height: 300px; /* ADDED: Extra space for large sentiment display */
+    overflow: visible;
+}
+
 .sentiment-display {
     font-family: var(--font-body);
     font-size: 36px;
@@ -2042,6 +2068,7 @@ STRATEGIC FORECAST — REFINED
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .sentiment-bullish {
@@ -2073,6 +2100,24 @@ STRATEGIC FORECAST — REFINED
     text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
 }
 
+/* FIX: Add specific class override for VPI bar */
+.forecast-card-premium.predictive-index-card {
+    min-height: 300px; /* ADDED: Extra space for index bar */
+    overflow: visible;
+}
+
+.voxmill-index-number {
+    font-family: var(--font-body);
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
+    flex-shrink: 0; /* ADDED: Prevent compression */
+}
+
 .voxmill-index-bar-container {
     width: 200px;
     height: 14px;
@@ -2081,6 +2126,7 @@ STRATEGIC FORECAST — REFINED
     overflow: hidden;
     margin-top: 10px;
     position: relative;
+    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .voxmill-index-bar-fill {
@@ -2092,7 +2138,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .macro-context {
-    margin-top: 92px;
+    margin-top: auto; /* CHANGED: 92px → auto (pushes to bottom) */
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -2102,6 +2148,7 @@ STRATEGIC FORECAST — REFINED
         0 2px 8px rgba(0,0,0,0.15);
     padding: 20px 28px;
 }
+
 
 .macro-title {
     font-family: var(--font-body);
