@@ -933,8 +933,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .competitor-premium-badge {
     display: inline-flex;
-    align-items: center;  /* FIXED: Ensures vertical centering */
-    justify-content: center;  /* FIXED: Ensures horizontal centering */
+    align-items: center;
+    justify-content: center;
     padding: 6px 14px;
     border-radius: 6px;
     font-family: var(--font-body);
@@ -946,8 +946,16 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     min-width: 95px;
     text-align: center;
-    height: 28px;  /* FIXED: Explicit height for perfect centering */
-    line-height: 1;  /* FIXED: Prevents text baseline shift */
+    height: 28px;
+    line-height: 1;
+    position: relative;  /* ADDED - ensures no pseudo-element overflow */
+}
+
+/* REMOVE any ::before or ::after if they exist */
+.competitor-premium-badge::before,
+.competitor-premium-badge::after {
+    content: none !important;  /* CRITICAL FIX */
+    display: none !important;
 }
 
 .badge-premium-strong {
