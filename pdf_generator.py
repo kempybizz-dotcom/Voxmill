@@ -262,30 +262,33 @@ class VoxmillPDFGenerator:
             'arrow': '↑' if projected_change > 0 else '↓' if projected_change < 0 else '→'
         }
     
-    def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
-        """Generate 90-day trend cone with confidence bands"""
-        kpis = data.get('kpis', data.get('metrics', {}))
-        price_change = kpis.get('price_change', 0)
-        property_change = kpis.get('property_change', 0)
-        
-        # Base projection
-        base_projection = price_change * 13
-        
-        # Adjust for supply dynamics
-        if property_change > 5:
-            base_projection *= 0.85
-        elif property_change < -5:
-            base_projection *= 1.15
-        
-        # Confidence band
-        confidence_band = abs(base_projection) * 0.35
-        
-        return {
-            'low': round(base_projection - confidence_band, 1),
-            'mid': round(base_projection, 1),
-            'high': round(base_projection + confidence_band, 1)
-        }
+ def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
+    """Generate 90-day forecast cone (never returns 0.0%)"""
+    kpis = data.get('kpis', data.get('metrics', {}))
+    price_change = kpis.get('price_change', 0)
+    property_change = kpis.get('property_change', 0)
     
+    # Base 90-day projection (13 weeks)
+    base = price_change * 13
+    
+    # Supply dynamics
+    if property_change > 5:
+        base *= 0.85
+    elif property_change < -5:
+        base *= 1.15
+    
+    # CRITICAL: Minimum threshold
+    if abs(base) < 0.2:
+        base = 0.2 if base >= 0 else -0.2
+    
+    # Confidence band (±35%)
+    band = max(abs(base) * 0.35, 0.3)
+    
+    return {
+        'low': round(base - band, 1),
+        'mid': round(base, 1),
+        'high': round(base + band, 1)
+    }
     def calculate_sentiment(self, data: Dict[str, Any]) -> str:
         """Calculate market sentiment from multiple signals"""
         kpis = data.get('kpis', data.get('metrics', {}))
@@ -830,79 +833,93 @@ class VoxmillPDFGenerator:
         return chart_data
 
     def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Prepare opportunities with real 0-100 scoring"""
-        opportunities = []
-        opportunities_raw = data.get('top_opportunities', data.get('properties', []))
-        
-        if not opportunities_raw:
-            return opportunities
-        
-        kpis = data.get('kpis', data.get('metrics', {}))
-        market_avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
-        market_avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
-        
-        for idx, opp in enumerate(opportunities_raw[:8]):
-            score = 0
-            
-            if 'score' in opp and opp['score'] is not None:
-                score = int(float(opp.get('score', 0)))
-            elif 'deal_score' in opp:
-                score = int(float(opp.get('deal_score', 0)))
-            elif 'opportunity_score' in opp:
-                score = int(float(opp.get('opportunity_score', 0)))
-            
-            if score == 0:
-                price_per_sqft = opp.get('price_per_sqft', 0)
-                days_listed = opp.get('days_listed', opp.get('days_on_market', 0))
-                
-                score = 50
-                
-                if price_per_sqft > 0 and market_avg_price_per_sqft > 0:
-                    price_ratio = price_per_sqft / market_avg_price_per_sqft
-                    if price_ratio < 0.80:
-                        score += 30
-                    elif price_ratio < 0.90:
-                        score += 22
-                    elif price_ratio < 0.95:
-                        score += 15
-                    elif price_ratio < 1.05:
-                        score += 10
-                
-                if days_listed > 0:
-                    if days_listed < market_avg_days * 0.5:
-                        score += 25
-                    elif days_listed < market_avg_days * 0.8:
-                        score += 18
-                    elif days_listed < market_avg_days * 1.2:
-                        score += 12
-                    elif days_listed < market_avg_days * 1.5:
-                        score += 5
-                
-                score += max(0, (8 - idx) * 2)
-                score = max(55, min(95, score))
-            
-            score = max(55, min(95, score))
-            
-            if score >= 80:
-                score_class = 'high'
-            elif score >= 65:
-                score_class = 'medium'
-            else:
-                score_class = 'low'
-            
-            opportunities.append({
-                'address': opp.get('address', 'N/A'),
-                'property_type': opp.get('type', opp.get('property_type', 'N/A')),
-                'size': opp.get('size', opp.get('sqft', 0)),
-                'price': opp.get('price', 0),
-                'price_per_sqft': opp.get('price_per_sqft', 0),
-                'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
-                'score': score,
-                'score_class': score_class
-            })
-        
-        opportunities.sort(key=lambda x: x['score'], reverse=True)
+    """Prepare opportunities with REAL varied scoring (55-95 range)"""
+    opportunities = []
+    opportunities_raw = data.get('top_opportunities', data.get('properties', []))
+    
+    if not opportunities_raw:
         return opportunities
+    
+    kpis = data.get('kpis', data.get('metrics', {}))
+    market_avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
+    market_avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
+    
+    # Score ALL properties first to establish variance
+    scored_properties = []
+    
+    for idx, opp in enumerate(opportunities_raw[:20]):
+        # Base score
+        score = 55
+        
+        # PRICE EFFICIENCY (0-25 points)
+        price_per_sqft = opp.get('price_per_sqft', 0)
+        if price_per_sqft > 0 and market_avg_price_per_sqft > 0:
+            ratio = price_per_sqft / market_avg_price_per_sqft
+            if ratio < 0.75:
+                score += 25
+            elif ratio < 0.85:
+                score += 20
+            elif ratio < 0.92:
+                score += 15
+            elif ratio < 1.05:
+                score += 10
+            elif ratio < 1.15:
+                score += 5
+        
+        # VELOCITY (0-20 points)
+        days = opp.get('days_listed', opp.get('days_on_market', 42))
+        if days > 0:
+            if days < market_avg_days * 0.4:
+                score += 20
+            elif days < market_avg_days * 0.6:
+                score += 16
+            elif days < market_avg_days * 0.85:
+                score += 12
+            elif days < market_avg_days * 1.1:
+                score += 8
+            elif days < market_avg_days * 1.4:
+                score += 4
+        
+        # RANKING BONUS (0-10 points)
+        score += max(0, 10 - idx)
+        
+        # Clamp to 55-95
+        final_score = max(55, min(95, score))
+        
+        scored_properties.append({
+            'data': opp,
+            'score': final_score,
+            'idx': idx
+        })
+    
+    # Sort by score
+    scored_properties.sort(key=lambda x: x['score'], reverse=True)
+    
+    # Build final output (top 8)
+    for item in scored_properties[:8]:
+        opp = item['data']
+        score = item['score']
+        
+        # Score class
+        if score >= 80:
+            score_class = 'high'
+        elif score >= 65:
+            score_class = 'medium'
+        else:
+            score_class = 'low'
+        
+        opportunities.append({
+            'address': opp.get('address', 'N/A'),
+            'property_type': opp.get('type', opp.get('property_type', 'N/A')),
+            'size': opp.get('size', opp.get('sqft', 0)),
+            'price': opp.get('price', 0),
+            'price_per_sqft': opp.get('price_per_sqft', 0),
+            'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
+            'score': score,
+            'score_class': score_class
+        })
+    
+    return opportunities
     
     def render_template(self, data: Dict[str, Any]) -> str:
         """Render HTML template with all dynamic data"""
