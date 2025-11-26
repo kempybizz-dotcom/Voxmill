@@ -483,9 +483,9 @@
                                 <div class="metric-label">Market Share</div>
                                 <div class="metric-value">{{ agency.market_share_pct }}%</div>
                             </div>
-                            <div class="competitor-premium-badge badge-premium-{{ 'strong' if agency.market_share_pct > 15 else 'moderate' if agency.market_share_pct > 8 else 'weak' }}">
+                            <span class="badge badge-{{ 'dominant' if agency.market_share_pct > 15 else 'rising' if agency.market_share_pct > 8 else 'emerging' }}">
                                 {{ agency.positioning }}
-                            </div>
+                            </span>
                         </div>
                     </div>
                     {% endfor %}
@@ -565,12 +565,10 @@
     
     <div class="slide-content">
         <div class="cross-vertical-container">
-            <!-- ✅ NEW: Signal Board Subtitle -->
             <p class="cross-vertical-subtitle">
                 Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
             </p>
             
-            <!-- ✅ NEW: Four-Card Signal Board -->
             <div class="cross-vertical-signal-board">
                 <!-- CARD 1: LUXURY GOODS -->
                 <div class="vertical-signal-card">
@@ -584,9 +582,9 @@
                     </div>
                     <h4 class="signal-card-title">Luxury Goods – Demand Pulse</h4>
                     <div class="signal-card-metric">{{ cross_vertical.luxury_goods.metric }}</div>
-                    <div class="signal-tag signal-tag-{{ cross_vertical.luxury_goods.signal_class }}">
+                    <span class="badge badge-{{ cross_vertical.luxury_goods.signal_class }}">
                         {{ cross_vertical.luxury_goods.signal_label }}
-                    </div>
+                    </span>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.luxury_goods.bullet_1 }}</li>
                         <li>{{ cross_vertical.luxury_goods.bullet_2 }}</li>
@@ -607,9 +605,9 @@
                     </div>
                     <h4 class="signal-card-title">Private Equity – Capital Flow</h4>
                     <div class="signal-card-metric">{{ cross_vertical.private_equity.metric }}</div>
-                    <div class="signal-tag signal-tag-{{ cross_vertical.private_equity.signal_class }}">
+                    <span class="badge badge-{{ cross_vertical.private_equity.signal_class }}">
                         {{ cross_vertical.private_equity.signal_label }}
-                    </div>
+                    </span>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.private_equity.bullet_1 }}</li>
                         <li>{{ cross_vertical.private_equity.bullet_2 }}</li>
@@ -627,9 +625,9 @@
                     </div>
                     <h4 class="signal-card-title">Wealth Management – Allocation Shift</h4>
                     <div class="signal-card-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
-                    <div class="signal-tag signal-tag-{{ cross_vertical.wealth_mgmt.signal_class }}">
+                    <span class="badge badge-{{ cross_vertical.wealth_mgmt.signal_class }}">
                         {{ cross_vertical.wealth_mgmt.signal_label }}
-                    </div>
+                    </span>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.wealth_mgmt.bullet_1 }}</li>
                         <li>{{ cross_vertical.wealth_mgmt.bullet_2 }}</li>
@@ -653,7 +651,7 @@
                 </div>
             </div>
             
-            <!-- ✅ BOTTOM SECTION: MOMENTUM CORRELATION (UNCHANGED) -->
+            <!-- BOTTOM SECTION: MOMENTUM CORRELATION -->
             <div class="momentum-correlation-panel">
                 <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
                 <div class="momentum-correlation-flow-refined">
@@ -677,7 +675,7 @@
                 </div>
             </div>
             
-            <!-- ✅ BOTTOM SECTION: SUMMARY BAR (UNCHANGED) -->
+            <!-- BOTTOM SECTION: SUMMARY BAR -->
             <div class="cross-vertical-summary-bar">
                 <p class="cross-vertical-summary-text">
                     Cross-Vertical Composite Forecast: {{ "Strong" if forecast.voxmill_index > 70 else "Moderate" if forecast.voxmill_index > 50 else "Cautious" }} forward demand indicated across luxury indicators — 90-day outlook {{ forecast.sentiment|lower }} with {{ "high" if forecast.voxmill_index > 75 else "moderate" if forecast.voxmill_index > 50 else "limited" }} confidence (VPI: {{ forecast.voxmill_index }}/100)
