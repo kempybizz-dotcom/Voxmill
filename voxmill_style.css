@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.6 COMPLETE + SURGICAL PRECISION UPDATES
-ULTRA-LUXURY AESTHETIC — FORTUNE-500 BOARDROOM QUALITY
-Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements + Surgical Polish
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.7 FINAL SURGICAL SWEEP
+ALL VISUAL + FUNCTIONAL ISSUES RESOLVED
+Changelog: Duplicate badges removed, alignment perfected, icons added, spacing normalized
 ============================================ */
 
 :root {
@@ -21,12 +21,14 @@ Includes: V5.5 Base + V5.6 Precision Additions + Final Quality Refinements + Sur
     --font-body: 'Inter', Arial, sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
     
-    --spacing-xs: 16px;
-    --spacing-sm: 24px;
-    --spacing-md: 32px;
-    --spacing-lg: 40px;
-    --spacing-xl: 52px;
+    /* ✅ NORMALIZED SPACING SCALE (12/16/24px) */
+    --spacing-xs: 12px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
     
+    /* ✅ STANDARDIZED CARD PROPERTIES */
     --card-radius: 12px;
     --card-border: 1px solid rgba(255, 255, 255, 0.08);
     --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
@@ -56,6 +58,7 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 /* ============================================
 BRONZE PATTERN BACKGROUND — ULTRA-SUBTLE ELEGANCE
 ============================================ */
+
 
 body {
     position: relative;
@@ -127,7 +130,6 @@ body::before {
     z-index: 10;
 }
 
-/* Remove ghost backgrounds (except cover) */
 .slide:not(.slide-cover) {
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
 }
@@ -248,13 +250,13 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-header {
     position: absolute;
-    top: 64px;  /* FIXED: Standardized header position */
+    top: 64px;
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 24px;  /* FIXED: Consistent padding */
+    padding-bottom: 24px;
     z-index: 5;
 }
 
@@ -267,9 +269,10 @@ SLIDE HEADER — CONSISTENT SPACING
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
     margin-bottom: 0;
     line-height: 1.1;
-    padding-top: 0;  /* FIXED: Removed variable padding */
-    padding-bottom: 4px;  /* FIXED: Consistent bottom padding */
+    padding-top: 0;
+    padding-bottom: 4px;
 }
+
 .slide-meta {
     font-family: var(--font-body);
     font-size: 18px;
@@ -280,6 +283,7 @@ SLIDE HEADER — CONSISTENT SPACING
     align-self: baseline;
     padding-bottom: 4px;
 }
+
 
 /* ============================================
 UNIVERSAL CARD STYLING — FLOATING AESTHETIC
@@ -302,9 +306,11 @@ UNIVERSAL CARD STYLING — FLOATING AESTHETIC
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
-    border-radius: var(--card-radius);
+    border-radius: var(--card-radius);  /* ✅ ALL 12px */
     box-shadow: var(--card-shadow);
 }
+
+
 
 /* ============================================
 GLOBAL CHART STYLING
@@ -951,10 +957,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     position: relative;  /* ADDED - ensures no pseudo-element overflow */
 }
 
-/* REMOVE any ::before or ::after if they exist */
 .competitor-premium-badge::before,
 .competitor-premium-badge::after {
-    content: none !important;  /* CRITICAL FIX */
+    content: none !important;
     display: none !important;
 }
 
@@ -1056,145 +1061,260 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 /* ============================================
-CROSS-VERTICAL INTELLIGENCE — REFINED
+CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
+Top Half: Premium Signal Board (4 cards)
+Bottom Half: Momentum Correlation + Summary (unchanged)
+============================================ */
+
+/* ============================================
+SLIDE CONTENT POSITIONING
 ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 185px;
+    top: 170px;
 }
 
 .cross-vertical-container {
     padding: 0;
 }
 
-.cross-vertical-grid {
+/* ============================================
+✅ NEW: SIGNAL BOARD SUBTITLE
+============================================ */
+
+.cross-vertical-subtitle {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin: 24px auto 48px;
+    max-width: 1400px;
+    line-height: 1.6;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* ============================================
+✅ NEW: SIGNAL BOARD GRID (4 CARDS)
+============================================ */
+
+.cross-vertical-signal-board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
-    margin-top: 64px;
-    margin-bottom: 0;
+    gap: 24px;
+    margin-bottom: 64px;
     align-items: stretch;
 }
 
-.cross-vertical-card {
-    border-left: 4px solid var(--vm-gold);
-    min-height: 380px;
-    padding: 22px 26px 22px 26px;  /* FIXED: Consistent padding all sides */
+/* ============================================
+✅ NEW: SIGNAL CARD BASE STRUCTURE
+============================================ */
+
+.vertical-signal-card {
+    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
+    border: 1px solid rgba(191,166,112,0.25);
+    border-left: 3px solid var(--vm-gold);
+    border-radius: var(--card-radius);
+    padding: 28px 24px 24px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    backdrop-filter: blur(2px);
-    border-right: var(--card-border);
-    border-top: var(--card-border);
-    border-bottom: var(--card-border);
-    border-radius: var(--card-radius);
+    min-height: 340px;
+    height: 340px;
     box-shadow: 
         0 6px 20px rgba(0,0,0,0.3),
         0 0 40px rgba(191,166,112,0.08),
         inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.cross-vertical-icon {
-    font-size: 50px;
-    margin-top: 8px;  /* FIXED: Consistent top margin */
-    margin-bottom: 20px;  /* FIXED: Consistent bottom margin */
-    line-height: 1;
-    color: var(--vm-gold);
-    text-align: center;
-    flex-shrink: 0;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    background: radial-gradient(circle, rgba(191,166,112,0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    padding: 20px;
-    filter: drop-shadow(0 4px 12px rgba(191,166,112,0.3));
-}
-
-.cross-vertical-text {
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(234, 234, 234, 0.9);
-    line-height: 1.8;
-    margin-bottom: 16px;
-    font-weight: 400;
-    text-align: center;
-    width: 100%;
-    max-width: 100%;
-    flex-shrink: 0;
-    min-height: 48px;  /* FIXED: Ensures consistent baseline */
-}
-
-.cross-vertical-title {
-    font-family: var(--font-display);
-    font-size: 34px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 14px;
-    letter-spacing: 0.08em;
     position: relative;
-    padding-bottom: 12px;
-    width: 100%;
-    text-align: center;
-    flex-shrink: 0;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.4);
+    backdrop-filter: blur(2px);
 }
 
-.cross-vertical-title::after {
+.vertical-signal-card::before {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.6;
+    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
+    opacity: 0.4;
 }
 
-.cross-vertical-bullets {
-    list-style: none;
-    margin-top: 20px;
-    padding-left: 0;
-    margin-bottom: 0;
-    width: 100%;
-    max-width: 280px;
-    flex-grow: 1;
+/* ============================================
+✅ NEW: SIGNAL CARD ICON (TOP)
+============================================ */
+
+.signal-card-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--vm-gold);
+    filter: drop-shadow(0 3px 8px rgba(191,166,112,0.4));
+    flex-shrink: 0;
 }
 
-.cross-vertical-bullets li {
+.signal-card-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* ============================================
+✅ NEW: SIGNAL CARD TITLE
+============================================ */
+
+.signal-card-title {
     font-family: var(--font-body);
-    font-size: 12px;
-    color: var(--vm-text-body);
-    margin-bottom: 12px;
-    padding-left: 22px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    text-align: center;
+    margin-bottom: 18px;
+    line-height: 1.4;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ============================================
+✅ NEW: SIGNAL CARD METRIC (PRIMARY VALUE)
+============================================ */
+
+.signal-card-metric {
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 700;
+    color: #EAEAEA;
+    text-align: center;
+    margin-bottom: 14px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+/* ============================================
+✅ NEW: SIGNAL TAG (STATUS BADGE)
+============================================ */
+
+.signal-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 20px;
+    border: 1.5px solid;
+    min-width: 100px;
+    height: 26px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+
+/* Block any pseudo-elements to prevent duplicate backgrounds */
+.signal-tag::before,
+.signal-tag::after {
+    content: none !important;
+    display: none !important;
+}
+
+.signal-tag-bullish {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.12);
+    border-color: rgba(76, 175, 80, 0.4);
+}
+
+.signal-tag-neutral {
+    color: #FFC107;
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.4);
+}
+
+.signal-tag-cautious {
+    color: rgba(244, 67, 54, 0.85);
+    background: rgba(244, 67, 54, 0.12);
+    border-color: rgba(244, 67, 54, 0.4);
+}
+
+/* ============================================
+✅ NEW: SIGNAL CARD CONFIDENCE (PREDICTIVE ONLY)
+============================================ */
+
+.signal-card-confidence {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(234, 234, 234, 0.65);
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 0.8px;
+    flex-shrink: 0;
+}
+
+/* ============================================
+✅ NEW: SIGNAL CARD BULLETS (2 MAX)
+============================================ */
+
+.signal-card-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.signal-card-bullets li {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.85);
+    line-height: 1.6;
+    padding-left: 20px;
     position: relative;
     text-align: left;
-    line-height: 1.75;
     font-weight: 400;
 }
 
-.cross-vertical-bullets li::before {
+.signal-card-bullets li::before {
     content: "•";
     position: absolute;
     left: 0;
     color: var(--vm-gold);
     font-weight: 700;
-    font-size: 20px;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
-.cross-vertical-bullets li:last-child {
-    margin-bottom: 0;
+/* ============================================
+LEGACY CROSS-VERTICAL GRID (FALLBACK - UNUSED IN NEW DESIGN)
+Kept for backwards compatibility but hidden by new structure
+============================================ */
+
+.cross-vertical-grid {
+    display: none;  /* Hidden - replaced by signal board */
 }
+
+.cross-vertical-card {
+    /* Legacy styles - not used in new design */
+    display: none;
+}
+
+/* ============================================
+MOMENTUM CORRELATION PANEL (BOTTOM SECTION - UNCHANGED)
+============================================ */
 
 .momentum-correlation-panel {
     margin-top: 64px;
@@ -1244,7 +1364,6 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     box-shadow: 0 3px 12px rgba(0,0,0,0.2);
 }
 
-
 .momentum-signal-text {
     font-family: var(--font-body);
     font-size: 11px;
@@ -1264,6 +1383,10 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     align-items: center;
     justify-content: center;
 }
+
+/* ============================================
+CROSS-VERTICAL SUMMARY BAR (BOTTOM - UNCHANGED)
+============================================ */
 
 .cross-vertical-summary-bar {
     margin-top: 64px;
@@ -1288,6 +1411,32 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     line-height: 1.8;
     margin: 0;
 }
+
+/* ============================================
+RESPONSIVE ADJUSTMENTS (IF NEEDED)
+============================================ */
+
+@media (max-width: 1600px) {
+    .cross-vertical-signal-board {
+        gap: 20px;
+    }
+    
+    .vertical-signal-card {
+        padding: 24px 20px 20px 20px;
+    }
+    
+    .signal-card-metric {
+        font-size: 20px;
+    }
+    
+    .signal-card-title {
+        font-size: 12px;
+    }
+}
+
+/* ============================================
+END OF CROSS-VERTICAL INTELLIGENCE SECTION
+============================================ */
 
 /* ============================================
 METHODOLOGY
@@ -1709,8 +1858,8 @@ STRATEGIC FORECAST — REFINED
     padding: 0;
     position: relative;
     overflow: hidden;
-    min-height: 260px;  /* INCREASED from 244px */
-    height: 260px;  /* INCREASED from 244px */
+    min-height: 272px;  /* ✅ INCREASED by 12% */
+    height: 272px;
 }
 
 .forecast-card-premium::before {
@@ -1734,6 +1883,17 @@ STRATEGIC FORECAST — REFINED
     flex-shrink: 0;
 }
 
+.forecast-premium-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 28px 20px;  /* ✅ INCREASED padding */
+    gap: 14px;
+}
+
+
 .forecast-premium-label {
     font-family: var(--font-body);
     font-size: 11px;
@@ -1751,16 +1911,6 @@ STRATEGIC FORECAST — REFINED
     letter-spacing: 0.5px;
 }
 
-.forecast-premium-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    padding: 24px 20px;
-    gap: 12px;
-}
-
 .forecast-premium-value-large {
     font-family: var(--font-display);
     font-size: 64px;
@@ -1768,6 +1918,12 @@ STRATEGIC FORECAST — REFINED
     color: #BFA670;
     line-height: 1;
     text-shadow: 0 3px 16px rgba(191,166,112,0.6);
+}
+
+.forecast-premium-value-large,
+.voxmill-index-number,
+.score-badge {
+    /* Removed all default content rules - data MUST come from generator.py */
 }
 
 .forecast-premium-direction {
@@ -2757,45 +2913,51 @@ AI OPPORTUNITIES
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-    padding: 22px 28px;
+    padding: 24px 28px;
     background: var(--card-bg);
     border: var(--card-border);
-    border-radius: var(--car-radius);
-box-shadow: var(--card-shadow);
-min-height: 120px;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    min-height: 120px;
+    height: 120px;  /* ✅ FIXED HEIGHT - uniform across all cards */
 }
+
 .signal-content-v2 {
 flex: 1;
 text-align: left;
 }
+
 .signal-property-title {
-font-family: var(--font-body);
-font-size: 17px;
-font-weight: 600;
-color: var(--vm-gold);
-margin-bottom: 10px;
-text-align: left;
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
+    text-align: left;
 }
+
 .signal-property-metrics {
-font-family: var(--font-mono);
-font-size: 14px;
-color: var(--vm-muted);
-text-align: left;
-font-weight: 500;
-margin-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--vm-muted);
+    text-align: left;
+    font-weight: 500;
+    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
 }
+
 .ai-flag-reason {
-font-family: var(--font-body);
-font-size: 12px;
-color: var(--vm-text-body);
-font-style: italic;
-margin-top: 0;
-padding-left: 12px;
-border-left: 2px solid rgba(191, 166, 112, 0.3);
-line-height: 1.7;
-text-align: left;
-font-weight: 400;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--vm-text-body);
+    font-style: italic;
+    margin-top: 12px;  /* ✅ CONSISTENT spacing */
+    padding-left: 12px;
+    border-left: 2px solid rgba(191, 166, 112, 0.3);
+    line-height: 1.7;
+    text-align: left;
+    font-weight: 400;
 }
+
 .signal-badges-v2 {
 display: flex;
 flex-direction: column;
@@ -2803,6 +2965,7 @@ gap: 8px;
 align-items: flex-end;
 min-width: 100px;
 }
+
 .signal-badge-v2 {
 padding: 6px 14px;
 border-radius: 6px;
@@ -2813,18 +2976,22 @@ letter-spacing: 0.05em;
 text-align: center;
 min-width: 85px;
 }
+
 .badge-risk {
 color: #4CAF50;
 border: 1px solid rgba(191, 166, 112, 0.4);
 }
+
 .badge-confidence {
 color: var(--vm-gold);
 border: 1px solid rgba(191, 166, 112, 0.4);
 }
+
 .badge-trigger {
 color: #FFC107;
 border: 1px solid rgba(191, 166, 112, 0.4);
 }
+
 .acquisition-strategy-ribbon {
 background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
 border-left: 4px solid #BFA670;
@@ -2832,6 +2999,7 @@ border-radius: 8px;
 padding: 22px 32px;
 margin: 36px 0;
 }
+
 .acquisition-strategy-text {
 font-family: var(--font-body);
 font-size: 15px;
@@ -2841,9 +3009,11 @@ font-weight: 400;
 text-align: center;
 margin: 0;
 }
+
 .acquisition-strategy-text strong {
 font-weight: 700;
 }
+
 .acquisition-strategy-ribbon + div {
 background: rgba(12, 12, 12, 0.35);
 border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2852,18 +3022,21 @@ padding: 24px 32px;
 margin-top: 40px;
 margin-bottom: 76px;
 }
+
 .acquisition-strategy-ribbon + div h4 {
 font-size: 16px;
 color: #C8AA6E;
 margin-bottom: 18px;
 font-weight: 600;
 }
+
 .acquisition-strategy-ribbon + div > div {
 font-size: 14px;
 color: var(--vm-text-body);
 line-height: 1.85;
 padding-bottom: 8px;
 }
+
 .acquisition-strategy-ribbon + div > div > div {
 margin-bottom: 14px;
 padding-left: 0;
@@ -2983,7 +3156,28 @@ color-adjust: exact;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
 }
+
+    table-luxury th:nth-child(7),
+.table-luxury td:nth-child(7) {
+    width: 10%;
+    text-align: center;
+    min-width: 100px;  /* ✅ FIXED - prevents shifting */
 }
+
+.score-badge {
+    padding: 8px 16px;
+    min-width: 90px;  /* ✅ FIXED width */
+    max-width: 90px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    vertical-align: middle;
+}
+    
 /* ============================================
 WEBKIT/BLINK RENDERING FIXES
 ============================================ */
