@@ -565,64 +565,95 @@
     
     <div class="slide-content">
         <div class="cross-vertical-container">
-            <div class="cross-vertical-grid">
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">💎</div>
-                    <h3 class="cross-vertical-title">Luxury Goods</h3>
-                    <p class="cross-vertical-text">
-                        High-net-worth mobility patterns mirror ultra-prime asset demand.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>Correlation: 0.87 with £10M+ sales {{ velocity_metric_label|lower }}</li>
-                        <li>Forward demand signals tracking UHNW spend patterns</li>
-                        <li>High-net-worth mobility up 23% YoY</li>
-                        <li>Spending +11% indicates near-term confidence surge</li>
+            <!-- ✅ NEW: Signal Board Subtitle -->
+            <p class="cross-vertical-subtitle">
+                Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
+            </p>
+            
+            <!-- ✅ NEW: Four-Card Signal Board -->
+            <div class="cross-vertical-signal-board">
+                <!-- CARD 1: LUXURY GOODS -->
+                <div class="vertical-signal-card">
+                    <div class="signal-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 7H4L2 17H22L20 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 7L10 2H14L16 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h4 class="signal-card-title">Luxury Goods – Demand Pulse</h4>
+                    <div class="signal-card-metric">{{ cross_vertical.luxury_goods.metric }}</div>
+                    <div class="signal-tag signal-tag-{{ cross_vertical.luxury_goods.signal_class }}">
+                        {{ cross_vertical.luxury_goods.signal_label }}
+                    </div>
+                    <ul class="signal-card-bullets">
+                        <li>{{ cross_vertical.luxury_goods.bullet_1 }}</li>
+                        <li>{{ cross_vertical.luxury_goods.bullet_2 }}</li>
                     </ul>
                 </div>
                 
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">📊</div>
-                    <h3 class="cross-vertical-title">Private Equity</h3>
-                    <p class="cross-vertical-text">
-                        Deal flow intensity predicts prime market liquidity 6-9 months ahead.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>London deal volume up 23% YoY</li>
-                        <li>Dry powder at £47B awaiting deployment</li>
-                        <li>Deal velocity accelerating in Q4 2025</li>
-                        <li>Signals sustained institutional capital deployment</li>
+                <!-- CARD 2: PRIVATE EQUITY -->
+                <div class="vertical-signal-card">
+                    <div class="signal-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <line x1="6.5" y1="6" x2="6.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+                            <line x1="17.5" y1="6" x2="17.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <h4 class="signal-card-title">Private Equity – Capital Flow</h4>
+                    <div class="signal-card-metric">{{ cross_vertical.private_equity.metric }}</div>
+                    <div class="signal-tag signal-tag-{{ cross_vertical.private_equity.signal_class }}">
+                        {{ cross_vertical.private_equity.signal_label }}
+                    </div>
+                    <ul class="signal-card-bullets">
+                        <li>{{ cross_vertical.private_equity.bullet_1 }}</li>
+                        <li>{{ cross_vertical.private_equity.bullet_2 }}</li>
                     </ul>
                 </div>
                 
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">🏦</div>
-                    <h3 class="cross-vertical-title">Wealth Management</h3>
-                    <p class="cross-vertical-text">
-                        Asset allocation shifts indicate capital rotation into alternative assets.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li>£2.3B moving into {{ vertical_name }} Q4 2025</li>
-                        <li>Risk-on sentiment strengthening</li>
-                        <li>Flow of funds favoring tangible assets</li>
-                        <li>Family office inflows accelerating</li>
+                <!-- CARD 3: WEALTH MANAGEMENT -->
+                <div class="vertical-signal-card">
+                    <div class="signal-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L3 7L12 12L21 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 17L12 22L21 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h4 class="signal-card-title">Wealth Management – Allocation Shift</h4>
+                    <div class="signal-card-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
+                    <div class="signal-tag signal-tag-{{ cross_vertical.wealth_mgmt.signal_class }}">
+                        {{ cross_vertical.wealth_mgmt.signal_label }}
+                    </div>
+                    <ul class="signal-card-bullets">
+                        <li>{{ cross_vertical.wealth_mgmt.bullet_1 }}</li>
+                        <li>{{ cross_vertical.wealth_mgmt.bullet_2 }}</li>
                     </ul>
                 </div>
                 
-                <div class="cross-vertical-card">
-                    <div class="cross-vertical-icon">⚡</div>
-                    <h3 class="cross-vertical-title">Predictive Summary</h3>
-                    <p class="cross-vertical-text">
-                        Combined 90-day forward signal from cross-vertical intelligence.
-                    </p>
-                    <ul class="cross-vertical-bullets">
-                        <li><strong>Forecast:</strong> +12% demand pressure increase</li>
-                        <li><strong>Confidence:</strong> 84% (high conviction)</li>
-                        <li><strong>Primary Driver:</strong> Private equity capital flows</li>
-                        <li>Strong forward momentum across all verticals</li>
+                <!-- CARD 4: PREDICTIVE SUMMARY -->
+                <div class="vertical-signal-card">
+                    <div class="signal-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="currentColor" fill-opacity="0.1"/>
+                        </svg>
+                    </div>
+                    <h4 class="signal-card-title">Predictive Summary – Composite View</h4>
+                    <div class="signal-card-metric">{{ cross_vertical.predictive.metric }}</div>
+                    <div class="signal-card-confidence">{{ cross_vertical.predictive.confidence }}</div>
+                    <ul class="signal-card-bullets">
+                        <li>{{ cross_vertical.predictive.bullet_1 }}</li>
+                        <li>{{ cross_vertical.predictive.bullet_2 }}</li>
                     </ul>
                 </div>
             </div>
             
+            <!-- ✅ BOTTOM SECTION: MOMENTUM CORRELATION (UNCHANGED) -->
             <div class="momentum-correlation-panel">
                 <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
                 <div class="momentum-correlation-flow-refined">
@@ -646,6 +677,7 @@
                 </div>
             </div>
             
+            <!-- ✅ BOTTOM SECTION: SUMMARY BAR (UNCHANGED) -->
             <div class="cross-vertical-summary-bar">
                 <p class="cross-vertical-summary-text">
                     Cross-Vertical Composite Forecast: {{ "Strong" if forecast.voxmill_index > 70 else "Moderate" if forecast.voxmill_index > 50 else "Cautious" }} forward demand indicated across luxury indicators — 90-day outlook {{ forecast.sentiment|lower }} with {{ "high" if forecast.voxmill_index > 75 else "moderate" if forecast.voxmill_index > 50 else "limited" }} confidence (VPI: {{ forecast.voxmill_index }}/100)
