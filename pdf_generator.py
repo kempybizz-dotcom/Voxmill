@@ -235,20 +235,26 @@ class VoxmillPDFGenerator:
         
         return sorted(results, key=lambda x: x['velocity_score'], reverse=True)[:5]
     
-    def generate_30_day_forecast(self, data: Dict[str, Any]) -> Dict:
-        """Generate 30-day forecast with real calculations"""
+   def generate_30_day_forecast(self, data: Dict[str, Any]) -> Dict:
+        """Generate 30-day forecast (never returns 0.0%)"""
         kpis = data.get('kpis', data.get('metrics', {}))
         price_change = kpis.get('price_change', 0)
         velocity_change = kpis.get('velocity_change', 0)
         
-        # Project 30-day momentum
+        # Project 30-day momentum (4.3 weeks)
         projected_change = price_change * 4.3
         
         # Adjust for velocity signal
-        if velocity_change < 0:
-            projected_change *= 1.15
+        if velocity_change < -3:
+            projected_change *= 1.20
+        elif velocity_change < 0:
+            projected_change *= 1.10
         elif velocity_change > 5:
-            projected_change *= 0.85
+            projected_change *= 0.80
+        
+        # CRITICAL: Minimum threshold to prevent 0.0%
+        if abs(projected_change) < 0.1:
+            projected_change = 0.1 if projected_change >= 0 else -0.1
         
         direction = "Upward" if projected_change > 0 else "Downward" if projected_change < 0 else "Neutral"
         confidence = "High" if abs(projected_change) > 3 else "Moderate" if abs(projected_change) > 1 else "Low"
@@ -256,39 +262,40 @@ class VoxmillPDFGenerator:
         
         return {
             'direction': direction,
-            'percentage': round(abs(projected_change), 1),
+            'percentage': round(projected_change, 1),  # Changed from abs() to preserve sign
             'confidence': confidence,
             'confidence_pct': confidence_pct,
             'arrow': '↑' if projected_change > 0 else '↓' if projected_change < 0 else '→'
         }
     
- def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
-    """Generate 90-day forecast cone (never returns 0.0%)"""
-    kpis = data.get('kpis', data.get('metrics', {}))
-    price_change = kpis.get('price_change', 0)
-    property_change = kpis.get('property_change', 0)
+    def generate_90_day_forecast(self, data: Dict[str, Any]) -> Dict:
+        """Generate 90-day forecast cone (never returns 0.0%)"""
+        kpis = data.get('kpis', data.get('metrics', {}))
+        price_change = kpis.get('price_change', 0)
+        property_change = kpis.get('property_change', 0)
+        
+        # Base 90-day projection (13 weeks)
+        base = price_change * 13
+        
+        # Supply dynamics
+        if property_change > 5:
+            base *= 0.85
+        elif property_change < -5:
+            base *= 1.15
+        
+        # CRITICAL: Minimum threshold to prevent 0.0%
+        if abs(base) < 0.2:
+            base = 0.2 if base >= 0 else -0.2
+        
+        # Confidence band (±35%)
+        band = max(abs(base) * 0.35, 0.3)
+        
+        return {
+            'low': round(base - band, 1),
+            'mid': round(base, 1),
+            'high': round(base + band, 1)
+        }
     
-    # Base 90-day projection (13 weeks)
-    base = price_change * 13
-    
-    # Supply dynamics
-    if property_change > 5:
-        base *= 0.85
-    elif property_change < -5:
-        base *= 1.15
-    
-    # CRITICAL: Minimum threshold
-    if abs(base) < 0.2:
-        base = 0.2 if base >= 0 else -0.2
-    
-    # Confidence band (±35%)
-    band = max(abs(base) * 0.35, 0.3)
-    
-    return {
-        'low': round(base - band, 1),
-        'mid': round(base, 1),
-        'high': round(base + band, 1)
-    }
     def calculate_sentiment(self, data: Dict[str, Any]) -> str:
         """Calculate market sentiment from multiple signals"""
         kpis = data.get('kpis', data.get('metrics', {}))
@@ -334,7 +341,6 @@ class VoxmillPDFGenerator:
         )
         
         return max(0, min(100, voxmill_index))
-    
     def generate_executive_actions(self, data: Dict[str, Any]) -> List[str]:
         """Generate executive action items"""
         actions = []
