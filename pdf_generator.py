@@ -577,187 +577,185 @@ class VoxmillPDFGenerator:
         }
 
     def get_cross_vertical_intelligence(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Generate Cross-Vertical Intelligence signal board data.
-    Maps existing analysis into 4 luxury market verticals with dynamic metrics.
-    
-    Returns:
-        Dict with structure:
-        {
-            'luxury_goods': {metric, signal_label, signal_class, bullet_1, bullet_2},
-            'private_equity': {metric, signal_label, signal_class, bullet_1, bullet_2},
-            'wealth_mgmt': {metric, signal_label, signal_class, bullet_1, bullet_2},
-            'predictive': {metric, confidence, signal_label, signal_class, bullet_1, bullet_2}
+        """
+        Generate Cross-Vertical Intelligence signal board data.
+        Maps existing analysis into 4 luxury market verticals with dynamic metrics.
+        
+        Returns:
+            Dict with structure:
+            {
+                'luxury_goods': {metric, signal_label, signal_class, bullet_1, bullet_2},
+                'private_equity': {metric, signal_label, signal_class, bullet_1, bullet_2},
+                'wealth_mgmt': {metric, signal_label, signal_class, bullet_1, bullet_2},
+                'predictive': {metric, confidence, signal_label, signal_class, bullet_1, bullet_2}
+            }
+        """
+        
+        kpis = data.get('kpis', data.get('metrics', {}))
+        forecast_data = data.get('forecast', {})
+        
+        # Extract base metrics
+        price_momentum = kpis.get('price_change', 0)
+        velocity_trend = kpis.get('velocity_change', 0)
+        property_change = kpis.get('property_change', 0)
+        voxmill_index = self.calculate_voxmill_index(data)
+        
+        # Calculate forecast values
+        day_90_forecast = forecast_data.get('day_90', {})
+        forecast_mid = day_90_forecast.get('mid', 0) if day_90_forecast else 0
+        sentiment = forecast_data.get('sentiment', 'Neutral')
+        
+        # Determine base signal classification
+        if voxmill_index > 70:
+            base_signal = 'bullish'
+            base_label = 'Bullish'
+        elif voxmill_index > 50:
+            base_signal = 'neutral'
+            base_label = 'Neutral'
+        else:
+            base_signal = 'cautious'
+            base_label = 'Cautious'
+        
+        # CARD 1: LUXURY GOODS — DEMAND PULSE
+        luxury_yoy = abs(price_momentum * 5) if abs(price_momentum) > 0.1 else 11
+        luxury_retail = abs(price_momentum * 3) if abs(price_momentum) > 0.1 else 9
+        luxury_travel = abs(velocity_trend * 4) if abs(velocity_trend) > 0.1 else 14
+        
+        # CARD 2: PRIVATE EQUITY — CAPITAL FLOW
+        pe_capital = int((voxmill_index / 100) * 47)
+        pe_capital = max(25, min(47, pe_capital))  # Cap between £25B-£47B
+        pe_deal_volume = abs(price_momentum * 2) if abs(price_momentum) > 0.1 else 7
+        pe_signal = 'bullish' if voxmill_index > 65 else 'neutral' if voxmill_index > 45 else 'cautious'
+        pe_label = 'Bullish' if voxmill_index > 65 else 'Neutral' if voxmill_index > 45 else 'Cautious'
+        
+        # CARD 3: WEALTH MANAGEMENT — ALLOCATION SHIFT
+        wm_allocation = abs(price_momentum * 3) if abs(price_momentum) > 0.1 else 8
+        wm_portfolio_pct = int(20 + (voxmill_index / 10))
+        wm_portfolio_pct = max(20, min(32, wm_portfolio_pct))  # Cap between 20%-32%
+        wm_cash_trend = "down" if voxmill_index > 60 else "stable"
+        
+        # CARD 4: PREDICTIVE SUMMARY — COMPOSITE VIEW
+        forecast_display = f"+{abs(forecast_mid):.1f}" if forecast_mid >= 0 else f"{forecast_mid:.1f}"
+        confidence_pct = voxmill_index
+        confidence_label = "High" if confidence_pct > 75 else "Moderate" if confidence_pct > 50 else "Limited"
+        
+        # Get primary drivers and risks
+        primary_driver = self.get_primary_driver(data)
+        primary_risk = self.get_primary_risk(data)
+        
+        # Build cross-vertical structure
+        cross_vertical = {
+            'luxury_goods': {
+                'metric': f'+{luxury_yoy:.0f}% YoY UHNW spend',
+                'signal_label': base_label,
+                'signal_class': base_signal,
+                'bullet_1': f'Retail index +{luxury_retail:.0f}% last 90 days',
+                'bullet_2': f'Luxury travel +{luxury_travel:.0f}% vs prior quarter'
+            },
+            
+            'private_equity': {
+                'metric': f'£{pe_capital}B deployable capital',
+                'signal_label': pe_label,
+                'signal_class': pe_signal,
+                'bullet_1': f'Deal volumes +{pe_deal_volume:.0f}% QoQ',
+                'bullet_2': 'Real-assets funds oversubscribed'
+            },
+            
+            'wealth_mgmt': {
+                'metric': f'+{wm_allocation:.0f}% tilt into real assets',
+                'signal_label': base_label,
+                'signal_class': base_signal,
+                'bullet_1': f'Real estate share of portfolio now {wm_portfolio_pct}%',
+                'bullet_2': f'Cash allocations trending {wm_cash_trend}'
+            },
+            
+            'predictive': {
+                'metric': f'Forecast: {forecast_display}% price momentum (90d)',
+                'confidence': f'Confidence: {confidence_label} ({confidence_pct}%)',
+                'signal_label': sentiment,
+                'signal_class': sentiment.lower(),
+                'bullet_1': f'Primary driver: {primary_driver}',
+                'bullet_2': f'Primary risk: {primary_risk}'
+            }
         }
-    """
-    
-    kpis = data.get('kpis', data.get('metrics', {}))
-    forecast_data = data.get('forecast', {})
-    
-    # Extract base metrics
-    price_momentum = kpis.get('price_change', 0)
-    velocity_trend = kpis.get('velocity_change', 0)
-    property_change = kpis.get('property_change', 0)
-    voxmill_index = self.calculate_voxmill_index(data)
-    
-    # Calculate forecast values
-    day_90_forecast = forecast_data.get('day_90', {})
-    forecast_mid = day_90_forecast.get('mid', 0) if day_90_forecast else 0
-    sentiment = forecast_data.get('sentiment', 'Neutral')
-    
-    # Determine base signal classification
-    if voxmill_index > 70:
-        base_signal = 'bullish'
-        base_label = 'Bullish'
-    elif voxmill_index > 50:
-        base_signal = 'neutral'
-        base_label = 'Neutral'
-    else:
-        base_signal = 'cautious'
-        base_label = 'Cautious'
-    
-    # CARD 1: LUXURY GOODS — DEMAND PULSE
-    luxury_yoy = abs(price_momentum * 5) if abs(price_momentum) > 0.1 else 11
-    luxury_retail = abs(price_momentum * 3) if abs(price_momentum) > 0.1 else 9
-    luxury_travel = abs(velocity_trend * 4) if abs(velocity_trend) > 0.1 else 14
-    
-    # CARD 2: PRIVATE EQUITY — CAPITAL FLOW
-    pe_capital = int((voxmill_index / 100) * 47)
-    pe_capital = max(25, min(47, pe_capital))  # Cap between £25B-£47B
-    pe_deal_volume = abs(price_momentum * 2) if abs(price_momentum) > 0.1 else 7
-    pe_signal = 'bullish' if voxmill_index > 65 else 'neutral' if voxmill_index > 45 else 'cautious'
-    pe_label = 'Bullish' if voxmill_index > 65 else 'Neutral' if voxmill_index > 45 else 'Cautious'
-    
-    # CARD 3: WEALTH MANAGEMENT — ALLOCATION SHIFT
-    wm_allocation = abs(price_momentum * 3) if abs(price_momentum) > 0.1 else 8
-    wm_portfolio_pct = int(20 + (voxmill_index / 10))
-    wm_portfolio_pct = max(20, min(32, wm_portfolio_pct))  # Cap between 20%-32%
-    wm_cash_trend = "down" if voxmill_index > 60 else "stable"
-    
-    # CARD 4: PREDICTIVE SUMMARY — COMPOSITE VIEW
-    forecast_display = f"+{abs(forecast_mid):.1f}" if forecast_mid >= 0 else f"{forecast_mid:.1f}"
-    confidence_pct = voxmill_index
-    confidence_label = "High" if confidence_pct > 75 else "Moderate" if confidence_pct > 50 else "Limited"
-    
-    # Get primary drivers and risks
-    primary_driver = self.get_primary_driver(data)
-    primary_risk = self.get_primary_risk(data)
-    
-    # Build cross-vertical structure
-    cross_vertical = {
-        'luxury_goods': {
-            'metric': f'+{luxury_yoy:.0f}% YoY UHNW spend',
-            'signal_label': base_label,
-            'signal_class': base_signal,
-            'bullet_1': f'Retail index +{luxury_retail:.0f}% last 90 days',
-            'bullet_2': f'Luxury travel +{luxury_travel:.0f}% vs prior quarter'
-        },
         
-        'private_equity': {
-            'metric': f'£{pe_capital}B deployable capital',
-            'signal_label': pe_label,
-            'signal_class': pe_signal,
-            'bullet_1': f'Deal volumes +{pe_deal_volume:.0f}% QoQ',
-            'bullet_2': 'Real-assets funds oversubscribed'
-        },
+        logger.info(f"✅ Cross-Vertical Intelligence generated:")
+        logger.info(f"   Luxury Goods Signal: {base_label}")
+        logger.info(f"   PE Capital: £{pe_capital}B")
+        logger.info(f"   Forecast: {forecast_display}%")
+        logger.info(f"   Confidence: {confidence_pct}%")
         
-        'wealth_mgmt': {
-            'metric': f'+{wm_allocation:.0f}% tilt into real assets',
-            'signal_label': base_label,
-            'signal_class': base_signal,
-            'bullet_1': f'Real estate share of portfolio now {wm_portfolio_pct}%',
-            'bullet_2': f'Cash allocations trending {wm_cash_trend}'
-        },
+        return cross_vertical
+
+    def get_primary_driver(self, data: Dict[str, Any]) -> str:
+        """
+        Identify primary market driver from signal analysis.
         
-        'predictive': {
-            'metric': f'Forecast: {forecast_display}% price momentum (90d)',
-            'confidence': f'Confidence: {confidence_label} ({confidence_pct}%)',
-            'signal_label': sentiment,
-            'signal_class': sentiment.lower(),
-            'bullet_1': f'Primary driver: {primary_driver}',
-            'bullet_2': f'Primary risk: {primary_risk}'
-        }
-    }
-    
-    logger.info(f"✅ Cross-Vertical Intelligence generated:")
-    logger.info(f"   Luxury Goods Signal: {base_label}")
-    logger.info(f"   PE Capital: £{pe_capital}B")
-    logger.info(f"   Forecast: {forecast_display}%")
-    logger.info(f"   Confidence: {confidence_pct}%")
-    
-    return cross_vertical
+        Returns:
+            String describing the primary positive market force
+        """
+        kpis = data.get('kpis', data.get('metrics', {}))
+        
+        velocity_change = kpis.get('velocity_change', 0)
+        price_change = kpis.get('price_change', 0)
+        property_change = kpis.get('property_change', 0)
+        
+        # Prioritize velocity improvement (strongest signal)
+        if velocity_change < -5:
+            return 'Velocity improvement'
+        
+        # Strong price appreciation
+        elif price_change > 3:
+            return 'Price appreciation'
+        
+        # Supply tightening
+        elif property_change < -5:
+            return 'Supply tightening'
+        
+        # Demand strength
+        elif price_change > 1 and velocity_change < 0:
+            return 'Demand strength'
+        
+        # Market equilibrium
+        else:
+            return 'Market equilibrium'
 
-
-def get_primary_driver(self, data: Dict[str, Any]) -> str:
-    """
-    Identify primary market driver from signal analysis.
-    
-    Returns:
-        String describing the primary positive market force
-    """
-    kpis = data.get('kpis', data.get('metrics', {}))
-    
-    velocity_change = kpis.get('velocity_change', 0)
-    price_change = kpis.get('price_change', 0)
-    property_change = kpis.get('property_change', 0)
-    
-    # Prioritize velocity improvement (strongest signal)
-    if velocity_change < -5:
-        return 'Velocity improvement'
-    
-    # Strong price appreciation
-    elif price_change > 3:
-        return 'Price appreciation'
-    
-    # Supply tightening
-    elif property_change < -5:
-        return 'Supply tightening'
-    
-    # Demand strength
-    elif price_change > 1 and velocity_change < 0:
-        return 'Demand strength'
-    
-    # Market equilibrium
-    else:
-        return 'Market equilibrium'
-
-
-def get_primary_risk(self, data: Dict[str, Any]) -> str:
-    """
-    Identify primary market risk from signal analysis.
-    
-    Returns:
-        String describing the primary market headwind
-    """
-    kpis = data.get('kpis', data.get('metrics', {}))
-    
-    velocity_change = kpis.get('velocity_change', 0)
-    price_change = kpis.get('price_change', 0)
-    property_change = kpis.get('property_change', 0)
-    
-    # Severe oversupply
-    if property_change > 10:
-        return 'Oversupply pressure'
-    
-    # Extended sale cycles
-    elif velocity_change > 10:
-        return 'Extended sale cycles'
-    
-    # Price softening
-    elif price_change < -3:
-        return 'Price softening'
-    
-    # Moderate supply increase
-    elif property_change > 5:
-        return 'Supply expansion'
-    
-    # Velocity slowing
-    elif velocity_change > 5:
-        return 'Velocity deceleration'
-    
-    # Limited risk
-    else:
-        return 'Limited near-term risk'
+    def get_primary_risk(self, data: Dict[str, Any]) -> str:
+        """
+        Identify primary market risk from signal analysis.
+        
+        Returns:
+            String describing the primary market headwind
+        """
+        kpis = data.get('kpis', data.get('metrics', {}))
+        
+        velocity_change = kpis.get('velocity_change', 0)
+        price_change = kpis.get('price_change', 0)
+        property_change = kpis.get('property_change', 0)
+        
+        # Severe oversupply
+        if property_change > 10:
+            return 'Oversupply pressure'
+        
+        # Extended sale cycles
+        elif velocity_change > 10:
+            return 'Extended sale cycles'
+        
+        # Price softening
+        elif price_change < -3:
+            return 'Price softening'
+        
+        # Moderate supply increase
+        elif property_change > 5:
+            return 'Supply expansion'
+        
+        # Velocity slowing
+        elif velocity_change > 5:
+            return 'Velocity deceleration'
+        
+        # Limited risk
+        else:
+            return 'Limited near-term risk'
     
     def get_acquisition_signals(self, data: Dict[str, Any]) -> List[Dict]:
         """Identify acquisition signals"""
@@ -1111,149 +1109,149 @@ def get_primary_risk(self, data: Dict[str, Any]) -> str:
         
         return opportunities
     
-   def render_template(self, data: Dict[str, Any]) -> str:
-    """Render HTML template with all dynamic data"""
-    logger.info("Rendering HTML template")
-    
-    try:
-        template = self.jinja_env.get_template('voxmill_report.html')
+    def render_template(self, data: Dict[str, Any]) -> str:
+        """Render HTML template with all dynamic data"""
+        logger.info("Rendering HTML template")
         
-        vertical_tokens = self.get_vertical_tokens(data)
-        
-        metadata = data.get('metadata', {})
-        location = metadata.get('area', 'London')
-        city = metadata.get('city', 'UK')
-        full_location = f"{location}, {city}" if location and city else location or city
-        
-        metrics = data.get('metrics', data.get('kpis', {}))
-        properties = data.get('properties', data.get('top_opportunities', []))
-        
-        kpis = {
-            'total_properties': metrics.get('total_properties', len(properties)),
-            'property_change': metrics.get('property_change', 0),
-            'avg_price': metrics.get('avg_price', metrics.get('average_price', 0)),
-            'price_change': metrics.get('price_change', 0),
-            'avg_price_per_sqft': metrics.get('avg_price_per_sqft', 0),
-            'sqft_change': metrics.get('sqft_change', 0),
-            'days_on_market': metrics.get('days_on_market', metrics.get('avg_days_on_market', 42)),
-            'velocity_change': metrics.get('velocity_change', 0)
-        }
-        
-        intelligence = data.get('intelligence', {})
-        
-        insights = {
-            'momentum': intelligence.get('market_momentum', 'Market showing steady activity.'),
-            'positioning': intelligence.get('price_positioning', 'Prices aligned with market expectations.'),
-            'velocity': intelligence.get('velocity_signal', 'Transaction velocity within normal range.')
-        }
-        
-        competitive_analysis = {
-            'summary': intelligence.get(
-                'competitive_landscape', 
-                intelligence.get(
-                    'executive_summary', 
-                    f'The {full_location} market demonstrates stable competitive dynamics with {len(properties)} active assets.'
+        try:
+            template = self.jinja_env.get_template('voxmill_report.html')
+            
+            vertical_tokens = self.get_vertical_tokens(data)
+            
+            metadata = data.get('metadata', {})
+            location = metadata.get('area', 'London')
+            city = metadata.get('city', 'UK')
+            full_location = f"{location}, {city}" if location and city else location or city
+            
+            metrics = data.get('metrics', data.get('kpis', {}))
+            properties = data.get('properties', data.get('top_opportunities', []))
+            
+            kpis = {
+                'total_properties': metrics.get('total_properties', len(properties)),
+                'property_change': metrics.get('property_change', 0),
+                'avg_price': metrics.get('avg_price', metrics.get('average_price', 0)),
+                'price_change': metrics.get('price_change', 0),
+                'avg_price_per_sqft': metrics.get('avg_price_per_sqft', 0),
+                'sqft_change': metrics.get('sqft_change', 0),
+                'days_on_market': metrics.get('days_on_market', metrics.get('avg_days_on_market', 42)),
+                'velocity_change': metrics.get('velocity_change', 0)
+            }
+            
+            intelligence = data.get('intelligence', {})
+            
+            insights = {
+                'momentum': intelligence.get('market_momentum', 'Market showing steady activity.'),
+                'positioning': intelligence.get('price_positioning', 'Prices aligned with market expectations.'),
+                'velocity': intelligence.get('velocity_signal', 'Transaction velocity within normal range.')
+            }
+            
+            competitive_analysis = {
+                'summary': intelligence.get(
+                    'competitive_landscape', 
+                    intelligence.get(
+                        'executive_summary', 
+                        f'The {full_location} market demonstrates stable competitive dynamics with {len(properties)} active assets.'
+                    )
+                ),
+                'key_insights': intelligence.get('strategic_insights', [
+                    f'Total market inventory of {len(properties)} assets indicates active supply',
+                    'Pricing strategies vary across segments and location premiums',
+                    'Market demonstrates balanced competitive landscape',
+                    'Emerging opportunities exist in underserved value segments'
+                ])[:4]
+            }
+            
+            strategic_intelligence = {
+                'market_dynamics': intelligence.get(
+                    'market_dynamics', 
+                    f'The {full_location} market demonstrates characteristic fundamentals with {kpis["total_properties"]} active assets.'
+                ),
+                'pricing_strategy': intelligence.get(
+                    'pricing_strategy', 
+                    f'Current pricing dynamics position the market competitively.'
+                ),
+                'opportunity_assessment': intelligence.get(
+                    'opportunity_assessment', 
+                    f'Primary opportunity vectors emerge across multiple market segments.'
+                ),
+                'recommendation': intelligence.get(
+                    'recommendation', 
+                    f'Focus efforts on assets demonstrating strong fundamentals.'
                 )
-            ),
-            'key_insights': intelligence.get('strategic_insights', [
-                f'Total market inventory of {len(properties)} assets indicates active supply',
-                'Pricing strategies vary across segments and location premiums',
-                'Market demonstrates balanced competitive landscape',
-                'Emerging opportunities exist in underserved value segments'
-            ])[:4]
-        }
-        
-        strategic_intelligence = {
-            'market_dynamics': intelligence.get(
-                'market_dynamics', 
-                f'The {full_location} market demonstrates characteristic fundamentals with {kpis["total_properties"]} active assets.'
-            ),
-            'pricing_strategy': intelligence.get(
-                'pricing_strategy', 
-                f'Current pricing dynamics position the market competitively.'
-            ),
-            'opportunity_assessment': intelligence.get(
-                'opportunity_assessment', 
-                f'Primary opportunity vectors emerge across multiple market segments.'
-            ),
-            'recommendation': intelligence.get(
-                'recommendation', 
-                f'Focus efforts on assets demonstrating strong fundamentals.'
-            )
-        }
-        
-        chart_data = self.prepare_chart_data(data)
-        
-        submarkets_data = self.get_submarket_data(data)
-        momentum_streets = self.get_momentum_streets(data)
-        competitor_agencies = self.get_competitor_agencies(data)
-        
-        # ✅ NEW: Generate cross-vertical intelligence data
-        cross_vertical_data = self.get_cross_vertical_intelligence(data)
-        logger.info("✅ Cross-Vertical Intelligence data prepared")
-        logger.info(f"   Luxury Goods: {cross_vertical_data['luxury_goods']['signal_label']}")
-        logger.info(f"   PE Signal: {cross_vertical_data['private_equity']['signal_label']}")
-        logger.info(f"   Predictive: {cross_vertical_data['predictive']['metric']}")
-        
-        template_data = {
-            'location': full_location,
-            'report_date': datetime.now().strftime('%B %Y'),
-            'client_name': data.get('client_name', 'Strategic Market Participants'),
-            'kpis': kpis,
-            'chart_data': chart_data,
-            'insights': insights,
-            'competitive_analysis': competitive_analysis,
-            'strategic_intelligence': strategic_intelligence,
-            'top_opportunities': self.prepare_opportunities(data),
+            }
             
-            # ✅ NEW: Cross-vertical intelligence integration
-            'cross_vertical': cross_vertical_data,
+            chart_data = self.prepare_chart_data(data)
             
-            'market_depth': {
-                'liquidity_index': chart_data['liquidity_index'],
-                'demand_pressure': chart_data['demand_pressure'],
-                'property_type_performance': chart_data['property_type_performance']
-            },
+            submarkets_data = self.get_submarket_data(data)
+            momentum_streets = self.get_momentum_streets(data)
+            competitor_agencies = self.get_competitor_agencies(data)
             
-            'forecast': {
-                'day_30': chart_data['forecast_30_day'],
-                'day_90': chart_data['forecast_90_day'],
-                'sentiment': chart_data['sentiment'],
-                'voxmill_index': chart_data['voxmill_index']
-            },
+            # ✅ NEW: Generate cross-vertical intelligence data
+            cross_vertical_data = self.get_cross_vertical_intelligence(data)
+            logger.info("✅ Cross-Vertical Intelligence data prepared")
+            logger.info(f"   Luxury Goods: {cross_vertical_data['luxury_goods']['signal_label']}")
+            logger.info(f"   PE Signal: {cross_vertical_data['private_equity']['signal_label']}")
+            logger.info(f"   Predictive: {cross_vertical_data['predictive']['metric']}")
             
-            'executive_actions': self.generate_executive_actions(data),
-            'competitive_benchmarking': self.get_competitive_benchmarking(data),
-            'market_risk': self.get_market_risk_index(data),
-            'acquisition_signals': self.get_acquisition_signals(data),
-            'strategic_playbook': self.get_strategic_playbook(data),
-            'macro_pulse': self.get_macro_pulse_data(data),
+            template_data = {
+                'location': full_location,
+                'report_date': datetime.now().strftime('%B %Y'),
+                'client_name': data.get('client_name', 'Strategic Market Participants'),
+                'kpis': kpis,
+                'chart_data': chart_data,
+                'insights': insights,
+                'competitive_analysis': competitive_analysis,
+                'strategic_intelligence': strategic_intelligence,
+                'top_opportunities': self.prepare_opportunities(data),
+                
+                # ✅ NEW: Cross-vertical intelligence integration
+                'cross_vertical': cross_vertical_data,
+                
+                'market_depth': {
+                    'liquidity_index': chart_data['liquidity_index'],
+                    'demand_pressure': chart_data['demand_pressure'],
+                    'property_type_performance': chart_data['property_type_performance']
+                },
+                
+                'forecast': {
+                    'day_30': chart_data['forecast_30_day'],
+                    'day_90': chart_data['forecast_90_day'],
+                    'sentiment': chart_data['sentiment'],
+                    'voxmill_index': chart_data['voxmill_index']
+                },
+                
+                'executive_actions': self.generate_executive_actions(data),
+                'competitive_benchmarking': self.get_competitive_benchmarking(data),
+                'market_risk': self.get_market_risk_index(data),
+                'acquisition_signals': self.get_acquisition_signals(data),
+                'strategic_playbook': self.get_strategic_playbook(data),
+                'macro_pulse': self.get_macro_pulse_data(data),
+                
+                'submarkets': submarkets_data['submarkets'],
+                'momentum_streets': momentum_streets,
+                'competitor_agencies': competitor_agencies,
+                
+                'appendix': {
+                    'data_sources': ['Rightmove API', 'Zoopla Listings', 'Outscraper', 'Voxmill Internal DB'],
+                    'model_version': 'Voxmill Forecast Engine v2.1',
+                    'transactions_trained': '8,247 transactions',
+                    'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M UTC'),
+                    'update_frequency': 'Daily at 06:00 UTC'
+                },
+                
+                **vertical_tokens
+            }
             
-            'submarkets': submarkets_data['submarkets'],
-            'momentum_streets': momentum_streets,
-            'competitor_agencies': competitor_agencies,
+            html_content = template.render(**template_data)
+            logger.info("✅ Template rendered successfully")
             
-            'appendix': {
-                'data_sources': ['Rightmove API', 'Zoopla Listings', 'Outscraper', 'Voxmill Internal DB'],
-                'model_version': 'Voxmill Forecast Engine v2.1',
-                'transactions_trained': '8,247 transactions',
-                'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M UTC'),
-                'update_frequency': 'Daily at 06:00 UTC'
-            },
+            return html_content
             
-            **vertical_tokens
-        }
-        
-        html_content = template.render(**template_data)
-        logger.info("✅ Template rendered successfully")
-        
-        return html_content
-        
-    except Exception as e:
-        logger.error(f"❌ Error rendering template: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        raise
+        except Exception as e:
+            logger.error(f"❌ Error rendering template: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            raise
     
     def generate_pdf(
         self,
