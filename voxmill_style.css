@@ -255,54 +255,40 @@ COVER PAGE
 .badge-dominant {
     color: #2ECC71;
     border-color: #2ECC71;
+    background: rgba(46, 204, 113, 0.08);
 }
 
 .badge-rising {
     color: #F1C40F;
     border-color: #F1C40F;
+    background: rgba(241, 196, 15, 0.08);
 }
 
 .badge-emerging {
     color: #E74C3C;
     border-color: #E74C3C;
-}
-
-.badge-risk-low {
-    color: #2ECC71;
-    border-color: #2ECC71;
-}
-
-.badge-risk-moderate {
-    color: #F1C40F;
-    border-color: #F1C40F;
-}
-
-.badge-risk-high {
-    color: #E74C3C;
-    border-color: #E74C3C;
+    background: rgba(231, 76, 60, 0.08);
 }
 
 .badge-bullish {
     color: #2ECC71;
     border-color: #2ECC71;
+    background: rgba(46, 204, 113, 0.08);
 }
 
 .badge-neutral {
-    color: #95A5A6;
-    border-color: #95A5A6;
+    color: #F1C40F;
+    border-color: #F1C40F;
+    background: rgba(241, 196, 15, 0.08);
 }
 
 .badge-cautious {
     color: #E74C3C;
     border-color: #E74C3C;
+    background: rgba(231, 76, 60, 0.08);
 }
 
-.badge-bearish {
-    color: #E74C3C;
-    border-color: #E74C3C;
-}
-
-/* Score Badges */
+/* Score Badges (Top Opportunities Table) */
 .score-badge {
     display: inline-flex;
     align-items: center;
@@ -343,7 +329,6 @@ COVER PAGE
     border-color: #E74C3C;
     background: rgba(231, 76, 60, 0.08);
 }
-
 /* ============================================
 SLIDE HEADER — CONSISTENT SPACING
 ============================================ */
@@ -1078,50 +1063,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: left;
 }
 
-/* FIX: Match absorption rate score visual style */
-.competitor-premium-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 14px;
-    border-radius: 4px; /* CHANGED: 6px → 4px */
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600; /* CHANGED: 700 → 600 */
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    border: 1px solid; /* CHANGED: 1.5px → 1px */
-    box-shadow: none; /* REMOVED: Heavy shadow */
-    min-width: 95px;
-    text-align: center;
-    height: 26px; /* CHANGED: 28px → 26px */
-    line-height: 1;
-    position: relative;
-}
 
-.competitor-premium-badge::before,
-.competitor-premium-badge::after {
-    content: none !important;
-    display: none !important;
-}
-
-.badge-premium-strong {
-    color: #2ECC71; /* CHANGED: Unified green */
-    background: rgba(46, 204, 113, 0.08); /* CHANGED: Subtle tint */
-    border-color: #2ECC71;
-}
-
-.badge-premium-moderate {
-    color: #F1C40F; /* CHANGED: Unified yellow */
-    background: rgba(241, 196, 15, 0.08); /* CHANGED: Subtle tint */
-    border-color: #F1C40F;
-}
-
-.badge-premium-weak {
-    color: #E74C3C; /* CHANGED: Unified red */
-    background: rgba(231, 76, 60, 0.08); /* CHANGED: Subtle tint */
-    border-color: #E74C3C;
-}
 
 ## 📍 **SECTION 4: CROSS-VERTICAL INTELLIGENCE**
 
@@ -1275,49 +1217,6 @@ SLIDE CONTENT POSITIONING
 ✅ NEW: SIGNAL TAG (STATUS BADGE)
 ============================================ */
 
-/* FIX: Match absorption rate score visual style */
-.signal-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 16px;
-    border-radius: 4px; /* CHANGED: 6px → 4px */
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600; /* CHANGED: 700 → 600 */
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    margin-bottom: 20px;
-    border: 1px solid; /* CHANGED: 1.5px → 1px */
-    min-width: 100px;
-    height: 26px;
-    box-shadow: none; /* REMOVED: Heavy shadow */
-    flex-shrink: 0;
-}
-
-.signal-tag::before,
-.signal-tag::after {
-    content: none !important;
-    display: none !important;
-}
-
-.signal-tag-bullish {
-    color: #2ECC71; /* CHANGED: Unified green */
-    background: rgba(46, 204, 113, 0.08); /* CHANGED: Subtle tint */
-    border-color: #2ECC71;
-}
-
-.signal-tag-neutral {
-    color: #F1C40F; /* CHANGED: Unified yellow */
-    background: rgba(241, 196, 15, 0.08); /* CHANGED: Subtle tint */
-    border-color: #F1C40F;
-}
-
-.signal-tag-cautious {
-    color: #E74C3C; /* CHANGED: Unified red */
-    background: rgba(231, 76, 60, 0.08); /* CHANGED: Subtle tint */
-    border-color: #E74C3C;
-}
 
 /* ============================================
 ✅ NEW: SIGNAL CARD CONFIDENCE (PREDICTIVE ONLY)
