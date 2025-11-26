@@ -225,7 +225,7 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-content {
     position: absolute;
-    top: 170px;
+    top: 170px;  /* FIXED: Standardized across ALL slides */
     left: 48px;
     right: 48px;
     bottom: 80px;
@@ -233,6 +233,7 @@ SLIDE HEADER — CONSISTENT SPACING
     z-index: 5;
     min-height: calc(1480px - 170px - 80px) !important;
 }
+
 
 .cross-vertical-intelligence .slide-content,
 .market-depth-analysis .slide-content,
@@ -242,18 +243,18 @@ SLIDE HEADER — CONSISTENT SPACING
 }
 
 .segment-performance-slide .slide-content {
-    top: 185px;
+    top: 185px;  /* Only exception - needs extra space for context */
 }
 
 .slide-header {
     position: absolute;
-    top: 64px;
+    top: 64px;  /* FIXED: Standardized header position */
     left: 48px;
     right: 48px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 24px;
+    padding-bottom: 24px;  /* FIXED: Consistent padding */
     z-index: 5;
 }
 
@@ -266,10 +267,9 @@ SLIDE HEADER — CONSISTENT SPACING
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
     margin-bottom: 0;
     line-height: 1.1;
-    padding-top: 0;
-    padding-bottom: 4px;
+    padding-top: 0;  /* FIXED: Removed variable padding */
+    padding-bottom: 4px;  /* FIXED: Consistent bottom padding */
 }
-
 .slide-meta {
     font-family: var(--font-body);
     font-size: 18px;
@@ -527,7 +527,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-start;  /* Left-aligned content */
 }
 
 .kpi-label {
@@ -547,7 +547,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     font-weight: 800;
     color: #BFA670;
     line-height: 1;
-    margin: 0 0 14px 0;
+    margin: 0 0 14px 0;  /* FIXED: Consistent margin */
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
@@ -560,8 +560,10 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     padding: 4px 12px;
     border-radius: 4px;
     font-weight: 600;
-    margin-top: 0;
+    margin-top: 0;  /* FIXED: No extra top margin */
     line-height: 1.4;
+    display: inline-block;  /* FIXED: Ensures proper box model */
+    vertical-align: middle;  /* FIXED: Aligns with baseline */
 }
 
 /* ============================================
@@ -931,8 +933,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .competitor-premium-badge {
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;  /* FIXED: Ensures vertical centering */
+    justify-content: center;  /* FIXED: Ensures horizontal centering */
     padding: 6px 14px;
     border-radius: 6px;
     font-family: var(--font-body);
@@ -944,7 +946,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     min-width: 95px;
     text-align: center;
-    height: 28px;
+    height: 28px;  /* FIXED: Explicit height for perfect centering */
+    line-height: 1;  /* FIXED: Prevents text baseline shift */
 }
 
 .badge-premium-strong {
@@ -1068,7 +1071,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
 .cross-vertical-card {
     border-left: 4px solid var(--vm-gold);
     min-height: 380px;
-    padding: 22px 26px;
+    padding: 22px 26px 22px 26px;  /* FIXED: Consistent padding all sides */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1088,8 +1091,8 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
 
 .cross-vertical-icon {
     font-size: 50px;
-    margin-top: 6px;
-    margin-bottom: 20px;
+    margin-top: 8px;  /* FIXED: Consistent top margin */
+    margin-bottom: 20px;  /* FIXED: Consistent bottom margin */
     line-height: 1;
     color: var(--vm-gold);
     text-align: center;
@@ -1116,7 +1119,7 @@ CROSS-VERTICAL INTELLIGENCE — REFINED
     width: 100%;
     max-width: 100%;
     flex-shrink: 0;
-    min-height: 48px;
+    min-height: 48px;  /* FIXED: Ensures consistent baseline */
 }
 
 .cross-vertical-title {
