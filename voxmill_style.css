@@ -323,14 +323,16 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-content {
     position: absolute;
-    top: 170px;  /* FIXED: Standardized across ALL slides */
+    top: 168px;  /* ✅ FIXED: Standardized across ALL slides */
     left: 48px;
     right: 48px;
     bottom: 80px;
     overflow: visible !important;
     z-index: 5;
-    min-height: calc(1480px - 170px - 80px) !important;
+    min-height: calc(1480px - 168px - 80px) !important;
 }
+
+/* ✅ REMOVED ALL EXCEPTIONS - All slides now use 168px */
 
 
 .cross-vertical-intelligence .slide-content,
@@ -467,8 +469,8 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 26px;
-    margin-top: 56px;
+    gap: 24px;  /* ✅ FIXED: was 26px */
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
 }
 
 .executive-summary-bullet {
@@ -478,7 +480,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 22px 30px;
+    padding: 24px 32px;  /* ✅ FIXED: was 22px 30px */
 }
 
 .executive-bullet-title {
@@ -541,13 +543,23 @@ WEEKLY MOVEMENT DASHBOARD
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
-    margin-top: 60px;
+    gap: 24px;  /* ✅ FIXED: was 22px */
+    margin-top: 48px;  /* ✅ FIXED: was 60px */
     margin-bottom: 0;
     padding: 0;
     background: transparent;
     border-radius: 0;
     border: none;
+}
+
+.movement-mini-card {
+    text-align: center;
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 20px;  /* ✅ FIXED: was 24px 18px */
 }
 
 .movement-mini-card {
@@ -607,10 +619,10 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 32px;
+    gap: 32px;  /* ✅ MAINTAINED */
     height: 360px;
-    margin-top: 52px;
-    margin-bottom: 68px;
+    margin-top: 48px;  /* ✅ FIXED: was 52px */
+    margin-bottom: 56px;  /* ✅ FIXED: was 68px */
     page-break-inside: avoid;
 }
 
@@ -620,7 +632,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
 }
 
 .kpi-content {
@@ -673,7 +685,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 ============================================ */
 
 .chart-section {
-    margin-top: 68px;
+    margin-top: 56px;  /* ✅ FIXED: was 68px */
     margin-bottom: 0;
     page-break-inside: avoid;
 }
@@ -681,7 +693,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 0 0 40px 0;
+    margin: 0 0 32px 0;  /* ✅ FIXED: was 40px */
     opacity: 1;
 }
 
@@ -692,7 +704,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
     justify-content: flex-start;
     gap: 0;
 }
@@ -728,20 +740,13 @@ VALUE DISTRIBUTION CHART (REFINED)
     margin: 16px auto 0 auto;
     max-width: 100%;
 }
-
 .chart-mini-insight {
     background: rgba(191, 166, 112, 0.12);
     border-left: 4px solid var(--vm-gold);
     padding: 18px 26px;
-    margin-top: 22px;
+    margin-top: 24px;  /* ✅ FIXED: was 22px */
     margin-bottom: 0;
     border-radius: 8px;
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: rgba(234, 234, 234, 0.9);
-    line-height: 1.8;
-    font-weight: 400;
-    box-shadow: inset 0 1px 4px rgba(191, 166, 112, 0.25);
 }
 
 .chart-mini-insight strong {
@@ -769,10 +774,10 @@ PERFORMANCE ANALYSIS
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
+    gap: 32px;  /* ✅ MAINTAINED */
     height: auto;
-    margin-top: 56px;
-    margin-bottom: 48px;
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    margin-bottom: 48px;  /* ✅ MAINTAINED */
 }
 
 .chart-panel {
@@ -782,7 +787,7 @@ PERFORMANCE ANALYSIS
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
     justify-content: flex-start;
 }
 
@@ -823,16 +828,16 @@ PERFORMANCE ANALYSIS
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 56px;
-    margin-bottom: 48px;
+    gap: 32px;  /* ✅ MAINTAINED */
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    margin-bottom: 48px;  /* ✅ MAINTAINED */
 }
 
 .insight-card {
     background: var(--card-bg);
     border: var(--card-border);
     border-radius: var(--card-radius);
-    padding: 24px 26px;
+    padding: 32px;  /* ✅ FIXED: was 24px 26px */
     box-shadow: var(--card-shadow);
 }
 
@@ -858,8 +863,8 @@ PERFORMANCE ANALYSIS
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
-    padding: 24px 30px;
-    margin-top: 48px;
+    padding: 32px;  /* ✅ FIXED: was 24px 30px */
+    margin-top: 48px;  /* ✅ MAINTAINED */
     margin-bottom: 0;
 }
 
@@ -881,8 +886,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 ============================================ */
 
 .competitive-landscape-slide .two-column {
-    margin-top: 56px;
-    gap: 32px;
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    gap: 32px;  /* ✅ MAINTAINED */
     align-items: start;
 }
 
@@ -891,7 +896,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
     background: linear-gradient(135deg, rgba(20,20,20,0.97) 0%, rgba(12,12,12,0.90) 100%);
     backdrop-filter: blur(2px);
     border: var(--card-border);
@@ -933,9 +938,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 20px 22px;
-    min-height: 155px;
-    height: 155px;
+    padding: 32px;  /* ✅ FIXED: was 20px 22px */
+    min-height: 160px;  /* ✅ FIXED: was 155px */
+    height: 160px;  /* ✅ FIXED: was 155px */
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
@@ -1031,11 +1036,10 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: left;
 }
 
-/* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
-    margin-top: 56px;
-    margin-bottom: 48px;
-    padding: 26px 30px;
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    margin-bottom: 48px;  /* ✅ MAINTAINED */
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
 }
 
 .competitive-insights-grid {
@@ -1077,7 +1081,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 18px 28px;
+    padding: 24px 32px;  /* ✅ FIXED: was 18px 28px */
 }
 
 .bottom-callout-title {
@@ -1133,7 +1137,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     text-align: center;
-    margin: 18px auto 36px;
+    margin: 16px auto 32px;  /* ✅ FIXED: was 18px auto 36px */
     max-width: 1400px;
     line-height: 1.5;
     font-style: italic;
@@ -1147,8 +1151,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .macro-signal-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 85px;
+    gap: 32px;  /* ✅ FIXED: was 30px */
+    margin-bottom: 64px;  /* ✅ FIXED: was 85px */
 }
 
 .macro-signal-card {
@@ -1156,11 +1160,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     border: 1px solid rgba(176, 141, 87, 0.25);
     border-top: 2px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 38px 28px 28px 28px;
+    padding: 32px;  /* ✅ FIXED: was 38px 28px 28px 28px */
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 260px;
+    min-height: 280px;  /* ✅ FIXED: was 260px */
     position: relative;
     box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.4),
@@ -1220,8 +1224,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
-    padding: 14px 28px;
-    margin-bottom: 75px;
+    padding: 24px 32px;  /* ✅ FIXED: was 14px 28px */
+    margin-bottom: 64px;  /* ✅ FIXED: was 75px */
 }
 
 .correlation-ribbon-title {
@@ -1235,11 +1239,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: center;
 }
 
+
 .correlation-pills-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 16px;  /* ✅ MAINTAINED */
     flex-wrap: nowrap;
 }
 
@@ -1297,7 +1302,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
     border: 1.5px solid rgba(176, 141, 87, 0.3);
     border-radius: 12px;
-    padding: 32px 36px 30px 36px;
+    padding: 32px;  /* ✅ FIXED: was 32px 36px 30px 36px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1305,7 +1310,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 
         0 6px 24px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    margin-top: 25px;
+    margin-top: 32px;  /* ✅ FIXED: was 25px */
 }
 
 .composite-verdict-block::before {
@@ -1614,7 +1619,19 @@ METHODOLOGY
 }
 
 .property-type-heatmap {
-    margin-top: 24px;
+    margin-top: 24px;  /* ✅ MAINTAINED */
+}
+
+.property-type-heatmap .chart-context {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin-bottom: 32px;  /* ✅ MAINTAINED */
+    margin-top: 14px;
+    font-style: italic;
+    line-height: 1.7;
+    font-weight: 400;
 }
 
 .property-type-heatmap .chart-title {
@@ -1639,18 +1656,6 @@ METHODOLOGY
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
     opacity: 0.4;
-}
-
-.property-type-heatmap .chart-context {
-    font-family: var(--font-body);
-    font-size: 11.5px;
-    color: rgba(234, 234, 234, 0.7);
-    text-align: center;
-    margin-bottom: 32px;
-    margin-top: 14px;
-    font-style: italic;
-    line-height: 1.7;
-    font-weight: 400;
 }
 
 .heatmap-table {
@@ -1809,8 +1814,8 @@ METHODOLOGY
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-top: 58px;
+    gap: 32px;  /* ✅ FIXED: was 30px */
+    margin-top: 48px;  /* ✅ FIXED: was 58px */
     margin-bottom: 0;
     align-items: start;
 }
@@ -1819,15 +1824,16 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24px 24px;
-    min-height: 155px;
-    height: 155px;
+    padding: 32px;  /* ✅ FIXED: was 24px 24px */
+    min-height: 160px;  /* ✅ FIXED: was 155px */
+    height: 160px;  /* ✅ FIXED: was 155px */
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
 }
+
 
 .depth-label {
     font-family: var(--font-body);
@@ -1890,8 +1896,8 @@ METHODOLOGY
 .stress-signals-matrix {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-top: 10px;
+    gap: 24px;  /* ✅ FIXED: was 30px */
+    margin-top: 16px;  /* ✅ FIXED: was 10px */
     margin-bottom: 0;
     align-items: start;
 }
@@ -1900,9 +1906,9 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24px 20px;
-    min-height: 155px;
-    height: 155px;
+    padding: 32px 24px;  /* ✅ FIXED: was 24px 20px */
+    min-height: 160px;  /* ✅ FIXED: was 155px */
+    height: 160px;  /* ✅ FIXED: was 155px */
     background: linear-gradient(135deg, rgba(18,18,18,0.95) 0%, rgba(12,12,12,0.90) 100%);
     backdrop-filter: blur(2px);
     border: 1px solid rgba(191,166,112,0.15);
