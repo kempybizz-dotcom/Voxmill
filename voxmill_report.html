@@ -483,7 +483,7 @@
                                 <div class="metric-label">Market Share</div>
                                 <div class="metric-value">{{ agency.market_share_pct }}%</div>
                             </div>
-                            <div class="vx-badge vx-{{ 'dominant' if agency.market_share_pct > 15 else 'rising' if agency.market_share_pct > 8 else 'emerging' }}">{{ agency.positioning }}</div>
+                           <div class="vx-badge vx-{{ agency.positioning_class }}">{{ agency.positioning_label }}</div>
                         </div>
                     </div>
                     {% endfor %}
