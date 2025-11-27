@@ -609,8 +609,8 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-top: 60px;
-    margin-bottom: 76px;
+    margin-top: 52px;
+    margin-bottom: 68px;
     page-break-inside: avoid;
 }
 
@@ -629,7 +629,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: flex-start;  /* Left-aligned content */
+    align-items: flex-start;
 }
 
 .kpi-label {
@@ -649,7 +649,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     font-weight: 800;
     color: #BFA670;
     line-height: 1;
-    margin: 0 0 14px 0;  /* FIXED: Consistent margin */
+    margin: 0 0 14px 0;
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
@@ -662,10 +662,10 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     padding: 4px 12px;
     border-radius: 4px;
     font-weight: 600;
-    margin-top: 0;  /* FIXED: No extra top margin */
+    margin-top: 0;
     line-height: 1.4;
-    display: inline-block;  /* FIXED: Ensures proper box model */
-    vertical-align: middle;  /* FIXED: Aligns with baseline */
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* ============================================
@@ -673,7 +673,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 ============================================ */
 
 .chart-section {
-    margin-top: 76px;
+    margin-top: 68px;
     margin-bottom: 0;
     page-break-inside: avoid;
 }
@@ -681,7 +681,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 0 0 48px 0;
+    margin: 0 0 40px 0;
     opacity: 1;
 }
 
@@ -692,7 +692,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 28px 30px 26px 30px;
+    padding: 26px 30px;
     justify-content: flex-start;
     gap: 0;
 }
@@ -755,7 +755,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     color: rgba(234, 234, 234, 0.7);
     opacity: 0.9;
     text-align: center;
-    margin-top: 16px;
+    margin-top: 12px;
     margin-bottom: 0;
     font-style: italic;
     padding-top: 0;
