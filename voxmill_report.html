@@ -861,7 +861,7 @@
     
     <div class="slide-content">
         <div class="executive-intelligence-layout">
-            <!-- LEFT COLUMN: 4 INSIGHT CARDS -->
+            <!-- LEFT COLUMN: 3 INSIGHT CARDS -->
             <div class="executive-insights-column">
                 <div class="insight-card-elite">
                     <div class="insight-elite-header">
@@ -888,22 +888,11 @@
                 <div class="insight-card-elite">
                     <div class="insight-elite-header">
                         <div class="insight-elite-number">03</div>
-                        <div class="insight-elite-category">Capital Flow Concentration</div>
+                        <div class="insight-elite-category">Capital Flow + Timing Intelligence</div>
                     </div>
                     <div class="insight-elite-divider"></div>
                     <div class="insight-elite-body">
-                        Foreign capital inflows concentrated in premium segments, with Middle Eastern participants representing 34% of total volume.
-                    </div>
-                </div>
-                
-                <div class="insight-card-elite">
-                    <div class="insight-elite-header">
-                        <div class="insight-elite-number">04</div>
-                        <div class="insight-elite-category">Timing Intelligence</div>
-                    </div>
-                    <div class="insight-elite-divider"></div>
-                    <div class="insight-elite-body">
-                        Competitive intensity suggests 90-120 day {{ acquisition_label|lower }} window for optimal positioning before Q1 2026 {{ value_metric_label|lower }} adjustments.
+                        Foreign capital concentrated in premium segments (Middle East: 34% of volume). Competitive intensity suggests 90-120 day {{ acquisition_label|lower }} window before Q1 2026 {{ value_metric_label|lower }} adjustments.
                     </div>
                 </div>
             </div>
@@ -912,7 +901,7 @@
             <div class="executive-verdict-column">
                 <div class="verdict-panel-border">
                     <div class="verdict-seal">
-                        <svg width="70" height="70" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="56" height="56" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="40" cy="40" r="35" fill="none" stroke="url(#goldGradientSeal)" stroke-width="2"/>
                             <circle cx="40" cy="40" r="30" fill="none" stroke="url(#goldGradientSeal)" stroke-width="1" opacity="0.5"/>
                             <path d="M40,15 L45,30 L60,30 L48,40 L53,55 L40,45 L27,55 L32,40 L20,30 L35,30 Z" fill="url(#goldGradientSeal)" opacity="0.9"/>
@@ -957,7 +946,7 @@
         <div class="action-window-luxury">
             <div class="action-window-luxury-grid">
                 <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Optimal Entry</div>
+                    <div class="action-item-luxury-title">Optimal Entry Window</div>
                     <div class="action-item-luxury-value">{{ kpis.days_on_market }}-{{ kpis.days_on_market + 15 }} Days</div>
                     <div class="action-item-luxury-subtitle">Prime {{ acquisition_label|lower }} window based on current {{ velocity_metric_label|lower }}</div>
                 </div>
@@ -969,15 +958,9 @@
                 </div>
                 
                 <div class="action-item-luxury">
-                    <div class="action-item-luxury-title">Participant Activity</div>
-                    <div class="action-item-luxury-value">{{ "High" if kpis.property_change < -5 else "Elevated" if kpis.property_change < 5 else "Moderate" }}</div>
-                    <div class="action-item-luxury-subtitle">{{ "Strong competition" if kpis.property_change < -5 else "Active participant engagement" if kpis.property_change < 5 else "Steady market conditions" }}</div>
-                </div>
-                
-                <div class="action-item-luxury">
                     <div class="action-item-luxury-title">Risk Assessment</div>
-                    <div class="action-item-luxury-value">Low-Moderate</div>
-                    <div class="action-item-luxury-subtitle">Liquidity robust; negotiate with measured confidence</div>
+                    <div class="action-item-luxury-value">{{ "High" if kpis.property_change < -5 else "Elevated" if kpis.property_change < 5 else "Low-Moderate" }}</div>
+                    <div class="action-item-luxury-subtitle">{{ "Strong competition" if kpis.property_change < -5 else "Active engagement" if kpis.property_change < 5 else "Liquidity robust; measured confidence" }}</div>
                 </div>
             </div>
         </div>
