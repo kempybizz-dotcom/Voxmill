@@ -1136,241 +1136,170 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 18px;
 }
 
-/* ============================================
-   CROSS-VERTICAL INTELLIGENCE
-   ============================================ */
+<!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
 
-.cross-vertical-intelligence .slide-content {
-    top: 170px;
-}
-
-.cross-vertical-container {
-    padding: 0;
-}
-
-.cross-vertical-subtitle {
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: rgba(234, 234, 234, 0.7);
-    text-align: center;
-    margin: 24px auto 48px;
-    max-width: 1400px;
-    line-height: 1.6;
-    font-style: italic;
-    font-weight: 400;
-}
-
-.cross-vertical-signal-board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    margin-bottom: 64px;
-    align-items: stretch;
-}
-
-/* ✅ UPDATED: Reduced height + tighter spacing */
-.vertical-signal-card {
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.25);
-    border-left: 3px solid var(--vm-gold);
-    border-radius: var(--card-radius);
-    padding: 24px 20px 20px 20px; /* ✅ REDUCED: was 28px 24px 24px 24px */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 320px; /* ✅ REDUCED: was 340px */
-    height: 320px; /* ✅ REDUCED: was 340px */
-    box-shadow: 
-        0 6px 20px rgba(0,0,0,0.3),
-        0 0 40px rgba(191,166,112,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-    position: relative;
-    backdrop-filter: blur(2px);
-}
-
-.vertical-signal-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
-    opacity: 0.4;
-}
-
-/* ✅ UPDATED: Tighter icon spacing */
-.signal-card-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px; /* ✅ REDUCED: was 20px */
-    color: var(--vm-light);
-    filter: drop-shadow(0 3px 8px rgba(191,166,112,0.4));
-    flex-shrink: 0;
-}
-
-.signal-card-icon svg {
-    width: 32px;
-    height: 32px;
-}
-
-/* ✅ UPDATED: Smaller title, tighter spacing */
-.signal-card-title {
-    font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
-    font-weight: 700;
-    color: var(--vm-gold);
-    text-transform: uppercase;
-    letter-spacing: 1.2px; /* ✅ REDUCED: was 1.4px */
-    text-align: center;
-    margin-bottom: 14px; /* ✅ REDUCED: was 18px */
-    line-height: 1.3; /* ✅ TIGHTENED: was 1.4 */
-    min-height: 32px; /* ✅ REDUCED: was 36px */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-/* ✅ UPDATED: Smaller metric font */
-.signal-card-metric {
-    font-family: var(--font-body);
-    font-size: 20px; /* ✅ REDUCED: was 22px */
-    font-weight: 700;
-    color: #EAEAEA;
-    text-align: center;
-    margin-bottom: 12px; /* ✅ REDUCED: was 14px */
-    line-height: 1.3;
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
-}
-
-/* ✅ UPDATED: Tighter confidence badge */
-.signal-card-confidence {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 500;
-    color: rgba(234, 234, 234, 0.65);
-    text-align: center;
-    margin-bottom: 16px; /* ✅ REDUCED: was 20px */
-    letter-spacing: 0.8px;
-    flex-shrink: 0;
-}
-
-/* ✅ UPDATED: Tighter bullet spacing */
-.signal-card-bullets {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 10px; /* ✅ REDUCED: was 12px */
-}
-
-/* ✅ UPDATED: Smaller bullet font + tighter line-height */
-.signal-card-bullets li {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(234, 234, 234, 0.85);
-    line-height: 1.5; /* ✅ TIGHTENED: was 1.6 */
-    padding-left: 20px;
-    position: relative;
-    text-align: left;
-    font-weight: 400;
-}
-
-.signal-card-bullets li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: var(--vm-gold);
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 1.5; /* ✅ MATCHED to li line-height */
-}
-
-/* ✅ NEW: Badge positioning inside vertical signal cards */
-.vertical-signal-card .vx-badge {
-    margin-bottom: 14px; /* ✅ Controlled spacing below badge */
-    align-self: center;
-}
-
-/* ✅ UPDATED: Momentum correlation panel spacing */
-.momentum-correlation-panel {
-    background: rgba(12, 12, 12, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 28px 36px; /* ✅ Normalized padding */
-    margin-top: 56px; /* ✅ Standard vertical rhythm */
-    margin-bottom: 32px;
-}
-
-.momentum-correlation-title {
-    font-family: var(--font-body);
-    font-size: 16px;
-    color: var(--vm-gold);
-    font-weight: 700;
-    margin-bottom: 24px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-
-.momentum-correlation-flow-refined {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.momentum-signal-box-refined {
-    background: rgba(23, 23, 23, 0.6);
-    border: 1px solid rgba(197, 164, 109, 0.2);
-    border-radius: 8px;
-    padding: 12px 18px;
-    flex: 0 1 auto;
-}
-
-.momentum-signal-text {
-    font-family: var(--font-body);
-    font-size: 12px;
-    color: rgba(234, 234, 234, 0.9);
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    line-height: 1.4;
-}
-
-.momentum-arrow-refined {
-    font-size: 18px;
-    color: var(--vm-gold);
-    font-weight: 700;
-    opacity: 0.7;
-}
-
-/* ✅ UPDATED: Summary bar spacing */
-.cross-vertical-summary-bar {
-    background: linear-gradient(135deg, rgba(197, 164, 109, 0.08) 0%, rgba(197, 164, 109, 0.04) 100%);
-    border: 1px solid rgba(197, 164, 109, 0.25);
-    border-radius: 10px;
-    padding: 24px 36px;
-    margin-top: 0; /* ✅ No additional margin (relies on panel margin-bottom) */
-}
-
-.cross-vertical-summary-text {
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(234, 234, 234, 0.9);
-    line-height: 1.7;
-    text-align: center;
-    font-weight: 400;
-    letter-spacing: 0.2px;
-}
-
+<div class="slide cross-vertical-intelligence">
+    <div class="slide-header">
+        <h2 class="slide-title">Cross-Vertical Intelligence</h2>
+        <div class="slide-meta">Luxury Asset Classes<br>{{ report_date }}</div>
+    </div>
+    
+    <div class="slide-content">
+        <div class="cross-vertical-container">
+            <p class="cross-vertical-subtitle">
+                Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
+            </p>
+            
+            <!-- LAYER 1: MACRO SIGNAL CARDS (3 WIDE) -->
+            <div class="macro-signal-grid">
+                <!-- CARD 1: LUXURY DEMAND PULSE -->
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 7H4L2 17H22L20 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 7L10 2H14L16 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
+                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h4 class="macro-card-title">Luxury Demand Pulse</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.luxury_goods.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
+                    <p class="macro-card-insight">{{ cross_vertical.luxury_goods.bullet_2 }}</p>
+                </div>
+                
+                <!-- CARD 2: CAPITAL FLOW INTENSITY -->
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
+                            <line x1="6.5" y1="6" x2="6.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+                            <line x1="17.5" y1="6" x2="17.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <h4 class="macro-card-title">Capital Flow Intensity</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.private_equity.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
+                    <p class="macro-card-insight">{{ cross_vertical.private_equity.bullet_2 }}</p>
+                </div>
+                
+                <!-- CARD 3: ALLOCATION SHIFT / RISK BIAS -->
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L3 7L12 12L21 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 17L12 22L21 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h4 class="macro-card-title">Allocation Shift / Risk Bias</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.wealth_mgmt.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
+                    <p class="macro-card-insight">{{ cross_vertical.wealth_mgmt.bullet_2 }}</p>
+                </div>
+            </div>
+            
+            <!-- LAYER 2: CORRELATION ENGINE RIBBON -->
+            <div class="correlation-engine-ribbon">
+                <h4 class="correlation-ribbon-title">Cross-Vertical Correlation Signals</h4>
+                <div class="correlation-pills-container">
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Luxury Retail → Price</div>
+                        <div class="correlation-arrow">{{ "↑" if forecast.sentiment == "Bullish" else "↓" if forecast.sentiment == "Bearish" else "→" }}</div>
+                        <div class="correlation-strength">{{ "Strong" if forecast.voxmill_index > 70 else "Moderate" if forecast.voxmill_index > 50 else "Weak" }}</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">PE Deployment → Velocity</div>
+                        <div class="correlation-arrow">{{ "↑" if kpis.velocity_change < 0 else "↓" if kpis.velocity_change > 5 else "→" }}</div>
+                        <div class="correlation-strength">{{ "Positive" if kpis.velocity_change < 0 else "Negative" if kpis.velocity_change > 5 else "Neutral" }}</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Wealth Flows → Demand</div>
+                        <div class="correlation-arrow">{{ "↑" if market_depth.demand_pressure < 1.0 else "↓" if market_depth.demand_pressure > 1.3 else "→" }}</div>
+                        <div class="correlation-strength">{{ "High" if market_depth.demand_pressure < 1.0 else "Low" if market_depth.demand_pressure > 1.3 else "Balanced" }}</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">UHNW Mobility → Supply</div>
+                        <div class="correlation-arrow">{{ "↑" if kpis.property_change < -5 else "↓" if kpis.property_change > 5 else "→" }}</div>
+                        <div class="correlation-strength">{{ "Tight" if kpis.property_change < -5 else "Loose" if kpis.property_change > 5 else "Stable" }}</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Charter Activity → Inflow</div>
+                        <div class="correlation-arrow">↑</div>
+                        <div class="correlation-strength">Active</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Capital Rotation → Entry</div>
+                        <div class="correlation-arrow">{{ "↑" if forecast.voxmill_index > 65 else "↓" if forecast.voxmill_index < 45 else "→" }}</div>
+                        <div class="correlation-strength">{{ "Synchronized" if forecast.voxmill_index > 65 else "Divergent" if forecast.voxmill_index < 45 else "Mixed" }}</div>
+                    </div>
+                    
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Cross-Vertical Momentum</div>
+                        <div class="correlation-arrow">{{ "↑" if forecast.sentiment == "Bullish" else "↓" if forecast.sentiment == "Bearish" else "→" }}</div>
+                        <div class="correlation-strength">{{ forecast.sentiment }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LAYER 3: COMPOSITE CROSS-VERTICAL VERDICT -->
+            <div class="composite-verdict-block">
+                <div class="verdict-seal-small">
+                    <svg width="50" height="50" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="32" fill="none" stroke="url(#goldGradientSmall)" stroke-width="2"/>
+                        <path d="M40,18 L43,28 L53,28 L45,34 L48,44 L40,38 L32,44 L35,34 L27,28 L37,28 Z" fill="url(#goldGradientSmall)" opacity="0.9"/>
+                        <defs>
+                            <linearGradient id="goldGradientSmall" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#C5A46D;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#B59854;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                
+                <h3 class="composite-verdict-title">Cross-Vertical Composite Outlook</h3>
+                
+                <div class="vx-badge vx-{{ 'bullish' if forecast.voxmill_index > 70 else 'neutral' if forecast.voxmill_index > 50 else 'cautious' }}">
+                    {{ "Positive" if forecast.voxmill_index > 70 else "Neutral" if forecast.voxmill_index > 50 else "Cautious" }}
+                </div>
+                
+                <p class="composite-verdict-headline">
+                    {{ "Strong forward demand indicated across luxury indicators" if forecast.voxmill_index > 70 else "Moderate forward demand with balanced risk profile" if forecast.voxmill_index > 50 else "Cautious forward demand; upside capped by constrained deployment" }} — 90-day outlook {{ forecast.sentiment|lower }} with {{ "high" if forecast.voxmill_index > 75 else "moderate" if forecast.voxmill_index > 50 else "limited" }} confidence.
+                </p>
+                
+                <div class="composite-verdict-confidence">
+                    <span class="confidence-label">Confidence:</span>
+                    <span class="confidence-value">{{ forecast.voxmill_index }}%</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-bar-fill" style="width: {{ forecast.voxmill_index }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="composite-verdict-drivers">
+                    <div class="driver-bullet">
+                        <span class="driver-icon">→</span>
+                        <span class="driver-text">Primary driver: {{ cross_vertical.predictive.bullet_1 }}</span>
+                    </div>
+                    <div class="driver-bullet">
+                        <span class="driver-icon">→</span>
+                        <span class="driver-text">Primary risk: {{ cross_vertical.predictive.bullet_2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 /* ============================================
 MOMENTUM CORRELATION PANEL
 ============================================ */
