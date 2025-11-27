@@ -220,129 +220,82 @@ COVER PAGE
     color: var(--vm-gold);
     font-weight: 600;
 }
+
 /* ============================================================================
-   BADGE COMPONENT — STANDALONE VARIANTS (NO DUPLICATION)
+   UNIFIED BADGE SYSTEM — NO DUPLICATION, NO NESTED CONTAINERS
    ============================================================================ */
 
-/* Base badge styles that ALL variants inherit */
+/* Base badge structure */
+.vx-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 18px;
+    border-radius: 8px;
+    border: 1.6px solid;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: transparent;
+    height: 32px;
+    min-width: 85px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Block ALL pseudo-elements */
+.vx-badge::before,
+.vx-badge::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Competitive Landscape variants */
+.vx-dominant {
+    border-color: #2ECC71;
+    color: #2ECC71;
+}
+
+.vx-rising {
+    border-color: #F1C40F;
+    color: #F1C40F;
+}
+
+.vx-emerging {
+    border-color: #E74C3C;
+    color: #E74C3C;
+}
+
+/* Cross-Vertical Intelligence variants */
+.vx-bullish {
+    border-color: #2ECC71;
+    color: #2ECC71;
+}
+
+.vx-neutral {
+    border-color: #B08D57;
+    color: #B08D57;
+}
+
+.vx-cautious {
+    border-color: #E74C3C;
+    color: #E74C3C;
+}
+
+/* ============================================================================
+   LEGACY BADGE CLASSES — DISABLE COMPLETELY
+   ============================================================================ */
+
+.badge,
 .badge-dominant,
 .badge-rising,
 .badge-emerging,
 .badge-bullish,
 .badge-neutral,
 .badge-cautious {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 16px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    text-align: center;
-    line-height: 1;
-    white-space: nowrap;
-    border: 1px solid;
-    background: transparent;
-    min-width: 85px;
-    height: 26px;
-    position: relative;
-}
-
-/* Block ALL pseudo-elements */
-.badge-dominant::before,
-.badge-dominant::after,
-.badge-rising::before,
-.badge-rising::after,
-.badge-emerging::before,
-.badge-emerging::after,
-.badge-bullish::before,
-.badge-bullish::after,
-.badge-neutral::before,
-.badge-neutral::after,
-.badge-cautious::before,
-.badge-cautious::after {
-    content: none !important;
-    display: none !important;
-}
-
-/* Badge color variants */
-.badge-dominant {
-    color: #2ECC71;
-    border-color: #2ECC71;
-    background: rgba(46, 204, 113, 0.08);
-}
-
-.badge-rising {
-    color: #F1C40F;
-    border-color: #F1C40F;
-    background: rgba(241, 196, 15, 0.08);
-}
-
-.badge-emerging {
-    color: #E74C3C;
-    border-color: #E74C3C;
-    background: rgba(231, 76, 60, 0.08);
-}
-
-.badge-bullish {
-    color: #2ECC71;
-    border-color: #2ECC71;
-    background: rgba(46, 204, 113, 0.08);
-}
-
-.badge-neutral {
-    color: #F1C40F;
-    border-color: #F1C40F;
-    background: rgba(241, 196, 15, 0.08);
-}
-
-.badge-cautious {
-    color: #E74C3C;
-    border-color: #E74C3C;
-    background: rgba(231, 76, 60, 0.08);
-}
-
-/* Score Badges (Top Opportunities Table) */
-.score-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 90px;
-    max-width: 90px;
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 700;
-    border: 1px solid;
-    font-family: var(--font-mono);
-    vertical-align: middle;
-}
-
-.score-badge::before,
-.score-badge::after {
-    content: none !important;
-    display: none !important;
-}
-
-.score-high {
-    color: #2ECC71;
-    border-color: #2ECC71;
-    background: rgba(46, 204, 113, 0.08);
-}
-
-.score-medium {
-    color: #F1C40F;
-    border-color: #F1C40F;
-    background: rgba(241, 196, 15, 0.08);
-}
-
-.score-low {
-    color: #E74C3C;
-    border-color: #E74C3C;
-    background: rgba(231, 76, 60, 0.08);
+    display: none !important; /* Nuclear option - force removal */
 }
 /* ============================================
 SLIDE HEADER — CONSISTENT SPACING
