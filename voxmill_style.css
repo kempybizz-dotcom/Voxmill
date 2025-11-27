@@ -1167,8 +1167,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .macro-signal-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-bottom: 70px;
+    gap: 30px;
+    margin-bottom: 85px;
 }
 
 .macro-signal-card {
@@ -1176,7 +1176,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     border: 1px solid rgba(176, 141, 87, 0.25);
     border-top: 2px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 32px 24px 24px 24px;
+    padding: 38px 28px 28px 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1193,7 +1193,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: var(--vm-gold);
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     letter-spacing: 0.5px;
 }
 
@@ -1203,7 +1203,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 700;
     color: #EAEAEA;
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     line-height: 1.3;
     letter-spacing: 0.02em;
 }
@@ -1219,7 +1219,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .macro-signal-card .vx-badge {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
 .macro-card-insight {
@@ -1240,8 +1240,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
-    padding: 16px 28px;
-    margin-bottom: 60px;
+    padding: 14px 28px;
+    margin-bottom: 75px;
 }
 
 .correlation-ribbon-title {
@@ -1259,7 +1259,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: nowrap;
 }
 
@@ -1317,7 +1317,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
     border: 1.5px solid rgba(176, 141, 87, 0.3);
     border-radius: 12px;
-    padding: 28px 36px 26px 36px;
+    padding: 32px 36px 30px 36px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1325,7 +1325,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 
         0 6px 24px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    margin-top: 15px;
+    margin-top: 25px;
 }
 
 .composite-verdict-block::before {
@@ -1341,7 +1341,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .verdict-seal-small {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     filter: drop-shadow(0 4px 12px rgba(197, 164, 109, 0.4));
 }
 
@@ -1350,13 +1350,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 18px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     letter-spacing: 0.5px;
     text-align: center;
 }
 
 .composite-verdict-block .vx-badge {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .composite-verdict-headline {
@@ -1366,7 +1366,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: rgba(234, 234, 234, 0.95);
     text-align: center;
     line-height: 1.7;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     max-width: 1200px;
     letter-spacing: 0.2px;
 }
@@ -1375,8 +1375,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 22px;
     width: 100%;
     max-width: 500px;
 }
@@ -1416,7 +1416,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .composite-verdict-drivers {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
     max-width: 900px;
 }
@@ -1425,7 +1425,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 16px;
+    padding: 11px 16px;
     background: rgba(12, 12, 12, 0.4);
     border-left: 2px solid var(--vm-gold);
     border-radius: 6px;
@@ -1452,17 +1452,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 @media print, .a4-export {
     .macro-signal-grid {
-        gap: 18px;
-        margin-bottom: 60px;
+        gap: 24px;
+        margin-bottom: 70px;
     }
     
     .macro-signal-card {
-        padding: 28px 20px 20px 20px;
-        min-height: 230px;
+        padding: 32px 24px 24px 24px;
+        min-height: 240px;
     }
     
     .correlation-pills-container {
-        gap: 10px;
+        gap: 12px;
     }
     
     .correlation-pill {
@@ -1470,13 +1470,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     }
     
     .correlation-engine-ribbon {
-        padding: 14px 24px;
-        margin-bottom: 50px;
+        padding: 12px 24px;
+        margin-bottom: 60px;
     }
     
     .composite-verdict-block {
-        padding: 24px 32px 22px 32px;
-        margin-top: 10px;
+        padding: 28px 32px 26px 32px;
+        margin-top: 20px;
     }
 }
 
