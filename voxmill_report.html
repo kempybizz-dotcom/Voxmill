@@ -468,7 +468,7 @@
                 <p class="chart-context">Active portfolio distribution across leading market participants</p>
                 
                 {% if competitor_agencies and competitor_agencies|length > 0 %}
-                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 28px;">
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 28px;">
                     {% for agency in competitor_agencies %}
                     <div class="risk-dial-card">
                         <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
@@ -570,14 +570,6 @@
             <div class="macro-signal-grid">
                 <!-- CARD 1: LUXURY GOODS -->
                 <div class="macro-signal-card">
-                    <div class="macro-card-icon">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 7H4L2 17H22L20 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M8 7L10 2H14L16 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <circle cx="9" cy="12" r="1" fill="currentColor"/>
-                            <circle cx="15" cy="12" r="1" fill="currentColor"/>
-                        </svg>
-                    </div>
                     <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
                     <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
@@ -586,16 +578,6 @@
                 
                 <!-- CARD 2: PRIVATE EQUITY -->
                 <div class="macro-signal-card">
-                    <div class="macro-card-icon">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
-                            <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
-                            <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
-                            <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
-                            <line x1="6.5" y1="6" x2="6.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
-                            <line x1="17.5" y1="6" x2="17.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
-                        </svg>
-                    </div>
                     <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
                     <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
@@ -604,13 +586,6 @@
                 
                 <!-- CARD 3: WEALTH MANAGEMENT -->
                 <div class="macro-signal-card">
-                    <div class="macro-card-icon">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L3 7L12 12L21 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M3 17L12 22L21 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
                     <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
                     <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
@@ -977,7 +952,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> 
 
 <!-- SLIDE 10: TOP OPPORTUNITIES -->
 
