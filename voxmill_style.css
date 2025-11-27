@@ -1031,6 +1031,91 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: left;
 }
 
+/* ✅ NEW: Competitive Insights Strip Spacing */
+.competitive-insights-strip {
+    margin-top: 56px;  /* ADDED: Match gap between two-column cards */
+    margin-bottom: 56px;  /* ADDED: Match gap before bottom callout */
+    padding: 26px 30px;
+}
+
+.competitive-insights-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;  /* Spacing between insight bullets */
+}
+
+.competitive-insight-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.competitive-insight-icon {
+    font-size: 20px;
+    color: var(--vm-gold);
+    line-height: 1.6;
+    flex-shrink: 0;
+    min-width: 24px;
+}
+
+.competitive-insight-text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+    font-weight: 400;
+    flex: 1;
+}
+
+/* ✅ NEW: Bottom Callout Box Spacing */
+.bottom-callout-box {
+    margin-top: 0;  /* No extra top margin - already handled by insights strip */
+    margin-bottom: 0;
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid #BFA670;
+    border-radius: 8px;
+    box-shadow: 
+        inset 0 1px 3px rgba(191, 166, 112, 0.2),
+        0 2px 8px rgba(0,0,0,0.15);
+    padding: 22px 32px;
+}
+
+.bottom-callout-title {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: #BFA670;
+    margin-bottom: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.bottom-callout-text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+    font-weight: 400;
+}
+
+.bottom-callout-text > div {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.bottom-callout-text > div:last-child {
+    margin-bottom: 0;
+}
+
+.bottom-callout-text > div::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-weight: 700;
+    font-size: 18px;
+}
+
 .cross-vertical-intelligence .slide-content {
     top: 170px;
 }
@@ -1112,7 +1197,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    color: var(--vm-gold);
+    color: var(--vm-light);
     filter: drop-shadow(0 3px 8px rgba(191,166,112,0.4));
     flex-shrink: 0;
 }
