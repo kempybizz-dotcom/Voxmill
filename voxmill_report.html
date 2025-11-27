@@ -727,21 +727,26 @@
             </div>
         </div>
         
-        <div class="volatility-matrix">
-            <div class="volatility-card">
-                <div class="volatility-label">Price Volatility</div>
-                <div class="volatility-value">{{ "High" if (market_depth.liquidity_index or 0) < 50 else "Moderate" if (market_depth.liquidity_index or 0) < 75 else "Low" }}</div>
-                <div class="volatility-note">Price range variation vs median segment benchmarks</div>
+        <div class="stress-signals-matrix">
+            <div class="stress-card">
+                <div class="stress-label">Inventory Stress Rating</div>
+                <div class="stress-value">{{ "High" if (market_depth.demand_pressure or 0) > 1.5 else "Moderate" if (market_depth.demand_pressure or 0) > 0.8 else "Low" }}</div>
+                <div class="stress-note">Supply-demand imbalance severity indicator</div>
             </div>
-            <div class="volatility-card">
-                <div class="volatility-label">Turnover Velocity</div>
-                <div class="volatility-value">{{ "Rapid" if (market_depth.liquidity_index or 0) > 75 else "Balanced" if (market_depth.liquidity_index or 0) > 50 else "Slow" }}</div>
-                <div class="volatility-note">Indicates pace of transaction cycling within segments</div>
+            <div class="stress-card">
+                <div class="stress-label">Velocity Divergence</div>
+                <div class="stress-value">{{ "Diverging" if (market_depth.liquidity_index or 0) < 45 or (market_depth.liquidity_index or 0) > 85 else "Reversing" if (market_depth.liquidity_index or 0) < 55 else "Stable" }}</div>
+                <div class="stress-note">Transaction pace consistency across segments</div>
             </div>
-            <div class="volatility-card">
-                <div class="volatility-label">Depth Stability</div>
-                <div class="volatility-value">{{ "Stable" if (market_depth.demand_pressure or 0) > 0.8 and (market_depth.demand_pressure or 0) < 1.5 else "Sensitive" if (market_depth.demand_pressure or 0) > 1.5 else "Unstable" }}</div>
-                <div class="volatility-note">Supply stability derived from demand pressure index</div>
+            <div class="stress-card">
+                <div class="stress-label">Price Pressure Direction</div>
+                <div class="stress-value">{{ "Upward" if (market_depth.demand_pressure or 0) < 0.8 and (market_depth.liquidity_index or 0) > 65 else "Downward" if (market_depth.demand_pressure or 0) > 1.3 else "Neutral" }}</div>
+                <div class="stress-note">Directional pricing momentum signal</div>
+            </div>
+            <div class="stress-card">
+                <div class="stress-label">Signal Confidence Score</div>
+                <div class="stress-value">{{ ((market_depth.liquidity_index or 50) * 0.6 + (100 - ((market_depth.demand_pressure or 1.0) - 0.8) * 100) * 0.4) | int }}</div>
+                <div class="stress-note">Composite reliability index (0-100 scale)</div>
             </div>
         </div>
     </div>
