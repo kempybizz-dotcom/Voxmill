@@ -439,7 +439,7 @@
                 <h3 class="chart-title">Market Concentration Intelligence</h3>
                 <p class="chart-context">Institutional participant distribution and competitive intensity metrics</p>
                 
-                <div style="display: flex; flex-direction: column; gap: 24px; margin-top: 32px;">
+                <div style="display: flex; flex-direction: column; gap: 18px; margin-top: 28px;">
                     <div class="risk-dial-card">
                         <h3 class="risk-dial-title">Active Participants</h3>
                         <div class="risk-dial-value">{{ competitor_agencies|length if competitor_agencies else 0 }}</div>
@@ -468,28 +468,28 @@
                 <p class="chart-context">Active portfolio distribution across leading market participants</p>
                 
                 {% if competitor_agencies and competitor_agencies|length > 0 %}
-                <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 32px;">
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 28px;">
                     {% for agency in competitor_agencies %}
                     <div class="risk-dial-card">
-                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
                             <div class="competitor-rank">{{ loop.index }}</div>
                             <div style="flex: 1;">
                                 <div class="competitor-premium-name">{{ agency.name[:45] }}</div>
                                 <div class="competitor-premium-count">{{ agency.listings }} Active {{ inventory_label }}</div>
                             </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                             <div>
                                 <div class="metric-label">Market Share</div>
                                 <div class="metric-value">{{ agency.market_share_pct }}%</div>
                             </div>
-                           <div class="vx-badge vx-{{ agency.positioning_class }}">{{ agency.positioning_label }}</div>
+                            <div class="vx-badge vx-{{ agency.positioning_class }}">{{ agency.positioning_label }}</div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="risk-dial-card" style="margin-top: 32px;">
+                <div class="risk-dial-card" style="margin-top: 28px;">
                     <p style="font-size: 14px; color: rgba(184, 184, 184, 0.6); text-align: center; font-style: italic;">
                         Competitive data unavailable for this reporting period.
                     </p>
@@ -542,17 +542,16 @@
             <h4 class="bottom-callout-title">Competitive Advantage Signals</h4>
             <div class="bottom-callout-text">
                 {% if competitor_agencies and competitor_agencies|length > 0 %}
-                <div style="margin-bottom: 8px;">• Leading participant maintaining market dominance through institutional relationships and portfolio depth.</div>
-                <div style="margin-bottom: 8px;">• Secondary participants stabilizing share through operational efficiency and client retention strategies.</div>
-                <div style="margin-bottom: 0;">• Boutique entrants leveraging specialized positioning and personalized service differentiation.</div>
+                <div>• Leading participant maintaining market dominance through institutional relationships and portfolio depth.</div>
+                <div>• Secondary participants stabilizing share through operational efficiency and client retention strategies.</div>
+                <div>• Boutique entrants leveraging specialized positioning and personalized service differentiation.</div>
                 {% else %}
-                <div style="margin-bottom: 0;">• Market participant data currently unavailable — comprehensive competitive analysis pending data enhancement.</div>
+                <div>• Market participant data currently unavailable — comprehensive competitive analysis pending data enhancement.</div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-
 <!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
 
 <div class="slide cross-vertical-intelligence">
