@@ -1733,27 +1733,27 @@ METHODOLOGY
    ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 175px; /* ✅ REDUCED: was 185px */
+    top: 168px;
 }
 
 .property-type-heatmap {
-    margin-top: 28px; /* ✅ REDUCED: was 36px */
+    margin-top: 24px;
 }
 
 .property-type-heatmap .chart-title {
     font-family: var(--font-body);
-    font-size: 17px; /* ✅ REDUCED: was 18px */
+    font-size: 16px;
     font-weight: 600;
     color: var(--vm-gold);
-    letter-spacing: 0.1em; /* ✅ REDUCED: was 0.12em */
+    letter-spacing: 0.1em;
     margin-bottom: 0;
-    padding-bottom: 14px; /* ✅ INCREASED: was 12px for better separation */
+    padding-bottom: 14px;
     text-align: center;
-    position: relative; /* ✅ NEW: for pseudo-element */
+    position: relative;
 }
 
 .property-type-heatmap .chart-title::after {
-    content: ''; /* ✅ NEW: subtle divider */
+    content: '';
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -1766,13 +1766,13 @@ METHODOLOGY
 
 .property-type-heatmap .chart-context {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
-    color: rgba(234, 234, 234, 0.7); /* ✅ REDUCED opacity: was 0.75 */
+    font-size: 11.5px;
+    color: rgba(234, 234, 234, 0.7);
     text-align: center;
-    margin-bottom: 40px; /* ✅ REDUCED: was 52px */
-    margin-top: 16px; /* ✅ NEW: was 0 */
+    margin-bottom: 32px;
+    margin-top: 14px;
     font-style: italic;
-    line-height: 1.7; /* ✅ REDUCED: was 1.8 */
+    line-height: 1.7;
     font-weight: 400;
 }
 
@@ -1787,18 +1787,18 @@ METHODOLOGY
 }
 
 .heatmap-table th {
-    background: linear-gradient(135deg, #A77B3A 0%, #BFA670 30%, #C5A46D 50%, #BFA670 70%, #A77B3A 100%); /* ✅ REFINED: more sophisticated gradient */
+    background: linear-gradient(135deg, #A77B3A 0%, #BFA670 30%, #C5A46D 50%, #BFA670 70%, #A77B3A 100%);
     color: #0C0C0C;
-    padding: 16px 14px; /* ✅ REDUCED: was 20px 16px */
+    padding: 15px 13px;
     text-transform: uppercase;
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.12em; /* ✅ REDUCED: was 0.14em */
+    letter-spacing: 0.12em;
     text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); /* ✅ STRENGTHENED: was 0.2 */
-    height: 48px; /* ✅ REDUCED: was 56px */
-    border-bottom: 2px solid rgba(12, 12, 12, 0.3); /* ✅ NEW: subtle separation */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    height: 50px;
+    border-bottom: 2px solid rgba(12, 12, 12, 0.3);
 }
 
 .heatmap-table th:first-child {
@@ -1822,15 +1822,15 @@ METHODOLOGY
 }
 
 .heatmap-table td {
-    padding: 16px 14px; /* ✅ REDUCED: was 20px 16px */
-    border-bottom: 1px solid rgba(191, 166, 112, 0.1); /* ✅ REDUCED opacity: was 0.12 */
+    padding: 15px 13px;
+    border-bottom: 1px solid rgba(191, 166, 112, 0.1);
     font-family: var(--font-body);
-    font-size: 13px; /* ✅ REDUCED: was 14px */
+    font-size: 12.5px;
     color: var(--vm-text);
     vertical-align: middle;
     text-align: center;
     font-weight: 400;
-    height: 48px; /* ✅ REDUCED: was 56px */
+    height: 50px;
 }
 
 .heatmap-table td:nth-child(1) {
@@ -1846,13 +1846,13 @@ METHODOLOGY
 .heatmap-table td:nth-child(3) {
     width: 22%;
     text-align: center;
-    padding-right: 24px;
+    padding-right: 22px;
 }
 
 .heatmap-table td:nth-child(4) {
     width: 22%;
     text-align: center;
-    padding-right: 24px;
+    padding-right: 22px;
 }
 
 .heatmap-table tbody tr:last-child td {
@@ -1860,7 +1860,7 @@ METHODOLOGY
 }
 
 .heatmap-table tbody tr:hover {
-    background: rgba(191, 166, 112, 0.05); /* ✅ REDUCED: was 0.06 for subtlety */
+    background: rgba(191, 166, 112, 0.05);
 }
 
 .property-type-name {
@@ -1873,43 +1873,43 @@ METHODOLOGY
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 16px; /* ✅ REDUCED: was 10px 18px */
-    border-radius: 5px; /* ✅ REDUCED: was 6px */
+    padding: 7px 14px;
+    border-radius: 5px;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 13px; /* ✅ REDUCED: was 14px */
+    font-size: 12.5px;
     background: rgba(12, 12, 12, 0.6);
     border: 1.5px solid;
-    min-width: 56px; /* ✅ REDUCED: was 60px */
-    height: 28px; /* ✅ REDUCED: was 32px */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* ✅ REDUCED: was 6px */
+    min-width: 52px;
+    height: 26px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .velocity-high {
     color: #4CAF50;
     border-color: rgba(76, 175, 80, 0.5);
     background: rgba(76, 175, 80, 0.08);
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.25); /* ✅ REDUCED: was 12px with 0.35 opacity */
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.25);
 }
 
 .velocity-medium {
     color: #FFC107;
     border-color: rgba(255, 193, 7, 0.5);
     background: rgba(255, 193, 7, 0.08);
-    box-shadow: 0 0 6px rgba(255, 193, 7, 0.2); /* ✅ REDUCED: was 8px with 0.25 opacity */
+    box-shadow: 0 0 6px rgba(255, 193, 7, 0.2);
 }
 
 .velocity-low {
     color: rgba(244, 67, 54, 0.9);
     border-color: rgba(244, 67, 54, 0.5);
     background: rgba(244, 67, 54, 0.08);
-    box-shadow: 0 0 4px rgba(244, 67, 54, 0.15); /* ✅ REDUCED: was 6px with 0.2 opacity */
+    box-shadow: 0 0 4px rgba(244, 67, 54, 0.15);
 }
 
 .heatmap-warning {
     background: rgba(255, 217, 102, 0.18);
     color: #FFD966;
-    box-shadow: 0 0 8px rgba(255, 217, 102, 0.2); /* ✅ REDUCED: was 10px with 0.25 opacity */
+    box-shadow: 0 0 8px rgba(255, 217, 102, 0.2);
 }
 
 .signal-text {
@@ -1920,10 +1920,10 @@ METHODOLOGY
 .property-type-heatmap .chart-source {
     font-family: var(--font-body);
     font-size: 11px;
-    color: rgba(234, 234, 234, 0.65); /* ✅ REDUCED opacity: was 0.7 */
+    color: rgba(234, 234, 234, 0.65);
     opacity: 0.9;
     text-align: center;
-    margin-top: 18px; /* ✅ REDUCED: was 20px */
+    margin-top: 16px;
     margin-bottom: 0;
     font-style: italic;
     font-weight: 400;
@@ -1932,8 +1932,8 @@ METHODOLOGY
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    margin-top: 56px; /* ✅ REDUCED: was 80px */
+    gap: 30px;
+    margin-top: 48px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -1942,9 +1942,9 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 28px 26px; /* ✅ REDUCED: was 32px 30px */
-    min-height: 170px; /* ✅ REDUCED: was 200px */
-    height: 170px; /* ✅ REDUCED: was 200px */
+    padding: 24px 24px;
+    min-height: 155px;
+    height: 155px;
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
@@ -1954,33 +1954,33 @@ METHODOLOGY
 
 .depth-label {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
-    color: rgba(184, 184, 184, 0.75); /* ✅ REDUCED opacity: was 0.8 */
+    font-size: 12px;
+    color: rgba(184, 184, 184, 0.75);
     text-transform: uppercase;
-    letter-spacing: 1.6px; /* ✅ REDUCED: was 1.8px */
-    margin-bottom: 14px; /* ✅ REDUCED: was 16px */
+    letter-spacing: 1.6px;
+    margin-bottom: 12px;
     font-weight: 600;
     position: relative;
 }
 
 .depth-value {
     font-family: var(--font-body);
-    font-size: 52px; /* ✅ REDUCED: was 58px */
+    font-size: 48px;
     font-weight: 800;
     color: var(--vm-gold);
-    margin-bottom: 20px; /* ✅ REDUCED: was 24px */
+    margin-bottom: 18px;
     line-height: 1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4); /* ✅ REDUCED: was 10px with 0.5 opacity */
+    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
 }
 
 .depth-bar {
     width: 100%;
     max-width: 100%;
-    height: 10px; /* ✅ REDUCED: was 12px */
+    height: 9px;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 5px; /* ✅ REDUCED: was 6px */
+    border-radius: 4.5px;
     overflow: hidden;
     margin: 0;
     position: relative;
@@ -1990,20 +1990,20 @@ METHODOLOGY
     position: absolute;
     top: 0;
     left: 0;
-    height: 10px; /* ✅ REDUCED: was 12px */
-    border-radius: 5px; /* ✅ REDUCED: was 6px */
+    height: 9px;
+    border-radius: 4.5px;
     background: linear-gradient(90deg, #B59854 0%, #C5A46D 100%);
     transition: width 0.6s ease;
 }
 
 .depth-note {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
+    font-size: 12px;
     color: rgba(234, 234, 234, 0.65);
-    margin-top: 14px; /* ✅ REDUCED: was 16px */
+    margin-top: 12px;
     margin-bottom: 0;
     font-weight: 400;
-    line-height: 1.5; /* ✅ REDUCED: was 1.6 */
+    line-height: 1.5;
 }
 
 /* ============================================
@@ -2012,50 +2012,50 @@ METHODOLOGY
 
 @media print, .a4-export {
     .market-depth-analysis .slide-content {
-        top: 165px;
+        top: 162px;
     }
     
     .property-type-heatmap {
-        margin-top: 24px;
+        margin-top: 22px;
     }
     
     .property-type-heatmap .chart-context {
-        margin-bottom: 32px;
+        margin-bottom: 28px;
     }
     
     .heatmap-table th {
-        padding: 14px 12px;
-        height: 44px;
+        padding: 13px 11px;
+        height: 46px;
         font-size: 11px;
     }
     
     .heatmap-table td {
-        padding: 14px 12px;
-        height: 44px;
-        font-size: 12px;
+        padding: 13px 11px;
+        height: 46px;
+        font-size: 11.5px;
     }
     
     .velocity-badge {
-        padding: 7px 14px;
-        height: 26px;
-        font-size: 12px;
-        min-width: 52px;
+        padding: 6px 13px;
+        height: 24px;
+        font-size: 11.5px;
+        min-width: 50px;
     }
     
     .depth-metrics {
-        margin-top: 48px;
-        gap: 28px;
+        margin-top: 44px;
+        gap: 26px;
     }
     
     .depth-card {
-        padding: 24px 22px;
-        min-height: 155px;
-        height: 155px;
+        padding: 22px 22px;
+        min-height: 145px;
+        height: 145px;
     }
     
     .depth-value {
-        font-size: 48px;
-        margin-bottom: 18px;
+        font-size: 44px;
+        margin-bottom: 16px;
     }
 }
 
