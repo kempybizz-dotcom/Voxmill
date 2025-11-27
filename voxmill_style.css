@@ -1051,17 +1051,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: left;
 }
 
-/* ✅ NEW: Competitive Insights Strip Spacing */
+/* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
-    margin-top: 56px;  /* ADDED: Match gap between two-column cards */
-    margin-bottom: 56px;  /* ADDED: Match gap before bottom callout */
+    margin-top: 56px;
+    margin-bottom: 56px;
     padding: 26px 30px;
 }
 
 .competitive-insights-grid {
     display: flex;
     flex-direction: column;
-    gap: 20px;  /* Spacing between insight bullets */
+    gap: 20px;
 }
 
 .competitive-insight-point {
@@ -1087,9 +1087,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex: 1;
 }
 
-/* ✅ NEW: Bottom Callout Box Spacing */
+/* ✅ Bottom Callout Box Spacing */
 .bottom-callout-box {
-    margin-top: 0;  /* No extra top margin - already handled by insights strip */
+    margin-top: 0;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -1136,6 +1136,10 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 18px;
 }
 
+/* ============================================
+CROSS-VERTICAL INTELLIGENCE
+============================================ */
+
 .cross-vertical-intelligence .slide-content {
     top: 170px;
 }
@@ -1143,10 +1147,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .cross-vertical-container {
     padding: 0;
 }
-
-/* ============================================
-✅ NEW: SIGNAL BOARD SUBTITLE
-============================================ */
 
 .cross-vertical-subtitle {
     font-family: var(--font-body);
@@ -1160,10 +1160,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 400;
 }
 
-/* ============================================
-✅ NEW: SIGNAL BOARD GRID (4 CARDS)
-============================================ */
-
 .cross-vertical-signal-board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1171,10 +1167,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 64px;
     align-items: stretch;
 }
-
-/* ============================================
-✅ NEW: SIGNAL CARD BASE STRUCTURE
-============================================ */
 
 .vertical-signal-card {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
@@ -1206,10 +1198,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     opacity: 0.4;
 }
 
-/* ============================================
-✅ NEW: SIGNAL CARD ICON (TOP)
-============================================ */
-
 .signal-card-icon {
     width: 48px;
     height: 48px;
@@ -1226,10 +1214,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     width: 32px;
     height: 32px;
 }
-
-/* ============================================
-✅ NEW: SIGNAL CARD TITLE
-============================================ */
 
 .signal-card-title {
     font-family: var(--font-body);
@@ -1248,10 +1232,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex-shrink: 0;
 }
 
-/* ============================================
-✅ NEW: SIGNAL CARD METRIC (PRIMARY VALUE)
-============================================ */
-
 .signal-card-metric {
     font-family: var(--font-body);
     font-size: 22px;
@@ -1264,15 +1244,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex-shrink: 0;
 }
 
-/* ============================================
-✅ NEW: SIGNAL TAG (STATUS BADGE)
-============================================ */
-
-
-/* ============================================
-✅ NEW: SIGNAL CARD CONFIDENCE (PREDICTIVE ONLY)
-============================================ */
-
 .signal-card-confidence {
     font-family: var(--font-body);
     font-size: 11px;
@@ -1283,10 +1254,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     letter-spacing: 0.8px;
     flex-shrink: 0;
 }
-
-/* ============================================
-✅ NEW: SIGNAL CARD BULLETS (2 MAX)
-============================================ */
 
 .signal-card-bullets {
     list-style: none;
@@ -1322,21 +1289,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 /* ============================================
-LEGACY CROSS-VERTICAL GRID (FALLBACK - UNUSED IN NEW DESIGN)
-Kept for backwards compatibility but hidden by new structure
-============================================ */
-
-.cross-vertical-grid {
-    display: none;  /* Hidden - replaced by signal board */
-}
-
-.cross-vertical-card {
-    /* Legacy styles - not used in new design */
-    display: none;
-}
-
-/* ============================================
-MOMENTUM CORRELATION PANEL (BOTTOM SECTION - UNCHANGED)
+MOMENTUM CORRELATION PANEL
 ============================================ */
 
 .momentum-correlation-panel {
@@ -1408,7 +1361,7 @@ MOMENTUM CORRELATION PANEL (BOTTOM SECTION - UNCHANGED)
 }
 
 /* ============================================
-CROSS-VERTICAL SUMMARY BAR (BOTTOM - UNCHANGED)
+CROSS-VERTICAL SUMMARY BAR
 ============================================ */
 
 .cross-vertical-summary-bar {
@@ -1436,25 +1389,15 @@ CROSS-VERTICAL SUMMARY BAR (BOTTOM - UNCHANGED)
 }
 
 /* ============================================
-RESPONSIVE ADJUSTMENTS (IF NEEDED)
+LEGACY CLEANUP
 ============================================ */
 
-@media (max-width: 1600px) {
-    .cross-vertical-signal-board {
-        gap: 20px;
-    }
-    
-    .vertical-signal-card {
-        padding: 24px 20px 20px 20px;
-    }
-    
-    .signal-card-metric {
-        font-size: 20px;
-    }
-    
-    .signal-card-title {
-        font-size: 12px;
-    }
+.cross-vertical-grid {
+    display: none !important;
+}
+
+.cross-vertical-card {
+    display: none !important;
 }
 
 /* ============================================
