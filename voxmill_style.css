@@ -2454,7 +2454,7 @@ STRATEGIC FORECAST — REFINED
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 1.5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 26px 24px;
+    padding: 16px 20px;
     text-align: left;
     width: 100%;
     display: flex;
@@ -2466,7 +2466,7 @@ STRATEGIC FORECAST — REFINED
         inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
-    gap: 11px;
+    gap: 10px;
     min-height: 416px;
 }
 
@@ -2493,7 +2493,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .verdict-seal {
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     display: flex;
     justify-content: flex-start;
     filter: drop-shadow(0 4px 16px rgba(191,166,112,0.5));
@@ -2587,8 +2587,8 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 30px;
-    margin-bottom: 26px;
+    margin-top: 22px;
+    margin-bottom: 20px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
@@ -2689,7 +2689,7 @@ STRATEGIC FORECAST — REFINED
     }
     
     .verdict-panel-border {
-        padding: 24px 22px;
+        padding: 14px 18px;
         min-height: 390px;
     }
     
