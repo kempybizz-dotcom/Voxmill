@@ -726,6 +726,24 @@
                 <div class="depth-note">{{ "Oversupply Risk" if market_depth.demand_pressure > 1.5 else "Balanced" if market_depth.demand_pressure > 0.8 else "High Demand" }}</div>
             </div>
         </div>
+        
+        <div class="volatility-matrix">
+            <div class="volatility-card">
+                <div class="volatility-label">Price Volatility</div>
+                <div class="volatility-value">{{ "High" if (market_depth.liquidity_index or 0) < 50 else "Moderate" if (market_depth.liquidity_index or 0) < 75 else "Low" }}</div>
+                <div class="volatility-note">Price range variation vs median segment benchmarks</div>
+            </div>
+            <div class="volatility-card">
+                <div class="volatility-label">Turnover Velocity</div>
+                <div class="volatility-value">{{ "Rapid" if (market_depth.liquidity_index or 0) > 75 else "Balanced" if (market_depth.liquidity_index or 0) > 50 else "Slow" }}</div>
+                <div class="volatility-note">Indicates pace of transaction cycling within segments</div>
+            </div>
+            <div class="volatility-card">
+                <div class="volatility-label">Depth Stability</div>
+                <div class="volatility-value">{{ "Stable" if (market_depth.demand_pressure or 0) > 0.8 and (market_depth.demand_pressure or 0) < 1.5 else "Sensitive" if (market_depth.demand_pressure or 0) > 1.5 else "Unstable" }}</div>
+                <div class="volatility-note">Supply stability derived from demand pressure index</div>
+            </div>
+        </div>
     </div>
 </div>
 <!-- SLIDE 8: STRATEGIC FORECAST -->
