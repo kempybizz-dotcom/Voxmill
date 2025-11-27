@@ -766,19 +766,18 @@ VALUE DISTRIBUTION CHART (REFINED)
 PERFORMANCE ANALYSIS
 ============================================ */
 
-/* FIX: Normalize spacing after charts */
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     height: auto;
     margin-top: 56px;
-    margin-bottom: 56px;
+    margin-bottom: 48px;
 }
 
 .chart-panel {
     height: auto;
-    min-height: 630px;
+    min-height: 600px;
     width: 100%;
     page-break-inside: avoid;
     display: flex;
@@ -821,38 +820,20 @@ PERFORMANCE ANALYSIS
     font-style: italic;
 }
 
-/* FIX: Reinforce spacing + ensure visual separation */
-.momentum-drivers-section {
-    margin-top: 56px; /* CHANGED: 50px → 56px (normalized to 8px grid) */
-    margin-bottom: 32px;
-    padding: 24px 30px; /* CHANGED: 24px → 24px 30px (match other cards) */
-    background: rgba(203, 161, 53, 0.03);
-    border: 1px solid rgba(203, 161, 53, 0.15);
-    border-radius: 8px;
-}
-
-.momentum-drivers-section h4 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #CBA135;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.momentum-drivers-section div {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.8;
-}
-
-/* FIX: Add bottom spacing to create breathing room */
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 32px;
     margin-top: 56px;
-    margin-bottom: 56px; /* CHANGED: 0 → 56px (ensure gap before next section) */
+    margin-bottom: 48px;
+}
+
+.insight-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    padding: 24px 26px;
+    box-shadow: var(--card-shadow);
 }
 
 .insight-title {
@@ -873,13 +854,12 @@ PERFORMANCE ANALYSIS
     font-weight: 400;
 }
 
-/* FIX: Add vertical spacing to prevent collision */
 .context-panel {
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
     padding: 24px 30px;
-    margin-top: 56px; /* CHANGED: 0 → 56px */
+    margin-top: 48px;
     margin-bottom: 0;
 }
 
