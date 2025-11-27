@@ -222,66 +222,86 @@ COVER PAGE
 }
 
 /* ============================================================================
-   UNIFIED BADGE SYSTEM — NO DUPLICATION, NO NESTED CONTAINERS
+   UNIFIED BADGE SYSTEM — ZERO TOLERANCE FOR DUPLICATION
    ============================================================================ */
 
-/* Base badge structure */
+/* Kill ALL legacy badge classes */
+.badge,
+.badge-dominant,
+.badge-rising,
+.badge-emerging,
+.badge-bullish,
+.badge-neutral,
+.badge-cautious,
+span.badge,
+div.badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* New unified badge system */
 .vx-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 18px;
-    border-radius: 8px;
-    border: 1.6px solid;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    background: transparent;
-    height: 32px;
-    min-width: 85px;
-    line-height: 1;
-    white-space: nowrap;
+    display: inline-block !important;
+    padding: 6px 16px !important;
+    border: 1.6px solid !important;
+    border-radius: 4px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    background: transparent !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    vertical-align: middle !important;
 }
 
 /* Block ALL pseudo-elements */
 .vx-badge::before,
-.vx-badge::after {
+.vx-badge::after,
+.vx-badge *::before,
+.vx-badge *::after {
     content: none !important;
     display: none !important;
 }
 
-/* Competitive Landscape variants */
+/* Remove ALL child elements inside badges */
+.vx-badge * {
+    all: unset !important;
+}
+
+/* Color variants */
 .vx-dominant {
-    border-color: #2ECC71;
-    color: #2ECC71;
+    border-color: #2ECC71 !important;
+    color: #2ECC71 !important;
 }
 
 .vx-rising {
-    border-color: #F1C40F;
-    color: #F1C40F;
+    border-color: #F1C40F !important;
+    color: #F1C40F !important;
 }
 
 .vx-emerging {
-    border-color: #E74C3C;
-    color: #E74C3C;
+    border-color: #E74C3C !important;
+    color: #E74C3C !important;
 }
 
-/* Cross-Vertical Intelligence variants */
 .vx-bullish {
-    border-color: #2ECC71;
-    color: #2ECC71;
+    border-color: #2ECC71 !important;
+    color: #2ECC71 !important;
 }
 
 .vx-neutral {
-    border-color: #B08D57;
-    color: #B08D57;
+    border-color: #B08D57 !important;
+    color: #B08D57 !important;
 }
 
 .vx-cautious {
-    border-color: #E74C3C;
-    color: #E74C3C;
+    border-color: #E74C3C !important;
+    color: #E74C3C !important;
 }
 
 /* ============================================================================
