@@ -483,10 +483,7 @@
                                 <div class="metric-label">Market Share</div>
                                 <div class="metric-value">{{ agency.market_share_pct }}%</div>
                             </div>
-                          <span class="vx-badge vx-{{ 'dominant' if agency.market_share_pct > 15 else 'rising' if agency.market_share_pct > 8 else 'emerging' }}">
-                             {{ agency.positioning }}
-                         </span>
-                            </span>
+                            <div class="vx-badge vx-{{ 'dominant' if agency.market_share_pct > 15 else 'rising' if agency.market_share_pct > 8 else 'emerging' }}">{{ agency.positioning }}</div>
                         </div>
                     </div>
                     {% endfor %}
@@ -583,9 +580,7 @@
                     </div>
                     <h4 class="signal-card-title">Luxury Goods – Demand Pulse</h4>
                     <div class="signal-card-metric">{{ cross_vertical.luxury_goods.metric }}</div>
-                   <span class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">
-                       {{ cross_vertical.luxury_goods.signal_label }}
-                  </span>
+                    <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.luxury_goods.bullet_1 }}</li>
                         <li>{{ cross_vertical.luxury_goods.bullet_2 }}</li>
@@ -606,9 +601,7 @@
                     </div>
                     <h4 class="signal-card-title">Private Equity – Capital Flow</h4>
                     <div class="signal-card-metric">{{ cross_vertical.private_equity.metric }}</div>
-                    <span  class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">
-                        {{ cross_vertical.private_equity.signal_label }}
-                    </span>
+                    <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.private_equity.bullet_1 }}</li>
                         <li>{{ cross_vertical.private_equity.bullet_2 }}</li>
@@ -626,9 +619,7 @@
                     </div>
                     <h4 class="signal-card-title">Wealth Management – Allocation Shift</h4>
                     <div class="signal-card-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
-                    <span  class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">
-                        {{ cross_vertical.wealth_mgmt.signal_label }}
-                    </span>
+                    <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
                     <ul class="signal-card-bullets">
                         <li>{{ cross_vertical.wealth_mgmt.bullet_1 }}</li>
                         <li>{{ cross_vertical.wealth_mgmt.bullet_2 }}</li>
