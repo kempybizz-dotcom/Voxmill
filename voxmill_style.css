@@ -1054,7 +1054,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 /* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
     margin-top: 56px;
-    margin-bottom: 56px;
+    margin-bottom: 48px;
     padding: 26px 30px;
 }
 
@@ -1089,7 +1089,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 /* ✅ Bottom Callout Box Spacing */
 .bottom-callout-box {
-    margin-top: 24px;
+    margin-top: 20px;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -1118,7 +1118,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .bottom-callout-text > div {
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     padding-left: 20px;
     position: relative;
 }
