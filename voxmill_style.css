@@ -221,10 +221,16 @@ COVER PAGE
     font-weight: 600;
 }
 /* ============================================================================
-   BADGE COMPONENT — CLEAN REDESIGN (NO GLOW, SINGLE OUTLINE, NO DUPLICATION)
+   BADGE COMPONENT — STANDALONE VARIANTS (NO DUPLICATION)
    ============================================================================ */
 
-.badge {
+/* Base badge styles that ALL variants inherit */
+.badge-dominant,
+.badge-rising,
+.badge-emerging,
+.badge-bullish,
+.badge-neutral,
+.badge-cautious {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -244,14 +250,24 @@ COVER PAGE
     position: relative;
 }
 
-/* Block ALL pseudo-elements to prevent duplication */
-.badge::before,
-.badge::after {
+/* Block ALL pseudo-elements */
+.badge-dominant::before,
+.badge-dominant::after,
+.badge-rising::before,
+.badge-rising::after,
+.badge-emerging::before,
+.badge-emerging::after,
+.badge-bullish::before,
+.badge-bullish::after,
+.badge-neutral::before,
+.badge-neutral::after,
+.badge-cautious::before,
+.badge-cautious::after {
     content: none !important;
     display: none !important;
 }
 
-/* Badge Variants */
+/* Badge color variants */
 .badge-dominant {
     color: #2ECC71;
     border-color: #2ECC71;
@@ -305,7 +321,6 @@ COVER PAGE
     vertical-align: middle;
 }
 
-/* Block ALL pseudo-elements for score badges */
 .score-badge::before,
 .score-badge::after {
     content: none !important;
@@ -1062,28 +1077,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     min-width: 70px;
     text-align: left;
 }
-
-
-
-## 📍 **SECTION 4: CROSS-VERTICAL INTELLIGENCE**
-
-**FIND THIS IN YOUR CSS (Around Line 1100-1400):**
-```
-/* CROSS-VERTICAL INTELLIGENCE
-```
-or search for:
-```
-.cross-vertical-intelligence
-
-/* ============================================
-CROSS-VERTICAL INTELLIGENCE — COMPLETE REDESIGN
-Top Half: Premium Signal Board (4 cards)
-Bottom Half: Momentum Correlation + Summary (unchanged)
-============================================ */
-
-/* ============================================
-SLIDE CONTENT POSITIONING
-============================================ */
 
 .cross-vertical-intelligence .slide-content {
     top: 170px;
