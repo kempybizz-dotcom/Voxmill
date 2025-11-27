@@ -1729,39 +1729,53 @@ METHODOLOGY
 }
 
 /* ============================================
-MARKET DEPTH ANALYSIS — REFINED
-============================================ */
+   MARKET DEPTH ANALYSIS — PRECISION UPLIFT
+   ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 185px;
+    top: 175px; /* ✅ REDUCED: was 185px */
+}
+
+.property-type-heatmap {
+    margin-top: 28px; /* ✅ REDUCED: was 36px */
 }
 
 .property-type-heatmap .chart-title {
     font-family: var(--font-body);
-    font-size: 18px;
+    font-size: 17px; /* ✅ REDUCED: was 18px */
     font-weight: 600;
     color: var(--vm-gold);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em; /* ✅ REDUCED: was 0.12em */
     margin-bottom: 0;
-    padding-bottom: 12px;
+    padding-bottom: 14px; /* ✅ INCREASED: was 12px for better separation */
     text-align: center;
+    position: relative; /* ✅ NEW: for pseudo-element */
 }
 
-.property-type-heatmap {
-    margin-top: 36px;
+.property-type-heatmap .chart-title::after {
+    content: ''; /* ✅ NEW: subtle divider */
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
+    opacity: 0.4;
 }
 
 .property-type-heatmap .chart-context {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(234, 234, 234, 0.75);
+    font-size: 12px; /* ✅ REDUCED: was 13px */
+    color: rgba(234, 234, 234, 0.7); /* ✅ REDUCED opacity: was 0.75 */
     text-align: center;
-    margin-bottom: 52px;
-    margin-top: 0;
+    margin-bottom: 40px; /* ✅ REDUCED: was 52px */
+    margin-top: 16px; /* ✅ NEW: was 0 */
     font-style: italic;
-    line-height: 1.8;
+    line-height: 1.7; /* ✅ REDUCED: was 1.8 */
     font-weight: 400;
 }
+
 .heatmap-table {
     width: 100%;
     margin-top: 0;
@@ -1773,17 +1787,18 @@ MARKET DEPTH ANALYSIS — REFINED
 }
 
 .heatmap-table th {
-    background: linear-gradient(90deg, #A77B3A 0%, #BFA670 50%, #A77B3A 100%);
+    background: linear-gradient(135deg, #A77B3A 0%, #BFA670 30%, #C5A46D 50%, #BFA670 70%, #A77B3A 100%); /* ✅ REFINED: more sophisticated gradient */
     color: #0C0C0C;
-    padding: 20px 16px;
+    padding: 16px 14px; /* ✅ REDUCED: was 20px 16px */
     text-transform: uppercase;
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12px; /* ✅ REDUCED: was 13px */
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em; /* ✅ REDUCED: was 0.14em */
     text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    height: 56px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); /* ✅ STRENGTHENED: was 0.2 */
+    height: 48px; /* ✅ REDUCED: was 56px */
+    border-bottom: 2px solid rgba(12, 12, 12, 0.3); /* ✅ NEW: subtle separation */
 }
 
 .heatmap-table th:first-child {
@@ -1807,15 +1822,15 @@ MARKET DEPTH ANALYSIS — REFINED
 }
 
 .heatmap-table td {
-    padding: 20px 16px;
-    border-bottom: 1px solid rgba(191, 166, 112, 0.12);
+    padding: 16px 14px; /* ✅ REDUCED: was 20px 16px */
+    border-bottom: 1px solid rgba(191, 166, 112, 0.1); /* ✅ REDUCED opacity: was 0.12 */
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 13px; /* ✅ REDUCED: was 14px */
     color: var(--vm-text);
     vertical-align: middle;
     text-align: center;
     font-weight: 400;
-    height: 56px;
+    height: 48px; /* ✅ REDUCED: was 56px */
 }
 
 .heatmap-table td:nth-child(1) {
@@ -1845,7 +1860,7 @@ MARKET DEPTH ANALYSIS — REFINED
 }
 
 .heatmap-table tbody tr:hover {
-    background: rgba(191, 166, 112, 0.06);
+    background: rgba(191, 166, 112, 0.05); /* ✅ REDUCED: was 0.06 for subtlety */
 }
 
 .property-type-name {
@@ -1858,43 +1873,43 @@ MARKET DEPTH ANALYSIS — REFINED
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 18px;
-    border-radius: 6px;
+    padding: 8px 16px; /* ✅ REDUCED: was 10px 18px */
+    border-radius: 5px; /* ✅ REDUCED: was 6px */
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px; /* ✅ REDUCED: was 14px */
     background: rgba(12, 12, 12, 0.6);
     border: 1.5px solid;
-    min-width: 60px;
-    height: 32px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    min-width: 56px; /* ✅ REDUCED: was 60px */
+    height: 28px; /* ✅ REDUCED: was 32px */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* ✅ REDUCED: was 6px */
 }
 
 .velocity-high {
     color: #4CAF50;
     border-color: rgba(76, 175, 80, 0.5);
     background: rgba(76, 175, 80, 0.08);
-    box-shadow: 0 0 12px rgba(76, 175, 80, 0.35);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.25); /* ✅ REDUCED: was 12px with 0.35 opacity */
 }
 
 .velocity-medium {
     color: #FFC107;
     border-color: rgba(255, 193, 7, 0.5);
     background: rgba(255, 193, 7, 0.08);
-    box-shadow: 0 0 8px rgba(255, 193, 7, 0.25);
+    box-shadow: 0 0 6px rgba(255, 193, 7, 0.2); /* ✅ REDUCED: was 8px with 0.25 opacity */
 }
 
 .velocity-low {
     color: rgba(244, 67, 54, 0.9);
     border-color: rgba(244, 67, 54, 0.5);
     background: rgba(244, 67, 54, 0.08);
-    box-shadow: 0 0 6px rgba(244, 67, 54, 0.2);
+    box-shadow: 0 0 4px rgba(244, 67, 54, 0.15); /* ✅ REDUCED: was 6px with 0.2 opacity */
 }
 
 .heatmap-warning {
     background: rgba(255, 217, 102, 0.18);
     color: #FFD966;
-    box-shadow: 0 0 10px rgba(255, 217, 102, 0.25);
+    box-shadow: 0 0 8px rgba(255, 217, 102, 0.2); /* ✅ REDUCED: was 10px with 0.25 opacity */
 }
 
 .signal-text {
@@ -1905,10 +1920,10 @@ MARKET DEPTH ANALYSIS — REFINED
 .property-type-heatmap .chart-source {
     font-family: var(--font-body);
     font-size: 11px;
-    color: rgba(234, 234, 234, 0.7);
+    color: rgba(234, 234, 234, 0.65); /* ✅ REDUCED opacity: was 0.7 */
     opacity: 0.9;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 18px; /* ✅ REDUCED: was 20px */
     margin-bottom: 0;
     font-style: italic;
     font-weight: 400;
@@ -1918,7 +1933,7 @@ MARKET DEPTH ANALYSIS — REFINED
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    margin-top: 80px;
+    margin-top: 56px; /* ✅ REDUCED: was 80px */
     margin-bottom: 0;
     align-items: start;
 }
@@ -1927,9 +1942,9 @@ MARKET DEPTH ANALYSIS — REFINED
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px 30px;
-    min-height: 200px;
-    height: 200px;
+    padding: 28px 26px; /* ✅ REDUCED: was 32px 30px */
+    min-height: 170px; /* ✅ REDUCED: was 200px */
+    height: 170px; /* ✅ REDUCED: was 200px */
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
@@ -1939,33 +1954,33 @@ MARKET DEPTH ANALYSIS — REFINED
 
 .depth-label {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.8);
+    font-size: 12px; /* ✅ REDUCED: was 13px */
+    color: rgba(184, 184, 184, 0.75); /* ✅ REDUCED opacity: was 0.8 */
     text-transform: uppercase;
-    letter-spacing: 1.8px;
-    margin-bottom: 16px;
+    letter-spacing: 1.6px; /* ✅ REDUCED: was 1.8px */
+    margin-bottom: 14px; /* ✅ REDUCED: was 16px */
     font-weight: 600;
     position: relative;
 }
 
 .depth-value {
     font-family: var(--font-body);
-    font-size: 58px;
+    font-size: 52px; /* ✅ REDUCED: was 58px */
     font-weight: 800;
     color: var(--vm-gold);
-    margin-bottom: 24px;
+    margin-bottom: 20px; /* ✅ REDUCED: was 24px */
     line-height: 1;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
+    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4); /* ✅ REDUCED: was 10px with 0.5 opacity */
 }
 
 .depth-bar {
     width: 100%;
     max-width: 100%;
-    height: 12px;
+    height: 10px; /* ✅ REDUCED: was 12px */
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 5px; /* ✅ REDUCED: was 6px */
     overflow: hidden;
     margin: 0;
     position: relative;
@@ -1975,20 +1990,73 @@ MARKET DEPTH ANALYSIS — REFINED
     position: absolute;
     top: 0;
     left: 0;
-    height: 12px;
-    border-radius: 6px;
+    height: 10px; /* ✅ REDUCED: was 12px */
+    border-radius: 5px; /* ✅ REDUCED: was 6px */
     background: linear-gradient(90deg, #B59854 0%, #C5A46D 100%);
     transition: width 0.6s ease;
 }
 
 .depth-note {
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12px; /* ✅ REDUCED: was 13px */
     color: rgba(234, 234, 234, 0.65);
-    margin-top: 16px;
+    margin-top: 14px; /* ✅ REDUCED: was 16px */
     margin-bottom: 0;
     font-weight: 400;
-    line-height: 1.6;
+    line-height: 1.5; /* ✅ REDUCED: was 1.6 */
+}
+
+/* ============================================
+   A4 EXPORT ADJUSTMENTS
+   ============================================ */
+
+@media print, .a4-export {
+    .market-depth-analysis .slide-content {
+        top: 165px;
+    }
+    
+    .property-type-heatmap {
+        margin-top: 24px;
+    }
+    
+    .property-type-heatmap .chart-context {
+        margin-bottom: 32px;
+    }
+    
+    .heatmap-table th {
+        padding: 14px 12px;
+        height: 44px;
+        font-size: 11px;
+    }
+    
+    .heatmap-table td {
+        padding: 14px 12px;
+        height: 44px;
+        font-size: 12px;
+    }
+    
+    .velocity-badge {
+        padding: 7px 14px;
+        height: 26px;
+        font-size: 12px;
+        min-width: 52px;
+    }
+    
+    .depth-metrics {
+        margin-top: 48px;
+        gap: 28px;
+    }
+    
+    .depth-card {
+        padding: 24px 22px;
+        min-height: 155px;
+        height: 155px;
+    }
+    
+    .depth-value {
+        font-size: 48px;
+        margin-bottom: 18px;
+    }
 }
 
 /* ============================================
