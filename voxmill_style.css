@@ -1488,14 +1488,25 @@ METHODOLOGY
 .methodology-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-top: 56px;
+    gap: 40px;  /* ✅ MAINTAINED */
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
     margin-bottom: 0;
 }
 
 .methodology-panel {
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
 }
+
+.model-pipeline {
+    background: rgba(191, 166, 112, 0.05);
+    margin-top: 48px;  /* ✅ FIXED: was 60px */
+    margin-bottom: 0;
+    text-align: center;
+    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    border: 1px solid rgba(191,166,112,0.15);
+    border-radius: var(--card-radius);
+}
+
 
 .methodology-title {
     font-family: var(--font-body);
@@ -1545,22 +1556,12 @@ METHODOLOGY
     font-size: 18px;
 }
 
-.model-pipeline {
-    background: rgba(191, 166, 112, 0.05);
-    margin-top: 60px;
-    margin-bottom: 0;
-    text-align: center;
-    padding: 26px 30px;
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-}
-
 .pipeline-flow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 32px 0;
-    gap: 36px;
+    margin: 32px 0;  /* ✅ MAINTAINED */
+    gap: 32px;  /* ✅ FIXED: was 36px */
 }
 
 .pipeline-step {
@@ -1596,9 +1597,9 @@ METHODOLOGY
 
 .proprietary-badge {
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
-    padding: 20px 36px;
+    padding: 24px 32px;  /* ✅ FIXED: was 20px 36px */
     border-radius: 8px;
-    margin-top: 48px;
+    margin-top: 48px;  /* ✅ MAINTAINED */
     text-align: center;
 }
 
@@ -2032,12 +2033,12 @@ STRATEGIC FORECAST — REFINED
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: auto auto; /* CHANGED: 1fr 1fr → auto auto */
-    gap: 32px;
-    height: auto; /* CHANGED: 520px → auto */
-    margin-top: 56px;
-    margin-bottom: 60px;
-    align-items: start; /* CHANGED: stretch → start */
+    grid-template-rows: auto auto;
+    gap: 32px;  /* ✅ MAINTAINED */
+    height: auto;
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
+    align-items: start;
 }
 
 /* FIX: Allow content expansion, remove clipping */
@@ -2058,22 +2059,11 @@ STRATEGIC FORECAST — REFINED
     height: auto; /* CHANGED: 272px → auto */
 }
 
-.forecast-card-premium::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
-    opacity: 0.6;
-}
-
 .forecast-premium-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 24px 16px 24px;
+    padding: 24px;  /* ✅ FIXED: was 20px 24px 16px 24px */
     border-bottom: 1px solid rgba(191,166,112,0.15);
     gap: 6px;
     flex-shrink: 0;
@@ -2086,9 +2076,9 @@ STRATEGIC FORECAST — REFINED
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 32px 20px; /* CHANGED: 28px → 32px */
-    gap: 16px; /* CHANGED: 14px → 16px */
-    min-height: 160px; /* ADDED: Minimum body space */
+    padding: 32px 24px;  /* ✅ MAINTAINED */
+    gap: 16px;  /* ✅ MAINTAINED */
+    min-height: 160px;
 }
 
 
@@ -2159,7 +2149,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .forecast-premium-footer {
-    padding: 16px 24px 20px 24px;
+    padding: 24px;  /* ✅ FIXED: was 16px 24px 20px 24px */
     border-top: 1px solid rgba(191,166,112,0.1);
     flex-shrink: 0;
 }
@@ -2259,7 +2249,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .macro-context {
-    margin-top: auto; /* CHANGED: 92px → auto (pushes to bottom) */
+    margin-top: auto;
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -2267,7 +2257,7 @@ STRATEGIC FORECAST — REFINED
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 20px 28px;
+    padding: 24px 32px;  /* ✅ FIXED: was 20px 28px */
 }
 
 
@@ -2290,7 +2280,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .portfolio-recommendations {
-    margin-top: 48px;
+    margin-top: 48px;  /* ✅ MAINTAINED */
     margin-bottom: 0;
 }
 
@@ -2305,20 +2295,20 @@ STRATEGIC FORECAST — REFINED
 .recommendations-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 24px;  /* ✅ MAINTAINED */
 }
 
 .recommendation-card {
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 10px;
-    padding: 22px 20px;
+    padding: 32px 24px;  /* ✅ FIXED: was 22px 20px */
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 136px;
-    height: 136px;
+    min-height: 160px;  /* ✅ FIXED: was 136px */
+    height: 160px;  /* ✅ FIXED: was 136px */
     justify-content: center;
 }
 
@@ -2360,8 +2350,8 @@ STRATEGIC FORECAST — REFINED
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 26px;
-    margin-top: 42px;
+    gap: 24px;  /* ✅ FIXED: was 26px */
+    margin-top: 40px;  /* ✅ FIXED: was 42px */
     margin-bottom: 0;
     align-items: start;
 }
@@ -2369,18 +2359,18 @@ STRATEGIC FORECAST — REFINED
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 16px;  /* ✅ MAINTAINED */
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 16px 20px;
+    padding: 24px;  /* ✅ FIXED: was 16px 20px */
     display: flex;
     flex-direction: column;
-    min-height: 128px;
-    height: 128px;
+    min-height: 136px;  /* ✅ FIXED: was 128px */
+    height: 136px;  /* ✅ FIXED: was 128px */
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2447,7 +2437,7 @@ STRATEGIC FORECAST — REFINED
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 1.5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 16px 20px;
+    padding: 32px;  /* ✅ FIXED: was 16px 20px */
     text-align: left;
     width: 100%;
     display: flex;
@@ -2460,7 +2450,7 @@ STRATEGIC FORECAST — REFINED
     position: relative;
     overflow: hidden;
     gap: 10px;
-    min-height: 416px;
+    min-height: 440px;  /* ✅ FIXED: was 416px */
 }
 
 .verdict-panel-border::before {
@@ -2580,13 +2570,13 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 22px;
+    margin-top: 24px;  /* ✅ FIXED: was 22px */
     margin-bottom: 20px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 17px 22px;
+    padding: 24px;  /* ✅ FIXED: was 17px 22px */
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
@@ -2611,7 +2601,7 @@ STRATEGIC FORECAST — REFINED
 .action-window-luxury-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 24px;  /* ✅ MAINTAINED */
     width: 100%;
 }
 
@@ -2621,12 +2611,12 @@ STRATEGIC FORECAST — REFINED
     border: 1px solid rgba(191,166,112,0.15);
     border-left: 4px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 20px 18px;
+    padding: 24px;  /* ✅ FIXED: was 20px 18px */
     display: flex;
     flex-direction: column;
     gap: 9px;
-    min-height: 110px;
-    height: 110px;
+    min-height: 120px;  /* ✅ FIXED: was 110px */
+    height: 120px;  /* ✅ FIXED: was 110px */
     justify-content: center;
     box-shadow: var(--card-shadow);
 }
@@ -2838,9 +2828,9 @@ SEGMENT PERFORMANCE BREAKDOWN
 .district-performance-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    margin-top: 56px;
-    margin-bottom: 60px;
+    gap: 32px;  /* ✅ MAINTAINED */
+    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
 }
 
 .district-card-premium {
@@ -2873,7 +2863,7 @@ SEGMENT PERFORMANCE BREAKDOWN
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 22px 26px;
+    padding: 24px;  /* ✅ FIXED: was 22px 26px */
     min-height: 96px;
     display: flex;
     align-items: center;
@@ -2913,10 +2903,10 @@ SEGMENT PERFORMANCE BREAKDOWN
 }
 
 .district-metrics-grid {
-    padding: 26px 26px;
+    padding: 32px;  /* ✅ FIXED: was 26px 26px */
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 24px;  /* ✅ MAINTAINED */
     flex: 1;
 }
 
@@ -3063,9 +3053,9 @@ SEGMENT PERFORMANCE BREAKDOWN
 
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 60px;
-    margin-bottom: 60px;
-    padding: 22px 30px;
+    margin-top: 48px;  /* ✅ FIXED: was 60px */
+    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
+    padding: 32px;  /* ✅ FIXED: was 22px 30px */
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
 }
@@ -3121,8 +3111,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 22px 32px;
-    margin: 36px 0;
+    padding: 24px 32px;  /* ✅ MAINTAINED */
+    margin: 32px 0;  /* ✅ FIXED: was 36px 0 */
 }
 
 .summary-band-title {
@@ -3164,14 +3154,14 @@ AI OPPORTUNITIES
     font-weight: 600;
     letter-spacing: 0.06em;
     text-align: left;
-    padding: 20px 30px;
+    padding: 24px 32px;  /* ✅ FIXED: was 20px 30px */
 }
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    margin-top: 24px;
+    gap: 24px;  /* ✅ FIXED: was 18px */
+    margin-top: 24px;  /* ✅ MAINTAINED */
     margin-bottom: 0;
 }
 
@@ -3179,16 +3169,15 @@ AI OPPORTUNITIES
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 24px;
-    padding: 24px 28px;
+    gap: 24px;  /* ✅ MAINTAINED */
+    padding: 24px 32px;  /* ✅ FIXED: was 24px 28px */
     background: var(--card-bg);
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
-    min-height: 120px;
-    height: 120px;  /* ✅ FIXED HEIGHT - uniform across all cards */
+    min-height: 120px;  /* ✅ MAINTAINED */
+    height: 120px;
 }
-
 .signal-content-v2 {
 flex: 1;
 text-align: left;
@@ -3260,11 +3249,11 @@ border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .acquisition-strategy-ribbon {
-background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
-border-left: 4px solid #BFA670;
-border-radius: 8px;
-padding: 22px 32px;
-margin: 36px 0;
+    background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
+    border-left: 4px solid #BFA670;
+    border-radius: 8px;
+    padding: 24px 32px;  /* ✅ MAINTAINED */
+    margin: 32px 0;  /* ✅ FIXED: was 36px 0 */
 }
 
 .acquisition-strategy-text {
