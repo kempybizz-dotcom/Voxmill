@@ -1153,7 +1153,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     text-align: center;
-    margin: 20px auto 40px;
+    margin: 18px auto 36px;
     max-width: 1400px;
     line-height: 1.5;
     font-style: italic;
@@ -1167,8 +1167,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .macro-signal-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-    margin-bottom: 48px;
+    gap: 24px;
+    margin-bottom: 42px;
 }
 
 .macro-signal-card {
@@ -1176,11 +1176,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     border: 1px solid rgba(176, 141, 87, 0.25);
     border-top: 2px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 28px 24px 24px 24px;
+    padding: 24px 20px 20px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 280px;
+    min-height: 260px;
     position: relative;
     box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.4),
@@ -1188,12 +1188,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .macro-card-icon {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     color: var(--vm-gold);
     opacity: 0.85;
     filter: drop-shadow(0 2px 6px rgba(176, 141, 87, 0.3));
@@ -1205,7 +1205,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: var(--vm-gold);
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     letter-spacing: 0.5px;
 }
 
@@ -1226,12 +1226,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 500;
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     line-height: 1.4;
 }
 
 .macro-signal-card .vx-badge {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .macro-card-insight {
@@ -1252,8 +1252,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 10px;
-    padding: 24px 32px;
-    margin-bottom: 48px;
+    padding: 20px 28px;
+    margin-bottom: 42px;
 }
 
 .correlation-ribbon-title {
@@ -1261,7 +1261,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: var(--vm-gold);
     font-weight: 700;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     letter-spacing: 0.8px;
     text-transform: uppercase;
     text-align: center;
@@ -1271,7 +1271,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
     flex-wrap: nowrap;
 }
 
@@ -1279,7 +1279,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: rgba(18, 18, 18, 0.7);
     border: 1px solid rgba(176, 141, 87, 0.15);
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 12px 14px;
     flex: 1 1 0;
     min-width: 0;
     display: flex;
@@ -1329,7 +1329,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
     border: 1.5px solid rgba(176, 141, 87, 0.3);
     border-radius: 12px;
-    padding: 36px 48px 32px 48px;
+    padding: 28px 36px 26px 36px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1352,7 +1352,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .verdict-seal-small {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     filter: drop-shadow(0 4px 12px rgba(197, 164, 109, 0.4));
 }
 
@@ -1361,13 +1361,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 18px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     letter-spacing: 0.5px;
     text-align: center;
 }
 
 .composite-verdict-block .vx-badge {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .composite-verdict-headline {
@@ -1377,7 +1377,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: rgba(234, 234, 234, 0.95);
     text-align: center;
     line-height: 1.7;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     max-width: 1200px;
     letter-spacing: 0.2px;
 }
@@ -1386,8 +1386,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 20px;
     width: 100%;
     max-width: 500px;
 }
@@ -1427,7 +1427,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .composite-verdict-drivers {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
     max-width: 900px;
 }
@@ -1463,12 +1463,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 @media print, .a4-export {
     .macro-signal-grid {
-        gap: 20px;
+        gap: 18px;
     }
     
     .macro-signal-card {
-        padding: 22px 18px 18px 18px;
-        min-height: 240px;
+        padding: 20px 16px 16px 16px;
+        min-height: 230px;
     }
     
     .correlation-pills-container {
@@ -1480,7 +1480,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     }
     
     .composite-verdict-block {
-        padding: 28px 36px 24px 36px;
+        padding: 24px 32px 22px 32px;
     }
 }
 /* ============================================
