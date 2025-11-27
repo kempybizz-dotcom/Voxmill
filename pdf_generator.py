@@ -482,57 +482,60 @@ class VoxmillPDFGenerator:
         
         return momentum_streets[:4]
 
-   def get_competitor_agencies(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Generate dynamic competitor agency data from actual properties"""
-    properties = data.get('properties', data.get('top_opportunities', []))
-    
-    agencies = {}
-    for prop in properties:
-        agency = prop.get('agent', prop.get('agency', 'Private'))
-        if agency == 'Private' or not agency:
-            continue
+    def get_competitor_agencies(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Generate dynamic competitor agency data from actual properties.
+        ✅ FIXED: Returns both positioning_class and positioning_label for badge logic.
+        """
+        properties = data.get('properties', data.get('top_opportunities', []))
+        
+        agencies = {}
+        for prop in properties:
+            agency = prop.get('agent', prop.get('agency', 'Private'))
+            if agency == 'Private' or not agency:
+                continue
+                
+            if agency not in agencies:
+                agencies[agency] = {
+                    'listings': 0,
+                    'total_value': 0,
+                    'days': []
+                }
             
-        if agency not in agencies:
-            agencies[agency] = {
-                'listings': 0,
-                'total_value': 0,
-                'days': []
-            }
+            agencies[agency]['listings'] += 1
+            agencies[agency]['total_value'] += prop.get('price', 0)
+            agencies[agency]['days'].append(prop.get('days_listed', prop.get('days_on_market', 0)))
         
-        agencies[agency]['listings'] += 1
-        agencies[agency]['total_value'] += prop.get('price', 0)
-        agencies[agency]['days'].append(prop.get('days_listed', prop.get('days_on_market', 0)))
-    
-    total_listings = sum(a['listings'] for a in agencies.values())
-    
-    agency_list = []
-    for name, stats in agencies.items():
-        market_share_pct = int((stats['listings'] / max(total_listings, 1)) * 100)
-        avg_days = int(sum(stats['days']) / len(stats['days'])) if stats['days'] else 42
+        total_listings = sum(a['listings'] for a in agencies.values())
         
-        # ✅ FIXED: Calculate BOTH class and label
-        if market_share_pct > 15:
-            positioning_class = 'dominant'
-            positioning_label = 'DOMINANT'
-        elif market_share_pct > 8:
-            positioning_class = 'rising'
-            positioning_label = 'RISING'
-        else:
-            positioning_class = 'emerging'
-            positioning_label = 'EMERGING'
+        agency_list = []
+        for name, stats in agencies.items():
+            market_share_pct = int((stats['listings'] / max(total_listings, 1)) * 100)
+            avg_days = int(sum(stats['days']) / len(stats['days'])) if stats['days'] else 42
+            
+            # ✅ FIXED: Calculate BOTH class and label
+            if market_share_pct > 15:
+                positioning_class = 'dominant'
+                positioning_label = 'DOMINANT'
+            elif market_share_pct > 8:
+                positioning_class = 'rising'
+                positioning_label = 'RISING'
+            else:
+                positioning_class = 'emerging'
+                positioning_label = 'EMERGING'
+            
+            agency_list.append({
+                'name': name,
+                'listings': stats['listings'],
+                'market_share_pct': market_share_pct,
+                'avg_days': avg_days,
+                'positioning_class': positioning_class,  # ✅ NEW
+                'positioning_label': positioning_label   # ✅ NEW
+            })
         
-        agency_list.append({
-            'name': name,
-            'listings': stats['listings'],
-            'market_share_pct': market_share_pct,
-            'avg_days': avg_days,
-            'positioning_class': positioning_class,  # ✅ NEW
-            'positioning_label': positioning_label   # ✅ NEW
-        })
-    
-    agency_list.sort(key=lambda x: x['market_share_pct'], reverse=True)
-    
-    return agency_list[:4]
+        agency_list.sort(key=lambda x: x['market_share_pct'], reverse=True)
+        
+        return agency_list[:4]
     
     def get_competitive_benchmarking(self, data: Dict[str, Any]) -> List[Dict]:
         """Generate competitive benchmarking data"""
