@@ -566,30 +566,28 @@
                 Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
             </p>
             
-            <div class="cross-vertical-signal-board">
+            <!-- LAYER 1: MACRO SIGNAL CARDS -->
+            <div class="macro-signal-grid">
                 <!-- CARD 1: LUXURY GOODS -->
-                <div class="vertical-signal-card">
-                    <div class="signal-card-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M20 7H4L2 17H22L20 7Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M8 7L10 2H14L16 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <circle cx="9" cy="12" r="1" fill="currentColor"/>
                             <circle cx="15" cy="12" r="1" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h4 class="signal-card-title">Luxury Goods – Demand Pulse</h4>
-                    <div class="signal-card-metric">{{ cross_vertical.luxury_goods.metric }}</div>
+                    <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
-                    <ul class="signal-card-bullets">
-                        <li>{{ cross_vertical.luxury_goods.bullet_1 }}</li>
-                        <li>{{ cross_vertical.luxury_goods.bullet_2 }}</li>
-                    </ul>
+                    <p class="macro-card-insight">{{ cross_vertical.luxury_goods.bullet_1 }} {{ cross_vertical.luxury_goods.bullet_2 }}</p>
                 </div>
                 
                 <!-- CARD 2: PRIVATE EQUITY -->
-                <div class="vertical-signal-card">
-                    <div class="signal-card-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
                             <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
                             <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="1.5" rx="1"/>
@@ -598,79 +596,96 @@
                             <line x1="17.5" y1="6" x2="17.5" y2="8" stroke="currentColor" stroke-width="1.5"/>
                         </svg>
                     </div>
-                    <h4 class="signal-card-title">Private Equity – Capital Flow</h4>
-                    <div class="signal-card-metric">{{ cross_vertical.private_equity.metric }}</div>
+                    <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
-                    <ul class="signal-card-bullets">
-                        <li>{{ cross_vertical.private_equity.bullet_1 }}</li>
-                        <li>{{ cross_vertical.private_equity.bullet_2 }}</li>
-                    </ul>
+                    <p class="macro-card-insight">{{ cross_vertical.private_equity.bullet_1 }} {{ cross_vertical.private_equity.bullet_2 }}</p>
                 </div>
                 
                 <!-- CARD 3: WEALTH MANAGEMENT -->
-                <div class="vertical-signal-card">
-                    <div class="signal-card-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="macro-signal-card">
+                    <div class="macro-card-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 2L3 7L12 12L21 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M3 17L12 22L21 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M3 12L12 17L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </div>
-                    <h4 class="signal-card-title">Wealth Management – Allocation Shift</h4>
-                    <div class="signal-card-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
+                    <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
                     <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
-                    <ul class="signal-card-bullets">
-                        <li>{{ cross_vertical.wealth_mgmt.bullet_1 }}</li>
-                        <li>{{ cross_vertical.wealth_mgmt.bullet_2 }}</li>
-                    </ul>
+                    <p class="macro-card-insight">{{ cross_vertical.wealth_mgmt.bullet_1 }} {{ cross_vertical.wealth_mgmt.bullet_2 }}</p>
+                </div>
+            </div>
+            
+            <!-- LAYER 2: CORRELATION ENGINE RIBBON -->
+            <div class="correlation-engine-ribbon">
+                <h4 class="correlation-ribbon-title">{{ forward_indicator_label }} Correlation Signals</h4>
+                <div class="correlation-pills-container">
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Luxury Spending</div>
+                        <div class="correlation-strength">{{ '+11%' if forecast.sentiment == 'Bullish' else '-8%' }}</div>
+                    </div>
+                    <div class="correlation-arrow">→</div>
+                    <div class="correlation-pill">
+                        <div class="correlation-label">PE Deal Flow</div>
+                        <div class="correlation-strength">{{ ('+' if kpis.property_change > 0 else '') ~ (kpis.property_change|int) ~ '%' }}</div>
+                    </div>
+                    <div class="correlation-arrow">→</div>
+                    <div class="correlation-pill">
+                        <div class="correlation-label">UHNW Mobility</div>
+                        <div class="correlation-strength">+7% YoY</div>
+                    </div>
+                    <div class="correlation-arrow">→</div>
+                    <div class="correlation-pill">
+                        <div class="correlation-label">Wealth Fund Flows</div>
+                        <div class="correlation-strength">{{ 'Strong' if forecast.voxmill_index > 70 else 'Moderate' }}</div>
+                    </div>
+                    <div class="correlation-arrow">→</div>
+                    <div class="correlation-pill">
+                        <div class="correlation-label">90-Day Outlook</div>
+                        <div class="correlation-strength">{{ (forecast.day_90.mid|abs|int if forecast.day_90 else 84) ~ '%' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LAYER 3: COMPOSITE VERDICT BLOCK -->
+            <div class="composite-verdict-block">
+                <div class="verdict-seal-small">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#C5A46D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="#C5A46D" fill-opacity="0.15"/>
+                    </svg>
+                </div>
+                <h3 class="composite-verdict-title">Cross-Vertical Composite Forecast</h3>
+                <div class="vx-badge vx-{{ 'bullish' if forecast.voxmill_index > 70 else 'neutral' if forecast.voxmill_index > 50 else 'bearish' }}">
+                    {{ "Strong Forward Momentum" if forecast.voxmill_index > 70 else "Moderate Growth Signal" if forecast.voxmill_index > 50 else "Cautious Positioning" }}
+                </div>
+                <p class="composite-verdict-headline">
+                    {{ "Strong" if forecast.voxmill_index > 70 else "Moderate" if forecast.voxmill_index > 50 else "Cautious" }} forward demand indicated across luxury indicators — 90-day outlook {{ forecast.sentiment|lower }} with {{ "high" if forecast.voxmill_index > 75 else "moderate" if forecast.voxmill_index > 50 else "limited" }} confidence signal convergence
+                </p>
+                
+                <div class="composite-verdict-confidence">
+                    <div class="confidence-label">Voxmill Predictive Index</div>
+                    <div class="confidence-value">{{ forecast.voxmill_index }}/100</div>
+                    <div class="confidence-bar">
+                        <div class="confidence-bar-fill" style="width: {{ forecast.voxmill_index }}%;"></div>
+                    </div>
                 </div>
                 
-                <!-- CARD 4: PREDICTIVE SUMMARY -->
-                <div class="vertical-signal-card">
-                    <div class="signal-card-icon">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="currentColor" fill-opacity="0.1"/>
-                        </svg>
+                <div class="composite-verdict-drivers">
+                    <div class="driver-bullet">
+                        <div class="driver-icon">◆</div>
+                        <div class="driver-text">Capital rotation alignment synchronized across luxury asset classes</div>
                     </div>
-                    <h4 class="signal-card-title">Predictive Summary – Composite View</h4>
-                    <div class="signal-card-metric">{{ cross_vertical.predictive.metric }}</div>
-                    <div class="signal-card-confidence">{{ cross_vertical.predictive.confidence }}</div>
-                    <ul class="signal-card-bullets">
-                        <li>{{ cross_vertical.predictive.bullet_1 }}</li>
-                        <li>{{ cross_vertical.predictive.bullet_2 }}</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- BOTTOM SECTION: MOMENTUM CORRELATION -->
-            <div class="momentum-correlation-panel">
-                <h4 class="momentum-correlation-title">{{ forward_indicator_label }} Correlation Signals</h4>
-                <div class="momentum-correlation-flow-refined">
-                    {% set cross_vertical_signals = [
-                        {'text': 'Luxury goods spending ' ~ ('+' if forecast.sentiment == 'Bullish' else '-') ~ '11% → ' ~ ('confidence boost' if forecast.sentiment == 'Bullish' else 'caution signal')},
-                        {'text': 'PE deal flow ' ~ ('+' if kpis.property_change > 0 else '-') ~ abs(kpis.property_change)|int ~ '% → liquidity rotation within 90-120 days'},
-                        {'text': 'Charter activity +7% YoY → UHNW mobility patterns'},
-                        {'text': 'Wealth fund flows → ' ~ ('strong' if forecast.voxmill_index > 70 else 'moderate') ~ ' 90-day forward demand'},
-                        {'text': 'Capital rotation alignment → synchronized entry'},
-                        {'text': 'Cross-vertical momentum → ' ~ forecast.sentiment|lower ~ ' 90-day outlook (' ~ (forecast.day_90.mid|abs|int if forecast.day_90 else 84) ~ '%)'}
-                    ] %}
-                    
-                    {% for signal in cross_vertical_signals %}
-                    <div class="momentum-signal-box-refined">
-                        <div class="momentum-signal-text">{{ signal.text }}</div>
+                    <div class="driver-bullet">
+                        <div class="driver-icon">◆</div>
+                        <div class="driver-text">UHNW mobility patterns confirming forward demand pressure within 90-120 days</div>
                     </div>
-                    {% if not loop.last %}
-                    <div class="momentum-arrow-refined">→</div>
-                    {% endif %}
-                    {% endfor %}
+                    <div class="driver-bullet">
+                        <div class="driver-icon">◆</div>
+                        <div class="driver-text">Cross-vertical momentum indicators trending {{ forecast.sentiment|lower }} with sustained conviction</div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- BOTTOM SECTION: SUMMARY BAR -->
-            <div class="cross-vertical-summary-bar">
-                <p class="cross-vertical-summary-text">
-                    Cross-Vertical Composite Forecast: {{ "Strong" if forecast.voxmill_index > 70 else "Moderate" if forecast.voxmill_index > 50 else "Cautious" }} forward demand indicated across luxury indicators — 90-day outlook {{ forecast.sentiment|lower }} with {{ "high" if forecast.voxmill_index > 75 else "moderate" if forecast.voxmill_index > 50 else "limited" }} confidence (VPI: {{ forecast.voxmill_index }}/100)
-                </p>
             </div>
         </div>
     </div>
