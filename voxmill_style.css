@@ -2395,8 +2395,8 @@ STRATEGIC FORECAST — REFINED
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 28px; /* ✅ REDUCED: was 32px */
-    margin-top: 48px; /* ✅ REDUCED: was 68px */
+    gap: 26px;
+    margin-top: 42px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -2404,18 +2404,18 @@ STRATEGIC FORECAST — REFINED
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 18px; /* ✅ REDUCED: was 22px */
+    gap: 16px;
 }
 
 .insight-card-elite {
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.2);
     border-radius: var(--card-radius);
-    padding: 18px 22px; /* ✅ REDUCED: was 20px 24px */
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    min-height: 140px; /* ✅ REDUCED: was 156px */
-    height: 140px; /* ✅ REDUCED: was 156px */
+    min-height: 128px;
+    height: 128px;
     position: relative;
     overflow: hidden;
     box-shadow: 
@@ -2428,13 +2428,13 @@ STRATEGIC FORECAST — REFINED
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 7px; /* ✅ REDUCED: was 8px */
+    margin-bottom: 6px;
     flex-shrink: 0;
 }
 
 .insight-elite-number {
     font-family: var(--font-display);
-    font-size: 26px; /* ✅ REDUCED: was 28px */
+    font-size: 24px;
     font-weight: 300;
     color: var(--vm-gold);
     line-height: 1;
@@ -2444,11 +2444,11 @@ STRATEGIC FORECAST — REFINED
 
 .insight-elite-category {
     font-family: var(--font-body);
-    font-size: 9px; /* ✅ REDUCED: was 10px */
+    font-size: 9px;
     font-weight: 700;
     color: rgba(191,166,112,0.8);
     text-transform: uppercase;
-    letter-spacing: 1.4px; /* ✅ REDUCED: was 1.8px */
+    letter-spacing: 1.4px;
     line-height: 1.3;
     flex: 1;
 }
@@ -2458,16 +2458,16 @@ STRATEGIC FORECAST — REFINED
     height: 1px;
     background: linear-gradient(90deg, var(--vm-gold), transparent);
     opacity: 0.3;
-    margin-bottom: 9px; /* ✅ REDUCED: was 10px */
+    margin-bottom: 8px;
     flex-shrink: 0;
 }
 
 .insight-elite-body {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
+    font-size: 11.5px;
     font-weight: 400;
     color: rgba(234,234,234,0.85);
-    line-height: 1.6; /* ✅ TIGHTENED: was 1.7 */
+    line-height: 1.55;
     letter-spacing: 0.02em;
     flex: 1;
 }
@@ -2475,26 +2475,26 @@ STRATEGIC FORECAST — REFINED
 .executive-verdict-column {
     display: flex;
     align-items: stretch;
-    margin-top: 0; /* ✅ REMOVED: was 3px */
+    margin-top: 0;
 }
 
 .verdict-panel-border {
     background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
-    border: 2px solid var(--vm-gold);
-    border-radius: 10px; /* ✅ REDUCED: was 12px (var(--card-radius)) */
-    padding: 32px 28px; /* ✅ REDUCED: was 40px 32px */
-    text-align: left; /* ✅ CHANGED: was center */
+    border: 1.5px solid var(--vm-gold);
+    border-radius: 10px;
+    padding: 28px 24px;
+    text-align: left;
     width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     box-shadow: 
         0 8px 32px rgba(0,0,0,0.35),
-        0 0 60px rgba(191,166,112,0.2),
+        0 0 60px rgba(191,166,112,0.15),
         inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
-    gap: 14px; /* ✅ REDUCED: was 16px */
+    gap: 12px;
 }
 
 .verdict-panel-border::before {
@@ -2505,7 +2505,7 @@ STRATEGIC FORECAST — REFINED
     right: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .verdict-panel-border::after {
@@ -2516,49 +2516,49 @@ STRATEGIC FORECAST — REFINED
     right: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .verdict-seal {
-    margin: 0 0 12px 0; /* ✅ CHANGED: was 0 auto 14px (centered) */
+    margin: 0 0 10px 0;
     display: flex;
-    justify-content: flex-start; /* ✅ CHANGED: was center */
+    justify-content: flex-start;
     filter: drop-shadow(0 4px 16px rgba(191,166,112,0.5));
 }
 
 .verdict-seal svg {
-    width: 56px; /* ✅ REDUCED: was 70px */
-    height: 56px; /* ✅ REDUCED: was 70px */
+    width: 50px;
+    height: 50px;
 }
 
 .verdict-label {
     font-family: var(--font-body);
-    font-size: 10px; /* ✅ REDUCED: was 11px */
+    font-size: 10px;
     font-weight: 700;
     color: var(--vm-gold);
     text-transform: uppercase;
-    letter-spacing: 1.6px; /* ✅ REDUCED: was 1.8px */
-    margin-bottom: 10px; /* ✅ REDUCED: was 12px */
+    letter-spacing: 1.6px;
+    margin-bottom: 9px;
     opacity: 0.9;
-    text-align: left; /* ✅ NEW */
+    text-align: left;
 }
 
 .verdict-rating {
-    margin-bottom: 14px; /* ✅ REDUCED: was 16px */
-    text-align: left; /* ✅ NEW */
+    margin-bottom: 12px;
+    text-align: left;
 }
 
 .verdict-stars {
-    font-size: 16px; /* ✅ REDUCED: was 18px */
+    font-size: 15px;
     color: var(--vm-gold);
-    letter-spacing: 2px; /* ✅ REDUCED: was 3px */
-    margin-bottom: 6px;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
     text-shadow: 0 2px 8px rgba(191,166,112,0.4);
 }
 
 .verdict-score {
     font-family: var(--font-body);
-    font-size: 11px; /* ✅ REDUCED: was 12px */
+    font-size: 10.5px;
     font-weight: 600;
     color: rgba(234,234,234,0.7);
     letter-spacing: 0.5px;
@@ -2566,32 +2566,32 @@ STRATEGIC FORECAST — REFINED
 
 .verdict-statement {
     font-family: var(--font-body);
-    font-size: 14px; /* ✅ REDUCED: was 15px */
+    font-size: 13.5px;
     font-weight: 500;
     color: #EAEAEA;
     line-height: 1.5;
-    margin-bottom: 7px; /* ✅ REDUCED: was 8px */
-    padding: 0; /* ✅ REMOVED: was 0 8px */
-    text-align: left; /* ✅ NEW */
+    margin-bottom: 6px;
+    padding: 0;
+    text-align: left;
 }
 
 .verdict-substatement {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
+    font-size: 11.5px;
     font-weight: 400;
     color: rgba(234,234,234,0.75);
-    line-height: 1.5; /* ✅ TIGHTENED: was 1.6 */
-    margin-bottom: 14px; /* ✅ REDUCED: was 16px */
-    padding: 0; /* ✅ REMOVED: was 0 8px */
-    text-align: left; /* ✅ NEW */
+    line-height: 1.5;
+    margin-bottom: 12px;
+    padding: 0;
+    text-align: left;
 }
 
 .verdict-recommendation {
     background: linear-gradient(90deg, rgba(191,166,112,0.15), rgba(181,152,84,0.1));
-    border: 1px solid rgba(191,166,112,0.3);
+    border: 1px solid rgba(191,166,112,0.25);
     border-radius: 6px;
-    padding: 12px 16px; /* ✅ REDUCED: was 12px 18px */
-    text-align: left; /* ✅ NEW */
+    padding: 11px 15px;
+    text-align: left;
 }
 
 .verdict-rec-label {
@@ -2600,13 +2600,13 @@ STRATEGIC FORECAST — REFINED
     font-weight: 700;
     color: rgba(191,166,112,0.7);
     text-transform: uppercase;
-    letter-spacing: 1.6px; /* ✅ REDUCED: was 1.8px */
-    margin-bottom: 7px; /* ✅ REDUCED: was 8px */
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
 }
 
 .verdict-rec-value {
     font-family: var(--font-display);
-    font-size: 17px; /* ✅ REDUCED: was 18px */
+    font-size: 16px;
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.5px;
@@ -2614,22 +2614,22 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 48px; /* ✅ REDUCED: was 56px */
-    margin-bottom: 28px; /* ✅ REDUCED: was 32px */
+    margin-top: 40px;
+    margin-bottom: 26px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 18px 24px; /* ✅ REDUCED: was 20px 26px */
+    padding: 17px 22px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .executive-bottom-text {
     font-family: var(--font-body);
-    font-size: 12px; /* ✅ REDUCED: was 13px */
+    font-size: 11.5px;
     color: #F5F5F5;
     text-align: center;
-    line-height: 1.5; /* ✅ TIGHTENED: was 1.6 */
+    line-height: 1.5;
     font-style: italic;
     font-weight: 400;
     margin: 0;
@@ -2644,8 +2644,8 @@ STRATEGIC FORECAST — REFINED
 
 .action-window-luxury-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* ✅ CHANGED: was 4 columns */
-    gap: 28px; /* ✅ REDUCED: was 32px */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
     width: 100%;
 }
 
@@ -2655,42 +2655,42 @@ STRATEGIC FORECAST — REFINED
     border: 1px solid rgba(191,166,112,0.15);
     border-left: 4px solid var(--vm-gold);
     border-radius: var(--card-radius);
-    padding: 22px 20px; /* ✅ REDUCED: was 24px 22px */
+    padding: 20px 18px;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* ✅ REDUCED: was 12px */
-    min-height: 120px; /* ✅ REDUCED: was 130px */
-    height: 120px; /* ✅ REDUCED: was 130px */
+    gap: 9px;
+    min-height: 110px;
+    height: 110px;
     justify-content: center;
     box-shadow: var(--card-shadow);
 }
 
 .action-item-luxury-title {
     font-family: var(--font-body);
-    font-size: 10px; /* ✅ REDUCED: was 11px */
+    font-size: 9.5px;
     font-weight: 700;
     color: rgba(191,166,112,0.7);
     text-transform: uppercase;
-    letter-spacing: 1.6px; /* ✅ REDUCED: was 1.8px */
+    letter-spacing: 1.5px;
     text-align: left;
 }
 
 .action-item-luxury-value {
     font-family: var(--font-body);
-    font-size: 17px; /* ✅ REDUCED: was 18px */
+    font-size: 16px;
     font-weight: 600;
     color: #E6E6E6;
-    line-height: 1.3; /* ✅ TIGHTENED: was 1.4 */
+    line-height: 1.3;
     letter-spacing: 0.3px;
     text-align: left;
 }
 
 .action-item-luxury-subtitle {
     font-family: var(--font-body);
-    font-size: 11px; /* ✅ REDUCED: was 12px */
+    font-size: 10.5px;
     font-weight: 400;
     color: rgba(230,230,230,0.65);
-    line-height: 1.6; /* ✅ TIGHTENED: was 1.7 */
+    line-height: 1.55;
     letter-spacing: 0.02em;
     text-align: left;
 }
@@ -2701,32 +2701,32 @@ STRATEGIC FORECAST — REFINED
 
 @media print, .a4-export {
     .executive-intelligence-layout {
-        gap: 24px;
-        margin-top: 40px;
+        gap: 22px;
+        margin-top: 38px;
     }
     
     .executive-insights-column {
-        gap: 16px;
+        gap: 14px;
     }
     
     .insight-card-elite {
-        padding: 16px 20px;
-        min-height: 130px;
-        height: 130px;
+        padding: 14px 18px;
+        min-height: 120px;
+        height: 120px;
     }
     
     .verdict-panel-border {
-        padding: 28px 24px;
+        padding: 24px 22px;
     }
     
     .action-window-luxury-grid {
-        gap: 24px;
+        gap: 22px;
     }
     
     .action-item-luxury {
-        padding: 20px 18px;
-        min-height: 110px;
-        height: 110px;
+        padding: 18px 16px;
+        min-height: 105px;
+        height: 105px;
     }
 }
 
