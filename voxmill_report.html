@@ -100,38 +100,66 @@
         </div>
 
         <!-- KPI DASHBOARD -->
-        <div class="weekly-movement-dashboard">
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ inventory_label }}</div>
-                <div class="movement-value">{{ kpis.total_properties }}</div>
-                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">£/{{ unit_metric }}</div>
-                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">{{ velocity_metric_label }}</div>
-                <div class="movement-value">{{ kpis.days_on_market }}d</div>
-                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}%
-                </div>
-            </div>
-            
-            <div class="movement-mini-card">
-                <div class="movement-label">Demand Pressure</div>
-                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-                </div>
-            </div>
+       <!-- EXECUTIVE SUMMARY KPI CARDS - REBUILT FOR 10/10 PRECISION -->
+
+<div class="executive-kpi-dashboard">
+    <div class="executive-kpi-card">
+        <div class="kpi-microtitle">INVENTORY KPI</div>
+        <div class="kpi-underline"></div>
+        <div class="kpi-metric-container">
+            <div class="kpi-metric">{{ kpis.total_properties }}</div>
+            <div class="kpi-unit">{{ inventory_label }}</div>
+        </div>
+        <div class="kpi-change-indicator kpi-{{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
+        </div>
+        <div class="kpi-interpretation">
+            {{ "Supply expansion signals market confidence" if kpis.property_change > 0 else "Inventory contraction indicates absorption strength" if kpis.property_change < 0 else "Market volume stable week-to-week" }}
+        </div>
+    </div>
+    
+    <div class="executive-kpi-card">
+        <div class="kpi-microtitle">UNIT ECONOMICS KPI</div>
+        <div class="kpi-underline"></div>
+        <div class="kpi-metric-container">
+            <div class="kpi-metric">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+            <div class="kpi-unit">per {{ unit_metric }}</div>
+        </div>
+        <div class="kpi-change-indicator kpi-{{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. prior week
+        </div>
+        <div class="kpi-interpretation">
+            {{ "Pricing premium sustained across segments" if kpis.sqft_change > 0 else "Unit economics under moderate pressure" if kpis.sqft_change < -2 else "Unit pricing aligns with premium expectations" }}
+        </div>
+    </div>
+    
+    <div class="executive-kpi-card">
+        <div class="kpi-microtitle">TRANSACTION {{ velocity_metric_label|upper }} KPI</div>
+        <div class="kpi-underline"></div>
+        <div class="kpi-metric-container">
+            <div class="kpi-metric">{{ kpis.days_on_market }}</div>
+            <div class="kpi-unit">days</div>
+        </div>
+        <div class="kpi-change-indicator kpi-{{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. prior week
+        </div>
+        <div class="kpi-interpretation">
+            {{ "Exceptional velocity signals strong demand" if kpis.days_on_market < 30 else "Absorption trending in normal range" if kpis.days_on_market < 50 else "Extended timeframes suggest deliberate participant behavior" }}
+        </div>
+    </div>
+    
+    <div class="executive-kpi-card">
+        <div class="kpi-microtitle">LIQUIDITY PRESSURE KPI</div>
+        <div class="kpi-underline"></div>
+        <div class="kpi-metric-container">
+            <div class="kpi-metric">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+            <div class="kpi-unit">demand index</div>
+        </div>
+        <div class="kpi-change-indicator kpi-{{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
+        </div>
+        <div class="kpi-interpretation">
+            {{ "Demand significantly exceeds supply" if market_depth.demand_pressure < 0.9 else "Market maintains equilibrium conditions" if market_depth.demand_pressure < 1.2 else "Oversupply risk warrants monitoring" }}
         </div>
     </div>
 </div>
