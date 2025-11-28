@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.8 SURGICAL PRECISION
-ALL SLIDES 1-5 FULLY UPDATED PER 10-POINT PROMPT
-Changelog: Market Overview chart +60px, Performance Analysis dimensions fixed, Competitive Landscape gaps corrected
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.7 FINAL SURGICAL SWEEP
+ALL VISUAL + FUNCTIONAL ISSUES RESOLVED
+Changelog: Duplicate badges removed, alignment perfected, icons added, spacing normalized
 ============================================ */
 
 :root {
@@ -21,7 +21,7 @@ Changelog: Market Overview chart +60px, Performance Analysis dimensions fixed, C
     --font-body: 'Inter', Arial, sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
     
-    /* ✅ NORMALIZED SPACING SCALE */
+    /* ✅ NORMALIZED SPACING SCALE (12/16/24px) */
     --spacing-xs: 12px;
     --spacing-sm: 16px;
     --spacing-md: 24px;
@@ -36,7 +36,7 @@ Changelog: Market Overview chart +60px, Performance Analysis dimensions fixed, C
 }
 
 @page {
-    size: 1920px 1720px;  /* ✅ CORRECTED: was 1760px */
+    size: 1920px 1760px;
     margin: 0;
     padding: 0;
 }
@@ -58,6 +58,7 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 /* ============================================
 BRONZE PATTERN BACKGROUND — ULTRA-SUBTLE ELEGANCE
 ============================================ */
+
 
 body {
     position: relative;
@@ -85,7 +86,8 @@ body::before {
 
 .slide {
     width: 1920px;
-    height: 1720px;  /* ✅ CORRECTED: was 1660px */
+    height: auto;
+    min-height: 1660px;
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
@@ -133,7 +135,7 @@ body::before {
 }
 
 /* ============================================
-COVER PAGE (SLIDE 1)
+COVER PAGE
 ============================================ */
 
 .slide-cover {
@@ -141,7 +143,8 @@ COVER PAGE (SLIDE 1)
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 1720px !important;  /* ✅ CORRECTED */
+    min-height: 1660px !important;
+    height: 1660px !important;
 }
 
 .slide-cover::after {
@@ -301,18 +304,44 @@ div.badge {
     color: #E74C3C !important;
 }
 
+/* ============================================================================
+   LEGACY BADGE CLASSES — DISABLE COMPLETELY
+   ============================================================================ */
+
+.badge,
+.badge-dominant,
+.badge-rising,
+.badge-emerging,
+.badge-bullish,
+.badge-neutral,
+.badge-cautious {
+    display: none !important; /* Nuclear option - force removal */
+}
 /* ============================================
 SLIDE HEADER — CONSISTENT SPACING
 ============================================ */
 
 .slide-content {
     position: absolute;
-    top: 168px;  /* ✅ STANDARDIZED across ALL slides */
+    top: 170px;  /* FIXED: Standardized across ALL slides */
     left: 48px;
     right: 48px;
-    bottom: 120px;  /* ✅ CORRECTED: was 80px */
+    bottom: 80px;
     overflow: visible !important;
     z-index: 5;
+    min-height: calc(1480px - 170px - 80px) !important;
+}
+
+
+.cross-vertical-intelligence .slide-content,
+.market-depth-analysis .slide-content,
+.top-market-opportunities .slide-content,
+.segment-performance-slide .slide-content {
+    top: 170px;
+}
+
+.segment-performance-slide .slide-content {
+    top: 185px;  /* Only exception - needs extra space for context */
 }
 
 .slide-header {
@@ -351,8 +380,9 @@ SLIDE HEADER — CONSISTENT SPACING
     padding-bottom: 4px;
 }
 
+
 /* ============================================
-UNIVERSAL CARD STYLING
+UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 ============================================ */
 
 .kpi-card,
@@ -368,13 +398,15 @@ UNIVERSAL CARD STYLING
 .forecast-card-premium,
 .action-item-luxury,
 .competitive-insights-strip {
-    padding: 32px;  /* ✅ STANDARDIZED */
+    padding: 26px 30px;
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
-    border-radius: var(--card-radius);
+    border-radius: var(--card-radius);  /* ✅ ALL 12px */
     box-shadow: var(--card-shadow);
 }
+
+
 
 /* ============================================
 GLOBAL CHART STYLING
@@ -429,14 +461,14 @@ GLOBAL CHART STYLING
 }
 
 /* ============================================
-SLIDE 2: EXECUTIVE SUMMARY BULLETS
+EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
 ============================================ */
 
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-top: 48px;
+    gap: 26px;
+    margin-top: 56px;
 }
 
 .executive-summary-bullet {
@@ -446,7 +478,7 @@ SLIDE 2: EXECUTIVE SUMMARY BULLETS
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24px 32px;
+    padding: 22px 30px;
 }
 
 .executive-bullet-title {
@@ -502,12 +534,15 @@ SLIDE 2: EXECUTIVE SUMMARY BULLETS
     text-align: left;
 }
 
-/* Weekly Movement Dashboard */
+/* ============================================
+WEEKLY MOVEMENT DASHBOARD
+============================================ */
+
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    margin-top: 48px;
+    gap: 22px;
+    margin-top: 60px;
     margin-bottom: 0;
     padding: 0;
     background: transparent;
@@ -522,7 +557,7 @@ SLIDE 2: EXECUTIVE SUMMARY BULLETS
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 24px 20px;
+    padding: 24px 18px;
 }
 
 .movement-label {
@@ -565,7 +600,7 @@ SLIDE 2: EXECUTIVE SUMMARY BULLETS
 }
 
 /* ============================================
-SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
+KPI GRID — MARKET OVERVIEW (REFINED)
 ============================================ */
 
 .kpi-grid {
@@ -574,8 +609,8 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
     grid-template-rows: repeat(2, 1fr);
     gap: 32px;
     height: 360px;
-    margin-top: 48px;
-    margin-bottom: 24px;  /* ✅ FIXED: Add 24px spacing below KPI row */
+    margin-top: 52px;
+    margin-bottom: 68px;
     page-break-inside: avoid;
 }
 
@@ -585,7 +620,7 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px;
+    padding: 26px 30px;
 }
 
 .kpi-content {
@@ -633,11 +668,12 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
     vertical-align: middle;
 }
 
-/* Chart Section with Divider */
+/* ============================================
+VALUE DISTRIBUTION CHART (REFINED)
+============================================ */
+
 .chart-section {
-    margin-top: 48px;  /* ✅ FIXED: Add subtle divider above chart */
-    padding-top: 48px;  /* ✅ NEW */
-    border-top: 1px solid rgba(255, 255, 255, 0.06);  /* ✅ NEW: Subtle divider */
+    margin-top: 68px;
     margin-bottom: 0;
     page-break-inside: avoid;
 }
@@ -645,18 +681,18 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 0 0 32px 0;
+    margin: 0 0 40px 0;
     opacity: 1;
 }
 
 .chart-container {
     height: auto;
-    min-height: 560px;  /* ✅ FIXED: Chart height +60px (was 500px) */
+    min-height: 500px;
     page-break-inside: avoid;
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 32px;
+    padding: 26px 30px;
     justify-content: flex-start;
     gap: 0;
 }
@@ -691,16 +727,21 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
     display: block;
     margin: 16px auto 0 auto;
     max-width: 100%;
-    height: 380px;  /* ✅ FIXED: Explicit chart height +60px */
 }
 
 .chart-mini-insight {
     background: rgba(191, 166, 112, 0.12);
     border-left: 4px solid var(--vm-gold);
     padding: 18px 26px;
-    margin-top: 24px;
+    margin-top: 22px;
     margin-bottom: 0;
     border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: rgba(234, 234, 234, 0.9);
+    line-height: 1.8;
+    font-weight: 400;
+    box-shadow: inset 0 1px 4px rgba(191, 166, 112, 0.25);
 }
 
 .chart-mini-insight strong {
@@ -722,7 +763,7 @@ SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
 }
 
 /* ============================================
-SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
+PERFORMANCE ANALYSIS
 ============================================ */
 
 .two-column {
@@ -730,7 +771,7 @@ SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     height: auto;
-    margin-top: 48px;
+    margin-top: 56px;
     margin-bottom: 48px;
 }
 
@@ -741,26 +782,8 @@ SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 32px;
+    padding: 26px 30px;
     justify-content: flex-start;
-}
-
-/* LEFT BAR CHART */
-.chart-panel:first-child svg {
-    height: 360px;  /* ✅ FIXED: Chart height 360px */
-}
-
-.chart-panel:first-child svg rect.bar {
-    stroke-width: 3px;  /* ✅ FIXED: Bar thickness +3px */
-}
-
-/* RIGHT LINE CHART */
-.chart-panel:last-child {
-    padding-right: 72px;  /* ✅ FIXED: +40px right padding (was 32px) */
-}
-
-.chart-panel:last-child svg text {
-    font-size: 14px;  /* ✅ FIXED: Label font-size 14px */
 }
 
 .chart-panel .chart-title {
@@ -797,21 +820,19 @@ SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
     font-style: italic;
 }
 
-/* Bottom Insight Cards */
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;  /* ✅ FIXED: Equal spacing */
-    margin-top: 56px;  /* ✅ FIXED: Top margin 56px */
+    gap: 32px;
+    margin-top: 56px;
     margin-bottom: 48px;
 }
 
 .insight-card {
-    width: 31.5%;  /* ✅ FIXED: Equal widths 31.5% */
     background: var(--card-bg);
     border: var(--card-border);
     border-radius: var(--card-radius);
-    padding: 32px;
+    padding: 24px 26px;
     box-shadow: var(--card-shadow);
 }
 
@@ -837,7 +858,7 @@ SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
-    padding: 32px;
+    padding: 24px 30px;
     margin-top: 48px;
     margin-bottom: 0;
 }
@@ -856,12 +877,12 @@ SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
 }
 
 /* ============================================
-SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
+COMPETITIVE LANDSCAPE — REFINED VERSION
 ============================================ */
 
 .competitive-landscape-slide .two-column {
-    margin-top: 48px;
-    gap: 72px;  /* ✅ FIXED: Column gap 56px → 72px */
+    margin-top: 56px;
+    gap: 32px;
     align-items: start;
 }
 
@@ -870,18 +891,13 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 32px;
+    padding: 26px 30px;
     background: linear-gradient(135deg, rgba(20,20,20,0.97) 0%, rgba(12,12,12,0.90) 100%);
     backdrop-filter: blur(2px);
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
     min-height: 665px;
-}
-
-.competitive-info-panel .institution-card {
-    width: calc(100% + 18px);  /* ✅ FIXED: Institution card width +18px */
-    margin-top: 12px;  /* ✅ FIXED: Add 12px top margin per card */
 }
 
 .competitive-info-panel .chart-title {
@@ -917,9 +933,9 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px;
-    min-height: 160px;
-    height: 160px;
+    padding: 20px 22px;
+    min-height: 155px;
+    height: 155px;
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
@@ -1015,10 +1031,11 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     text-align: left;
 }
 
+/* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
-    margin-top: 48px;
+    margin-top: 56px;
     margin-bottom: 48px;
-    padding: 72px;  /* ✅ FIXED: Expand padding +40px (was 32px) */
+    padding: 26px 30px;
 }
 
 .competitive-insights-grid {
@@ -1050,6 +1067,7 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     flex: 1;
 }
 
+/* ✅ Bottom Callout Box Spacing */
 .bottom-callout-box {
     margin-top: 20px;
     margin-bottom: 0;
@@ -1059,7 +1077,7 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 32px;
+    padding: 18px 28px;
 }
 
 .bottom-callout-title {
@@ -1099,11 +1117,11 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 }
 
 /* ============================================
-   CROSS-VERTICAL INTELLIGENCE — SURGICAL REBUILD
+   CROSS-VERTICAL INTELLIGENCE — REBUILD
    ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 168px;  /* ✅ STANDARDIZED */
+    top: 170px;
 }
 
 .cross-vertical-container {
@@ -1115,7 +1133,7 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     text-align: center;
-    margin: 16px auto 32px;
+    margin: 18px auto 36px;
     max-width: 1400px;
     line-height: 1.5;
     font-style: italic;
@@ -1123,155 +1141,150 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 }
 
 /* ============================================
-   LAYER 1: MACRO SIGNAL CARDS (3 WIDE) — NO ICONS
+   LAYER 1: MACRO SIGNAL CARDS (3 WIDE)
    ============================================ */
 
 .macro-signal-grid {
-    display: flex;
-    justify-content: space-between;
-    gap: 40px;
-    margin-top: 48px;
-    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 85px;
 }
 
-.macro-signal-card,
-.cross-vertical-card {
-    width: 29.5%;
-    min-height: 260px;
-    padding: 32px;
-    background: rgba(10, 10, 10, 0.55);
-    border: 1px solid rgba(255, 215, 167, 0.06);
+.macro-signal-card {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
+    border: 1px solid rgba(176, 141, 87, 0.25);
+    border-top: 2px solid var(--vm-gold);
     border-radius: 10px;
+    padding: 38px 28px 28px 28px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    text-align: center;
-    line-height: 1.2;
+    min-height: 260px;
+    position: relative;
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
-/* Remove margin-right from first two cards (gap handles spacing) */
-.macro-signal-card:nth-child(1),
-.macro-signal-card:nth-child(2),
-.cross-vertical-card:nth-child(1),
-.cross-vertical-card:nth-child(2) {
-    margin-right: 0;
-}
-
-.macro-signal-card:nth-child(3),
-.cross-vertical-card:nth-child(3) {
-    margin-right: 0;
-}
-
-/* Card Title */
-.macro-card-title,
-.macro-signal-title {
-    font-family: var(--font-body);
+.macro-card-title {
+    font-family: 'Playfair Display', serif;
     font-size: 14px;
     font-weight: 600;
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 6px;
-    line-height: 1.2;
+    color: var(--vm-gold);
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
 }
 
-/* Main Metric Value */
-.macro-card-primary-metric,
-.macro-signal-value {
+.macro-card-primary-metric {
     font-family: var(--font-body);
-    font-size: 32px;
-    font-weight: 800;
-    color: #BFA670;
-    margin-bottom: 4px;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
-    line-height: 1;
+    font-size: 20px;
+    font-weight: 700;
+    color: #EAEAEA;
+    text-align: center;
+    margin-bottom: 14px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
 }
 
-/* Subtext */
-.macro-card-secondary-metric,
-.macro-card-insight,
-.macro-signal-subtext {
+.macro-card-secondary-metric {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(234, 234, 234, 0.75);
-    margin-top: 2px;
-    font-weight: 400;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin-bottom: 12px;
     line-height: 1.4;
+}
+
+.macro-signal-card .vx-badge {
+    margin-bottom: 18px;
+}
+
+.macro-card-insight {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.8);
+    text-align: center;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 8px;
 }
 
 /* ============================================
    LAYER 2: CORRELATION ENGINE RIBBON
    ============================================ */
 
-.correlation-engine-ribbon,
-.correlation-ribbon {
-    margin-top: 72px;
-    margin-bottom: 52px;
-    padding: 0;
+.correlation-engine-ribbon {
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 14px 28px;
+    margin-bottom: 75px;
 }
 
 .correlation-ribbon-title {
     font-family: var(--font-body);
-    font-size: 16px;
-    font-weight: 600;
-    color: #BFA670;
+    font-size: 13px;
+    color: var(--vm-gold);
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
     text-align: center;
-    margin-bottom: 24px;
-    letter-spacing: 0.08em;
 }
 
-.correlation-pills-container,
-.correlation-pills {
+.correlation-pills-container {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    gap: 40px;
+    gap: 16px;
+    flex-wrap: nowrap;
 }
 
 .correlation-pill {
-    width: 18%;
-    padding: 20px 16px;
-    background: rgba(10, 10, 10, 0.55);
-    border: 1px solid rgba(255, 215, 167, 0.06);
-    border-radius: 10px;
-    text-align: center;
+    background: rgba(18, 18, 18, 0.7);
+    border: 1px solid rgba(176, 141, 87, 0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
 }
 
 .correlation-pill:hover {
-    border-color: rgba(255, 215, 167, 0.12);
-    background: rgba(10, 10, 10, 0.65);
+    border-color: rgba(176, 141, 87, 0.35);
+    background: rgba(18, 18, 18, 0.85);
 }
 
-.correlation-label,
-.correlation-pill-label {
+.correlation-label {
     font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(184, 184, 184, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(234, 234, 234, 0.75);
+    text-align: center;
     line-height: 1.3;
+    letter-spacing: 0.3px;
 }
 
 .correlation-arrow {
     font-size: 16px;
-    color: #BFA670;
+    color: var(--vm-gold);
     font-weight: 700;
     line-height: 1;
 }
 
-.correlation-strength,
-.correlation-pill-value {
+.correlation-strength {
     font-family: var(--font-body);
-    font-size: 28px;
-    font-weight: 700;
-    color: #BFA670;
-    line-height: 1;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    text-align: center;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
@@ -1281,15 +1294,18 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
    ============================================ */
 
 .composite-verdict-block {
-    margin-top: 72px;
-    padding: 48px 64px;
-    background: rgba(10, 10, 10, 0.55);
-    border: 1px solid rgba(255, 215, 167, 0.06);
-    border-radius: 10px;
-    border-left: 4px solid #BFA670;
-    text-align: center;
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
+    border: 1.5px solid rgba(176, 141, 87, 0.3);
+    border-radius: 12px;
+    padding: 32px 36px 30px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 6px 24px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    margin-top: 25px;
 }
 
 .composite-verdict-block::before {
@@ -1300,45 +1316,39 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     transform: translateX(-50%);
     width: 60%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #BFA670, transparent);
+    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
     opacity: 0.5;
 }
 
 .verdict-seal-small {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     filter: drop-shadow(0 4px 12px rgba(197, 164, 109, 0.4));
 }
 
-.composite-verdict-icon {
-    font-size: 48px;
-    margin-bottom: 24px;
-    display: block;
-}
-
 .composite-verdict-title {
-    font-family: var(--font-body);
-    font-size: 20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
     font-weight: 600;
-    color: #BFA670;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 24px;
+    color: var(--vm-gold);
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .composite-verdict-block .vx-badge {
     margin-bottom: 20px;
 }
 
-.composite-verdict-headline,
-.composite-verdict-summary {
+.composite-verdict-headline {
     font-family: var(--font-body);
-    font-size: 16px;
-    color: var(--vm-text-body);
-    line-height: 1.8;
-    margin-bottom: 32px;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(234, 234, 234, 0.95);
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 22px;
+    max-width: 1200px;
+    letter-spacing: 0.2px;
 }
 
 .composite-verdict-confidence {
@@ -1349,8 +1359,6 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     margin-bottom: 22px;
     width: 100%;
     max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .confidence-label {
@@ -1366,7 +1374,7 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     font-family: var(--font-body);
     font-size: 24px;
     font-weight: 700;
-    color: #BFA670;
+    color: var(--vm-gold);
     letter-spacing: 0.5px;
 }
 
@@ -1380,7 +1388,7 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 
 .confidence-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #BFA670 0%, #C5A46D 100%);
+    background: linear-gradient(90deg, var(--vm-gold) 0%, #C5A46D 100%);
     border-radius: 3px;
     transition: width 0.3s ease;
 }
@@ -1388,36 +1396,9 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 .composite-verdict-drivers {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-    max-width: 80%;
-    margin: 0 auto;
-}
-
-.composite-verdict-drivers ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    gap: 12px;
     width: 100%;
-}
-
-.composite-verdict-drivers li {
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.5;
-    padding-left: 24px;
-    position: relative;
-    margin-bottom: 12px;
-    text-align: left;
-}
-
-.composite-verdict-drivers li::before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: #BFA670;
-    font-weight: 700;
+    max-width: 900px;
 }
 
 .driver-bullet {
@@ -1426,12 +1407,12 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
     gap: 12px;
     padding: 11px 16px;
     background: rgba(12, 12, 12, 0.4);
-    border-left: 2px solid #BFA670;
+    border-left: 2px solid var(--vm-gold);
     border-radius: 6px;
 }
 
 .driver-icon {
-    color: #BFA670;
+    color: var(--vm-gold);
     font-size: 14px;
     font-weight: 700;
     flex-shrink: 0;
@@ -1451,34 +1432,31 @@ SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 
 @media print, .a4-export {
     .macro-signal-grid {
-        gap: 32px;
-        margin-bottom: 56px;
+        gap: 24px;
+        margin-bottom: 70px;
     }
     
-    .macro-signal-card,
-    .cross-vertical-card {
-        padding: 28px 24px;
+    .macro-signal-card {
+        padding: 32px 24px 24px 24px;
         min-height: 240px;
     }
     
-    .correlation-pills-container,
-    .correlation-pills {
-        gap: 32px;
+    .correlation-pills-container {
+        gap: 12px;
     }
     
     .correlation-pill {
-        padding: 16px 14px;
+        padding: 10px 12px;
     }
     
-    .correlation-engine-ribbon,
-    .correlation-ribbon {
-        margin-top: 64px;
-        margin-bottom: 48px;
+    .correlation-engine-ribbon {
+        padding: 12px 24px;
+        margin-bottom: 60px;
     }
     
     .composite-verdict-block {
-        padding: 40px 56px;
-        margin-top: 64px;
+        padding: 28px 32px 26px 32px;
+        margin-top: 20px;
     }
 }
 
@@ -1505,25 +1483,14 @@ METHODOLOGY
 .methodology-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;  /* ✅ MAINTAINED */
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    gap: 40px;
+    margin-top: 56px;
     margin-bottom: 0;
 }
 
 .methodology-panel {
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    padding: 26px 30px;
 }
-
-.model-pipeline {
-    background: rgba(191, 166, 112, 0.05);
-    margin-top: 48px;  /* ✅ FIXED: was 60px */
-    margin-bottom: 0;
-    text-align: center;
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-}
-
 
 .methodology-title {
     font-family: var(--font-body);
@@ -1573,12 +1540,22 @@ METHODOLOGY
     font-size: 18px;
 }
 
+.model-pipeline {
+    background: rgba(191, 166, 112, 0.05);
+    margin-top: 60px;
+    margin-bottom: 0;
+    text-align: center;
+    padding: 26px 30px;
+    border: 1px solid rgba(191,166,112,0.15);
+    border-radius: var(--card-radius);
+}
+
 .pipeline-flow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 32px 0;  /* ✅ MAINTAINED */
-    gap: 32px;  /* ✅ FIXED: was 36px */
+    margin: 32px 0;
+    gap: 36px;
 }
 
 .pipeline-step {
@@ -1614,9 +1591,9 @@ METHODOLOGY
 
 .proprietary-badge {
     background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
-    padding: 24px 32px;  /* ✅ FIXED: was 20px 36px */
+    padding: 20px 36px;
     border-radius: 8px;
-    margin-top: 48px;  /* ✅ MAINTAINED */
+    margin-top: 48px;
     text-align: center;
 }
 
@@ -1629,27 +1606,15 @@ METHODOLOGY
 }
 
 /* ============================================
-   MARKET DEPTH ANALYSIS — SURGICAL PRECISION UPDATE
+   MARKET DEPTH ANALYSIS — PRECISION UPLIFT
    ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 168px;  /* ✅ STANDARDIZED */
+    top: 168px;
 }
 
 .property-type-heatmap {
     margin-top: 24px;
-}
-
-.property-type-heatmap .chart-context {
-    font-family: var(--font-body);
-    font-size: 11.5px;
-    color: rgba(234, 234, 234, 0.7);
-    text-align: center;
-    margin-bottom: 32px;
-    margin-top: 14px;
-    font-style: italic;
-    line-height: 1.7;
-    font-weight: 400;
 }
 
 .property-type-heatmap .chart-title {
@@ -1676,13 +1641,24 @@ METHODOLOGY
     opacity: 0.4;
 }
 
+.property-type-heatmap .chart-context {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: rgba(234, 234, 234, 0.7);
+    text-align: center;
+    margin-bottom: 32px;
+    margin-top: 14px;
+    font-style: italic;
+    line-height: 1.7;
+    font-weight: 400;
+}
+
 .heatmap-table {
     width: 100%;
     margin-top: 0;
     border-collapse: collapse;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: var(--card-radius);
     overflow: hidden;
     table-layout: fixed;
 }
@@ -1833,8 +1809,8 @@ METHODOLOGY
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;  /* ✅ UPDATED: Standardized gap */
-    margin-top: 48px;
+    gap: 30px;
+    margin-top: 58px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -1843,15 +1819,14 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px;
-    min-height: 160px;
-    height: 160px;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    padding: 24px 24px;
+    min-height: 155px;
+    height: 155px;
+    background: var(--card-bg);
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    border: var(--card-border);
+    border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .depth-label {
@@ -1909,69 +1884,14 @@ METHODOLOGY
 }
 
 /* ============================================
-   NEW BOTTOM ROW: DEPTH DYNAMICS INDICATORS
-   ============================================ */
-
-.depth-dynamics-indicators {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;  /* ✅ NEW: Per prompt specification */
-    margin-top: 72px;  /* ✅ NEW: Per prompt specification */
-}
-
-.depth-indicator-card {
-    width: 31.5%;  /* ✅ NEW: Per prompt specification */
-    padding: 28px;  /* ✅ NEW: Per prompt specification */
-    background: rgba(10, 10, 10, 0.55);
-    border: 1px solid rgba(255, 215, 167, 0.06);
-    border-radius: 10px;
-    height: 120px;  /* ✅ NEW: Per prompt specification */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    line-height: 1.2;
-}
-
-.depth-indicator-card .depth-label {
-    font-family: var(--font-body);
-    font-size: 12px;
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 1.6px;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.depth-indicator-card .depth-value {
-    font-family: var(--font-body);
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--vm-gold);
-    margin-bottom: 8px;
-    line-height: 1;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
-}
-
-.depth-indicator-card .depth-note {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(234, 234, 234, 0.65);
-    margin-top: 0;
-    font-weight: 400;
-    line-height: 1.4;
-}
-
-/* ============================================
-   SEGMENT STRESS SIGNALS MATRIX
+   SEGMENT STRESS SIGNALS MATRIX (NEW)
    ============================================ */
 
 .stress-signals-matrix {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 32px;  /* ✅ UPDATED: Standardized gap */
-    margin-top: 48px;  /* ✅ UPDATED: Standardized spacing */
+    gap: 30px;
+    margin-top: 10px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -1980,15 +1900,16 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
-    min-height: 160px;
-    height: 160px;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    padding: 24px 20px;
+    min-height: 155px;
+    height: 155px;
+    background: linear-gradient(135deg, rgba(18,18,18,0.95) 0%, rgba(12,12,12,0.90) 100%);
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    box-shadow: var(--card-shadow);
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
+    border: 1px solid rgba(191,166,112,0.15);
+    border-radius: var(--card-radius);
+    box-shadow: 
+        0 4px 16px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .stress-label {
@@ -2025,55 +1946,145 @@ METHODOLOGY
 }
 
 /* ============================================
-   STRATEGIC FORECAST — SURGICAL PRECISION UPDATE
+   A4 EXPORT ADJUSTMENTS
    ============================================ */
 
+@media print, .a4-export {
+    .market-depth-analysis .slide-content {
+        top: 162px;
+    }
+    
+    .property-type-heatmap {
+        margin-top: 22px;
+    }
+    
+    .property-type-heatmap .chart-context {
+        margin-bottom: 28px;
+    }
+    
+    .heatmap-table th {
+        padding: 13px 11px;
+        height: 46px;
+        font-size: 11px;
+    }
+    
+    .heatmap-table td {
+        padding: 13px 11px;
+        height: 46px;
+        font-size: 11.5px;
+    }
+    
+    .velocity-badge {
+        padding: 6px 13px;
+        height: 24px;
+        font-size: 11.5px;
+        min-width: 50px;
+    }
+    
+    .depth-metrics {
+        margin-top: 50px;
+        gap: 26px;
+    }
+    
+    .depth-card {
+        padding: 22px 22px;
+        min-height: 145px;
+        height: 145px;
+    }
+    
+    .depth-value {
+        font-size: 44px;
+        margin-bottom: 16px;
+    }
+    
+    .stress-signals-matrix {
+        gap: 24px;
+        margin-top: 8px;
+    }
+    
+    .stress-card {
+        padding: 22px 18px;
+        min-height: 145px;
+        height: 145px;
+    }
+    
+    .stress-value {
+        font-size: 24px;
+        margin-bottom: 14px;
+    }
+    
+    .stress-note {
+        font-size: 10px;
+    }
+}
+
+/* ============================================
+STRATEGIC FORECAST — REFINED
+============================================ */
+
+/* FIX: Remove height constraint, allow auto-sizing */
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: auto auto;
-    gap: 40px;  /* ✅ UPDATED: Standardized gap */
-    height: auto;
-    margin-top: 48px;
-    margin-bottom: 48px;
-    align-items: start;
+    grid-template-rows: auto auto; /* CHANGED: 1fr 1fr → auto auto */
+    gap: 32px;
+    height: auto; /* CHANGED: 520px → auto */
+    margin-top: 56px;
+    margin-bottom: 60px;
+    align-items: start; /* CHANGED: stretch → start */
 }
 
+/* FIX: Allow content expansion, remove clipping */
 .forecast-card-premium {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    box-shadow: var(--card-shadow);
+    background: linear-gradient(135deg, rgba(12,12,12,0.9) 0%, rgba(18,18,18,0.85) 100%);
+    border: 1px solid rgba(191,166,112,0.25);
+    border-radius: var(--card-radius);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 0 40px rgba(191, 166, 112, 0.08);
     display: flex;
     flex-direction: column;
     padding: 0;
     position: relative;
-    overflow: visible;
-    min-height: 320px;  /* ✅ UPDATED: Per prompt specification */
-    height: auto;
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
+    overflow: visible; /* CHANGED: hidden → visible */
+    min-height: 280px; /* CHANGED: 272px → 280px */
+    height: auto; /* CHANGED: 272px → auto */
+}
+
+.forecast-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
+    opacity: 0.6;
 }
 
 .forecast-premium-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px;
-    border-bottom: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    padding: 20px 24px 16px 24px;
+    border-bottom: 1px solid rgba(191,166,112,0.15);
     gap: 6px;
     flex-shrink: 0;
 }
 
+/* FIX: Ensure body has breathing room */
 .forecast-premium-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 32px 24px;
-    gap: 16px;
-    min-height: 160px;
+    padding: 32px 20px; /* CHANGED: 28px → 32px */
+    gap: 16px; /* CHANGED: 14px → 16px */
+    min-height: 160px; /* ADDED: Minimum body space */
 }
+
 
 .forecast-premium-label {
     font-family: var(--font-body);
@@ -2099,6 +2110,12 @@ METHODOLOGY
     color: #BFA670;
     line-height: 1;
     text-shadow: 0 3px 16px rgba(191,166,112,0.6);
+}
+
+.forecast-premium-value-large,
+.voxmill-index-number,
+.score-badge {
+    /* Removed all default content rules - data MUST come from generator.py */
 }
 
 .forecast-premium-direction {
@@ -2136,8 +2153,8 @@ METHODOLOGY
 }
 
 .forecast-premium-footer {
-    padding: 24px;
-    border-top: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    padding: 16px 24px 20px 24px;
+    border-top: 1px solid rgba(191,166,112,0.1);
     flex-shrink: 0;
 }
 
@@ -2150,8 +2167,9 @@ METHODOLOGY
     margin: 0;
 }
 
+/* FIX: Add specific class override for clipping prevention */
 .forecast-card-premium.sentiment-card {
-    min-height: 320px;  /* ✅ UPDATED: Standardized min-height */
+    min-height: 300px; /* ADDED: Extra space for large sentiment display */
     overflow: visible;
 }
 
@@ -2165,7 +2183,7 @@ METHODOLOGY
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .sentiment-bullish {
@@ -2195,12 +2213,24 @@ METHODOLOGY
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
-    flex-shrink: 0;
 }
 
+/* FIX: Add specific class override for VPI bar */
 .forecast-card-premium.predictive-index-card {
-    min-height: 320px;  /* ✅ UPDATED: Standardized min-height */
+    min-height: 300px; /* ADDED: Extra space for index bar */
     overflow: visible;
+}
+
+.voxmill-index-number {
+    font-family: var(--font-body);
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
+    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .voxmill-index-bar-container {
@@ -2211,7 +2241,7 @@ METHODOLOGY
     overflow: hidden;
     margin-top: 10px;
     position: relative;
-    flex-shrink: 0;
+    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .voxmill-index-bar-fill {
@@ -2223,7 +2253,7 @@ METHODOLOGY
 }
 
 .macro-context {
-    margin-top: auto;
+    margin-top: auto; /* CHANGED: 92px → auto (pushes to bottom) */
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
@@ -2231,8 +2261,9 @@ METHODOLOGY
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 32px;
+    padding: 20px 28px;
 }
+
 
 .macro-title {
     font-family: var(--font-body);
@@ -2268,22 +2299,21 @@ METHODOLOGY
 .recommendations-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;  /* ✅ UPDATED: Standardized gap */
+    gap: 24px;
 }
 
 .recommendation-card {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    background: rgba(12, 12, 12, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 22px 20px;
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 160px;
-    height: 160px;
+    min-height: 136px;
+    height: 136px;
     justify-content: center;
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .recommendation-action {
@@ -2318,14 +2348,14 @@ METHODOLOGY
 }
 
 /* ============================================
-   EXECUTIVE INTELLIGENCE — SURGICAL PRECISION UPDATE
+   EXECUTIVE INTELLIGENCE — SURGICAL UPLIFT
    ============================================ */
 
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;  /* ✅ UPDATED: Standardized gap */
-    margin-top: 48px;  /* ✅ UPDATED: Standardized spacing */
+    gap: 26px;
+    margin-top: 42px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -2333,23 +2363,24 @@ METHODOLOGY
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 24px;  /* ✅ UPDATED: Standardized gap */
+    gap: 16px;
 }
 
 .insight-card-elite {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
+    border: 1px solid rgba(191,166,112,0.2);
+    border-radius: var(--card-radius);
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    min-height: 136px;
-    height: 136px;
+    min-height: 128px;
+    height: 128px;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--card-shadow);
+    box-shadow: 
+        0 4px 16px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.03);
     justify-content: center;
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .insight-elite-header {
@@ -2407,21 +2438,23 @@ METHODOLOGY
 }
 
 .verdict-panel-border {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
     border: 1.5px solid var(--vm-gold);
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    padding: 32px;
+    border-radius: 10px;
+    padding: 16px 20px;
     text-align: left;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;  /* ✅ UPDATED: Align with 3 bullets */
-    box-shadow: var(--card-shadow);
+    justify-content: center;
+    box-shadow: 
+        0 8px 32px rgba(0,0,0,0.35),
+        0 0 60px rgba(191,166,112,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
     overflow: hidden;
     gap: 10px;
-    min-height: 440px;  /* ✅ UPDATED: Align exactly with 3 insight cards (136px × 3 + 24px × 2 gaps = 456px, adjusted to 440px for proper fit) */
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
+    min-height: 416px;
 }
 
 .verdict-panel-border::before {
@@ -2473,9 +2506,6 @@ METHODOLOGY
 .verdict-rating {
     margin-bottom: 12px;
     text-align: left;
-    display: flex;  /* ✅ ADDED: Center KPI numbers vertically */
-    flex-direction: column;
-    justify-content: center;
 }
 
 .verdict-stars {
@@ -2544,13 +2574,13 @@ METHODOLOGY
 }
 
 .executive-bottom-strip {
-    margin-top: 24px;
-    margin-bottom: 64px;  /* ✅ UPDATED: KPI row bottom spacing 64px */
+    margin-top: 22px;
+    margin-bottom: 20px;
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 24px;
+    padding: 17px 22px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
@@ -2575,25 +2605,24 @@ METHODOLOGY
 .action-window-luxury-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;  /* ✅ UPDATED: Standardized gap */
+    gap: 24px;
     width: 100%;
 }
 
 .action-item-luxury {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    background: linear-gradient(135deg, rgba(12,12,12,0.5) 0%, rgba(18,18,18,0.4) 100%);
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border: 1px solid rgba(191,166,112,0.15);
     border-left: 4px solid var(--vm-gold);
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    border-radius: var(--card-radius);
+    padding: 20px 18px;
     display: flex;
     flex-direction: column;
     gap: 9px;
-    min-height: 120px;
-    height: 120px;
+    min-height: 110px;
+    height: 110px;
     justify-content: center;
     box-shadow: var(--card-shadow);
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .action-item-luxury-title {
@@ -2631,86 +2660,43 @@ METHODOLOGY
    ============================================ */
 
 @media print, .a4-export {
-    .market-depth-analysis .slide-content {
-        top: 162px;
-    }
-    
-    .depth-metrics {
-        margin-top: 44px;
-        gap: 36px;
-    }
-    
-    .depth-card {
-        padding: 28px;
-        min-height: 150px;
-        height: 150px;
-    }
-    
-    .depth-dynamics-indicators {
-        gap: 36px;
-        margin-top: 64px;
-    }
-    
-    .depth-indicator-card {
-        padding: 24px;
-        height: 110px;
-    }
-    
-    .forecast-grid-2x2 {
-        gap: 36px;
-    }
-    
-    .forecast-card-premium {
-        min-height: 300px;
-    }
-    
-    .recommendations-grid {
-        gap: 36px;
-    }
-    
-    .recommendation-card {
-        padding: 28px;
-        min-height: 150px;
-        height: 150px;
-    }
-    
     .executive-intelligence-layout {
-        gap: 36px;
-        margin-top: 44px;
+        gap: 22px;
+        margin-top: 38px;
     }
     
     .executive-insights-column {
-        gap: 20px;
+        gap: 14px;
     }
     
     .insight-card-elite {
-        padding: 28px;
-        min-height: 128px;
-        height: 128px;
+        padding: 14px 18px;
+        min-height: 120px;
+        height: 120px;
     }
     
     .verdict-panel-border {
-        padding: 28px;
-        min-height: 420px;
+        padding: 14px 18px;
+        min-height: 390px;
     }
     
     .action-window-luxury-grid {
-        gap: 36px;
+        gap: 22px;
     }
     
     .action-item-luxury {
-        padding: 28px;
-        min-height: 110px;
-        height: 110px;
+        padding: 18px 16px;
+        min-height: 105px;
+        height: 105px;
     }
 }
 
 /* ============================================
-TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
+TOP MARKET OPPORTUNITIES
 ============================================ */
 
 .top-market-opportunities .slide-content {
-    top: 168px;  /* ✅ STANDARDIZED: was 225px */
+    top: 225px;
 }
 
 .opportunities-table {
@@ -2734,9 +2720,8 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
     width: 100%;
     margin-top: var(--spacing-sm);
     border-collapse: collapse;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    background: rgba(18, 18, 18, 0.95);
+    border-radius: var(--card-radius);
     overflow: hidden;
     table-layout: auto;
 }
@@ -2771,7 +2756,7 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
 .table-luxury th:nth-child(4) { width: 14%; text-align: center; }
 .table-luxury th:nth-child(5) { width: 12%; text-align: center; }
 .table-luxury th:nth-child(6) { width: 10%; text-align: center; }
-.table-luxury th:nth-child(7) { width: 10%; text-align: center; min-width: 100px; }  /* ✅ FIXED: prevents shifting */
+.table-luxury th:nth-child(7) { width: 10%; text-align: center; }
 
 .table-luxury tbody tr {
     border-bottom: 1px solid rgba(191, 166, 112, 0.08);
@@ -2805,7 +2790,7 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
 .table-luxury td:nth-child(4) { width: 14%; text-align: right; }
 .table-luxury td:nth-child(5) { width: 12%; text-align: right; }
 .table-luxury td:nth-child(6) { width: 10%; text-align: center; }
-.table-luxury td:nth-child(7) { width: 10%; text-align: center; min-width: 100px; }  /* ✅ FIXED: prevents shifting */
+.table-luxury td:nth-child(7) { width: 10%; text-align: center; }
 
 .property-address {
     font-weight: 500;
@@ -2814,8 +2799,7 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
 
 .score-badge {
     padding: 8px 16px;
-    min-width: 90px;  /* ✅ FIXED: was 80px */
-    max-width: 90px;
+    min-width: 80px;
     height: 32px;
     display: inline-flex;
     align-items: center;
@@ -2823,7 +2807,7 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
     border-radius: 6px;
     font-family: var(--font-mono);
     font-weight: 700;
-    vertical-align: middle;
+    vertical-align: middle;  /* ADDED */
 }
 
 .score-high, .score-excellent {
@@ -2842,28 +2826,31 @@ TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
 }
 
 /* ============================================
-SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
+SEGMENT PERFORMANCE BREAKDOWN
 ============================================ */
 
 .district-performance-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;  /* ✅ UPDATED: Standardized gap from 32px */
-    margin-top: 48px;
-    margin-bottom: 48px;
+    gap: 32px;
+    margin-top: 56px;
+    margin-bottom: 60px;
 }
 
 .district-card-premium {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
+    border: 1px solid rgba(191,166,112,0.25);
+    border-radius: var(--card-radius);
     padding: 0;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--card-shadow);
+    box-shadow: 
+        0 6px 20px rgba(0,0,0,0.3),
+        0 0 40px rgba(191,166,112,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.03);
     overflow: hidden;
     position: relative;
-    min-height: 510px;  /* ✅ UPDATED: Reduce top card height -30px (was 540px) */
+    min-height: 540px;
 }
 
 .district-card-premium::before {
@@ -2880,7 +2867,7 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 24px;
+    padding: 22px 26px;
     min-height: 96px;
     display: flex;
     align-items: center;
@@ -2920,13 +2907,11 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
 }
 
 .district-metrics-grid {
-    padding: 32px;
+    padding: 26px 26px;
     display: flex;
     flex-direction: column;
     gap: 24px;
     flex: 1;
-    justify-content: center;  /* ✅ ADDED: Center-align all card data via flexbox */
-    align-items: center;  /* ✅ ADDED: Center-align all card data via flexbox */
 }
 
 .district-metric-row {
@@ -2935,7 +2920,6 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
     gap: 20px;
     align-items: center;
     min-height: 76px;
-    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .district-metric-divider {
@@ -2953,7 +2937,6 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
     border-radius: 8px;
     border: 1px solid rgba(191,166,112,0.1);
     min-height: 116px;
-    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .district-metric-block {
@@ -3024,7 +3007,6 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
     border-left: 3px solid var(--vm-gold);
     border-radius: 6px;
     min-height: 72px;
-    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .insight-icon {
@@ -3075,9 +3057,9 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
 
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 72px;  /* ✅ UPDATED: Increase bottom section row spacing +24px (was 48px) */
-    margin-bottom: 48px;
-    padding: 32px;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    padding: 22px 30px;
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
 }
@@ -3133,10 +3115,8 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 32px;  /* ✅ UPDATED: Expand padding to 32px (was 24px 32px) */
-    margin: 32px 0;
-    width: calc(100% + 80px);  /* ✅ UPDATED: Expand width +40px */
-    margin-left: -40px;  /* ✅ UPDATED: Center expansion */
+    padding: 22px 32px;
+    margin: 36px 0;
 }
 
 .summary-band-title {
@@ -3163,7 +3143,7 @@ SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
 }
 
 /* ============================================
-AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
+AI OPPORTUNITIES
 ============================================ */
 
 .acquisition-flagging-header {
@@ -3178,13 +3158,13 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
     font-weight: 600;
     letter-spacing: 0.06em;
     text-align: left;
-    padding: 24px 32px;
+    padding: 20px 30px;
 }
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 36px;  /* ✅ UPDATED: Vertical spacing between property rows (was 24px) */
+    gap: 18px;
     margin-top: 24px;
     margin-bottom: 0;
 }
@@ -3194,19 +3174,18 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-    padding: 24px 32px;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 24px 28px;
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
     min-height: 120px;
-    height: 120px;
-    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
+    height: 120px;  /* ✅ FIXED HEIGHT - uniform across all cards */
 }
 
 .signal-content-v2 {
-    flex: 1;
-    text-align: left;
+flex: 1;
+text-align: left;
 }
 
 .signal-property-title {
@@ -3214,7 +3193,7 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
     font-size: 17px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 12px;
+    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
     text-align: left;
 }
 
@@ -3224,7 +3203,7 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
     color: var(--vm-muted);
     text-align: left;
     font-weight: 500;
-    margin-bottom: 12px;
+    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
 }
 
 .ai-flag-reason {
@@ -3232,7 +3211,7 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
     font-size: 12px;
     color: var(--vm-text-body);
     font-style: italic;
-    margin-top: 12px;
+    margin-top: 12px;  /* ✅ CONSISTENT spacing */
     padding-left: 12px;
     border-left: 2px solid rgba(191, 166, 112, 0.3);
     line-height: 1.7;
@@ -3241,352 +3220,228 @@ AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
 }
 
 .signal-badges-v2 {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;  /* ✅ UPDATED: Center badges via flexbox (was flex-end) */
-    justify-content: center;  /* ✅ ADDED: Center badges via flexbox */
-    min-width: 100px;
-    padding-right: 18px;  /* ✅ UPDATED: Badge right padding (was 0) */
+display: flex;
+flex-direction: column;
+gap: 8px;
+align-items: flex-end;
+min-width: 100px;
 }
 
 .signal-badge-v2 {
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    text-align: center;
-    min-width: 85px;
+padding: 6px 14px;
+border-radius: 6px;
+font-size: 12px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+text-align: center;
+min-width: 85px;
 }
 
 .badge-risk {
-    color: #4CAF50;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: #4CAF50;
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-confidence {
-    color: var(--vm-gold);
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: var(--vm-gold);
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-trigger {
-    color: #FFC107;
-    border: 1px solid rgba(191, 166, 112, 0.4);
+color: #FFC107;
+border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .acquisition-strategy-ribbon {
-    background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
-    border-left: 4px solid #BFA670;
-    border-radius: 8px;
-    padding: 24px 32px;
-    margin: 32px 0 32px 40px;  /* ✅ UPDATED: Reduce width -90px, left margin 40px */
-    width: calc(100% - 130px);  /* ✅ UPDATED: Reduce Acquisition Strategy width -90px */
+background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
+border-left: 4px solid #BFA670;
+border-radius: 8px;
+padding: 22px 32px;
+margin: 36px 0;
 }
 
 .acquisition-strategy-text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.7;
-    font-weight: 400;
-    text-align: center;
-    margin: 0;
+font-family: var(--font-body);
+font-size: 15px;
+color: var(--vm-text-body);
+line-height: 1.7;
+font-weight: 400;
+text-align: center;
+margin: 0;
 }
 
 .acquisition-strategy-text strong {
-    font-weight: 700;
+font-weight: 700;
 }
 
 .acquisition-strategy-ribbon + div {
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
-    margin-top: 40px;
-    margin-bottom: 76px;
+background: rgba(12, 12, 12, 0.35);
+border: 1px solid rgba(255, 255, 255, 0.08);
+border-radius: 10px;
+padding: 24px 32px;
+margin-top: 40px;
+margin-bottom: 76px;
 }
 
 .acquisition-strategy-ribbon + div h4 {
-    font-size: 16px;
-    color: #C8AA6E;
-    margin-bottom: 18px;
-    font-weight: 600;
+font-size: 16px;
+color: #C8AA6E;
+margin-bottom: 18px;
+font-weight: 600;
 }
 
 .acquisition-strategy-ribbon + div > div {
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.85;
-    padding-bottom: 8px;
+font-size: 14px;
+color: var(--vm-text-body);
+line-height: 1.85;
+padding-bottom: 8px;
 }
 
 .acquisition-strategy-ribbon + div > div > div {
-    margin-bottom: 14px;
-    padding-left: 0;
-    min-height: 24px;
+margin-bottom: 14px;
+padding-left: 0;
+min-height: 24px;
 }
-
 .acquisition-strategy-ribbon + div > div > div:last-child {
-    margin-bottom: 0;
+margin-bottom: 0;
 }
-
 .acquisition-strategy-ribbon + div strong {
-    color: #C8AA6E;
-    font-weight: 600;
+color: #C8AA6E;
+font-weight: 600;
 }
-
-/* ============================================
-METHODOLOGY — SURGICAL PRECISION UPDATE
-============================================ */
-
-.methodology-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 88px;  /* ✅ UPDATED: Spacing between "Data Sources" and "Forecast Logic" +48px (was 40px) */
-    margin-top: 48px;
-}
-
-.methodology-panel {
-    padding: 32px;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-}
-
-.methodology-title {
-    font-family: var(--font-body);
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.12em;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.methodology-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.methodology-list li {
-    padding: 12px 0 12px 24px;
-    margin-bottom: 8px;
-    position: relative;
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--vm-text-body);
-    line-height: 1.7;
-    font-weight: 400;
-}
-
-.methodology-list li::before {
-    content: "▸";
-    position: absolute;
-    left: 0;
-    color: var(--vm-gold);
-    font-weight: 700;
-}
-
-.model-pipeline {
-    padding: 40px;  /* ✅ UPDATED: Intelligence Pipeline vertical padding (was 32px) */
-    margin-top: 48px;
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-}
-
-.pipeline-flow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    margin: 32px 0;
-}
-
-.pipeline-step {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-
-.pipeline-box {
-    background: rgba(191, 166, 112, 0.15);
-    border: 1px solid rgba(191, 166, 112, 0.3);
-    border-radius: 8px;
-    padding: 16px 24px;
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    text-align: center;
-    width: 100%;
-}
-
-.pipeline-arrow {
-    font-size: 24px;
-    color: var(--vm-gold);
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.proprietary-badge {
-    padding: 84px 32px;  /* ✅ UPDATED: Architecture footer band height +30px (was 54px 32px) */
-    margin-top: 48px;
-    background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
-    text-align: center;
-}
-
-.proprietary-badge-text {
-    font-family: var(--font-body);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--vm-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
 /* ============================================
 PANELS
 ============================================ */
-
 .panel {
-    margin-top: 34px;
-    padding: 32px;  /* ✅ UPDATED: Standardized padding */
-    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
-    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
-    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+margin-top: 34px;
+padding: 26px 30px;
 }
-
 .panel-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    position: relative;
-    padding-bottom: 12px;
-    padding-top: 0;
+font-family: var(--font-display);
+font-size: 28px;
+font-weight: 600;
+color: var(--vm-gold);
+margin-bottom: 16px;
+position: relative;
+padding-bottom: 12px;
+padding-top: 0;
 }
-
 .panel-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.7;
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 120px;
+height: 2px;
+background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
+opacity: 0.7;
 }
-
 .panel-text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    color: var(--vm-text-body);
-    line-height: 1.85;
-    font-weight: 400;
+font-family: var(--font-body);
+font-size: 15px;
+color: var(--vm-text-body);
+line-height: 1.85;
+font-weight: 400;
 }
-
 .panel-text strong {
-    color: var(--vm-gold);
-    font-weight: 600;
+color: var(--vm-gold);
+font-weight: 600;
 }
-
 /* ============================================
 FOOTER
 ============================================ */
-
 .slide-footer {
-    position: absolute;
-    bottom: 32px;
-    left: 48px;
-    right: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: rgba(184, 184, 184, 0.75);
-    z-index: 10;
+position: absolute;
+bottom: 32px;
+left: 48px;
+right: 48px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-family: var(--font-body);
+font-size: 13px;
+color: rgba(184, 184, 184, 0.75);
+z-index: 10;
 }
-
 .footer-left {
-    font-weight: 400;
+font-weight: 400;
 }
-
 .footer-center {
-    text-align: center;
-    font-style: italic;
-    font-weight: 400;
+text-align: center;
+font-style: italic;
+font-weight: 400;
 }
-
 .footer-right {
-    text-align: right;
-    font-weight: 600;
+text-align: right;
+font-weight: 600;
 }
-
 /* ============================================
 UTILITY CLASSES
 ============================================ */
-
 .text-gold {
-    color: var(--vm-gold);
+color: var(--vm-gold);
 }
-
 .text-bronze {
-    color: var(--vm-bronze);
+color: var(--vm-bronze);
 }
-
 .text-muted {
-    color: var(--vm-muted);
+color: var(--vm-muted);
 }
-
 .mb-0 {
-    margin-bottom: 0 !important;
+margin-bottom: 0 !important;
 }
-
 .mt-0 {
-    margin-top: 0 !important;
+margin-top: 0 !important;
 }
-
 /* ============================================
 PRINT OPTIMIZATION
 ============================================ */
-
 @media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        color-adjust: exact;
-    }
-    
-    .slide {
-        page-break-after: always;
-        page-break-inside: avoid;
-    }
-    
-    .slide:last-child {
-        page-break-after: auto;
-    }
-    
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color-adjust: exact !important;
-    }
+body {
+-webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+color-adjust: exact;
+}
+.slide {
+    page-break-after: always;
+    page-break-inside: avoid;
 }
 
+.slide:last-child {
+    page-break-after: auto;
+}
+
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+}
+
+    table-luxury th:nth-child(7),
+.table-luxury td:nth-child(7) {
+    width: 10%;
+    text-align: center;
+    min-width: 100px;  /* ✅ FIXED - prevents shifting */
+}
+
+.score-badge {
+    padding: 8px 16px;
+    min-width: 90px;  /* ✅ FIXED width */
+    max-width: 90px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    vertical-align: middle;
+}
+    
 /* ============================================
 WEBKIT/BLINK RENDERING FIXES
 ============================================ */
-
 .slide,
 .kpi-card,
 .chart-container,
@@ -3595,16 +3450,14 @@ WEBKIT/BLINK RENDERING FIXES
 .district-card-premium,
 .forecast-card-premium,
 .competitive-info-panel {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
+-webkit-transform: translateZ(0);
+transform: translateZ(0);
+will-change: transform;
 }
-
 svg {
-    shape-rendering: geometricPrecision;
-    text-rendering: geometricPrecision;
+shape-rendering: geometricPrecision;
+text-rendering: geometricPrecision;
 }
-
 /* ============================================
 END OF VOXMILL EXECUTIVE INTELLIGENCE DECK CSS
 ============================================ */
