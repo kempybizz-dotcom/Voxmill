@@ -478,67 +478,59 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     margin-top: 56px;
 }
 
+/* EXECUTIVE SUMMARY BULLETS - CARD REFINEMENT */
+
 .executive-summary-bullet {
-    border-left: 6px solid var(--vm-gold);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    min-height: 110px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 22px 30px;
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px; /* GLOBAL standard */
+    margin-bottom: 28px;
+    min-height: auto; /* REMOVE fixed height, reduce by ~8% */
 }
 
 .executive-bullet-title {
-    font-family: var(--font-body);
-    font-size: 18px;
-    font-weight: 600;
-    color: #BFA670;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #C5A46D;
+    margin-bottom: 6px;
+    line-height: 1.2;
     position: relative;
-    padding-bottom: 10px;
-    text-align: left;
-    width: 100%;
+    padding-bottom: 14px; /* SPACING for gold bar */
 }
 
+/* GOLD MICRO-BAR UNDER EACH HEADER */
 .executive-bullet-title::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100px;
+    width: 48px;
     height: 2px;
-    background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
-    opacity: 0.7;
+    background: #C5A46D;
+    margin-top: 6px;
 }
 
 .executive-bullet-text {
-    font-family: var(--font-body);
-    font-size: 16px;
-    color: rgba(234, 234, 234, 0.9);
-    line-height: 1.85;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     font-weight: 400;
-    text-align: left;
-    width: 100%;
-    max-width: 1050px;
-    margin-left: 0;
-    margin-right: auto;
-    padding: 0 22px;
+    color: #EAEAEA;
+    line-height: 1.5;
+    margin-bottom: 10px; /* CLEAN paragraph spacing */
 }
 
 .killer-insight {
     display: block;
-    font-family: var(--font-body);
-    font-size: 15px;
-    font-weight: 700;
-    color: #BFA670;
-    margin-top: var(--spacing-xs);
-    padding-top: var(--spacing-xs);
-    border-top: 2px solid rgba(191, 166, 112, 0.5);
-    letter-spacing: 0.03em;
-    text-shadow: 0 0 8px rgba(191, 166, 112, 0.6);
-    text-align: left;
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: rgba(197,164,109,0.08);
+    border-left: 3px solid #C5A46D;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #EAEAEA;
 }
 
 /* ============================================
@@ -914,19 +906,24 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     gap: 72px; /* ✅ FIXED: 32px → 72px (increased spacing between columns) */
     align-items: start;
 }
-
 .competitive-info-panel {
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px;
     width: 100%;
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 32px; /* ✅ FIXED: 26px 30px → 32px (global card padding) */
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
     backdrop-filter: none; /* ✅ REMOVED: blur effect */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: var(--card-border) → global standard */
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
     box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
     min-height: 665px;
+}
+
+.competitive-info-panel:first-child {
+    height: 820px; /* INCREASED by 50px to match right panel bottom alignment */
+    display: flex;
+    flex-direction: column;
 }
 
 .competitive-info-panel .chart-title {
@@ -1071,13 +1068,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 /* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
-    margin-top: 56px;
-    margin-bottom: 48px;
-    padding: 72px; /* ✅ FIXED: 26px 30px → 72px (expanded padding by +40px total) */
-    background: rgba(10, 10, 10, 0.55); /* ✅ ADDED: global card background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ ADDED: global border */
-    border-radius: 10px; /* ✅ ADDED: global border-radius */
-    box-shadow: none; /* ✅ ADDED: no shadows */
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 24px 32px; /* REDUCED from 32px to 24px vertical */
+    margin-top: 40px;
 }
 
 .competitive-insights-grid {
@@ -1111,13 +1106,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 /* ✅ Bottom Callout Box Spacing */
 .bottom-callout-box {
-    margin-top: 20px;
-    margin-bottom: 0;
-    background: rgba(191, 166, 112, 0.08);
-    border-left: 4px solid #BFA670;
-    border-radius: 10px; /* ✅ FIXED: 8px → 10px */
-    box-shadow: none; /* ✅ REMOVED: shadows */
-    padding: 18px 28px;
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px;
+    margin-top: 40px; /* CLEAN 40px gap from insights strip above */
+    margin-bottom: 0; /* REMOVE any bottom margin */
 }
 
 .bottom-callout-title {
@@ -1193,66 +1187,70 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .macro-signal-card {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border standard */
-    border-top: none; /* ✅ REMOVED: 2px gold top border */
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 32px; /* ✅ FIXED: 38px 28px 28px 28px → 32px (global card padding) */
+    width: 29.5%;
+    height: 280px; /* INCREASED from 260px */
+    padding: 36px; /* INCREASED from 32px */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center; /* ✅ ADDED: vertical centering */
-    min-height: 260px;
+    align-items: center; /* CENTER horizontally */
+    justify-content: center; /* CENTER vertically */
+    text-align: center;
     position: relative;
-    box-shadow: none; /* ✅ REMOVED: no shadows */
+}
+
+/* SUPPRESS LARGE WHITE ICON TEXT */
+.macro-signal-card::before {
+    content: none !important;
+    display: none !important;
 }
 
 .macro-card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; /* REDUCED for cleaner look */
     font-weight: 600;
-    color: var(--vm-gold);
-    text-align: center;
-    margin-bottom: 6px; /* ✅ FIXED: 20px → 6px */
-    letter-spacing: 0.5px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px; /* CLEAN spacing */
+    line-height: 1.2;
 }
 
 .macro-card-primary-metric {
-    font-family: var(--font-body);
-    font-size: 32px; /* ✅ FIXED: 20px → 32px */
-    font-weight: 700;
-    color: #EAEAEA;
-    text-align: center;
-    margin-bottom: 4px; /* ✅ FIXED: 14px → 4px */
-    line-height: 1.2; /* ✅ FIXED: 1.3 → 1.2 */
-    letter-spacing: 0.02em;
+    font-family: 'Inter', sans-serif;
+    font-size: 28px; /* STANDARDIZED */
+    font-weight: 600;
+    color: #EAEAEA; /* CLEAN WHITE */
+    margin-bottom: 4px;
+    line-height: 1.2;
 }
 
 .macro-card-secondary-metric {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(234, 234, 234, 0.7);
-    text-align: center;
-    margin-bottom: 12px;
-    margin-top: 2px; /* ✅ ADDED: subtext spacing */
-    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 */
+    font-family: 'Inter', sans-serif;
+    font-size: 16px; /* INCREASED for readability */
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    margin-top: 8px; /* CLEAN spacing */
+    margin-bottom: 16px;
+    line-height: 1.3;
 }
 
+/* BADGE - MOVE TO TOP RIGHT */
 .macro-signal-card .vx-badge {
-    margin-bottom: 18px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 6px 12px;
+    font-size: 11px;
+    border-radius: 6px;
 }
 
 .macro-card-insight {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(234, 234, 234, 0.8);
-    text-align: center;
-    line-height: 1.5; /* ✅ FIXED: 1.6 → 1.5 */
-    margin: 0;
-    padding: 0 8px;
+    display: none; /* REMOVE to clean up cards */
 }
+
 
 /* ✅ REMOVE ALL ICONS (if rendered via CSS pseudo-elements) */
 .macro-signal-card::before,
@@ -1267,12 +1265,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
    ============================================ */
 
 .correlation-engine-ribbon {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: global card background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    margin-top: 72px; /* INCREASED spacing */
+    margin-bottom: 52px; /* INCREASED spacing */
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 14px 28px;
-    margin-top: 72px; /* ✅ ADDED: top margin spacing */
-    margin-bottom: 52px; /* ✅ FIXED: 75px → 52px */
+    padding: 32px;
 }
 
 .correlation-ribbon-title {
@@ -1290,23 +1288,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .correlation-pills-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 40px; /* ✅ FIXED: 16px → 40px (gutter between blocks) */
-    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 40px; /* CLEAN 40px gaps */
 }
 
 .correlation-pill {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: global card background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    width: 18%; /* STANDARDIZED */
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 12px 14px;
-    flex: 0 0 18%; /* ✅ FIXED: flex: 1 1 0 → flex: 0 0 18% (equal block width) */
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
+    padding: 20px;
+    text-align: center;
 }
 
 .correlation-pill:hover {
@@ -1359,16 +1351,19 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-top: 72px; /* ✅ FIXED: 25px → 72px */
 }
 
-.composite-verdict-block::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
-    opacity: 0.5;
+/* COMPOSITE VERDICT BLOCK - HEIGHT + SPACING FIX */
+.composite-verdict-block {
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 48px; /* INCREASED for breathing room */
+    margin-top: 72px;
+    min-height: 440px; /* INCREASED by 60px */
+}
+
+/* COMPOSITE VERDICT DRIVERS - BULLET FIXES */
+.composite-verdict-drivers {
+    margin-top: 32px;
 }
 
 .verdict-seal-small {
@@ -1457,13 +1452,19 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .driver-bullet {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 16px;
-    background: rgba(12, 12, 12, 0.4);
-    border-left: 2px solid var(--vm-gold);
-    border-radius: 6px;
+    align-items: flex-start;
+    margin-bottom: 12px; /* INCREASED spacing */
+    padding-left: 8px; /* CLEAN indent */
+    line-height: 1.6; /* INCREASED readability */
 }
+
+.driver-bullet .driver-text {
+    width: 80%; /* CONSTRAIN width */
+    font-size: 14px;
+    color: #EAEAEA;
+    line-height: 1.6;
+}
+
 
 .driver-icon {
     color: var(--vm-gold);
@@ -1472,12 +1473,27 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex-shrink: 0;
 }
 
-.driver-text {
-    font-family: var(--font-body);
+.driver-icon {
+    margin-right: 12px;
+    color: #C5A46D;
     font-size: 12px;
-    color: rgba(234, 234, 234, 0.85);
-    line-height: 1.5;
-    letter-spacing: 0.2px;
+}
+
+/* PREDICTIVE INDEX BAR - CENTER ALIGNMENT */
+.composite-verdict-confidence {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* CENTER bar */
+}
+
+.confidence-bar {
+    width: 70%; /* CENTERED, not full width */
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 12px;
 }
 
 /* ============================================
@@ -1960,60 +1976,53 @@ METHODOLOGY
    ============================================ */
 
 .stress-signals-matrix {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-top: 72px; /* ✅ ADDED: new row spacing for "Depth Dynamics Indicators" */
-    margin-bottom: 0;
-    align-items: start;
+    display: flex;
+    justify-content: space-between;
+    gap: 40px; /* CLEAN gap */
+    margin-top: 88px; /* INCREASED separation from indexes */
 }
 
 .stress-card {
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 28px;
+    width: 24%; /* 4 CARDS at 24% each */
+    height: 180px; /* INCREASED height */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 28px; /* ✅ FIXED: 24px 20px → 28px (specified padding) */
-    min-height: 120px; /* ✅ FIXED: 155px → 120px (specified height) */
-    height: 120px; /* ✅ FIXED: 155px → 120px */
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
-    backdrop-filter: none; /* ✅ REMOVED: blur effect */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
-    box-shadow: none; /* ✅ REMOVED: all shadows */
+    align-items: center;
+    text-align: center;
 }
 
 .stress-label {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    margin-bottom: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
     font-weight: 600;
-    text-align: center;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    line-height: 1.2;
 }
 
 .stress-value {
-    font-family: var(--font-body);
-    font-size: 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
     font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
-    letter-spacing: 0.02em;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
-    text-align: center;
+    color: #C5A46D;
+    margin-bottom: 8px;
+    line-height: 1.2;
 }
 
+
 .stress-note {
-    font-family: var(--font-body);
-    font-size: 10.5px;
-    color: rgba(234, 234, 234, 0.65);
-    margin: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
     font-weight: 400;
-    line-height: 1.5;
-    text-align: center;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.3;
 }
 
 /* ✅ NEW: Depth Dynamics Indicators Row Title */
@@ -2246,6 +2255,51 @@ METHODOLOGY
     .stress-note {
         font-size: 10px;
     }
+}
+
+/* NEW BOTTOM PANEL - DATA QUALITY LAYER */
+
+.data-quality-panel {
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px;
+    margin-top: 48px;
+    min-height: 240px;
+}
+
+.data-quality-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #C5A46D;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.data-quality-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.data-quality-list li {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #EAEAEA;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.data-quality-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #C5A46D;
+    font-weight: 700;
 }
 
 /* ============================================
@@ -2596,22 +2650,16 @@ STRATEGIC FORECAST — REFINED
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 32px; /* CLEAN spacing between insight cards */
+    margin-bottom: 40px; /* ADD bottom spacing */
 }
 
 .insight-card-elite {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
-    padding: 32px; /* ✅ FIXED: 16px 20px → 32px (global card padding) */
-    display: flex;
-    flex-direction: column;
-    min-height: 128px;
-    height: 128px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: none; /* ✅ REMOVED: all shadows */
-    justify-content: center;
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px;
+    margin-bottom: 12px; /* ADDITIONAL spacing */
 }
 
 .insight-elite-header {
@@ -2666,10 +2714,9 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-verdict-column {
-    display: flex;
-    align-items: stretch;
-    margin-top: 0;
+    margin-bottom: 40px; /* ADD bottom spacing */
 }
+
 
 .verdict-panel-border {
     background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
@@ -2811,14 +2858,12 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 22px;
-    margin-bottom: 84px; /* ✅ FIXED: 20px → 84px (KPI row bottom spacing 64px + existing 20px) */
-    background: rgba(191, 166, 112, 0.12);
-    border-radius: 10px; /* ✅ FIXED: 8px → 10px */
-    border-top: 1px solid rgba(191, 166, 112, 0.3);
-    border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 17px 22px;
-    box-shadow: none; /* ✅ REMOVED: shadow */
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    padding: 32px;
+    margin-top: 48px; /* INCREASED spacing */
+    margin-bottom: 84px; /* INCREASED bottom margin */
 }
 
 .executive-bottom-text {
@@ -2833,10 +2878,8 @@ STRATEGIC FORECAST — REFINED
 }
 
 .action-window-luxury {
-    margin-top: 0;
-    margin-bottom: 0;
-    background: transparent;
-    padding: 0;
+    margin-top: 48px; /* INCREASED spacing */
+    margin-bottom: 60px; /* ADD bottom breathing room */
 }
 
 .action-window-luxury-grid {
@@ -3204,16 +3247,20 @@ SEGMENT PERFORMANCE BREAKDOWN
     justify-content: center;
 }
 
-.district-metric-label {
-    font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 600;
-    color: rgba(184,184,184,0.7);
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
-}
+/* ABSORPTION RATE HEADER - READABILITY FIX */
 
+.district-metric-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; /* INCREASED by +1px */
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px; /* REDUCED from 4px */
+    margin-bottom: 8px;
+    line-height: 1.2;
+    border-bottom: 1px solid rgba(255,215,167,0.15); /* ADD subtle separator */
+    padding-bottom: 4px; /* ADD spacing */
+}
 .district-metric-value {
     font-family: var(--font-body);
     font-size: 26px;
