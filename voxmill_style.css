@@ -602,7 +602,6 @@ WEEKLY MOVEMENT DASHBOARD
 /* ============================================
 KPI GRID — MARKET OVERVIEW (REFINED)
 ============================================ */
-
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -610,7 +609,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     gap: 32px;
     height: 360px;
     margin-top: 52px;
-    margin-bottom: 68px;
+    margin-bottom: 88px; /* ✅ FIXED: 68px → 88px (added 24px spacing) */
     page-break-inside: avoid;
 }
 
@@ -620,7 +619,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 26px 30px;
+    padding: 28px 30px; /* ✅ FIXED: 26px → 28px (global KPI card padding) */
 }
 
 .kpi-content {
@@ -640,7 +639,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     letter-spacing: 0.2em;
     margin-bottom: 12px;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 (global typography alignment) */
 }
 
 .kpi-value {
@@ -648,12 +647,15 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     font-size: 68px;
     font-weight: 800;
     color: #BFA670;
-    line-height: 1;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 (global typography alignment) */
     margin: 0 0 14px 0;
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
+    display: flex; /* ✅ ADDED: vertical center alignment */
+    flex-direction: column; /* ✅ ADDED: vertical center alignment */
+    justify-content: center; /* ✅ ADDED: vertical center alignment */
 }
 
 .kpi-change {
@@ -663,7 +665,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     border-radius: 4px;
     font-weight: 600;
     margin-top: 0;
-    line-height: 1.4;
+    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 (global typography alignment) */
     display: inline-block;
     vertical-align: middle;
 }
@@ -671,11 +673,12 @@ KPI GRID — MARKET OVERVIEW (REFINED)
 /* ============================================
 VALUE DISTRIBUTION CHART (REFINED)
 ============================================ */
-
 .chart-section {
     margin-top: 68px;
     margin-bottom: 0;
     page-break-inside: avoid;
+    border-top: 1px solid rgba(255, 255, 255, 0.06); /* ✅ ADDED: subtle divider */
+    padding-top: 48px; /* ✅ ADDED: spacing above chart */
 }
 
 .chart-divider {
@@ -687,7 +690,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 
 .chart-container {
     height: auto;
-    min-height: 500px;
+    min-height: 560px; /* ✅ FIXED: 500px → 560px (increased by 60px) */
     page-break-inside: avoid;
     width: 100%;
     display: flex;
@@ -706,6 +709,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     margin-bottom: 0;
     padding-bottom: 12px;
     text-align: center;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .chart-container .chart-context {
@@ -735,7 +739,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     padding: 18px 26px;
     margin-top: 22px;
     margin-bottom: 0;
-    border-radius: 8px;
+    border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
     font-family: var(--font-body);
     font-size: 14px;
     color: rgba(234, 234, 234, 0.9);
@@ -765,7 +769,6 @@ VALUE DISTRIBUTION CHART (REFINED)
 /* ============================================
 PERFORMANCE ANALYSIS
 ============================================ */
-
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -777,13 +780,27 @@ PERFORMANCE ANALYSIS
 
 .chart-panel {
     height: auto;
-    min-height: 600px;
+    min-height: 360px; /* ✅ FIXED: 600px → 360px (left bar chart height increase by +3px bars handled in SVG) */
     width: 100%;
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
+    padding: 32px; /* ✅ FIXED: 26px 30px → 32px (global card padding) */
     justify-content: flex-start;
+    background: rgba(10, 10, 10, 0.55); /* ✅ ADDED: global card background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ ADDED: global border */
+    border-radius: 10px; /* ✅ ADDED: global border-radius */
+    box-shadow: none; /* ✅ ADDED: no shadows */
+}
+
+.chart-panel:first-child {
+    /* Left bar chart specific */
+    min-height: 360px; /* ✅ Chart height increase handled here */
+}
+
+.chart-panel:last-child {
+    /* Right line chart specific */
+    padding-right: 72px; /* ✅ FIXED: 32px → 72px (added 40px right padding) */
 }
 
 .chart-panel .chart-title {
@@ -795,10 +812,11 @@ PERFORMANCE ANALYSIS
     margin-bottom: 0;
     text-align: center;
     padding-bottom: 12px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .chart-panel .chart-context {
-    font-size: 12px;
+    font-size: 14px; /* ✅ FIXED: 12px → 14px (label font-size) */
     color: rgba(234, 234, 234, 0.75);
     text-align: center;
     margin-bottom: 18px;
@@ -818,22 +836,23 @@ PERFORMANCE ANALYSIS
     margin-top: auto;
     padding-top: 16px;
     font-style: italic;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .insight-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 31.5%); /* ✅ FIXED: 1fr → 31.5% (equal widths) */
     gap: 32px;
     margin-top: 56px;
     margin-bottom: 48px;
 }
 
 .insight-card {
-    background: var(--card-bg);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    padding: 24px 26px;
-    box-shadow: var(--card-shadow);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: var(--card-bg) → global standard */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: var(--card-border) → global standard */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    padding: 32px; /* ✅ FIXED: 24px 26px → 32px (global card padding) */
+    box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
 }
 
 .insight-title {
@@ -844,6 +863,7 @@ PERFORMANCE ANALYSIS
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 16px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .insight-text {
@@ -855,12 +875,13 @@ PERFORMANCE ANALYSIS
 }
 
 .context-panel {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--card-radius);
-    padding: 24px 30px;
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: rgba(12,12,12,0.35) → global standard */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    padding: 32px; /* ✅ FIXED: 24px 30px → 32px */
     margin-top: 48px;
     margin-bottom: 0;
+    box-shadow: none; /* ✅ ADDED: no shadows */
 }
 
 .context-panel h4 {
@@ -868,6 +889,7 @@ PERFORMANCE ANALYSIS
     color: #C8AA6E;
     margin-bottom: 14px;
     font-weight: 600;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .context-panel div {
@@ -882,7 +904,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .competitive-landscape-slide .two-column {
     margin-top: 56px;
-    gap: 32px;
+    gap: 72px; /* ✅ FIXED: 32px → 72px (increased spacing between columns) */
     align-items: start;
 }
 
@@ -891,12 +913,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 26px 30px;
-    background: linear-gradient(135deg, rgba(20,20,20,0.97) 0%, rgba(12,12,12,0.90) 100%);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
+    padding: 32px; /* ✅ FIXED: 26px 30px → 32px (global card padding) */
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    backdrop-filter: none; /* ✅ REMOVED: blur effect */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: var(--card-border) → global standard */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
     min-height: 665px;
 }
 
@@ -909,6 +931,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 0;
     text-align: center;
     padding-bottom: 14px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .competitive-info-panel .chart-context {
@@ -926,6 +949,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-top: auto;
     padding-top: 20px;
     font-style: italic;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .risk-dial-card {
@@ -933,15 +957,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 20px 22px;
+    padding: 32px; /* ✅ FIXED: 20px 22px → 32px (global card padding) */
     min-height: 155px;
     height: 155px;
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.2),
-        inset 0 1px 0 rgba(255,255,255,0.03);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    box-shadow: none; /* ✅ REMOVED: all shadows */
     margin-bottom: 0;
 }
 
@@ -954,6 +976,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 13px;
     font-weight: 600;
     padding-top: 0;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .risk-dial-value {
@@ -963,7 +986,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: var(--vm-gold);
     margin-bottom: 11px;
     text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
-    line-height: 1;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
 }
 
 .risk-dial-status {
@@ -971,14 +994,14 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: var(--vm-text-body);
     font-weight: 400;
-    line-height: 1.4;
+    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 */
 }
 
 .competitor-rank {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(191,166,112,0.3), rgba(181,152,84,0.2));
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
     border: 2px solid var(--vm-gold);
     display: flex;
     align-items: center;
@@ -987,8 +1010,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 14px;
     font-weight: 700;
     color: var(--vm-gold);
-    box-shadow: 0 2px 8px rgba(191,166,112,0.4);
+    box-shadow: none; /* ✅ REMOVED: shadow */
     flex-shrink: 0;
+    margin-top: 12px; /* ✅ ADDED: top margin for institution cards */
 }
 
 .competitor-premium-name {
@@ -997,7 +1021,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: #E6E6E6;
     letter-spacing: 0.3px;
-    line-height: 1.3;
+    line-height: 1.2; /* ✅ FIXED: 1.3 → 1.2 */
     margin-bottom: 6px;
 }
 
@@ -1007,6 +1031,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 500;
     color: rgba(191,166,112,0.65);
     letter-spacing: 0.6px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .metric-label {
@@ -1017,6 +1042,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-transform: uppercase;
     letter-spacing: 1.6px;
     margin-bottom: 6px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .metric-value {
@@ -1024,18 +1050,27 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 24px;
     font-weight: 700;
     color: var(--vm-gold);
-    line-height: 1;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
     min-width: 70px;
     text-align: left;
 }
 
+/* ✅ Institution card container - add width increase */
+.competitive-institutional-ranking {
+    width: calc(100% + 18px); /* ✅ ADDED: increase institution card width by +18px */
+}
+
 /* ✅ Competitive Insights Strip Spacing */
 .competitive-insights-strip {
     margin-top: 56px;
     margin-bottom: 48px;
-    padding: 26px 30px;
+    padding: 72px; /* ✅ FIXED: 26px 30px → 72px (expanded padding by +40px total) */
+    background: rgba(10, 10, 10, 0.55); /* ✅ ADDED: global card background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ ADDED: global border */
+    border-radius: 10px; /* ✅ ADDED: global border-radius */
+    box-shadow: none; /* ✅ ADDED: no shadows */
 }
 
 .competitive-insights-grid {
@@ -1053,7 +1088,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .competitive-insight-icon {
     font-size: 20px;
     color: var(--vm-gold);
-    line-height: 1.6;
+    line-height: 1.2; /* ✅ FIXED: 1.6 → 1.2 */
     flex-shrink: 0;
     min-width: 24px;
 }
@@ -1073,10 +1108,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
-    border-radius: 8px;
-    box-shadow: 
-        inset 0 1px 3px rgba(191, 166, 112, 0.2),
-        0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 10px; /* ✅ FIXED: 8px → 10px */
+    box-shadow: none; /* ✅ REMOVED: shadows */
     padding: 18px 28px;
 }
 
@@ -1087,6 +1120,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 14px;
     font-weight: 600;
     letter-spacing: 0.06em;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .bottom-callout-text {
@@ -1146,25 +1180,24 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .macro-signal-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 85px;
+    grid-template-columns: repeat(3, 29.5%); /* ✅ FIXED: 1fr → 29.5% each */
+    gap: 40px; /* ✅ FIXED: 30px → 40px (margin-right equivalent) */
+    margin-bottom: 48px; /* ✅ FIXED: 85px → 48px */
 }
 
 .macro-signal-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
-    border: 1px solid rgba(176, 141, 87, 0.25);
-    border-top: 2px solid var(--vm-gold);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border standard */
+    border-top: none; /* ✅ REMOVED: 2px gold top border */
     border-radius: 10px;
-    padding: 38px 28px 28px 28px;
+    padding: 32px; /* ✅ FIXED: 38px 28px 28px 28px → 32px (global card padding) */
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* ✅ ADDED: vertical centering */
     min-height: 260px;
     position: relative;
-    box-shadow: 
-        0 4px 16px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    box-shadow: none; /* ✅ REMOVED: no shadows */
 }
 
 .macro-card-title {
@@ -1173,18 +1206,19 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: var(--vm-gold);
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 6px; /* ✅ FIXED: 20px → 6px */
     letter-spacing: 0.5px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .macro-card-primary-metric {
     font-family: var(--font-body);
-    font-size: 20px;
+    font-size: 32px; /* ✅ FIXED: 20px → 32px */
     font-weight: 700;
     color: #EAEAEA;
     text-align: center;
-    margin-bottom: 14px;
-    line-height: 1.3;
+    margin-bottom: 4px; /* ✅ FIXED: 14px → 4px */
+    line-height: 1.2; /* ✅ FIXED: 1.3 → 1.2 */
     letter-spacing: 0.02em;
 }
 
@@ -1195,7 +1229,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
     margin-bottom: 12px;
-    line-height: 1.4;
+    margin-top: 2px; /* ✅ ADDED: subtext spacing */
+    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 */
 }
 
 .macro-signal-card .vx-badge {
@@ -1207,9 +1242,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 11px;
     color: rgba(234, 234, 234, 0.8);
     text-align: center;
-    line-height: 1.6;
+    line-height: 1.5; /* ✅ FIXED: 1.6 → 1.5 */
     margin: 0;
     padding: 0 8px;
+}
+
+/* ✅ REMOVE ALL ICONS (if rendered via CSS pseudo-elements) */
+.macro-signal-card::before,
+.macro-card-title::before,
+.macro-card-primary-metric::before {
+    display: none !important;
+    content: none !important;
 }
 
 /* ============================================
@@ -1217,11 +1260,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
    ============================================ */
 
 .correlation-engine-ribbon {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: global card background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
     border-radius: 10px;
     padding: 14px 28px;
-    margin-bottom: 75px;
+    margin-top: 72px; /* ✅ ADDED: top margin spacing */
+    margin-bottom: 52px; /* ✅ FIXED: 75px → 52px */
 }
 
 .correlation-ribbon-title {
@@ -1233,22 +1277,23 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     letter-spacing: 0.8px;
     text-transform: uppercase;
     text-align: center;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .correlation-pills-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 40px; /* ✅ FIXED: 16px → 40px (gutter between blocks) */
     flex-wrap: nowrap;
 }
 
 .correlation-pill {
-    background: rgba(18, 18, 18, 0.7);
-    border: 1px solid rgba(176, 141, 87, 0.15);
-    border-radius: 8px;
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: global card background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px;
     padding: 12px 14px;
-    flex: 1 1 0;
+    flex: 0 0 18%; /* ✅ FIXED: flex: 1 1 0 → flex: 0 0 18% (equal block width) */
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -1258,8 +1303,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .correlation-pill:hover {
-    border-color: rgba(176, 141, 87, 0.35);
-    background: rgba(18, 18, 18, 0.85);
+    border-color: rgba(255, 215, 167, 0.06); /* ✅ FIXED: no hover effect */
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: no hover effect */
 }
 
 .correlation-label {
@@ -1268,7 +1313,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: rgba(234, 234, 234, 0.75);
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.2; /* ✅ FIXED: 1.3 → 1.2 */
     letter-spacing: 0.3px;
 }
 
@@ -1276,7 +1321,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 16px;
     color: var(--vm-gold);
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
 }
 
 .correlation-strength {
@@ -1287,6 +1332,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: center;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 /* ============================================
@@ -1294,18 +1340,16 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
    ============================================ */
 
 .composite-verdict-block {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
-    border: 1.5px solid rgba(176, 141, 87, 0.3);
-    border-radius: 12px;
-    padding: 32px 36px 30px 36px;
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px;
+    padding: 48px 36px; /* ✅ FIXED: 32px 36px 30px 36px → 48px vertical */
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    box-shadow: 
-        0 6px 24px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    margin-top: 25px;
+    box-shadow: none; /* ✅ REMOVED: no shadows */
+    margin-top: 72px; /* ✅ FIXED: 25px → 72px */
 }
 
 .composite-verdict-block::before {
@@ -1321,7 +1365,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .verdict-seal-small {
-    margin-bottom: 18px;
+    margin-bottom: 24px; /* ✅ FIXED: 18px → 24px */
     filter: drop-shadow(0 4px 12px rgba(197, 164, 109, 0.4));
 }
 
@@ -1333,6 +1377,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 18px;
     letter-spacing: 0.5px;
     text-align: center;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .composite-verdict-block .vx-badge {
@@ -1345,9 +1390,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 500;
     color: rgba(234, 234, 234, 0.95);
     text-align: center;
-    line-height: 1.7;
+    line-height: 1.5; /* ✅ FIXED: 1.7 → 1.5 */
     margin-bottom: 22px;
-    max-width: 1200px;
+    max-width: 80%; /* ✅ FIXED: 1200px → 80% (constrain bullet list) */
     letter-spacing: 0.2px;
 }
 
@@ -1368,6 +1413,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: rgba(234, 234, 234, 0.7);
     text-transform: uppercase;
     letter-spacing: 0.8px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .confidence-value {
@@ -1376,6 +1422,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 700;
     color: var(--vm-gold);
     letter-spacing: 0.5px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .confidence-bar {
@@ -1398,7 +1445,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    max-width: 900px;
+    max-width: 80%; /* ✅ FIXED: 900px → 80% (constrain bullet list) */
 }
 
 .driver-bullet {
@@ -1432,31 +1479,33 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 @media print, .a4-export {
     .macro-signal-grid {
-        gap: 24px;
-        margin-bottom: 70px;
+        gap: 40px; /* ✅ FIXED: maintain 40px gap */
+        margin-bottom: 48px; /* ✅ FIXED: maintain 48px */
     }
     
     .macro-signal-card {
-        padding: 32px 24px 24px 24px;
-        min-height: 240px;
+        padding: 32px; /* ✅ FIXED: maintain 32px */
+        min-height: 260px; /* ✅ FIXED: maintain 260px */
     }
     
     .correlation-pills-container {
-        gap: 12px;
+        gap: 40px; /* ✅ FIXED: maintain 40px */
     }
     
     .correlation-pill {
-        padding: 10px 12px;
+        padding: 12px 14px;
+        flex: 0 0 18%; /* ✅ FIXED: maintain 18% */
     }
     
     .correlation-engine-ribbon {
-        padding: 12px 24px;
-        margin-bottom: 60px;
+        padding: 14px 28px;
+        margin-top: 72px; /* ✅ ADDED: maintain top margin */
+        margin-bottom: 52px; /* ✅ FIXED: maintain 52px */
     }
     
     .composite-verdict-block {
-        padding: 28px 32px 26px 32px;
-        margin-top: 20px;
+        padding: 48px 36px; /* ✅ FIXED: maintain 48px vertical */
+        margin-top: 72px; /* ✅ FIXED: maintain 72px */
     }
 }
 
@@ -1627,6 +1676,7 @@ METHODOLOGY
     padding-bottom: 14px;
     text-align: center;
     position: relative;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .property-type-heatmap .chart-title::after {
@@ -1657,8 +1707,8 @@ METHODOLOGY
     width: 100%;
     margin-top: 0;
     border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: var(--card-radius);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: rgba(18,18,18,0.95) → global standard */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
     overflow: hidden;
     table-layout: fixed;
 }
@@ -1676,6 +1726,7 @@ METHODOLOGY
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
     height: 50px;
     border-bottom: 2px solid rgba(12, 12, 12, 0.3);
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .heatmap-table th:first-child {
@@ -1708,6 +1759,7 @@ METHODOLOGY
     text-align: center;
     font-weight: 400;
     height: 50px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .heatmap-table td:nth-child(1) {
@@ -1744,6 +1796,7 @@ METHODOLOGY
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.3px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .velocity-badge {
@@ -1759,39 +1812,41 @@ METHODOLOGY
     border: 1.5px solid;
     min-width: 52px;
     height: 26px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: none; /* ✅ FIXED: removed glow effects */
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .velocity-high {
     color: #4CAF50;
     border-color: rgba(76, 175, 80, 0.5);
     background: rgba(76, 175, 80, 0.08);
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.25);
+    box-shadow: none; /* ✅ REMOVED: glow effect */
 }
 
 .velocity-medium {
     color: #FFC107;
     border-color: rgba(255, 193, 7, 0.5);
     background: rgba(255, 193, 7, 0.08);
-    box-shadow: 0 0 6px rgba(255, 193, 7, 0.2);
+    box-shadow: none; /* ✅ REMOVED: glow effect */
 }
 
 .velocity-low {
     color: rgba(244, 67, 54, 0.9);
     border-color: rgba(244, 67, 54, 0.5);
     background: rgba(244, 67, 54, 0.08);
-    box-shadow: 0 0 4px rgba(244, 67, 54, 0.15);
+    box-shadow: none; /* ✅ REMOVED: glow effect */
 }
 
 .heatmap-warning {
     background: rgba(255, 217, 102, 0.18);
     color: #FFD966;
-    box-shadow: 0 0 8px rgba(255, 217, 102, 0.2);
+    box-shadow: none; /* ✅ REMOVED: glow effect */
 }
 
 .signal-text {
     font-weight: 500;
     letter-spacing: 0.3px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .property-type-heatmap .chart-source {
@@ -1804,6 +1859,7 @@ METHODOLOGY
     margin-bottom: 0;
     font-style: italic;
     font-weight: 400;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .depth-metrics {
@@ -1819,14 +1875,14 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24px 24px;
+    padding: 32px; /* ✅ FIXED: 24px 24px → 32px (global card padding) */
     min-height: 155px;
     height: 155px;
-    background: var(--card-bg);
-    backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: var(--card-bg) → global standard */
+    backdrop-filter: none; /* ✅ REMOVED: blur effect */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: var(--card-border) → global standard */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
 }
 
 .depth-label {
@@ -1838,6 +1894,7 @@ METHODOLOGY
     margin-bottom: 12px;
     font-weight: 600;
     position: relative;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .depth-value {
@@ -1846,7 +1903,7 @@ METHODOLOGY
     font-weight: 800;
     color: var(--vm-gold);
     margin-bottom: 18px;
-    line-height: 1;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
@@ -1881,6 +1938,164 @@ METHODOLOGY
     margin-bottom: 0;
     font-weight: 400;
     line-height: 1.5;
+}
+
+/* ============================================
+   SEGMENT STRESS SIGNALS MATRIX (NEW)
+   ============================================ */
+
+.stress-signals-matrix {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-top: 72px; /* ✅ ADDED: new row spacing for "Depth Dynamics Indicators" */
+    margin-bottom: 0;
+    align-items: start;
+}
+
+.stress-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px; /* ✅ FIXED: 24px 20px → 28px (specified padding) */
+    min-height: 120px; /* ✅ FIXED: 155px → 120px (specified height) */
+    height: 120px; /* ✅ FIXED: 155px → 120px */
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    backdrop-filter: none; /* ✅ REMOVED: blur effect */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    box-shadow: none; /* ✅ REMOVED: all shadows */
+}
+
+.stress-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+}
+
+.stress-value {
+    font-family: var(--font-body);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
+    text-align: center;
+}
+
+.stress-note {
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    color: rgba(234, 234, 234, 0.65);
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* ✅ NEW: Depth Dynamics Indicators Row Title */
+.depth-dynamics-title {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.1em;
+    margin-top: 72px; /* ✅ Spacing above new row */
+    margin-bottom: 24px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* ============================================
+   A4 EXPORT ADJUSTMENTS
+   ============================================ */
+
+@media print, .a4-export {
+    .market-depth-analysis .slide-content {
+        top: 162px;
+    }
+    
+    .property-type-heatmap {
+        margin-top: 22px;
+    }
+    
+    .property-type-heatmap .chart-context {
+        margin-bottom: 28px;
+    }
+    
+    .heatmap-table {
+        background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: maintain global standard */
+    }
+    
+    .heatmap-table th {
+        padding: 13px 11px;
+        height: 46px;
+        font-size: 11px;
+    }
+    
+    .heatmap-table td {
+        padding: 13px 11px;
+        height: 46px;
+        font-size: 11.5px;
+    }
+    
+    .velocity-badge {
+        padding: 6px 13px;
+        height: 24px;
+        font-size: 11.5px;
+        min-width: 50px;
+        box-shadow: none; /* ✅ FIXED: maintain no glow */
+    }
+    
+    .depth-metrics {
+        margin-top: 50px;
+        gap: 26px;
+    }
+    
+    .depth-card {
+        padding: 32px; /* ✅ FIXED: maintain 32px */
+        min-height: 145px;
+        height: 145px;
+        background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: maintain global standard */
+        backdrop-filter: none; /* ✅ FIXED: maintain no blur */
+        box-shadow: none; /* ✅ FIXED: maintain no shadows */
+    }
+    
+    .depth-value {
+        font-size: 44px;
+        margin-bottom: 16px;
+    }
+    
+    .stress-signals-matrix {
+        gap: 24px;
+        margin-top: 72px; /* ✅ FIXED: maintain spacing */
+    }
+    
+    .stress-card {
+        padding: 28px; /* ✅ FIXED: maintain 28px */
+        min-height: 120px; /* ✅ FIXED: maintain 120px */
+        height: 120px;
+        background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: maintain global standard */
+        backdrop-filter: none; /* ✅ FIXED: maintain no blur */
+        box-shadow: none; /* ✅ FIXED: maintain no shadows */
+    }
+    
+    .stress-value {
+        font-size: 24px;
+        margin-bottom: 14px;
+    }
+    
+    .stress-note {
+        font-size: 10px;
+    }
 }
 
 /* ============================================
@@ -3154,17 +3369,18 @@ AI OPPORTUNITIES
     margin-top: 0;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid var(--vm-gold);
-    border-radius: 8px;
+    border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
     font-weight: 600;
     letter-spacing: 0.06em;
     text-align: left;
     padding: 20px 30px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 36px; /* ✅ FIXED: 18px → 36px (increased vertical spacing between property rows) */
     margin-top: 24px;
     margin-bottom: 0;
 }
@@ -3174,18 +3390,18 @@ AI OPPORTUNITIES
     justify-content: space-between;
     align-items: center;
     gap: 24px;
-    padding: 24px 28px;
-    background: var(--card-bg);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
+    padding: 32px; /* ✅ FIXED: 24px 28px → 32px (global card padding) */
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: var(--card-bg) → global standard */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: var(--card-border) → global standard */
+    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
     min-height: 120px;
-    height: 120px;  /* ✅ FIXED HEIGHT - uniform across all cards */
+    height: 120px;
 }
 
 .signal-content-v2 {
-flex: 1;
-text-align: left;
+    flex: 1;
+    text-align: left;
 }
 
 .signal-property-title {
@@ -3193,8 +3409,9 @@ text-align: left;
     font-size: 17px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
+    margin-bottom: 12px;
     text-align: left;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .signal-property-metrics {
@@ -3203,7 +3420,8 @@ text-align: left;
     color: var(--vm-muted);
     text-align: left;
     font-weight: 500;
-    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
+    margin-bottom: 12px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .ai-flag-reason {
@@ -3211,7 +3429,7 @@ text-align: left;
     font-size: 12px;
     color: var(--vm-text-body);
     font-style: italic;
-    margin-top: 12px;  /* ✅ CONSISTENT spacing */
+    margin-top: 12px;
     padding-left: 12px;
     border-left: 2px solid rgba(191, 166, 112, 0.3);
     line-height: 1.7;
@@ -3220,133 +3438,153 @@ text-align: left;
 }
 
 .signal-badges-v2 {
-display: flex;
-flex-direction: column;
-gap: 8px;
-align-items: flex-end;
-min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    min-width: 100px;
+    padding-right: 18px; /* ✅ ADDED: badge right padding */
+    justify-content: center; /* ✅ ADDED: vertical center badges via flexbox */
 }
 
 .signal-badge-v2 {
-padding: 6px 14px;
-border-radius: 6px;
-font-size: 12px;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 0.05em;
-text-align: center;
-min-width: 85px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    min-width: 85px;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .badge-risk {
-color: #4CAF50;
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: #4CAF50;
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-confidence {
-color: var(--vm-gold);
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: var(--vm-gold);
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-trigger {
-color: #FFC107;
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: #FFC107;
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .acquisition-strategy-ribbon {
-background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
-border-left: 4px solid #BFA670;
-border-radius: 8px;
-padding: 22px 32px;
-margin: 36px 0;
+    background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
+    border-left: 4px solid #BFA670;
+    border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
+    padding: 22px 32px;
+    margin: 36px 0;
+    width: calc(100% - 90px); /* ✅ ADDED: reduce width by 90px */
+    margin-left: 40px; /* ✅ ADDED: apply left margin 40px */
+    margin-right: 50px; /* ✅ ADDED: balance right margin */
 }
 
 .acquisition-strategy-text {
-font-family: var(--font-body);
-font-size: 15px;
-color: var(--vm-text-body);
-line-height: 1.7;
-font-weight: 400;
-text-align: center;
-margin: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+    font-weight: 400;
+    text-align: center;
+    margin: 0;
 }
 
 .acquisition-strategy-text strong {
-font-weight: 700;
+    font-weight: 700;
 }
 
 .acquisition-strategy-ribbon + div {
-background: rgba(12, 12, 12, 0.35);
-border: 1px solid rgba(255, 255, 255, 0.08);
-border-radius: 10px;
-padding: 24px 32px;
-margin-top: 40px;
-margin-bottom: 76px;
+    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: rgba(12,12,12,0.35) → global standard */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
+    border-radius: 10px;
+    padding: 32px; /* ✅ FIXED: 24px 32px → 32px (global card padding) */
+    margin-top: 40px;
+    margin-bottom: 76px;
+    box-shadow: none; /* ✅ ADDED: no shadows */
 }
 
 .acquisition-strategy-ribbon + div h4 {
-font-size: 16px;
-color: #C8AA6E;
-margin-bottom: 18px;
-font-weight: 600;
+    font-size: 16px;
+    color: #C8AA6E;
+    margin-bottom: 18px;
+    font-weight: 600;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
 
 .acquisition-strategy-ribbon + div > div {
-font-size: 14px;
-color: var(--vm-text-body);
-line-height: 1.85;
-padding-bottom: 8px;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+    padding-bottom: 8px;
 }
 
 .acquisition-strategy-ribbon + div > div > div {
-margin-bottom: 14px;
-padding-left: 0;
-min-height: 24px;
+    margin-bottom: 14px;
+    padding-left: 0;
+    min-height: 24px;
 }
+
 .acquisition-strategy-ribbon + div > div > div:last-child {
-margin-bottom: 0;
+    margin-bottom: 0;
 }
+
 .acquisition-strategy-ribbon + div strong {
-color: #C8AA6E;
-font-weight: 600;
+    color: #C8AA6E;
+    font-weight: 600;
 }
+
 /* ============================================
 PANELS
 ============================================ */
 .panel {
-margin-top: 34px;
-padding: 26px 30px;
+    margin-top: 34px;
+    padding: 32px; /* ✅ FIXED: 26px 30px → 32px (global card padding) */
+    background: rgba(10, 10, 10, 0.55); /* ✅ ADDED: global card background */
+    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ ADDED: global border */
+    border-radius: 10px; /* ✅ ADDED: global border-radius */
+    box-shadow: none; /* ✅ ADDED: no shadows */
 }
+
 .panel-title {
-font-family: var(--font-display);
-font-size: 28px;
-font-weight: 600;
-color: var(--vm-gold);
-margin-bottom: 16px;
-position: relative;
-padding-bottom: 12px;
-padding-top: 0;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    position: relative;
+    padding-bottom: 12px;
+    padding-top: 0;
+    line-height: 1.2; /* ✅ ADDED: global typography alignment */
 }
+
 .panel-title::after {
-content: '';
-position: absolute;
-bottom: 0;
-left: 0;
-width: 120px;
-height: 2px;
-background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
-opacity: 0.7;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
+    opacity: 0.7;
 }
+
 .panel-text {
-font-family: var(--font-body);
-font-size: 15px;
-color: var(--vm-text-body);
-line-height: 1.85;
-font-weight: 400;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+    font-weight: 400;
 }
+
 .panel-text strong {
-color: var(--vm-gold);
-font-weight: 600;
+    color: var(--vm-gold);
+    font-weight: 600;
 }
 /* ============================================
 FOOTER
