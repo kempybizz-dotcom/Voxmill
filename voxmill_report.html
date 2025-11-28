@@ -583,32 +583,30 @@
                 Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
             </p>
             
-            <!-- LAYER 1: MACRO SIGNAL CARDS -->
-            <div class="macro-signal-grid">
-                <!-- CARD 1: LUXURY GOODS -->
-                <div class="macro-signal-card">
-                    <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
-                    <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
-                    <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
-                    <div class="macro-card-secondary-metric">{{ cross_vertical.luxury_goods.bullet_1 }}</div>
-                </div>
-                
-                <!-- CARD 2: PRIVATE EQUITY -->
-                <div class="macro-signal-card">
-                    <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
-                    <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
-                    <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
-                    <div class="macro-card-secondary-metric">{{ cross_vertical.private_equity.bullet_1 }}</div>
-                </div>
-                
-                <!-- CARD 3: WEALTH MANAGEMENT -->
-                <div class="macro-signal-card">
-                    <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
-                    <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
-                    <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
-                    <div class="macro-card-secondary-metric">{{ cross_vertical.wealth_mgmt.bullet_1 }}</div>
-                </div>
-            </div>
+          <!-- CROSS-VERTICAL INTELLIGENCE - TOP 3 CARDS REBUILD -->
+
+<div class="macro-signal-grid">
+    <div class="macro-signal-card">
+        <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
+        <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
+        <div class="macro-card-secondary-metric">{{ cross_vertical.luxury_goods.bullet_1 }}</div>
+        <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
+    </div>
+    
+    <div class="macro-signal-card">
+        <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
+        <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
+        <div class="macro-card-secondary-metric">{{ cross_vertical.private_equity.bullet_1 }}</div>
+        <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
+    </div>
+    
+    <div class="macro-signal-card">
+        <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
+        <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
+        <div class="macro-card-secondary-metric">{{ cross_vertical.wealth_mgmt.bullet_1 }}</div>
+        <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
+    </div>
+</div>
             
             <!-- LAYER 2: CORRELATION ENGINE RIBBON -->
             <div class="correlation-engine-ribbon">
@@ -745,28 +743,31 @@
             </div>
         </div>
         
-        <div class="stress-signals-matrix">
-            <div class="stress-card">
-                <div class="stress-label">Inventory Stability Rating</div>
-                <div class="stress-value">{{ "A+" if (market_depth.demand_pressure or 0) < 0.9 else "B+" if (market_depth.demand_pressure or 0) < 1.2 else "C" }}</div>
-                <div class="stress-note">Supply-demand equilibrium grade</div>
-            </div>
-            <div class="stress-card">
-                <div class="stress-label">Absorption Pressure Score</div>
-                <div class="stress-value">{{ ((100 - (market_depth.demand_pressure or 1.0) * 50) | int) if (market_depth.demand_pressure or 0) < 2 else 0 }}</div>
-                <div class="stress-note">Market intake capacity index</div>
-            </div>
-            <div class="stress-card">
-                <div class="stress-label">Liquidity Flow Gradient</div>
-                <div class="stress-value">{{ "+" if (market_depth.liquidity_index or 0) > 65 else "=" if (market_depth.liquidity_index or 0) > 45 else "−" }}{{ ((market_depth.liquidity_index or 50) - 50) | abs | int }}</div>
-                <div class="stress-note">{{ velocity_metric_label }} momentum direction</div>
-            </div>
-            <div class="stress-card">
-                <div class="stress-label">Demand Spread Index</div>
-                <div class="stress-value">{{ "%.1f"|format((market_depth.demand_pressure or 1.0) * 0.85) }}</div>
-                <div class="stress-note">Price variance distribution</div>
-            </div>
-        </div>
+      <!-- MARKET DEPTH ANALYSIS - LOWER FOUR CARDS REBUILD -->
+
+<div class="stress-signals-matrix">
+    <div class="stress-card">
+        <div class="stress-label">Inventory Stability Rating</div>
+        <div class="stress-value">{{ "A+" if (market_depth.demand_pressure or 0) < 0.9 else "B+" if (market_depth.demand_pressure or 0) < 1.2 else "C" }}</div>
+        <div class="stress-note">Supply-demand equilibrium grade</div>
+    </div>
+    
+    <div class="stress-card">
+        <div class="stress-label">Absorption Pressure Score</div>
+        <div class="stress-value">{{ ((100 - (market_depth.demand_pressure or 1.0) * 50) | int) if (market_depth.demand_pressure or 0) < 2 else 0 }}</div>
+        <div class="stress-note">Market intake capacity index</div>
+    </div>
+    
+    <div class="stress-card">
+        <div class="stress-label">Liquidity Flow Gradient</div>
+        <div class="stress-value">{{ "+" if (market_depth.liquidity_index or 0) > 65 else "=" if (market_depth.liquidity_index or 0) > 45 else "−" }}{{ ((market_depth.liquidity_index or 50) - 50) | abs | int }}</div>
+        <div class="stress-note">{{ velocity_metric_label }} momentum direction</div>
+    </div>
+    
+    <div class="stress-card">
+        <div class="stress-label">Demand Spread Index</div>
+        <div class="stress-value">{{ "%.1f"|format((market_depth.demand_pressure or 1.0) * 0.85) }}</div>
+        <div class="stress-note">Price variance distribution</div>
     </div>
 </div>
 
