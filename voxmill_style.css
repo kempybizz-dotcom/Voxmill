@@ -528,69 +528,116 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     color: #EAEAEA;
 }
 
-/* ============================================
-WEEKLY MOVEMENT DASHBOARD
-============================================ */
+/* ========================================
+   EXECUTIVE SUMMARY KPI CARDS - 10/10 REBUILD
+   Replacing: .weekly-movement-dashboard section
+   ======================================== */
 
 .weekly-movement-dashboard {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 40px;
     margin-top: 60px;
     margin-bottom: 0;
     padding: 0;
-    background: transparent;
-    border-radius: 0;
-    border: none;
 }
 
 .movement-mini-card {
-    text-align: center;
-    min-height: 132px;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    padding: 24px 18px;
+    align-items: flex-start;
+    padding: 36px 40px;
+    background: rgba(10,10,10,0.55);
+    border: 1px solid rgba(255,215,167,0.06);
+    border-radius: 10px;
+    min-height: 260px;
+    text-align: left;
 }
 
+/* MICRO-TITLE STRIP */
 .movement-label {
-    font-family: var(--font-body);
+    font-family: 'Inter', sans-serif;
     font-size: 12px;
-    color: rgba(184, 184, 184, 0.75);
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 12px;
-    font-weight: 500;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    position: relative;
+    padding-bottom: 18px;
 }
 
+/* GOLD UNDERLINE BAR */
+.movement-label::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 36px;
+    height: 2px;
+    background: #C5A46D;
+}
+
+/* PRIMARY METRIC NUMBER */
 .movement-value {
-    font-family: var(--font-body);
-    font-size: 38px;
-    font-weight: 800;
-    color: #BFA670;
-    line-height: 1;
-    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 48px;
+    font-weight: 600;
+    color: #EAEAEA;
+    line-height: 1.0;
+    margin-bottom: 4px;
+    text-shadow: none;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
 }
 
+/* UNIT LABEL - Added via span in HTML if needed, or repurpose change indicator */
+.movement-value-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+}
+
+/* CHANGE INDICATOR */
 .movement-change {
-    font-family: var(--font-mono);
+    font-family: 'Inter', sans-serif;
     font-size: 13px;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-weight: 700;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    margin-top: 12px;
+    line-height: 1.2;
 }
 
 .movement-change.positive {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.08);
+    background: rgba(76, 175, 80, 0.15);
+    color: #81C784;
+    border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .movement-change.negative {
-    color: rgba(244, 67, 54, 0.85);
-    background: rgba(244, 67, 54, 0.08);
+    background: rgba(244, 67, 54, 0.15);
+    color: #E57373;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+/* INTERPRETATION LINE - Add this class to new element in HTML */
+.movement-interpretation {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.4;
+    max-width: 90%;
+    margin-top: 6px;
 }
 
 /* ============================================
