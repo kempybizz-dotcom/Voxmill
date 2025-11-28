@@ -1,7 +1,7 @@
 /* ============================================
-VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.7 FINAL SURGICAL SWEEP
-ALL VISUAL + FUNCTIONAL ISSUES RESOLVED
-Changelog: Duplicate badges removed, alignment perfected, icons added, spacing normalized
+VOXMILL EXECUTIVE INTELLIGENCE DECK — V5.8 SURGICAL PRECISION
+ALL SLIDES 1-5 FULLY UPDATED PER 10-POINT PROMPT
+Changelog: Market Overview chart +60px, Performance Analysis dimensions fixed, Competitive Landscape gaps corrected
 ============================================ */
 
 :root {
@@ -21,7 +21,7 @@ Changelog: Duplicate badges removed, alignment perfected, icons added, spacing n
     --font-body: 'Inter', Arial, sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
     
-    /* ✅ NORMALIZED SPACING SCALE (12/16/24px) */
+    /* ✅ NORMALIZED SPACING SCALE */
     --spacing-xs: 12px;
     --spacing-sm: 16px;
     --spacing-md: 24px;
@@ -36,7 +36,7 @@ Changelog: Duplicate badges removed, alignment perfected, icons added, spacing n
 }
 
 @page {
-    size: 1920px 1760px;
+    size: 1920px 1720px;  /* ✅ CORRECTED: was 1760px */
     margin: 0;
     padding: 0;
 }
@@ -58,7 +58,6 @@ body, html, .page, .slide, .page-section, .container, .wrapper {
 /* ============================================
 BRONZE PATTERN BACKGROUND — ULTRA-SUBTLE ELEGANCE
 ============================================ */
-
 
 body {
     position: relative;
@@ -86,8 +85,7 @@ body::before {
 
 .slide {
     width: 1920px;
-    height: auto;
-    min-height: 1660px;
+    height: 1720px;  /* ✅ CORRECTED: was 1660px */
     background: linear-gradient(135deg, var(--vm-dark) 0%, var(--vm-darker) 100%);
     position: relative;
     page-break-after: always;
@@ -135,7 +133,7 @@ body::before {
 }
 
 /* ============================================
-COVER PAGE
+COVER PAGE (SLIDE 1)
 ============================================ */
 
 .slide-cover {
@@ -143,8 +141,7 @@ COVER PAGE
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 1660px !important;
-    height: 1660px !important;
+    height: 1720px !important;  /* ✅ CORRECTED */
 }
 
 .slide-cover::after {
@@ -304,46 +301,18 @@ div.badge {
     color: #E74C3C !important;
 }
 
-/* ============================================================================
-   LEGACY BADGE CLASSES — DISABLE COMPLETELY
-   ============================================================================ */
-
-.badge,
-.badge-dominant,
-.badge-rising,
-.badge-emerging,
-.badge-bullish,
-.badge-neutral,
-.badge-cautious {
-    display: none !important; /* Nuclear option - force removal */
-}
 /* ============================================
 SLIDE HEADER — CONSISTENT SPACING
 ============================================ */
 
 .slide-content {
     position: absolute;
-    top: 168px;  /* ✅ FIXED: Standardized across ALL slides */
+    top: 168px;  /* ✅ STANDARDIZED across ALL slides */
     left: 48px;
     right: 48px;
-    bottom: 80px;
+    bottom: 120px;  /* ✅ CORRECTED: was 80px */
     overflow: visible !important;
     z-index: 5;
-    min-height: calc(1480px - 168px - 80px) !important;
-}
-
-/* ✅ REMOVED ALL EXCEPTIONS - All slides now use 168px */
-
-
-.cross-vertical-intelligence .slide-content,
-.market-depth-analysis .slide-content,
-.top-market-opportunities .slide-content,
-.segment-performance-slide .slide-content {
-    top: 170px;
-}
-
-.segment-performance-slide .slide-content {
-    top: 185px;  /* Only exception - needs extra space for context */
 }
 
 .slide-header {
@@ -382,9 +351,8 @@ SLIDE HEADER — CONSISTENT SPACING
     padding-bottom: 4px;
 }
 
-
 /* ============================================
-UNIVERSAL CARD STYLING — FLOATING AESTHETIC
+UNIVERSAL CARD STYLING
 ============================================ */
 
 .kpi-card,
@@ -400,15 +368,13 @@ UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 .forecast-card-premium,
 .action-item-luxury,
 .competitive-insights-strip {
-    padding: 26px 30px;
+    padding: 32px;  /* ✅ STANDARDIZED */
     background: var(--card-bg);
     backdrop-filter: blur(2px);
     border: var(--card-border);
-    border-radius: var(--card-radius);  /* ✅ ALL 12px */
+    border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
 }
-
-
 
 /* ============================================
 GLOBAL CHART STYLING
@@ -463,14 +429,14 @@ GLOBAL CHART STYLING
 }
 
 /* ============================================
-EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
+SLIDE 2: EXECUTIVE SUMMARY BULLETS
 ============================================ */
 
 .executive-summary-bullets {
     display: flex;
     flex-direction: column;
-    gap: 24px;  /* ✅ FIXED: was 26px */
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
+    gap: 24px;
+    margin-top: 48px;
 }
 
 .executive-summary-bullet {
@@ -480,7 +446,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 24px 32px;  /* ✅ FIXED: was 22px 30px */
+    padding: 24px 32px;
 }
 
 .executive-bullet-title {
@@ -536,15 +502,12 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     text-align: left;
 }
 
-/* ============================================
-WEEKLY MOVEMENT DASHBOARD
-============================================ */
-
+/* Weekly Movement Dashboard */
 .weekly-movement-dashboard {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;  /* ✅ FIXED: was 22px */
-    margin-top: 48px;  /* ✅ FIXED: was 60px */
+    gap: 24px;
+    margin-top: 48px;
     margin-bottom: 0;
     padding: 0;
     background: transparent;
@@ -559,17 +522,7 @@ WEEKLY MOVEMENT DASHBOARD
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 24px 20px;  /* ✅ FIXED: was 24px 18px */
-}
-
-.movement-mini-card {
-    text-align: center;
-    min-height: 132px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 24px 18px;
+    padding: 24px 20px;
 }
 
 .movement-label {
@@ -612,17 +565,17 @@ WEEKLY MOVEMENT DASHBOARD
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW (REFINED)
+SLIDE 3: MARKET OVERVIEW — SURGICAL FIXES
 ============================================ */
 
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 32px;  /* ✅ MAINTAINED */
+    gap: 32px;
     height: 360px;
-    margin-top: 48px;  /* ✅ FIXED: was 52px */
-    margin-bottom: 56px;  /* ✅ FIXED: was 68px */
+    margin-top: 48px;
+    margin-bottom: 24px;  /* ✅ FIXED: Add 24px spacing below KPI row */
     page-break-inside: avoid;
 }
 
@@ -632,7 +585,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    padding: 32px;
 }
 
 .kpi-content {
@@ -680,12 +633,11 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     vertical-align: middle;
 }
 
-/* ============================================
-VALUE DISTRIBUTION CHART (REFINED)
-============================================ */
-
+/* Chart Section with Divider */
 .chart-section {
-    margin-top: 56px;  /* ✅ FIXED: was 68px */
+    margin-top: 48px;  /* ✅ FIXED: Add subtle divider above chart */
+    padding-top: 48px;  /* ✅ NEW */
+    border-top: 1px solid rgba(255, 255, 255, 0.06);  /* ✅ NEW: Subtle divider */
     margin-bottom: 0;
     page-break-inside: avoid;
 }
@@ -693,18 +645,18 @@ VALUE DISTRIBUTION CHART (REFINED)
 .chart-divider {
     height: 2px;
     background: rgba(191, 166, 112, 0.4);
-    margin: 0 0 32px 0;  /* ✅ FIXED: was 40px */
+    margin: 0 0 32px 0;
     opacity: 1;
 }
 
 .chart-container {
     height: auto;
-    min-height: 500px;
+    min-height: 560px;  /* ✅ FIXED: Chart height +60px (was 500px) */
     page-break-inside: avoid;
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    padding: 32px;
     justify-content: flex-start;
     gap: 0;
 }
@@ -739,12 +691,14 @@ VALUE DISTRIBUTION CHART (REFINED)
     display: block;
     margin: 16px auto 0 auto;
     max-width: 100%;
+    height: 380px;  /* ✅ FIXED: Explicit chart height +60px */
 }
+
 .chart-mini-insight {
     background: rgba(191, 166, 112, 0.12);
     border-left: 4px solid var(--vm-gold);
     padding: 18px 26px;
-    margin-top: 24px;  /* ✅ FIXED: was 22px */
+    margin-top: 24px;
     margin-bottom: 0;
     border-radius: 8px;
 }
@@ -768,16 +722,16 @@ VALUE DISTRIBUTION CHART (REFINED)
 }
 
 /* ============================================
-PERFORMANCE ANALYSIS
+SLIDE 4: PERFORMANCE ANALYSIS — SURGICAL FIXES
 ============================================ */
 
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;  /* ✅ MAINTAINED */
+    gap: 32px;
     height: auto;
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    margin-bottom: 48px;  /* ✅ MAINTAINED */
+    margin-top: 48px;
+    margin-bottom: 48px;
 }
 
 .chart-panel {
@@ -787,8 +741,26 @@ PERFORMANCE ANALYSIS
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    padding: 32px;
     justify-content: flex-start;
+}
+
+/* LEFT BAR CHART */
+.chart-panel:first-child svg {
+    height: 360px;  /* ✅ FIXED: Chart height 360px */
+}
+
+.chart-panel:first-child svg rect.bar {
+    stroke-width: 3px;  /* ✅ FIXED: Bar thickness +3px */
+}
+
+/* RIGHT LINE CHART */
+.chart-panel:last-child {
+    padding-right: 72px;  /* ✅ FIXED: +40px right padding (was 32px) */
+}
+
+.chart-panel:last-child svg text {
+    font-size: 14px;  /* ✅ FIXED: Label font-size 14px */
 }
 
 .chart-panel .chart-title {
@@ -825,19 +797,21 @@ PERFORMANCE ANALYSIS
     font-style: italic;
 }
 
+/* Bottom Insight Cards */
 .insight-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;  /* ✅ MAINTAINED */
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    margin-bottom: 48px;  /* ✅ MAINTAINED */
+    gap: 40px;  /* ✅ FIXED: Equal spacing */
+    margin-top: 56px;  /* ✅ FIXED: Top margin 56px */
+    margin-bottom: 48px;
 }
 
 .insight-card {
+    width: 31.5%;  /* ✅ FIXED: Equal widths 31.5% */
     background: var(--card-bg);
     border: var(--card-border);
     border-radius: var(--card-radius);
-    padding: 32px;  /* ✅ FIXED: was 24px 26px */
+    padding: 32px;
     box-shadow: var(--card-shadow);
 }
 
@@ -863,8 +837,8 @@ PERFORMANCE ANALYSIS
     background: rgba(12, 12, 12, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
-    padding: 32px;  /* ✅ FIXED: was 24px 30px */
-    margin-top: 48px;  /* ✅ MAINTAINED */
+    padding: 32px;
+    margin-top: 48px;
     margin-bottom: 0;
 }
 
@@ -882,12 +856,12 @@ PERFORMANCE ANALYSIS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — REFINED VERSION
+SLIDE 5: COMPETITIVE LANDSCAPE — SURGICAL FIXES
 ============================================ */
 
 .competitive-landscape-slide .two-column {
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    gap: 32px;  /* ✅ MAINTAINED */
+    margin-top: 48px;
+    gap: 72px;  /* ✅ FIXED: Column gap 56px → 72px */
     align-items: start;
 }
 
@@ -896,13 +870,18 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    padding: 32px;
     background: linear-gradient(135deg, rgba(20,20,20,0.97) 0%, rgba(12,12,12,0.90) 100%);
     backdrop-filter: blur(2px);
     border: var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: var(--card-shadow);
     min-height: 665px;
+}
+
+.competitive-info-panel .institution-card {
+    width: calc(100% + 18px);  /* ✅ FIXED: Institution card width +18px */
+    margin-top: 12px;  /* ✅ FIXED: Add 12px top margin per card */
 }
 
 .competitive-info-panel .chart-title {
@@ -938,9 +917,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px;  /* ✅ FIXED: was 20px 22px */
-    min-height: 160px;  /* ✅ FIXED: was 155px */
-    height: 160px;  /* ✅ FIXED: was 155px */
+    padding: 32px;
+    min-height: 160px;
+    height: 160px;
     background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
@@ -1037,9 +1016,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .competitive-insights-strip {
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    margin-bottom: 48px;  /* ✅ MAINTAINED */
-    padding: 32px;  /* ✅ FIXED: was 26px 30px */
+    margin-top: 48px;
+    margin-bottom: 48px;
+    padding: 72px;  /* ✅ FIXED: Expand padding +40px (was 32px) */
 }
 
 .competitive-insights-grid {
@@ -1071,7 +1050,6 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex: 1;
 }
 
-/* ✅ Bottom Callout Box Spacing */
 .bottom-callout-box {
     margin-top: 20px;
     margin-bottom: 0;
@@ -1081,7 +1059,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 32px;  /* ✅ FIXED: was 18px 28px */
+    padding: 24px 32px;
 }
 
 .bottom-callout-title {
@@ -1121,11 +1099,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 /* ============================================
-   CROSS-VERTICAL INTELLIGENCE — REBUILD
+   CROSS-VERTICAL INTELLIGENCE — SURGICAL REBUILD
    ============================================ */
 
 .cross-vertical-intelligence .slide-content {
-    top: 170px;
+    top: 168px;  /* ✅ STANDARDIZED */
 }
 
 .cross-vertical-container {
@@ -1137,7 +1115,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     text-align: center;
-    margin: 16px auto 32px;  /* ✅ FIXED: was 18px auto 36px */
+    margin: 16px auto 32px;
     max-width: 1400px;
     line-height: 1.5;
     font-style: italic;
@@ -1145,151 +1123,155 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 /* ============================================
-   LAYER 1: MACRO SIGNAL CARDS (3 WIDE)
+   LAYER 1: MACRO SIGNAL CARDS (3 WIDE) — NO ICONS
    ============================================ */
 
 .macro-signal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;  /* ✅ FIXED: was 30px */
-    margin-bottom: 64px;  /* ✅ FIXED: was 85px */
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 48px;
+    margin-bottom: 64px;
 }
 
-.macro-signal-card {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
-    border: 1px solid rgba(176, 141, 87, 0.25);
-    border-top: 2px solid var(--vm-gold);
+.macro-signal-card,
+.cross-vertical-card {
+    width: 29.5%;
+    min-height: 260px;
+    padding: 32px;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
     border-radius: 10px;
-    padding: 32px;  /* ✅ FIXED: was 38px 28px 28px 28px */
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    min-height: 280px;  /* ✅ FIXED: was 260px */
-    position: relative;
-    box-shadow: 
-        0 4px 16px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    text-align: center;
+    line-height: 1.2;
 }
 
-.macro-card-title {
-    font-family: 'Playfair Display', serif;
+/* Remove margin-right from first two cards (gap handles spacing) */
+.macro-signal-card:nth-child(1),
+.macro-signal-card:nth-child(2),
+.cross-vertical-card:nth-child(1),
+.cross-vertical-card:nth-child(2) {
+    margin-right: 0;
+}
+
+.macro-signal-card:nth-child(3),
+.cross-vertical-card:nth-child(3) {
+    margin-right: 0;
+}
+
+/* Card Title */
+.macro-card-title,
+.macro-signal-title {
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
-    color: var(--vm-gold);
-    text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: 0.5px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    line-height: 1.2;
 }
 
-.macro-card-primary-metric {
+/* Main Metric Value */
+.macro-card-primary-metric,
+.macro-signal-value {
     font-family: var(--font-body);
-    font-size: 20px;
-    font-weight: 700;
-    color: #EAEAEA;
-    text-align: center;
-    margin-bottom: 14px;
-    line-height: 1.3;
-    letter-spacing: 0.02em;
+    font-size: 32px;
+    font-weight: 800;
+    color: #BFA670;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
+    line-height: 1;
 }
 
-.macro-card-secondary-metric {
+/* Subtext */
+.macro-card-secondary-metric,
+.macro-card-insight,
+.macro-signal-subtext {
     font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(234, 234, 234, 0.7);
-    text-align: center;
-    margin-bottom: 12px;
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.75);
+    margin-top: 2px;
+    font-weight: 400;
     line-height: 1.4;
-}
-
-.macro-signal-card .vx-badge {
-    margin-bottom: 18px;
-}
-
-.macro-card-insight {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(234, 234, 234, 0.8);
-    text-align: center;
-    line-height: 1.6;
-    margin: 0;
-    padding: 0 8px;
 }
 
 /* ============================================
    LAYER 2: CORRELATION ENGINE RIBBON
    ============================================ */
 
-.correlation-engine-ribbon {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 24px 32px;  /* ✅ FIXED: was 14px 28px */
-    margin-bottom: 64px;  /* ✅ FIXED: was 75px */
+.correlation-engine-ribbon,
+.correlation-ribbon {
+    margin-top: 72px;
+    margin-bottom: 52px;
+    padding: 0;
 }
 
 .correlation-ribbon-title {
     font-family: var(--font-body);
-    font-size: 13px;
-    color: var(--vm-gold);
-    font-weight: 700;
-    margin-bottom: 18px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+    font-size: 16px;
+    font-weight: 600;
+    color: #BFA670;
     text-align: center;
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
 }
 
-
-.correlation-pills-container {
+.correlation-pills-container,
+.correlation-pills {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 16px;  /* ✅ MAINTAINED */
-    flex-wrap: nowrap;
+    gap: 40px;
 }
 
 .correlation-pill {
-    background: rgba(18, 18, 18, 0.7);
-    border: 1px solid rgba(176, 141, 87, 0.15);
-    border-radius: 8px;
-    padding: 12px 14px;
-    flex: 1 1 0;
-    min-width: 0;
+    width: 18%;
+    padding: 20px 16px;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    text-align: center;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
 }
 
 .correlation-pill:hover {
-    border-color: rgba(176, 141, 87, 0.35);
-    background: rgba(18, 18, 18, 0.85);
+    border-color: rgba(255, 215, 167, 0.12);
+    background: rgba(10, 10, 10, 0.65);
 }
 
-.correlation-label {
+.correlation-label,
+.correlation-pill-label {
     font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600;
-    color: rgba(234, 234, 234, 0.75);
-    text-align: center;
+    font-size: 11px;
+    color: rgba(184, 184, 184, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    font-weight: 500;
     line-height: 1.3;
-    letter-spacing: 0.3px;
 }
 
 .correlation-arrow {
     font-size: 16px;
-    color: var(--vm-gold);
+    color: #BFA670;
     font-weight: 700;
     line-height: 1;
 }
 
-.correlation-strength {
+.correlation-strength,
+.correlation-pill-value {
     font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #BFA670;
+    line-height: 1;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
@@ -1299,18 +1281,15 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
    ============================================ */
 
 .composite-verdict-block {
-    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.9) 100%);
-    border: 1.5px solid rgba(176, 141, 87, 0.3);
-    border-radius: 12px;
-    padding: 32px;  /* ✅ FIXED: was 32px 36px 30px 36px */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-top: 72px;
+    padding: 48px 64px;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    border-left: 4px solid #BFA670;
+    text-align: center;
     position: relative;
-    box-shadow: 
-        0 6px 24px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    margin-top: 32px;  /* ✅ FIXED: was 25px */
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
 }
 
 .composite-verdict-block::before {
@@ -1321,39 +1300,45 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     transform: translateX(-50%);
     width: 60%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--vm-gold), transparent);
+    background: linear-gradient(90deg, transparent, #BFA670, transparent);
     opacity: 0.5;
 }
 
 .verdict-seal-small {
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     filter: drop-shadow(0 4px 12px rgba(197, 164, 109, 0.4));
 }
 
+.composite-verdict-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+    display: block;
+}
+
 .composite-verdict-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
+    font-family: var(--font-body);
+    font-size: 20px;
     font-weight: 600;
-    color: var(--vm-gold);
-    margin-bottom: 18px;
-    letter-spacing: 0.5px;
-    text-align: center;
+    color: #BFA670;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 24px;
 }
 
 .composite-verdict-block .vx-badge {
     margin-bottom: 20px;
 }
 
-.composite-verdict-headline {
+.composite-verdict-headline,
+.composite-verdict-summary {
     font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(234, 234, 234, 0.95);
-    text-align: center;
-    line-height: 1.7;
-    margin-bottom: 22px;
-    max-width: 1200px;
-    letter-spacing: 0.2px;
+    font-size: 16px;
+    color: var(--vm-text-body);
+    line-height: 1.8;
+    margin-bottom: 32px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .composite-verdict-confidence {
@@ -1364,6 +1349,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 22px;
     width: 100%;
     max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .confidence-label {
@@ -1379,7 +1366,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-family: var(--font-body);
     font-size: 24px;
     font-weight: 700;
-    color: var(--vm-gold);
+    color: #BFA670;
     letter-spacing: 0.5px;
 }
 
@@ -1393,7 +1380,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 .confidence-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--vm-gold) 0%, #C5A46D 100%);
+    background: linear-gradient(90deg, #BFA670 0%, #C5A46D 100%);
     border-radius: 3px;
     transition: width 0.3s ease;
 }
@@ -1401,9 +1388,36 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .composite-verdict-drivers {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    align-items: flex-start;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.composite-verdict-drivers ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     width: 100%;
-    max-width: 900px;
+}
+
+.composite-verdict-drivers li {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.5;
+    padding-left: 24px;
+    position: relative;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.composite-verdict-drivers li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #BFA670;
+    font-weight: 700;
 }
 
 .driver-bullet {
@@ -1412,12 +1426,12 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     gap: 12px;
     padding: 11px 16px;
     background: rgba(12, 12, 12, 0.4);
-    border-left: 2px solid var(--vm-gold);
+    border-left: 2px solid #BFA670;
     border-radius: 6px;
 }
 
 .driver-icon {
-    color: var(--vm-gold);
+    color: #BFA670;
     font-size: 14px;
     font-weight: 700;
     flex-shrink: 0;
@@ -1437,31 +1451,34 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 
 @media print, .a4-export {
     .macro-signal-grid {
-        gap: 24px;
-        margin-bottom: 70px;
+        gap: 32px;
+        margin-bottom: 56px;
     }
     
-    .macro-signal-card {
-        padding: 32px 24px 24px 24px;
+    .macro-signal-card,
+    .cross-vertical-card {
+        padding: 28px 24px;
         min-height: 240px;
     }
     
-    .correlation-pills-container {
-        gap: 12px;
+    .correlation-pills-container,
+    .correlation-pills {
+        gap: 32px;
     }
     
     .correlation-pill {
-        padding: 10px 12px;
+        padding: 16px 14px;
     }
     
-    .correlation-engine-ribbon {
-        padding: 12px 24px;
-        margin-bottom: 60px;
+    .correlation-engine-ribbon,
+    .correlation-ribbon {
+        margin-top: 64px;
+        margin-bottom: 48px;
     }
     
     .composite-verdict-block {
-        padding: 28px 32px 26px 32px;
-        margin-top: 20px;
+        padding: 40px 56px;
+        margin-top: 64px;
     }
 }
 
@@ -1612,15 +1629,15 @@ METHODOLOGY
 }
 
 /* ============================================
-   MARKET DEPTH ANALYSIS — PRECISION UPLIFT
+   MARKET DEPTH ANALYSIS — SURGICAL PRECISION UPDATE
    ============================================ */
 
 .market-depth-analysis .slide-content {
-    top: 168px;
+    top: 168px;  /* ✅ STANDARDIZED */
 }
 
 .property-type-heatmap {
-    margin-top: 24px;  /* ✅ MAINTAINED */
+    margin-top: 24px;
 }
 
 .property-type-heatmap .chart-context {
@@ -1628,7 +1645,7 @@ METHODOLOGY
     font-size: 11.5px;
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
-    margin-bottom: 32px;  /* ✅ MAINTAINED */
+    margin-bottom: 32px;
     margin-top: 14px;
     font-style: italic;
     line-height: 1.7;
@@ -1663,8 +1680,9 @@ METHODOLOGY
     width: 100%;
     margin-top: 0;
     border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: var(--card-radius);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
     overflow: hidden;
     table-layout: fixed;
 }
@@ -1815,8 +1833,8 @@ METHODOLOGY
 .depth-metrics {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 32px;  /* ✅ FIXED: was 30px */
-    margin-top: 48px;  /* ✅ FIXED: was 58px */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap */
+    margin-top: 48px;
     margin-bottom: 0;
     align-items: start;
 }
@@ -1825,16 +1843,16 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px;  /* ✅ FIXED: was 24px 24px */
-    min-height: 160px;  /* ✅ FIXED: was 155px */
-    height: 160px;  /* ✅ FIXED: was 155px */
-    background: var(--card-bg);
+    padding: 32px;
+    min-height: 160px;
+    height: 160px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
     backdrop-filter: blur(2px);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
     box-shadow: var(--card-shadow);
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
-
 
 .depth-label {
     font-family: var(--font-body);
@@ -1891,14 +1909,69 @@ METHODOLOGY
 }
 
 /* ============================================
-   SEGMENT STRESS SIGNALS MATRIX (NEW)
+   NEW BOTTOM ROW: DEPTH DYNAMICS INDICATORS
+   ============================================ */
+
+.depth-dynamics-indicators {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;  /* ✅ NEW: Per prompt specification */
+    margin-top: 72px;  /* ✅ NEW: Per prompt specification */
+}
+
+.depth-indicator-card {
+    width: 31.5%;  /* ✅ NEW: Per prompt specification */
+    padding: 28px;  /* ✅ NEW: Per prompt specification */
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    height: 120px;  /* ✅ NEW: Per prompt specification */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.depth-indicator-card .depth-label {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: rgba(184, 184, 184, 0.75);
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.depth-indicator-card .depth-value {
+    font-family: var(--font-body);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--vm-gold);
+    margin-bottom: 8px;
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
+}
+
+.depth-indicator-card .depth-note {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.65);
+    margin-top: 0;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* ============================================
+   SEGMENT STRESS SIGNALS MATRIX
    ============================================ */
 
 .stress-signals-matrix {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24px;  /* ✅ FIXED: was 30px */
-    margin-top: 16px;  /* ✅ FIXED: was 10px */
+    gap: 32px;  /* ✅ UPDATED: Standardized gap */
+    margin-top: 48px;  /* ✅ UPDATED: Standardized spacing */
     margin-bottom: 0;
     align-items: start;
 }
@@ -1907,16 +1980,15 @@ METHODOLOGY
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px 24px;  /* ✅ FIXED: was 24px 20px */
-    min-height: 160px;  /* ✅ FIXED: was 155px */
-    height: 160px;  /* ✅ FIXED: was 155px */
-    background: linear-gradient(135deg, rgba(18,18,18,0.95) 0%, rgba(12,12,12,0.90) 100%);
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    min-height: 160px;
+    height: 160px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.25),
-        inset 0 1px 0 rgba(255,255,255,0.03);
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    box-shadow: var(--card-shadow);
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .stress-label {
@@ -1953,134 +2025,55 @@ METHODOLOGY
 }
 
 /* ============================================
-   A4 EXPORT ADJUSTMENTS
+   STRATEGIC FORECAST — SURGICAL PRECISION UPDATE
    ============================================ */
 
-@media print, .a4-export {
-    .market-depth-analysis .slide-content {
-        top: 162px;
-    }
-    
-    .property-type-heatmap {
-        margin-top: 22px;
-    }
-    
-    .property-type-heatmap .chart-context {
-        margin-bottom: 28px;
-    }
-    
-    .heatmap-table th {
-        padding: 13px 11px;
-        height: 46px;
-        font-size: 11px;
-    }
-    
-    .heatmap-table td {
-        padding: 13px 11px;
-        height: 46px;
-        font-size: 11.5px;
-    }
-    
-    .velocity-badge {
-        padding: 6px 13px;
-        height: 24px;
-        font-size: 11.5px;
-        min-width: 50px;
-    }
-    
-    .depth-metrics {
-        margin-top: 50px;
-        gap: 26px;
-    }
-    
-    .depth-card {
-        padding: 22px 22px;
-        min-height: 145px;
-        height: 145px;
-    }
-    
-    .depth-value {
-        font-size: 44px;
-        margin-bottom: 16px;
-    }
-    
-    .stress-signals-matrix {
-        gap: 24px;
-        margin-top: 8px;
-    }
-    
-    .stress-card {
-        padding: 22px 18px;
-        min-height: 145px;
-        height: 145px;
-    }
-    
-    .stress-value {
-        font-size: 24px;
-        margin-bottom: 14px;
-    }
-    
-    .stress-note {
-        font-size: 10px;
-    }
-}
-
-/* ============================================
-STRATEGIC FORECAST — REFINED
-============================================ */
-
-/* FIX: Remove height constraint, allow auto-sizing */
 .forecast-grid-2x2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: auto auto;
-    gap: 32px;  /* ✅ MAINTAINED */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap */
     height: auto;
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
+    margin-top: 48px;
+    margin-bottom: 48px;
     align-items: start;
 }
 
-/* FIX: Allow content expansion, remove clipping */
 .forecast-card-premium {
-    background: linear-gradient(135deg, rgba(12,12,12,0.9) 0%, rgba(18,18,18,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.25);
-    border-radius: var(--card-radius);
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255,255,255,0.04),
-        0 0 40px rgba(191, 166, 112, 0.08);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    box-shadow: var(--card-shadow);
     display: flex;
     flex-direction: column;
     padding: 0;
     position: relative;
-    overflow: visible; /* CHANGED: hidden → visible */
-    min-height: 280px; /* CHANGED: 272px → 280px */
-    height: auto; /* CHANGED: 272px → auto */
+    overflow: visible;
+    min-height: 320px;  /* ✅ UPDATED: Per prompt specification */
+    height: auto;
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .forecast-premium-header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px;  /* ✅ FIXED: was 20px 24px 16px 24px */
-    border-bottom: 1px solid rgba(191,166,112,0.15);
+    padding: 24px;
+    border-bottom: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
     gap: 6px;
     flex-shrink: 0;
 }
 
-/* FIX: Ensure body has breathing room */
 .forecast-premium-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 32px 24px;  /* ✅ MAINTAINED */
-    gap: 16px;  /* ✅ MAINTAINED */
+    padding: 32px 24px;
+    gap: 16px;
     min-height: 160px;
 }
-
 
 .forecast-premium-label {
     font-family: var(--font-body);
@@ -2106,12 +2099,6 @@ STRATEGIC FORECAST — REFINED
     color: #BFA670;
     line-height: 1;
     text-shadow: 0 3px 16px rgba(191,166,112,0.6);
-}
-
-.forecast-premium-value-large,
-.voxmill-index-number,
-.score-badge {
-    /* Removed all default content rules - data MUST come from generator.py */
 }
 
 .forecast-premium-direction {
@@ -2149,8 +2136,8 @@ STRATEGIC FORECAST — REFINED
 }
 
 .forecast-premium-footer {
-    padding: 24px;  /* ✅ FIXED: was 16px 24px 20px 24px */
-    border-top: 1px solid rgba(191,166,112,0.1);
+    padding: 24px;
+    border-top: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
     flex-shrink: 0;
 }
 
@@ -2163,9 +2150,8 @@ STRATEGIC FORECAST — REFINED
     margin: 0;
 }
 
-/* FIX: Add specific class override for clipping prevention */
 .forecast-card-premium.sentiment-card {
-    min-height: 300px; /* ADDED: Extra space for large sentiment display */
+    min-height: 320px;  /* ✅ UPDATED: Standardized min-height */
     overflow: visible;
 }
 
@@ -2179,7 +2165,7 @@ STRATEGIC FORECAST — REFINED
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0; /* ADDED: Prevent compression */
+    flex-shrink: 0;
 }
 
 .sentiment-bullish {
@@ -2209,24 +2195,12 @@ STRATEGIC FORECAST — REFINED
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
+    flex-shrink: 0;
 }
 
-/* FIX: Add specific class override for VPI bar */
 .forecast-card-premium.predictive-index-card {
-    min-height: 300px; /* ADDED: Extra space for index bar */
+    min-height: 320px;  /* ✅ UPDATED: Standardized min-height */
     overflow: visible;
-}
-
-.voxmill-index-number {
-    font-family: var(--font-body);
-    font-size: 64px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 3px 12px rgba(191, 166, 112, 0.6);
-    flex-shrink: 0; /* ADDED: Prevent compression */
 }
 
 .voxmill-index-bar-container {
@@ -2237,7 +2211,7 @@ STRATEGIC FORECAST — REFINED
     overflow: hidden;
     margin-top: 10px;
     position: relative;
-    flex-shrink: 0; /* ADDED: Prevent compression */
+    flex-shrink: 0;
 }
 
 .voxmill-index-bar-fill {
@@ -2257,9 +2231,8 @@ STRATEGIC FORECAST — REFINED
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 32px;  /* ✅ FIXED: was 20px 28px */
+    padding: 24px 32px;
 }
-
 
 .macro-title {
     font-family: var(--font-body);
@@ -2280,7 +2253,7 @@ STRATEGIC FORECAST — REFINED
 }
 
 .portfolio-recommendations {
-    margin-top: 48px;  /* ✅ MAINTAINED */
+    margin-top: 48px;
     margin-bottom: 0;
 }
 
@@ -2295,21 +2268,22 @@ STRATEGIC FORECAST — REFINED
 .recommendations-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;  /* ✅ MAINTAINED */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap */
 }
 
 .recommendation-card {
-    background: rgba(12, 12, 12, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 32px 24px;  /* ✅ FIXED: was 22px 20px */
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 160px;  /* ✅ FIXED: was 136px */
-    height: 160px;  /* ✅ FIXED: was 136px */
+    min-height: 160px;
+    height: 160px;
     justify-content: center;
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .recommendation-action {
@@ -2344,14 +2318,14 @@ STRATEGIC FORECAST — REFINED
 }
 
 /* ============================================
-   EXECUTIVE INTELLIGENCE — SURGICAL UPLIFT
+   EXECUTIVE INTELLIGENCE — SURGICAL PRECISION UPDATE
    ============================================ */
 
 .executive-intelligence-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;  /* ✅ FIXED: was 26px */
-    margin-top: 40px;  /* ✅ FIXED: was 42px */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap */
+    margin-top: 48px;  /* ✅ UPDATED: Standardized spacing */
     margin-bottom: 0;
     align-items: start;
 }
@@ -2359,24 +2333,23 @@ STRATEGIC FORECAST — REFINED
 .executive-insights-column {
     display: flex;
     flex-direction: column;
-    gap: 16px;  /* ✅ MAINTAINED */
+    gap: 24px;  /* ✅ UPDATED: Standardized gap */
 }
 
 .insight-card-elite {
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.2);
-    border-radius: var(--card-radius);
-    padding: 24px;  /* ✅ FIXED: was 16px 20px */
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
     display: flex;
     flex-direction: column;
-    min-height: 136px;  /* ✅ FIXED: was 128px */
-    height: 136px;  /* ✅ FIXED: was 128px */
+    min-height: 136px;
+    height: 136px;
     position: relative;
     overflow: hidden;
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.25),
-        inset 0 1px 0 rgba(255,255,255,0.03);
+    box-shadow: var(--card-shadow);
     justify-content: center;
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .insight-elite-header {
@@ -2434,23 +2407,21 @@ STRATEGIC FORECAST — REFINED
 }
 
 .verdict-panel-border {
-    background: linear-gradient(135deg, rgba(23,23,23,0.98) 0%, rgba(12,12,12,0.92) 100%);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
     border: 1.5px solid var(--vm-gold);
-    border-radius: 10px;
-    padding: 32px;  /* ✅ FIXED: was 16px 20px */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 32px;
     text-align: left;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    box-shadow: 
-        0 8px 32px rgba(0,0,0,0.35),
-        0 0 60px rgba(191,166,112,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+    justify-content: space-between;  /* ✅ UPDATED: Align with 3 bullets */
+    box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
     gap: 10px;
-    min-height: 440px;  /* ✅ FIXED: was 416px */
+    min-height: 440px;  /* ✅ UPDATED: Align exactly with 3 insight cards (136px × 3 + 24px × 2 gaps = 456px, adjusted to 440px for proper fit) */
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .verdict-panel-border::before {
@@ -2502,6 +2473,9 @@ STRATEGIC FORECAST — REFINED
 .verdict-rating {
     margin-bottom: 12px;
     text-align: left;
+    display: flex;  /* ✅ ADDED: Center KPI numbers vertically */
+    flex-direction: column;
+    justify-content: center;
 }
 
 .verdict-stars {
@@ -2570,13 +2544,13 @@ STRATEGIC FORECAST — REFINED
 }
 
 .executive-bottom-strip {
-    margin-top: 24px;  /* ✅ FIXED: was 22px */
-    margin-bottom: 20px;
+    margin-top: 24px;
+    margin-bottom: 64px;  /* ✅ UPDATED: KPI row bottom spacing 64px */
     background: rgba(191, 166, 112, 0.12);
     border-radius: 8px;
     border-top: 1px solid rgba(191, 166, 112, 0.3);
     border-bottom: 1px solid rgba(191, 166, 112, 0.3);
-    padding: 24px;  /* ✅ FIXED: was 17px 22px */
+    padding: 24px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
@@ -2601,24 +2575,25 @@ STRATEGIC FORECAST — REFINED
 .action-window-luxury-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;  /* ✅ MAINTAINED */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap */
     width: 100%;
 }
 
 .action-item-luxury {
-    background: linear-gradient(135deg, rgba(12,12,12,0.5) 0%, rgba(18,18,18,0.4) 100%);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(191,166,112,0.15);
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
     border-left: 4px solid var(--vm-gold);
-    border-radius: var(--card-radius);
-    padding: 24px;  /* ✅ FIXED: was 20px 18px */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
     display: flex;
     flex-direction: column;
     gap: 9px;
-    min-height: 120px;  /* ✅ FIXED: was 110px */
-    height: 120px;  /* ✅ FIXED: was 110px */
+    min-height: 120px;
+    height: 120px;
     justify-content: center;
     box-shadow: var(--card-shadow);
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
 
 .action-item-luxury-title {
@@ -2656,43 +2631,86 @@ STRATEGIC FORECAST — REFINED
    ============================================ */
 
 @media print, .a4-export {
+    .market-depth-analysis .slide-content {
+        top: 162px;
+    }
+    
+    .depth-metrics {
+        margin-top: 44px;
+        gap: 36px;
+    }
+    
+    .depth-card {
+        padding: 28px;
+        min-height: 150px;
+        height: 150px;
+    }
+    
+    .depth-dynamics-indicators {
+        gap: 36px;
+        margin-top: 64px;
+    }
+    
+    .depth-indicator-card {
+        padding: 24px;
+        height: 110px;
+    }
+    
+    .forecast-grid-2x2 {
+        gap: 36px;
+    }
+    
+    .forecast-card-premium {
+        min-height: 300px;
+    }
+    
+    .recommendations-grid {
+        gap: 36px;
+    }
+    
+    .recommendation-card {
+        padding: 28px;
+        min-height: 150px;
+        height: 150px;
+    }
+    
     .executive-intelligence-layout {
-        gap: 22px;
-        margin-top: 38px;
+        gap: 36px;
+        margin-top: 44px;
     }
     
     .executive-insights-column {
-        gap: 14px;
+        gap: 20px;
     }
     
     .insight-card-elite {
-        padding: 14px 18px;
-        min-height: 120px;
-        height: 120px;
+        padding: 28px;
+        min-height: 128px;
+        height: 128px;
     }
     
     .verdict-panel-border {
-        padding: 14px 18px;
-        min-height: 390px;
+        padding: 28px;
+        min-height: 420px;
     }
     
     .action-window-luxury-grid {
-        gap: 22px;
+        gap: 36px;
     }
     
     .action-item-luxury {
-        padding: 18px 16px;
-        min-height: 105px;
-        height: 105px;
+        padding: 28px;
+        min-height: 110px;
+        height: 110px;
     }
 }
 
 /* ============================================
-TOP MARKET OPPORTUNITIES
+TOP MARKET OPPORTUNITIES — SURGICAL PRECISION UPDATE
 ============================================ */
 
 .top-market-opportunities .slide-content {
-    top: 225px;
+    top: 168px;  /* ✅ STANDARDIZED: was 225px */
 }
 
 .opportunities-table {
@@ -2716,8 +2734,9 @@ TOP MARKET OPPORTUNITIES
     width: 100%;
     margin-top: var(--spacing-sm);
     border-collapse: collapse;
-    background: rgba(18, 18, 18, 0.95);
-    border-radius: var(--card-radius);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
     overflow: hidden;
     table-layout: auto;
 }
@@ -2752,7 +2771,7 @@ TOP MARKET OPPORTUNITIES
 .table-luxury th:nth-child(4) { width: 14%; text-align: center; }
 .table-luxury th:nth-child(5) { width: 12%; text-align: center; }
 .table-luxury th:nth-child(6) { width: 10%; text-align: center; }
-.table-luxury th:nth-child(7) { width: 10%; text-align: center; }
+.table-luxury th:nth-child(7) { width: 10%; text-align: center; min-width: 100px; }  /* ✅ FIXED: prevents shifting */
 
 .table-luxury tbody tr {
     border-bottom: 1px solid rgba(191, 166, 112, 0.08);
@@ -2786,7 +2805,7 @@ TOP MARKET OPPORTUNITIES
 .table-luxury td:nth-child(4) { width: 14%; text-align: right; }
 .table-luxury td:nth-child(5) { width: 12%; text-align: right; }
 .table-luxury td:nth-child(6) { width: 10%; text-align: center; }
-.table-luxury td:nth-child(7) { width: 10%; text-align: center; }
+.table-luxury td:nth-child(7) { width: 10%; text-align: center; min-width: 100px; }  /* ✅ FIXED: prevents shifting */
 
 .property-address {
     font-weight: 500;
@@ -2795,7 +2814,8 @@ TOP MARKET OPPORTUNITIES
 
 .score-badge {
     padding: 8px 16px;
-    min-width: 80px;
+    min-width: 90px;  /* ✅ FIXED: was 80px */
+    max-width: 90px;
     height: 32px;
     display: inline-flex;
     align-items: center;
@@ -2803,7 +2823,7 @@ TOP MARKET OPPORTUNITIES
     border-radius: 6px;
     font-family: var(--font-mono);
     font-weight: 700;
-    vertical-align: middle;  /* ADDED */
+    vertical-align: middle;
 }
 
 .score-high, .score-excellent {
@@ -2822,31 +2842,28 @@ TOP MARKET OPPORTUNITIES
 }
 
 /* ============================================
-SEGMENT PERFORMANCE BREAKDOWN
+SEGMENT PERFORMANCE BREAKDOWN — SURGICAL PRECISION UPDATE
 ============================================ */
 
 .district-performance-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;  /* ✅ MAINTAINED */
-    margin-top: 48px;  /* ✅ FIXED: was 56px */
-    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
+    gap: 40px;  /* ✅ UPDATED: Standardized gap from 32px */
+    margin-top: 48px;
+    margin-bottom: 48px;
 }
 
 .district-card-premium {
-    background: linear-gradient(135deg, rgba(23,23,23,0.95) 0%, rgba(12,12,12,0.85) 100%);
-    border: 1px solid rgba(191,166,112,0.25);
-    border-radius: var(--card-radius);
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
     padding: 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 
-        0 6px 20px rgba(0,0,0,0.3),
-        0 0 40px rgba(191,166,112,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.03);
+    box-shadow: var(--card-shadow);
     overflow: hidden;
     position: relative;
-    min-height: 540px;
+    min-height: 510px;  /* ✅ UPDATED: Reduce top card height -30px (was 540px) */
 }
 
 .district-card-premium::before {
@@ -2863,7 +2880,7 @@ SEGMENT PERFORMANCE BREAKDOWN
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 24px;  /* ✅ FIXED: was 22px 26px */
+    padding: 24px;
     min-height: 96px;
     display: flex;
     align-items: center;
@@ -2903,11 +2920,13 @@ SEGMENT PERFORMANCE BREAKDOWN
 }
 
 .district-metrics-grid {
-    padding: 32px;  /* ✅ FIXED: was 26px 26px */
+    padding: 32px;
     display: flex;
     flex-direction: column;
-    gap: 24px;  /* ✅ MAINTAINED */
+    gap: 24px;
     flex: 1;
+    justify-content: center;  /* ✅ ADDED: Center-align all card data via flexbox */
+    align-items: center;  /* ✅ ADDED: Center-align all card data via flexbox */
 }
 
 .district-metric-row {
@@ -2916,6 +2935,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     gap: 20px;
     align-items: center;
     min-height: 76px;
+    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .district-metric-divider {
@@ -2933,6 +2953,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     border-radius: 8px;
     border: 1px solid rgba(191,166,112,0.1);
     min-height: 116px;
+    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .district-metric-block {
@@ -3003,6 +3024,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     border-left: 3px solid var(--vm-gold);
     border-radius: 6px;
     min-height: 72px;
+    width: 100%;  /* ✅ ADDED: Full width for proper centering */
 }
 
 .insight-icon {
@@ -3053,9 +3075,9 @@ SEGMENT PERFORMANCE BREAKDOWN
 
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 48px;  /* ✅ FIXED: was 60px */
-    margin-bottom: 48px;  /* ✅ FIXED: was 60px */
-    padding: 32px;  /* ✅ FIXED: was 22px 30px */
+    margin-top: 72px;  /* ✅ UPDATED: Increase bottom section row spacing +24px (was 48px) */
+    margin-bottom: 48px;
+    padding: 32px;
     border: 1px solid rgba(191,166,112,0.15);
     border-radius: var(--card-radius);
 }
@@ -3111,8 +3133,10 @@ SEGMENT PERFORMANCE BREAKDOWN
     box-shadow: 
         inset 0 1px 3px rgba(191, 166, 112, 0.2),
         0 2px 8px rgba(0,0,0,0.15);
-    padding: 24px 32px;  /* ✅ MAINTAINED */
-    margin: 32px 0;  /* ✅ FIXED: was 36px 0 */
+    padding: 32px;  /* ✅ UPDATED: Expand padding to 32px (was 24px 32px) */
+    margin: 32px 0;
+    width: calc(100% + 80px);  /* ✅ UPDATED: Expand width +40px */
+    margin-left: -40px;  /* ✅ UPDATED: Center expansion */
 }
 
 .summary-band-title {
@@ -3139,7 +3163,7 @@ SEGMENT PERFORMANCE BREAKDOWN
 }
 
 /* ============================================
-AI OPPORTUNITIES
+AI OPPORTUNITIES — SURGICAL PRECISION UPDATE
 ============================================ */
 
 .acquisition-flagging-header {
@@ -3154,14 +3178,14 @@ AI OPPORTUNITIES
     font-weight: 600;
     letter-spacing: 0.06em;
     text-align: left;
-    padding: 24px 32px;  /* ✅ FIXED: was 20px 30px */
+    padding: 24px 32px;
 }
 
 .signal-board-v2 {
     display: flex;
     flex-direction: column;
-    gap: 24px;  /* ✅ FIXED: was 18px */
-    margin-top: 24px;  /* ✅ MAINTAINED */
+    gap: 36px;  /* ✅ UPDATED: Vertical spacing between property rows (was 24px) */
+    margin-top: 24px;
     margin-bottom: 0;
 }
 
@@ -3169,18 +3193,20 @@ AI OPPORTUNITIES
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 24px;  /* ✅ MAINTAINED */
-    padding: 24px 32px;  /* ✅ FIXED: was 24px 28px */
-    background: var(--card-bg);
-    border: var(--card-border);
-    border-radius: var(--card-radius);
+    gap: 24px;
+    padding: 24px 32px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
     box-shadow: var(--card-shadow);
-    min-height: 120px;  /* ✅ MAINTAINED */
+    min-height: 120px;
     height: 120px;
+    line-height: 1.2;  /* ✅ ADDED: Typography alignment */
 }
+
 .signal-content-v2 {
-flex: 1;
-text-align: left;
+    flex: 1;
+    text-align: left;
 }
 
 .signal-property-title {
@@ -3188,7 +3214,7 @@ text-align: left;
     font-size: 17px;
     font-weight: 600;
     color: var(--vm-gold);
-    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
+    margin-bottom: 12px;
     text-align: left;
 }
 
@@ -3198,7 +3224,7 @@ text-align: left;
     color: var(--vm-muted);
     text-align: left;
     font-weight: 500;
-    margin-bottom: 12px;  /* ✅ CONSISTENT spacing */
+    margin-bottom: 12px;
 }
 
 .ai-flag-reason {
@@ -3206,7 +3232,7 @@ text-align: left;
     font-size: 12px;
     color: var(--vm-text-body);
     font-style: italic;
-    margin-top: 12px;  /* ✅ CONSISTENT spacing */
+    margin-top: 12px;
     padding-left: 12px;
     border-left: 2px solid rgba(191, 166, 112, 0.3);
     line-height: 1.7;
@@ -3215,228 +3241,352 @@ text-align: left;
 }
 
 .signal-badges-v2 {
-display: flex;
-flex-direction: column;
-gap: 8px;
-align-items: flex-end;
-min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;  /* ✅ UPDATED: Center badges via flexbox (was flex-end) */
+    justify-content: center;  /* ✅ ADDED: Center badges via flexbox */
+    min-width: 100px;
+    padding-right: 18px;  /* ✅ UPDATED: Badge right padding (was 0) */
 }
 
 .signal-badge-v2 {
-padding: 6px 14px;
-border-radius: 6px;
-font-size: 12px;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 0.05em;
-text-align: center;
-min-width: 85px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    min-width: 85px;
 }
 
 .badge-risk {
-color: #4CAF50;
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: #4CAF50;
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-confidence {
-color: var(--vm-gold);
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: var(--vm-gold);
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .badge-trigger {
-color: #FFC107;
-border: 1px solid rgba(191, 166, 112, 0.4);
+    color: #FFC107;
+    border: 1px solid rgba(191, 166, 112, 0.4);
 }
 
 .acquisition-strategy-ribbon {
     background: linear-gradient(135deg, rgba(197, 164, 109, 0.12) 0%, rgba(197, 164, 109, 0.08) 100%);
     border-left: 4px solid #BFA670;
     border-radius: 8px;
-    padding: 24px 32px;  /* ✅ MAINTAINED */
-    margin: 32px 0;  /* ✅ FIXED: was 36px 0 */
+    padding: 24px 32px;
+    margin: 32px 0 32px 40px;  /* ✅ UPDATED: Reduce width -90px, left margin 40px */
+    width: calc(100% - 130px);  /* ✅ UPDATED: Reduce Acquisition Strategy width -90px */
 }
 
 .acquisition-strategy-text {
-font-family: var(--font-body);
-font-size: 15px;
-color: var(--vm-text-body);
-line-height: 1.7;
-font-weight: 400;
-text-align: center;
-margin: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+    font-weight: 400;
+    text-align: center;
+    margin: 0;
 }
 
 .acquisition-strategy-text strong {
-font-weight: 700;
+    font-weight: 700;
 }
 
 .acquisition-strategy-ribbon + div {
-background: rgba(12, 12, 12, 0.35);
-border: 1px solid rgba(255, 255, 255, 0.08);
-border-radius: 10px;
-padding: 24px 32px;
-margin-top: 40px;
-margin-bottom: 76px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    margin-top: 40px;
+    margin-bottom: 76px;
 }
 
 .acquisition-strategy-ribbon + div h4 {
-font-size: 16px;
-color: #C8AA6E;
-margin-bottom: 18px;
-font-weight: 600;
+    font-size: 16px;
+    color: #C8AA6E;
+    margin-bottom: 18px;
+    font-weight: 600;
 }
 
 .acquisition-strategy-ribbon + div > div {
-font-size: 14px;
-color: var(--vm-text-body);
-line-height: 1.85;
-padding-bottom: 8px;
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+    padding-bottom: 8px;
 }
 
 .acquisition-strategy-ribbon + div > div > div {
-margin-bottom: 14px;
-padding-left: 0;
-min-height: 24px;
+    margin-bottom: 14px;
+    padding-left: 0;
+    min-height: 24px;
 }
+
 .acquisition-strategy-ribbon + div > div > div:last-child {
-margin-bottom: 0;
+    margin-bottom: 0;
 }
+
 .acquisition-strategy-ribbon + div strong {
-color: #C8AA6E;
-font-weight: 600;
+    color: #C8AA6E;
+    font-weight: 600;
 }
+
+/* ============================================
+METHODOLOGY — SURGICAL PRECISION UPDATE
+============================================ */
+
+.methodology-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 88px;  /* ✅ UPDATED: Spacing between "Data Sources" and "Forecast Logic" +48px (was 40px) */
+    margin-top: 48px;
+}
+
+.methodology-panel {
+    padding: 32px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+}
+
+.methodology-title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.methodology-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.methodology-list li {
+    padding: 12px 0 12px 24px;
+    margin-bottom: 8px;
+    position: relative;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--vm-text-body);
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+.methodology-list li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--vm-gold);
+    font-weight: 700;
+}
+
+.model-pipeline {
+    padding: 40px;  /* ✅ UPDATED: Intelligence Pipeline vertical padding (was 32px) */
+    margin-top: 48px;
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    margin: 32px 0;
+}
+
+.pipeline-step {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.pipeline-box {
+    background: rgba(191, 166, 112, 0.15);
+    border: 1px solid rgba(191, 166, 112, 0.3);
+    border-radius: 8px;
+    padding: 16px 24px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
+    width: 100%;
+}
+
+.pipeline-arrow {
+    font-size: 24px;
+    color: var(--vm-gold);
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.proprietary-badge {
+    padding: 84px 32px;  /* ✅ UPDATED: Architecture footer band height +30px (was 54px 32px) */
+    margin-top: 48px;
+    background: linear-gradient(90deg, #C9A86A 0%, #B59854 50%, #C9A86A 100%);
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
+    text-align: center;
+}
+
+.proprietary-badge-text {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--vm-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 /* ============================================
 PANELS
 ============================================ */
+
 .panel {
-margin-top: 34px;
-padding: 26px 30px;
+    margin-top: 34px;
+    padding: 32px;  /* ✅ UPDATED: Standardized padding */
+    background: rgba(10, 10, 10, 0.55);  /* ✅ UPDATED: Standardized background */
+    border: 1px solid rgba(255, 215, 167, 0.06);  /* ✅ UPDATED: Standardized border */
+    border-radius: 10px;  /* ✅ UPDATED: Standardized radius */
 }
+
 .panel-title {
-font-family: var(--font-display);
-font-size: 28px;
-font-weight: 600;
-color: var(--vm-gold);
-margin-bottom: 16px;
-position: relative;
-padding-bottom: 12px;
-padding-top: 0;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--vm-gold);
+    margin-bottom: 16px;
+    position: relative;
+    padding-bottom: 12px;
+    padding-top: 0;
 }
+
 .panel-title::after {
-content: '';
-position: absolute;
-bottom: 0;
-left: 0;
-width: 120px;
-height: 2px;
-background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
-opacity: 0.7;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(191, 166, 112, 0.7), transparent);
+    opacity: 0.7;
 }
+
 .panel-text {
-font-family: var(--font-body);
-font-size: 15px;
-color: var(--vm-text-body);
-line-height: 1.85;
-font-weight: 400;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--vm-text-body);
+    line-height: 1.85;
+    font-weight: 400;
 }
+
 .panel-text strong {
-color: var(--vm-gold);
-font-weight: 600;
+    color: var(--vm-gold);
+    font-weight: 600;
 }
+
 /* ============================================
 FOOTER
 ============================================ */
+
 .slide-footer {
-position: absolute;
-bottom: 32px;
-left: 48px;
-right: 48px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-family: var(--font-body);
-font-size: 13px;
-color: rgba(184, 184, 184, 0.75);
-z-index: 10;
+    position: absolute;
+    bottom: 32px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(184, 184, 184, 0.75);
+    z-index: 10;
 }
+
 .footer-left {
-font-weight: 400;
+    font-weight: 400;
 }
+
 .footer-center {
-text-align: center;
-font-style: italic;
-font-weight: 400;
+    text-align: center;
+    font-style: italic;
+    font-weight: 400;
 }
+
 .footer-right {
-text-align: right;
-font-weight: 600;
+    text-align: right;
+    font-weight: 600;
 }
+
 /* ============================================
 UTILITY CLASSES
 ============================================ */
+
 .text-gold {
-color: var(--vm-gold);
+    color: var(--vm-gold);
 }
+
 .text-bronze {
-color: var(--vm-bronze);
+    color: var(--vm-bronze);
 }
+
 .text-muted {
-color: var(--vm-muted);
+    color: var(--vm-muted);
 }
+
 .mb-0 {
-margin-bottom: 0 !important;
+    margin-bottom: 0 !important;
 }
+
 .mt-0 {
-margin-top: 0 !important;
+    margin-top: 0 !important;
 }
+
 /* ============================================
 PRINT OPTIMIZATION
 ============================================ */
+
 @media print {
-body {
--webkit-print-color-adjust: exact;
-print-color-adjust: exact;
-color-adjust: exact;
-}
-.slide {
-    page-break-after: always;
-    page-break-inside: avoid;
-}
-
-.slide:last-child {
-    page-break-after: auto;
-}
-
-* {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-}
-
-    table-luxury th:nth-child(7),
-.table-luxury td:nth-child(7) {
-    width: 10%;
-    text-align: center;
-    min-width: 100px;  /* ✅ FIXED - prevents shifting */
-}
-
-.score-badge {
-    padding: 8px 16px;
-    min-width: 90px;  /* ✅ FIXED width */
-    max-width: 90px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    vertical-align: middle;
-}
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
     
+    .slide {
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+    
+    .slide:last-child {
+        page-break-after: auto;
+    }
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+}
+
 /* ============================================
 WEBKIT/BLINK RENDERING FIXES
 ============================================ */
+
 .slide,
 .kpi-card,
 .chart-container,
@@ -3445,14 +3595,16 @@ WEBKIT/BLINK RENDERING FIXES
 .district-card-premium,
 .forecast-card-premium,
 .competitive-info-panel {
--webkit-transform: translateZ(0);
-transform: translateZ(0);
-will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
 }
+
 svg {
-shape-rendering: geometricPrecision;
-text-rendering: geometricPrecision;
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
 }
+
 /* ============================================
 END OF VOXMILL EXECUTIVE INTELLIGENCE DECK CSS
 ============================================ */
