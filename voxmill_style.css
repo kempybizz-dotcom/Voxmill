@@ -30,7 +30,7 @@ Changelog: Duplicate badges removed, alignment perfected, icons added, spacing n
     
     /* ✅ STANDARDIZED CARD PROPERTIES */
     --card-radius: 12px;
-    --card-border: 1px solid rgba(255, 255, 255, 0.08);
+    --card-border: 1px solid rgba(255, 255, 255, 0.08); 
     --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     --card-bg: rgba(12, 12, 12, 0.35);
 }
