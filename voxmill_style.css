@@ -322,6 +322,7 @@ SLIDE HEADER — CONSISTENT SPACING
 ============================================ */
 .slide-content {
     position: absolute;
+    margin-top: 20px;
     top: 170px;  /* FIXED: Standardized across ALL slides */
     left: 48px;
     right: 48px;
@@ -963,9 +964,10 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 .competitive-info-panel:first-child {
-    height: 820px; /* INCREASED by 50px to match right panel bottom alignment */
+    min-height: 820px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
 }
 
 .competitive-info-panel .chart-title {
@@ -1222,75 +1224,68 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
    ============================================ */
 
 .macro-signal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 29.5%); /* ✅ FIXED: 1fr → 29.5% each */
-    gap: 40px; /* ✅ FIXED: 30px → 40px (margin-right equivalent) */
-    margin-bottom: 48px; /* ✅ FIXED: 85px → 48px */
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-bottom: 48px;
 }
 
 .macro-signal-card {
     background: rgba(10,10,10,0.55);
-    border: 1px solid rgba(255,215,167,0.06);
-    border-radius: 10px;
-    width: 29.5%;
-    height: 280px; /* INCREASED from 260px */
-    padding: 36px; /* INCREASED from 32px */
+    border: 1px solid rgba(255,215,167,0.07);
+    border-radius: 12px;
+    padding: 36px;
+    height: 260px;
+    width: 31%;
     display: flex;
     flex-direction: column;
-    align-items: center; /* CENTER horizontally */
-    justify-content: center; /* CENTER vertically */
-    text-align: center;
-    position: relative;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-/* SUPPRESS LARGE WHITE ICON TEXT */
 .macro-signal-card::before {
-    content: none !important;
     display: none !important;
 }
 
 .macro-card-title {
     font-family: 'Inter', sans-serif;
-    font-size: 13px; /* REDUCED for cleaner look */
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     color: rgba(255,255,255,0.7);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px; /* CLEAN spacing */
-    line-height: 1.2;
+    line-height: 1.3;
+    margin-bottom: 0;
 }
 
 .macro-card-primary-metric {
     font-family: 'Inter', sans-serif;
-    font-size: 28px; /* STANDARDIZED */
+    font-size: 34px;
     font-weight: 600;
-    color: #EAEAEA; /* CLEAN WHITE */
-    margin-bottom: 4px;
-    line-height: 1.2;
+    color: rgb(218,198,158);
+    line-height: 1.1;
+    margin: 0;
 }
 
 .macro-card-secondary-metric {
     font-family: 'Inter', sans-serif;
-    font-size: 16px; /* INCREASED for readability */
+    font-size: 13px;
     font-weight: 400;
-    color: rgba(255,255,255,0.7);
-    margin-top: 8px; /* CLEAN spacing */
-    margin-bottom: 16px;
-    line-height: 1.3;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+    margin-top: 4px;
+    margin-bottom: 0;
 }
 
-/* BADGE - MOVE TO TOP RIGHT */
 .macro-signal-card .vx-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 3px 10px;
     border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
 }
 
 .macro-card-insight {
-    display: none; /* REMOVE to clean up cards */
+    display: none;
 }
 
 
@@ -2020,44 +2015,43 @@ METHODOLOGY
 .stress-signals-matrix {
     display: flex;
     justify-content: space-between;
-    gap: 40px; /* CLEAN gap */
-    margin-top: 88px; /* INCREASED separation from indexes */
+    gap: 36px;
+    margin-top: 56px;
 }
 
 .stress-card {
     background: rgba(10,10,10,0.55);
-    border: 1px solid rgba(255,215,167,0.06);
-    border-radius: 10px;
-    padding: 28px;
-    width: 24%; /* 4 CARDS at 24% each */
-    height: 180px; /* INCREASED height */
+    border: 1px solid rgba(255,215,167,0.07);
+    border-radius: 12px;
+    padding: 32px;
+    height: 150px;
+    width: 23.5%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    gap: 6px;
 }
 
 .stress-label {
     font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 12px;
     line-height: 1.2;
+    margin-bottom: 0;
 }
 
 .stress-value {
     font-family: 'Inter', sans-serif;
-    font-size: 32px;
+    font-size: 33px;
     font-weight: 700;
     color: #C5A46D;
-    margin-bottom: 8px;
-    line-height: 1.2;
+    line-height: 1.1;
+    margin: 0;
 }
-
 
 .stress-note {
     font-family: 'Inter', sans-serif;
@@ -2065,21 +2059,8 @@ METHODOLOGY
     font-weight: 400;
     color: rgba(255,255,255,0.6);
     line-height: 1.3;
+    margin-top: 2px;
 }
-
-/* ✅ NEW: Depth Dynamics Indicators Row Title */
-.depth-dynamics-title {
-    font-family: var(--font-body);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--vm-gold);
-    letter-spacing: 0.1em;
-    margin-top: 72px; /* ✅ Spacing above new row */
-    margin-bottom: 24px;
-    text-align: center;
-    line-height: 1.2;
-}
-
 /* ============================================
    A4 EXPORT ADJUSTMENTS
    ============================================ */
@@ -2162,68 +2143,6 @@ METHODOLOGY
     .stress-note {
         font-size: 10px;
     }
-}
-
-/* ============================================
-   SEGMENT STRESS SIGNALS MATRIX (NEW)
-   ============================================ */
-
-.stress-signals-matrix {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-top: 10px;
-    margin-bottom: 0;
-    align-items: start;
-}
-
-.stress-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 24px 20px;
-    min-height: 155px;
-    height: 155px;
-    background: linear-gradient(135deg, rgba(18,18,18,0.95) 0%, rgba(12,12,12,0.90) 100%);
-    backdrop-filter: blur(2px);
-    border: 1px solid rgba(191,166,112,0.15);
-    border-radius: var(--card-radius);
-    box-shadow: 
-        0 4px 16px rgba(0,0,0,0.25),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.stress-label {
-    font-family: var(--font-body);
-    font-size: 11px;
-    color: rgba(184, 184, 184, 0.75);
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    margin-bottom: 12px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.stress-value {
-    font-family: var(--font-body);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--vm-gold);
-    margin-bottom: 16px;
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-shadow: 0 2px 8px rgba(191, 166, 112, 0.4);
-    text-align: center;
-}
-
-.stress-note {
-    font-family: var(--font-body);
-    font-size: 10.5px;
-    color: rgba(234, 234, 234, 0.65);
-    margin: 0;
-    font-weight: 400;
-    line-height: 1.5;
-    text-align: center;
 }
 
 /* ============================================
