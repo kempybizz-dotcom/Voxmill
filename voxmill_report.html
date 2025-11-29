@@ -162,6 +162,7 @@
 
     <div class="slide-content">
         <!-- KPI GRID -->
+<!-- KPI GRID -->
 <div class="kpi-grid kpi-count-{{ kpi_items|length }}">
     {% for label, value_key, value, change in kpi_items %}
     <div class="kpi-card">
@@ -170,26 +171,6 @@
             <div class="kpi-value">{{ value }}</div>
             <div class="kpi-change {{ 'positive' if change > 0 else 'negative' if change < 0 else 'neutral' }}">
                 {{ '+' if change > 0 else '' }}{{ change }}%
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-<div class="kpi-grid kpi-count-{{ kpi_items|length }}">
-    {% for label, value_key, value, change in kpi_items %}
-    <div class="kpi-card">
-        <div class="kpi-content">
-            <div class="kpi-label">{{ label if label in ['Unit Economics'] else globals()[label] }}</div>
-            <div class="kpi-value">
-                {% if value_key == 'avg_price' or value_key == 'price_per_sqft' %}
-                    £{{ "{:,.0f}".format(value) }}
-                {% else %}
-                    {{ value }}
-                {% endif %}
-            </div>
-            <div class="kpi-change {{ 'positive' if change > 0 else 'negative' }}">
-                {{ "↑" if change > 0 else "↓" }} {{ abs(change) }}% vs. prior week
             </div>
         </div>
     </div>
