@@ -347,7 +347,7 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-header {
     position: relative;
-    top: 88px; /* CONFIRMED spacing */
+    top: 68px; /* ✅ FIXED: 88px → 68px (moved up 20px) */
     left: 0;
     width: 100%;
     display: flex;
@@ -540,7 +540,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     align-items: stretch;
     gap: 40px;
     margin-top: 60px;
-    margin-bottom: 0;
+    margin-bottom: 80px; /* ✅ ADDED: gap from slide bottom */
     padding: 0;
 }
 
@@ -661,7 +661,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 28px 30px; /* ✅ FIXED: 26px → 28px (global KPI card padding) */
+    padding: 36px 30px; /* ✅ FIXED: 28px → 36px (increased vertical breathing room) */
 }
 
 .kpi-content {
@@ -1154,8 +1154,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
     padding: 32px;
-    margin-top: 40px; /* CLEAN 40px gap from insights strip above */
-    margin-bottom: 0; /* REMOVE any bottom margin */
+    margin-top: 20px; /* ✅ FIXED: 40px → 20px (moved up, prevent slide bottom touch) */
+    margin-bottom: 0;
 }
 
 .bottom-callout-title {
@@ -1338,9 +1338,15 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-align: center;
 }
 
+/* ✅ FIX: First and last pills narrower to prevent overflow */
+.correlation-pill:first-child,
+.correlation-pill:last-child {
+    width: 16%;
+}
+
 .correlation-pill:hover {
-    border-color: rgba(255, 215, 167, 0.06); /* ✅ FIXED: no hover effect */
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: no hover effect */
+    border-color: rgba(255, 215, 167, 0.06);
+    background: rgba(10, 10, 10, 0.55);
 }
 
 .correlation-label {
@@ -1484,7 +1490,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    max-width: 80%; /* ✅ FIXED: 900px → 80% (constrain bullet list) */
+    max-width: 100%; /* ✅ FIXED: 80% → 100% (full width alignment) */
+    align-items: flex-start; /* ✅ ADDED: left alignment */
 }
 
 .driver-bullet {
@@ -2680,21 +2687,21 @@ STRATEGIC FORECAST — REFINED
 
 
 .verdict-panel-border {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    background: rgba(10, 10, 10, 0.55);
     border: 1.5px solid var(--vm-gold);
     border-radius: 10px;
-    padding: 32px; /* ✅ FIXED: 16px 20px → 32px (global card padding) */
+    padding: 32px;
     text-align: left;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* ✅ FIXED: center → flex-start (align with top bullet) */
-    box-shadow: none; /* ✅ REMOVED: all shadows and glows */
+    justify-content: flex-start;
+    box-shadow: none;
     position: relative;
     overflow: hidden;
     gap: 10px;
-    min-height: 416px; /* ✅ This will auto-extend to match 3 bullets height */
-    height: auto; /* ✅ ADDED: allow auto-expansion to align with bullets */
+    min-height: 450px; /* ✅ FIXED: 416px → 450px (align with bottom bullet) */
+    height: auto;
 }
 
 .verdict-panel-border::before {
