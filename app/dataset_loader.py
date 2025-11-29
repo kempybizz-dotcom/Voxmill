@@ -11,7 +11,7 @@ def load_dataset() -> dict:
     Always loads fresh data — no caching.
     """
     try:
-        # Read from the same file the cron job generates
+        
         dataset_path = "/tmp/voxmill_analysis.json"
         
         if not os.path.exists(dataset_path):
@@ -34,20 +34,3 @@ def load_dataset() -> dict:
     except Exception as e:
         logger.error(f"Error loading dataset: {str(e)}", exc_info=True)
         raise
-```
-
----
-
-## 🎯 WHY THIS WORKS
-
-**Render services on the same account share `/tmp/`:**
-```
-CRON JOB:
-├── Runs voxmill_master.py
-├── Creates /tmp/voxmill_analysis.json
-└── Exits
-
-WHATSAPP SERVICE (always running):
-├── Receives message
-├── Reads /tmp/voxmill_analysis.json  ← SAME FILE
-└── Sends response
