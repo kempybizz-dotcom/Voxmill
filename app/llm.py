@@ -1,16 +1,13 @@
 import os
 import logging
 import json
-from anthropic import Anthropic
 from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "anthropic")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 CATEGORIES = [
@@ -130,9 +127,7 @@ User message: {message}
 
 Classify this message and generate an executive analyst response."""
 
-        if LLM_PROVIDER == "anthropic" and anthropic_client:
-            response = await call_claude(user_prompt)
-        elif LLM_PROVIDER == "openai" and openai_client:
+        if openai_client:
             response = await call_gpt4(user_prompt)
         else:
             logger.error("No LLM provider configured")
@@ -157,24 +152,6 @@ Classify this message and generate an executive analyst response."""
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
         return "market_overview", "Unable to process request. Please try again."
-
-async def call_claude(user_prompt: str) -> str:
-    """Call Anthropic Claude API"""
-    try:
-        message = anthropic_client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1000,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {"role": "user", "content": user_prompt}
-            ]
-        )
-        
-        return message.content[0].text
-        
-    except Exception as e:
-        logger.error(f"Claude API error: {str(e)}", exc_info=True)
-        raise
 
 async def call_gpt4(user_prompt: str) -> str:
     """Call OpenAI GPT-4 API"""
