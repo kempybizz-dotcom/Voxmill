@@ -162,16 +162,32 @@
 
     <div class="slide-content">
         <!-- KPI GRID -->
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-content">
-                    <div class="kpi-label">{{ inventory_label }}</div>
-                    <div class="kpi-value">{{ kpis.total_properties }}</div>
-                    <div class="kpi-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-                        {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
-                    </div>
-                </div>
+        {% set kpi_items = [
+    ('inventory_label', kpis.total_properties, kpis.property_change),
+    ('value_metric_label', 'avg_price', kpis.avg_price, kpis.price_change),
+    ('Unit Economics', 'price_per_sqft', kpis.avg_price_per_sqft, kpis.sqft_change),
+    ('velocity_metric_label', 'days', kpis.days_on_market, kpis.velocity_change)
+] %}
+
+<div class="kpi-grid kpi-count-{{ kpi_items|length }}">
+    {% for label, value_key, value, change in kpi_items %}
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-label">{{ label if label in ['Unit Economics'] else globals()[label] }}</div>
+            <div class="kpi-value">
+                {% if value_key == 'avg_price' or value_key == 'price_per_sqft' %}
+                    £{{ "{:,.0f}".format(value) }}
+                {% else %}
+                    {{ value }}
+                {% endif %}
             </div>
+            <div class="kpi-change {{ 'positive' if change > 0 else 'negative' }}">
+                {{ "↑" if change > 0 else "↓" }} {{ abs(change) }}% vs. prior week
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
             
             <div class="kpi-card">
                 <div class="kpi-content">
@@ -1032,19 +1048,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for opportunity in top_opportunities[:8] %}
-                    <tr>
-                        <td class="property-address">{{ (opportunity.address or "Address not available")[:45] }}</td>
-                        <td>{{ opportunity.property_type or "N/A" }}</td>
-                        <td>{{ "{:,}".format(opportunity.size or 0) }} {{ unit_metric }}</td>
-                        <td>£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
-                        <td>£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
-                        <td>{{ opportunity.days_listed or 0 }}</td>
-                        <td>
-                            <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">{{ opportunity.score or 0 }}</span>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                   {% if top_opportunities and top_opportunities|length > 0 %}
+<table class="table-luxury">
+    <thead>
+        <tr>
+            <th>Asset</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>{{ value_metric_label }}</th>
+            <th>£/{{ unit_metric }}</th>
+            <th>Days</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for opportunity in top_opportunities %}
+        <tr>
+            <td class="property-address">{{ (opportunity.address or "Address not available")[:60] }}</td>
+            <td>{{ opportunity.property_type or "N/A" }}</td>
+            <td>{{ "{:,}".format(opportunity.size or 0) }} {{ unit_metric }}</td>
+            <td>£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
+            <td>£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
+            <td>{{ opportunity.days_listed or 0 }}</td>
+            <td>
+                <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">
+                    {{ opportunity.score or 0 }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="panel" style="margin-top: 40px;">
+    <p class="panel-text">No opportunity data available for this report period. Contact Voxmill Intelligence for custom analysis.</p>
+</div>
+{% endif %}
                 </tbody>
             </table>
             
@@ -1172,15 +1211,12 @@
             Geographic sub-market analysis — Comparative performance across premium {{ location }} districts
         </p>
         
-        <div class="district-performance-grid">
-            {% for submarket in submarkets %}
-            <div class="district-card-premium">
-                <div class="district-card-header">
-                    <div class="district-header-content">
-                        <div class="district-tier-badge">{{ submarket.tier }}</div>
-                        <h3 class="district-name">{{ submarket.name }}</h3>
-                    </div>
-                </div>
+  {% set submarket_count = submarkets|length if submarkets else 0 %}
+
+{% if submarket_count > 0 %}
+<div class="district-performance-grid district-grid-{{ 'triple' if submarket_count >= 3 else 'double' if submarket_count == 2 else 'single' }}">
+    {% for submarket in submarkets %}
+    <div class="district-card-premium">
                 
                 <div class="district-metrics-grid">
                     <div class="district-metric-row">
@@ -1213,8 +1249,14 @@
                     <div class="inventory-count">{{ submarket.count }}</div>
                     <div class="inventory-label">Active {{ inventory_label|lower }}</div>
                 </div>
-            </div>
-            {% endfor %}
+          </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="panel" style="margin-top: 56px;">
+    <p class="panel-text">Insufficient submarket data for geographic segmentation analysis. Market intelligence provided at aggregate level.</p>
+</div>
+{% endif %}
             
             {% if submarkets|length < 3 %}
                 {% for i in range(3 - submarkets|length) %}
