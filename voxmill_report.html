@@ -279,15 +279,11 @@
                 </svg>
                 
                 <div class="chart-mini-insight">
-                    {% if chart_data.price_distribution and chart_data.price_distribution|length >= 4 %}
-                    📊 <strong>Concentration Signal:</strong> 
-                    {% set highest_bracket = chart_data.price_distribution|sort(attribute='count', reverse=true)|first %}
-                    {% set lowest_bracket = chart_data.price_distribution|sort(attribute='count')|first %}
-                    {{ highest_bracket.label }} segment leads with {{ highest_bracket.count }} {{ inventory_label|lower }} ({{ "%.0f"|format((highest_bracket.count / kpis.total_properties) * 100) }}% of market) — 
-                    {{ "premium positioning dominant" if highest_bracket.label.lower().find('m') != -1 or highest_bracket.label.lower().find('high') != -1 else "broad market accessibility maintained" }}.
-                    {% else %}
-                    📊 <strong>Concentration Signal:</strong> Market distribution analysis requires additional data for comprehensive assessment.
-                    {% endif %}
+                {% if chart_data.price_distribution and chart_data.price_distribution|length >= 4 %}
+                📊 <strong>Concentration Signal:</strong> 
+                {% set highest_bracket = chart_data.price_distribution|sort(attribute='count', reverse=true)|first %}
+                {% set lowest_bracket = chart_data.price_distribution|sort(attribute='count')|first %}
+                {{ highest_bracket.label }} segment leads with {{ highest_bracket.count }} {{ inventory_label|lower }}{% if kpis.total_properties > 0 %} ({{ "%.0f"|format((highest_bracket.count / kpis.total_properties) * 100) }}% of market){% endif %} —
                 </div>
                 {% else %}
                 <div style="padding: 60px; text-align: center; color: rgba(234,234,234,0.6);">
