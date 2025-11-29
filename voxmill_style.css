@@ -385,6 +385,38 @@ body::after,
     opacity: 0.02 !important; /* ✅ FIXED: Lower watermark opacity to prevent header collision */
 }
 
+/* GLOBAL TEXT OVERFLOW PROTECTION */
+.property-address,
+.competitor-premium-name,
+.district-name,
+.signal-property-title,
+.insight-elite-body,
+td,
+th {
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.5;
+}
+
+/* Ellipsis for single-line truncation */
+.property-address,
+.competitor-premium-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Multi-line with clamp */
+.insight-elite-body,
+.executive-bullet-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;  /* Max 6 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 /* ============================================
 UNIVERSAL CARD STYLING — FLOATING AESTHETIC
 ============================================ */
@@ -647,13 +679,34 @@ KPI GRID — MARKET OVERVIEW (REFINED)
 ============================================ */
 .kpi-grid {
     display: grid;
+    gap: 32px;
+    margin-top: 52px;
+    margin-bottom: 88px;
+    page-break-inside: avoid;
+}
+
+/* Responsive grid based on item count */
+.kpi-grid.kpi-count-2 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(188px, auto);
+}
+
+.kpi-grid.kpi-count-3 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(188px, auto);
+}
+
+.kpi-grid.kpi-count-4 {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 32px;
-    height: 360px;
-    margin-top: 52px;
-    margin-bottom: 88px; /* ✅ FIXED: 68px → 88px (added 24px spacing) */
-    page-break-inside: avoid;
+    height: auto;  /* Removed fixed height */
+    min-height: 360px;
+}
+
+.kpi-grid.kpi-count-5,
+.kpi-grid.kpi-count-6 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(188px, auto);
 }
 
 .kpi-card {
@@ -3108,10 +3161,29 @@ SEGMENT PERFORMANCE BREAKDOWN
 
 .district-performance-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 32px;
     margin-top: 56px;
-    margin-bottom: 84px; /* ✅ FIXED: 60px → 84px (increased spacing +24px) */
+    margin-bottom: 84px;
+}
+
+.district-grid-single {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.district-grid-double {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.district-grid-triple {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Handle 4+ submarkets with wrapping */
+.district-performance-grid:not(.district-grid-single):not(.district-grid-double):not(.district-grid-triple) {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
 }
 
 .district-card-premium {
