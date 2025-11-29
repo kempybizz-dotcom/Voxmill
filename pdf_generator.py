@@ -1676,6 +1676,10 @@ class VoxmillPDFGenerator:
                 ('Avg Price/Sqft', 'avg_price_per_sqft', format_price(kpis['avg_price_per_sqft']), kpis['sqft_change']),
                 ('Days on Market', 'days_on_market', kpis['days_on_market'], kpis['velocity_change'])
             ]
+
+            # DEBUG: Print kpi_items to see what we're actually sending
+            logger.info(f"🔍 DEBUG kpi_items: {kpi_items}")
+            logger.info(f"🔍 DEBUG kpi_items[0] length: {len(kpi_items[0])}")
            
             template_data = {
                 'location': full_location,
