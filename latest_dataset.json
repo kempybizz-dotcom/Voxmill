@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "vertical": {"type": "real_estate"},
+    "area": "Mayfair",
+    "city": "London",
+    "property_count": 0
+  },
+  "kpis": {
+    "total_properties": 0,
+    "avg_price": 0,
+    "price_change": 0
+  },
+  "properties": [],
+  "intelligence": {}
+}
