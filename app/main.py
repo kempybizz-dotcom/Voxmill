@@ -1,28 +1,20 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import logging
 from app.whatsapp import handle_whatsapp_message
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Voxmill WhatsApp Executive Analyst")
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(request: Request):
-    """
-    Receives WhatsApp messages from Meta Cloud API.
-    Processes message, loads dataset, classifies intent, sends LLM response.
-    """
     try:
         body = await request.json()
-        logger.info(f"Received webhook: {body}")
+        logger.info(f"Received webhook")
         
         if "entry" not in body:
-            logger.warning("Invalid webhook structure - no entry field")
             return JSONResponse(content={"status": "ignored"}, status_code=200)
         
         for entry in body.get("entry", []):
@@ -38,7 +30,6 @@ async def whatsapp_webhook(request: Request):
                 message_type = message.get("type")
                 
                 if message_type != "text":
-                    logger.info(f"Ignoring non-text message type: {message_type}")
                     continue
                 
                 message_text = message.get("text", {}).get("body", "")
@@ -49,33 +40,24 @@ async def whatsapp_webhook(request: Request):
         return JSONResponse(content={"status": "success"}, status_code=200)
     
     except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}", exc_info=True)
+        logger.error(f"Error: {str(e)}")
         return JSONResponse(content={"status": "error"}, status_code=200)
 
 @app.get("/webhook/whatsapp")
 async def whatsapp_verification(request: Request):
-    """
-    WhatsApp webhook verification endpoint.
-    """
+    import os
     mode = request.query_params.get("hub.mode")
     token = request.query_params.get("hub.verify_token")
     challenge = request.query_params.get("hub.challenge")
     
-    import os
     verify_token = os.getenv("WHATSAPP_VERIFY_TOKEN", "voxmill_secure_token")
     
     if mode == "subscribe" and token == verify_token:
-        logger.info("Webhook verified successfully")
+        logger.info("Webhook verified")
         return JSONResponse(content=int(challenge), status_code=200)
     else:
-        logger.warning("Webhook verification failed")
-        raise HTTPException(status_code=403, detail="Verification failed")
+        return JSONResponse(content={"error": "verification failed"}, status_code=403)
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "voxmill-whatsapp-analyst",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "voxmill-whatsapp-analyst", "version": "1.0.0"}
