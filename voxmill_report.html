@@ -291,6 +291,11 @@
                 </div>
                 
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
+                {% else %}
+                <div class="panel">
+                    <p class="panel-text">Insufficient data for value distribution visualization. Market intelligence provided at aggregate level.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
