@@ -278,17 +278,17 @@
                     </defs>
                 </svg>
                 
-            <div class="chart-mini-insight">
-    {% if chart_data.price_distribution and chart_data.price_distribution|length >= 4 %}
-    📊 <strong>Concentration Signal:</strong> 
-    {% set highest_bracket = chart_data.price_distribution|sort(attribute='count', reverse=true)|first %}
-    {% set lowest_bracket = chart_data.price_distribution|sort(attribute='count')|first %}
-    {{ highest_bracket.label }} segment leads with {{ highest_bracket.count }} {{ inventory_label|lower }}{% if kpis.total_properties > 0 %} ({{ "%.0f"|format((highest_bracket.count / kpis.total_properties) * 100) }}% of market){% endif %} — 
-    {{ "premium positioning dominant" if highest_bracket.label.lower().find('m') != -1 or highest_bracket.label.lower().find('high') != -1 else "broad market accessibility maintained" }}.
-    {% else %}
-    📊 <strong>Concentration Signal:</strong> Market distribution analysis requires additional data for comprehensive assessment.
-    {% endif %}
-</div>
+                <div class="chart-mini-insight">
+                    {% if chart_data.price_distribution and chart_data.price_distribution|length >= 4 %}
+                    📊 <strong>Concentration Signal:</strong> 
+                    {% set highest_bracket = chart_data.price_distribution|sort(attribute='count', reverse=true)|first %}
+                    {% set lowest_bracket = chart_data.price_distribution|sort(attribute='count')|first %}
+                    {{ highest_bracket.label }} segment leads with {{ highest_bracket.count }} {{ inventory_label|lower }}{% if kpis.total_properties > 0 %} ({{ "%.0f"|format((highest_bracket.count / kpis.total_properties) * 100) }}% of market){% endif %} — 
+                    {{ "premium positioning dominant" if highest_bracket.label.lower().find('m') != -1 or highest_bracket.label.lower().find('high') != -1 else "broad market accessibility maintained" }}.
+                    {% else %}
+                    📊 <strong>Concentration Signal:</strong> Market distribution analysis requires additional data for comprehensive assessment.
+                    {% endif %}
+                </div>
                 
                 <p class="chart-source">Source: Voxmill Data Engine — Updated {{ report_date }}</p>
             </div>
@@ -1031,42 +1031,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                   {% if top_opportunities and top_opportunities|length > 0 %}
-<table class="table-luxury">
-    <thead>
-        <tr>
-            <th>Asset</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>{{ value_metric_label }}</th>
-            <th>£/{{ unit_metric }}</th>
-            <th>Days</th>
-            <th>Score</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for opportunity in top_opportunities %}
-        <tr>
-            <td class="property-address">{{ (opportunity.address or "Address not available")[:60] }}</td>
-            <td>{{ opportunity.property_type or "N/A" }}</td>
-            <td>{{ "{:,}".format(opportunity.size or 0) }} {{ unit_metric }}</td>
-            <td>£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
-            <td>£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
-            <td>{{ opportunity.days_listed or 0 }}</td>
-            <td>
-                <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">
-                    {{ opportunity.score or 0 }}
-                </span>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<div class="panel" style="margin-top: 40px;">
-    <p class="panel-text">No opportunity data available for this report period. Contact Voxmill Intelligence for custom analysis.</p>
-</div>
-{% endif %}
+                    {% for opportunity in top_opportunities %}
+                    <tr>
+                        <td class="property-address">{{ (opportunity.address or "Address not available")[:60] }}</td>
+                        <td>{{ opportunity.property_type or "N/A" }}</td>
+                        <td>{{ "{:,}".format(opportunity.size or 0) }} {{ unit_metric }}</td>
+                        <td>£{{ "{:,.0f}".format(opportunity.price or 0) }}</td>
+                        <td>£{{ "{:,.0f}".format(opportunity.price_per_sqft or 0) }}</td>
+                        <td>{{ opportunity.days_listed or 0 }}</td>
+                        <td>
+                            <span class="score-badge score-{{ opportunity.score_class or 'standard' }}">
+                                {{ opportunity.score or 0 }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             
