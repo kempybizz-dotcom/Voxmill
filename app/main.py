@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import JSONResponse
-import logging
+import logging 
 from app.whatsapp import handle_whatsapp_message
 
 logging.basicConfig(level=logging.INFO)
