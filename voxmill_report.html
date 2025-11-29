@@ -162,12 +162,19 @@
 
     <div class="slide-content">
         <!-- KPI GRID -->
-        {% set kpi_items = [
-    ('inventory_label', kpis.total_properties, kpis.property_change),
-    ('value_metric_label', 'avg_price', kpis.avg_price, kpis.price_change),
-    ('Unit Economics', 'price_per_sqft', kpis.avg_price_per_sqft, kpis.sqft_change),
-    ('velocity_metric_label', 'days', kpis.days_on_market, kpis.velocity_change)
-] %}
+<div class="kpi-grid kpi-count-{{ kpi_items|length }}">
+    {% for label, value_key, value, change in kpi_items %}
+    <div class="kpi-card">
+        <div class="kpi-content">
+            <div class="kpi-label">{{ label }}</div>
+            <div class="kpi-value">{{ value }}</div>
+            <div class="kpi-change {{ 'positive' if change > 0 else 'negative' if change < 0 else 'neutral' }}">
+                {{ '+' if change > 0 else '' }}{{ change }}%
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
 <div class="kpi-grid kpi-count-{{ kpi_items|length }}">
     {% for label, value_key, value, change in kpi_items %}
