@@ -100,56 +100,54 @@
         </div>
 
         <!-- KPI DASHBOARD -->
-       <!-- EXECUTIVE SUMMARY KPI CARDS - REBUILT FOR 10/10 PRECISION -->
-
-<!-- UPDATED HTML FOR EXECUTIVE SUMMARY KPI CARDS -->
-
-<div class="weekly-movement-dashboard">
-    <div class="movement-mini-card">
-        <div class="movement-label">Inventory KPI</div>
-        <div class="movement-value">{{ kpis.total_properties }}</div>
-        <div class="movement-value-unit">{{ inventory_label }}</div>
-        <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
-        </div>
-        <div class="movement-interpretation">
-            {{ "Supply expansion signals market confidence" if kpis.property_change > 0 else "Inventory contraction indicates absorption strength" if kpis.property_change < 0 else "Market volume stable week-to-week" }}
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Unit Economics KPI</div>
-        <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
-        <div class="movement-value-unit">per {{ unit_metric }}</div>
-        <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
-            {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. prior week
-        </div>
-        <div class="movement-interpretation">
-            {{ "Pricing premium sustained across segments" if kpis.sqft_change > 0 else "Unit economics under moderate pressure" if kpis.sqft_change < -2 else "Unit pricing aligns with premium expectations" }}
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Transaction {{ velocity_metric_label|upper }} KPI</div>
-        <div class="movement-value">{{ kpis.days_on_market }}</div>
-        <div class="movement-value-unit">days</div>
-        <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
-            {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. prior week
-        </div>
-        <div class="movement-interpretation">
-            {{ "Exceptional velocity signals strong demand" if kpis.days_on_market < 30 else "Absorption trending in normal range" if kpis.days_on_market < 50 else "Extended timeframes suggest deliberate participant behavior" }}
-        </div>
-    </div>
-    
-    <div class="movement-mini-card">
-        <div class="movement-label">Liquidity Pressure KPI</div>
-        <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
-        <div class="movement-value-unit">demand index</div>
-        <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
-            {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
-        </div>
-        <div class="movement-interpretation">
-            {{ "Demand significantly exceeds supply" if market_depth.demand_pressure < 0.9 else "Market maintains equilibrium conditions" if market_depth.demand_pressure < 1.2 else "Oversupply risk warrants monitoring" }}
+        <div class="weekly-movement-dashboard">
+            <div class="movement-mini-card">
+                <div class="movement-label">Inventory KPI</div>
+                <div class="movement-value">{{ kpis.total_properties }}</div>
+                <div class="movement-value-unit">{{ inventory_label }}</div>
+                <div class="movement-change {{ 'positive' if kpis.property_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.property_change > 0 else "↓" }} {{ abs(kpis.property_change) }}% vs. prior week
+                </div>
+                <div class="movement-interpretation">
+                    {{ "Supply expansion signals market confidence" if kpis.property_change > 0 else "Inventory contraction indicates absorption strength" if kpis.property_change < 0 else "Market volume stable week-to-week" }}
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Unit Economics KPI</div>
+                <div class="movement-value">£{{ "{:,.0f}".format(kpis.avg_price_per_sqft) }}</div>
+                <div class="movement-value-unit">per {{ unit_metric }}</div>
+                <div class="movement-change {{ 'positive' if kpis.sqft_change > 0 else 'negative' }}">
+                    {{ "↑" if kpis.sqft_change > 0 else "↓" }} {{ abs(kpis.sqft_change) }}% vs. prior week
+                </div>
+                <div class="movement-interpretation">
+                    {{ "Pricing premium sustained across segments" if kpis.sqft_change > 0 else "Unit economics under moderate pressure" if kpis.sqft_change < -2 else "Unit pricing aligns with premium expectations" }}
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Transaction {{ velocity_metric_label|upper }} KPI</div>
+                <div class="movement-value">{{ kpis.days_on_market }}</div>
+                <div class="movement-value-unit">days</div>
+                <div class="movement-change {{ 'positive' if kpis.velocity_change < 0 else 'negative' }}">
+                    {{ "↓" if kpis.velocity_change < 0 else "↑" }} {{ abs(kpis.velocity_change) }}% vs. prior week
+                </div>
+                <div class="movement-interpretation">
+                    {{ "Exceptional velocity signals strong demand" if kpis.days_on_market < 30 else "Absorption trending in normal range" if kpis.days_on_market < 50 else "Extended timeframes suggest deliberate participant behavior" }}
+                </div>
+            </div>
+            
+            <div class="movement-mini-card">
+                <div class="movement-label">Liquidity Pressure KPI</div>
+                <div class="movement-value">{{ "%.2f"|format(market_depth.demand_pressure) }}</div>
+                <div class="movement-value-unit">demand index</div>
+                <div class="movement-change {{ 'negative' if market_depth.demand_pressure > 1.2 else 'positive' }}">
+                    {{ "High" if market_depth.demand_pressure < 0.9 else "Moderate" if market_depth.demand_pressure < 1.2 else "Elevated" }}
+                </div>
+                <div class="movement-interpretation">
+                    {{ "Demand significantly exceeds supply" if market_depth.demand_pressure < 0.9 else "Market maintains equilibrium conditions" if market_depth.demand_pressure < 1.2 else "Oversupply risk warrants monitoring" }}
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -583,30 +581,29 @@
                 Adjacent luxury market signals indicating forward demand pressure and capital deployment patterns across interconnected asset classes
             </p>
             
-          <!-- CROSS-VERTICAL INTELLIGENCE - TOP 3 CARDS REBUILD -->
-
-<div class="macro-signal-grid">
-    <div class="macro-signal-card">
-        <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
-        <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
-        <div class="macro-card-secondary-metric">{{ cross_vertical.luxury_goods.bullet_1 }}</div>
-        <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
-    </div>
-    
-    <div class="macro-signal-card">
-        <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
-        <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
-        <div class="macro-card-secondary-metric">{{ cross_vertical.private_equity.bullet_1 }}</div>
-        <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
-    </div>
-    
-    <div class="macro-signal-card">
-        <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
-        <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
-        <div class="macro-card-secondary-metric">{{ cross_vertical.wealth_mgmt.bullet_1 }}</div>
-        <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
-    </div>
-</div>
+            <!-- CROSS-VERTICAL INTELLIGENCE - TOP 3 CARDS REBUILD -->
+            <div class="macro-signal-grid">
+                <div class="macro-signal-card">
+                    <h4 class="macro-card-title">Luxury Goods – Demand Pulse</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.luxury_goods.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.luxury_goods.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.luxury_goods.signal_class }}">{{ cross_vertical.luxury_goods.signal_label }}</div>
+                </div>
+                
+                <div class="macro-signal-card">
+                    <h4 class="macro-card-title">Private Equity – Capital Flow</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.private_equity.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.private_equity.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.private_equity.signal_class }}">{{ cross_vertical.private_equity.signal_label }}</div>
+                </div>
+                
+                <div class="macro-signal-card">
+                    <h4 class="macro-card-title">Wealth Management – Allocation Shift</h4>
+                    <div class="macro-card-primary-metric">{{ cross_vertical.wealth_mgmt.metric }}</div>
+                    <div class="macro-card-secondary-metric">{{ cross_vertical.wealth_mgmt.bullet_1 }}</div>
+                    <div class="vx-badge vx-{{ cross_vertical.wealth_mgmt.signal_class }}">{{ cross_vertical.wealth_mgmt.signal_label }}</div>
+                </div>
+            </div>
             
             <!-- LAYER 2: CORRELATION ENGINE RIBBON -->
             <div class="correlation-engine-ribbon">
@@ -743,31 +740,32 @@
             </div>
         </div>
         
-      <!-- MARKET DEPTH ANALYSIS - LOWER FOUR CARDS REBUILD -->
-
-<div class="stress-signals-matrix">
-    <div class="stress-card">
-        <div class="stress-label">Inventory Stability Rating</div>
-        <div class="stress-value">{{ "A+" if (market_depth.demand_pressure or 0) < 0.9 else "B+" if (market_depth.demand_pressure or 0) < 1.2 else "C" }}</div>
-        <div class="stress-note">Supply-demand equilibrium grade</div>
-    </div>
-    
-    <div class="stress-card">
-        <div class="stress-label">Absorption Pressure Score</div>
-        <div class="stress-value">{{ ((100 - (market_depth.demand_pressure or 1.0) * 50) | int) if (market_depth.demand_pressure or 0) < 2 else 0 }}</div>
-        <div class="stress-note">Market intake capacity index</div>
-    </div>
-    
-    <div class="stress-card">
-        <div class="stress-label">Liquidity Flow Gradient</div>
-        <div class="stress-value">{{ "+" if (market_depth.liquidity_index or 0) > 65 else "=" if (market_depth.liquidity_index or 0) > 45 else "−" }}{{ ((market_depth.liquidity_index or 50) - 50) | abs | int }}</div>
-        <div class="stress-note">{{ velocity_metric_label }} momentum direction</div>
-    </div>
-    
-    <div class="stress-card">
-        <div class="stress-label">Demand Spread Index</div>
-        <div class="stress-value">{{ "%.1f"|format((market_depth.demand_pressure or 1.0) * 0.85) }}</div>
-        <div class="stress-note">Price variance distribution</div>
+        <!-- MARKET DEPTH ANALYSIS - LOWER FOUR CARDS REBUILD -->
+        <div class="stress-signals-matrix">
+            <div class="stress-card">
+                <div class="stress-label">Inventory Stability Rating</div>
+                <div class="stress-value">{{ "A+" if (market_depth.demand_pressure or 0) < 0.9 else "B+" if (market_depth.demand_pressure or 0) < 1.2 else "C" }}</div>
+                <div class="stress-note">Supply-demand equilibrium grade</div>
+            </div>
+            
+            <div class="stress-card">
+                <div class="stress-label">Absorption Pressure Score</div>
+                <div class="stress-value">{{ ((100 - (market_depth.demand_pressure or 1.0) * 50) | int) if (market_depth.demand_pressure or 0) < 2 else 0 }}</div>
+                <div class="stress-note">Market intake capacity index</div>
+            </div>
+            
+            <div class="stress-card">
+                <div class="stress-label">Liquidity Flow Gradient</div>
+                <div class="stress-value">{{ "+" if (market_depth.liquidity_index or 0) > 65 else "=" if (market_depth.liquidity_index or 0) > 45 else "−" }}{{ ((market_depth.liquidity_index or 50) - 50) | abs | int }}</div>
+                <div class="stress-note">{{ velocity_metric_label }} momentum direction</div>
+            </div>
+            
+            <div class="stress-card">
+                <div class="stress-label">Demand Spread Index</div>
+                <div class="stress-value">{{ "%.1f"|format((market_depth.demand_pressure or 1.0) * 0.85) }}</div>
+                <div class="stress-note">Price variance distribution</div>
+            </div>
+        </div>
     </div>
 </div>
 
