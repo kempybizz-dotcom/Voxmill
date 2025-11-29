@@ -1,11 +1,9 @@
-# WHATSAPP BACKEND - Python 3.11 compatible
+# ABSOLUTE MINIMUM - NO PYDANTIC
 
 requests==2.31.0
-python-dotenv==1.0.0
-
 openai==1.12.0
 
-fastapi==0.109.0
+# FastAPI without pydantic validation
+starlette==0.36.3
 uvicorn==0.27.0
 httpx==0.26.0
-pydantic==2.6.0
