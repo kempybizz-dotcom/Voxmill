@@ -347,7 +347,7 @@ SLIDE HEADER — CONSISTENT SPACING
 
 .slide-header {
     position: relative;
-    top: 68px; /* ✅ FIXED: 88px → 68px (moved up 20px) */
+    top: 58px; /* ✅ FIXED: 88px → 68px (moved up 20px) */
     left: 0;
     width: 100%;
     display: flex;
@@ -539,7 +539,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     justify-content: space-between;
     align-items: stretch;
     gap: 40px;
-    margin-top: 60px;
+    margin-top: 50px;
     margin-bottom: 80px; /* ✅ ADDED: gap from slide bottom */
     padding: 0;
 }
@@ -656,12 +656,12 @@ KPI GRID — MARKET OVERVIEW (REFINED)
 }
 
 .kpi-card {
-    min-height: 164px;
-    height: 164px;
+    min-height: 188px;
+    height: 188px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 36px 30px; /* ✅ FIXED: 28px → 36px (increased vertical breathing room) */
+    padding: 48px 30px; /* ✅ FIXED: 28px → 36px (increased vertical breathing room) */
 }
 
 .kpi-content {
@@ -1326,11 +1326,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 40px; /* CLEAN 40px gaps */
+    gap: 24px; /* CLEAN 40px gaps */
 }
 
 .correlation-pill {
-    width: 18%; /* STANDARDIZED */
+    width: 15%; /* STANDARDIZED */
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
@@ -1341,7 +1341,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 /* ✅ FIX: First and last pills narrower to prevent overflow */
 .correlation-pill:first-child,
 .correlation-pill:last-child {
-    width: 16%;
+    width: 8%;
 }
 
 .correlation-pill:hover {
