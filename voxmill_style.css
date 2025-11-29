@@ -317,37 +317,37 @@ div.badge {
 .badge-cautious {
     display: none !important; /* Nuclear option - force removal */
 }
+
 /* ============================================
-SLIDE HEADER — CONSISTENT SPACING
+SLIDE HEADER — CONSISTENT SPACING + GLOBAL INCREASE
 ============================================ */
 .slide-content {
     position: absolute;
     margin-top: 20px;
-    top: 170px;  /* FIXED: Standardized across ALL slides */
+    top: 190px;  /* ✅ GLOBAL FIX: 170px → 190px (+20px premium spacing across ALL slides) */
     left: 48px;
     right: 48px;
     bottom: 80px;
     overflow: visible !important;
     z-index: 5;
-    min-height: calc(1480px - 170px - 80px) !important;
+    min-height: calc(1480px - 190px - 80px) !important; /* ✅ UPDATED: 170px → 190px in calc */
 }
 
 .cross-vertical-intelligence .slide-content,
 .market-depth-analysis .slide-content,
-.top-market-opportunities .slide-content,
-.segment-performance-slide .slide-content {
-    top: 170px;
+.top-market-opportunities .slide-content {
+    top: 190px; /* ✅ FIXED: 170px → 190px (match global spacing) */
 }
 
 .segment-performance-slide .slide-content {
-    top: 185px;  /* Only exception - needs extra space for context */
+    top: 205px;  /* ✅ FIXED: 185px → 205px (+20px to match global increase) */
 }
 
 /* GLOBAL HEADER - WATERMARK COLLISION PREVENTION */
 
 .slide-header {
     position: relative;
-    top: 58px; /* ✅ FIXED: 88px → 68px (moved up 20px) */
+    top: 48px; /* ✅ FIXED: 88px → 68px → 48px (header position) */
     left: 0;
     width: 100%;
     display: flex;
@@ -362,7 +362,7 @@ SLIDE HEADER — CONSISTENT SPACING
     font-size: 36px;
     font-weight: 700;
     color: #C5A46D;
-    line-height: 1.2; /* CONFIRMED */
+    line-height: 1.2;
     margin: 0;
 }
 
@@ -372,8 +372,9 @@ SLIDE HEADER — CONSISTENT SPACING
     font-weight: 500;
     color: rgba(255,255,255,0.6);
     text-align: right;
-    line-height: 1.2; /* CONFIRMED */
+    line-height: 1.2;
 }
+
 /* ============================================
 VOXMILL INTELLIGENCE WATERMARK — OPACITY FIX
 ============================================ */
@@ -539,7 +540,7 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     justify-content: space-between;
     align-items: stretch;
     gap: 40px;
-    margin-top: 50px;
+    margin-top: 40px;
     margin-bottom: 80px; /* ✅ ADDED: gap from slide bottom */
     padding: 0;
 }
@@ -1212,7 +1213,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: rgba(234, 234, 234, 0.65);
     text-align: center;
-    margin: 18px auto 36px;
+    margin: 40px auto 36px;
     max-width: 1400px;
     line-height: 1.5;
     font-style: italic;
@@ -1772,7 +1773,7 @@ METHODOLOGY
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
     margin-bottom: 32px;
-    margin-top: 14px;
+    margin-top: 40px;
     font-style: italic;
     line-height: 1.7;
     font-weight: 400;
@@ -2966,6 +2967,7 @@ TOP MARKET OPPORTUNITIES
 
 .opportunities-table-header {
     margin-bottom: var(--spacing-sm);
+    margin-top: 40px;
     padding-bottom: 12px;
     border-bottom: 2px solid rgba(191, 166, 112, 0.2);
 }
@@ -3426,7 +3428,7 @@ AI OPPORTUNITIES
     font-size: 14px;
     color: var(--vm-gold);
     margin-bottom: 18px;
-    margin-top: 0;
+    margin-top: 40px;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
