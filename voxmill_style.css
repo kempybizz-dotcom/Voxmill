@@ -540,8 +540,8 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
     justify-content: space-between;
     align-items: stretch;
     gap: 40px;
-    margin-top: 40px;
-    margin-bottom: 80px; /* ✅ ADDED: gap from slide bottom */
+    margin-top: 30px;
+    margin-bottom: 90px; /* ✅ ADDED: gap from slide bottom */
     padding: 0;
 }
 
@@ -1107,16 +1107,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 }
 
 /* ✅ Institution card container - add width increase */
+/* ✅ Institution card container - width increase */
 .competitive-institutional-ranking {
     width: calc(100% + 18px); /* ✅ ADDED: increase institution card width by +18px */
 }
 
-/* ✅ Competitive Insights Strip Spacing */
+/* ✅ Competitive Insights Strip Spacing - ROUND 4 FIX 2A */
 .competitive-insights-strip {
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 24px 32px; /* REDUCED from 32px to 24px vertical */
+    padding: 18px 32px; /* ✅ ROUND 4: 24px → 18px vertical (-6px for symmetry) */
     margin-top: 40px;
 }
 
@@ -1149,13 +1150,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     flex: 1;
 }
 
-/* ✅ Bottom Callout Box Spacing */
+/* ✅ Bottom Callout Box Spacing - ROUND 4 FIX 2B */
 .bottom-callout-box {
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
     padding: 32px;
-    margin-top: 20px; /* ✅ FIXED: 40px → 20px (moved up, prevent slide bottom touch) */
+    margin-top: 40px; /* ✅ ROUND 4: 20px → 40px (+20px for vertical symmetry) */
     margin-bottom: 0;
 }
 
@@ -1748,7 +1749,7 @@ METHODOLOGY
     font-weight: 600;
     color: var(--vm-gold);
     letter-spacing: 0.1em;
-    margin-bottom: 0;
+    margin-top: 30px;
     padding-bottom: 14px;
     text-align: center;
     position: relative;
@@ -2701,7 +2702,7 @@ STRATEGIC FORECAST — REFINED
     position: relative;
     overflow: hidden;
     gap: 10px;
-    min-height: 450px; /* ✅ FIXED: 416px → 450px (align with bottom bullet) */
+    min-height: 516px; /* ✅ FIXED: 416px → 450px (align with bottom bullet) */
     height: auto;
 }
 
@@ -2952,6 +2953,7 @@ STRATEGIC FORECAST — REFINED
         box-shadow: none; /* ✅ FIXED: maintain no shadows */
     }
 }
+
 /* ============================================
 TOP MARKET OPPORTUNITIES
 ============================================ */
@@ -2966,8 +2968,8 @@ TOP MARKET OPPORTUNITIES
 }
 
 .opportunities-table-header {
+    margin-top: 40px; /* ✅ ROUND 3: Added for subheader spacing */
     margin-bottom: var(--spacing-sm);
-    margin-top: 40px;
     padding-bottom: 12px;
     border-bottom: 2px solid rgba(191, 166, 112, 0.2);
 }
@@ -3051,8 +3053,16 @@ TOP MARKET OPPORTUNITIES
 .table-luxury td:nth-child(1) { width: 32%; text-align: left; }
 .table-luxury td:nth-child(2) { width: 11%; text-align: center; }
 .table-luxury td:nth-child(3) { width: 11%; text-align: center; }
-.table-luxury td:nth-child(4) { width: 14%; text-align: right; }
-.table-luxury td:nth-child(5) { width: 12%; text-align: right; }
+.table-luxury td:nth-child(4) { 
+    width: 14%; 
+    text-align: right;
+    padding-right: 27px; /* ✅ ROUND 4 FIX 3A: 12px → 27px (+15px left shift) */
+}
+.table-luxury td:nth-child(5) { 
+    width: 12%; 
+    text-align: right;
+    padding-right: 27px; /* ✅ ROUND 4 FIX 3B: 12px → 27px (+15px left shift) */
+}
 .table-luxury td:nth-child(6) { width: 10%; text-align: center; }
 .table-luxury td:nth-child(7) { width: 10%; text-align: center; }
 
@@ -3090,6 +3100,7 @@ TOP MARKET OPPORTUNITIES
     color: rgba(244, 67, 54, 0.85);
     border: 1px solid rgba(191, 166, 112, 0.4);
 }
+
 
 /* ============================================
 SEGMENT PERFORMANCE BREAKDOWN
