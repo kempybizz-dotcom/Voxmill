@@ -471,7 +471,14 @@
                         <div class="risk-dial-value">{{ "High" if (competitor_agencies|length if competitor_agencies else 0) > 8 else "Moderate" if (competitor_agencies|length if competitor_agencies else 0) > 4 else "Low" }}</div>
                         <div class="risk-dial-status">{{ "Fragmented" if (competitor_agencies|length if competitor_agencies else 0) > 8 else "Balanced" if (competitor_agencies|length if competitor_agencies else 0) > 4 else "Concentrated" }} market structure</div>
                     </div>
-                </div>
+
+                    <div class="risk-dial-card">
+    <h3 class="risk-dial-title">Competitive Pressure Index</h3>
+    <div class="risk-dial-value">{{ "High" if (competitor_agencies|length if competitor_agencies else 0) > 8 else "Moderate" if (competitor_agencies|length if competitor_agencies else 0) > 4 else "Low" }}</div>
+    <div class="risk-dial-status">{{ "Intense competitive dynamics" if (competitor_agencies|length if competitor_agencies else 0) > 8 else "Balanced market conditions" if (competitor_agencies|length if competitor_agencies else 0) > 4 else "Concentrated market structure" }}</div>
+    </div>
+</div>
+                
                 
                 <p class="chart-source">Source: Voxmill Competitive Intelligence Engine — Updated {{ report_date }}</p>
             </div>
