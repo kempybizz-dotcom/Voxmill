@@ -1117,7 +1117,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 18px 32px; /* ✅ ROUND 4: 24px → 18px vertical (-6px for symmetry) */
+    padding: 12px 32px; /* ✅ ROUND 4: 24px → 18px vertical (-6px for symmetry) */
     margin-top: 30px;
 }
 
@@ -1156,7 +1156,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
     padding: 32px;
-    margin-top: 30px; /* ✅ ROUND 4: 20px → 40px (+20px for vertical symmetry) */
+    margin-top: 20px; /* ✅ ROUND 4: 20px → 40px (+20px for vertical symmetry) */
     margin-bottom: 0;
 }
 
@@ -1773,8 +1773,8 @@ METHODOLOGY
     font-size: 11.5px;
     color: rgba(234, 234, 234, 0.7);
     text-align: center;
+    margin-top: 40px; /* was: 14px */
     margin-bottom: 32px;
-    margin-top: 40px;
     font-style: italic;
     line-height: 1.7;
     font-weight: 400;
@@ -3438,8 +3438,8 @@ AI OPPORTUNITIES
     font-family: var(--font-body);
     font-size: 14px;
     color: var(--vm-gold);
+    margin-top: 40px; /* was: 0 */
     margin-bottom: 18px;
-    margin-top: 40px;
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid var(--vm-gold);
     border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
