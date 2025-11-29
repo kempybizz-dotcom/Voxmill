@@ -1672,11 +1672,11 @@ class VoxmillPDFGenerator:
             # ✅ FIX: Build KPI items for template (4-tuple format: label, key, value, change)
             kpi_items = [
                 ('Total Properties', 'total_properties', kpis['total_properties'], kpis['property_change']),
-                ('Avg Price', 'avg_price', self.format_price(kpis['avg_price'], vertical_tokens), kpis['price_change']),
-                ('Avg Price/Sqft', 'avg_price_per_sqft', self.format_price(kpis['avg_price_per_sqft'], vertical_tokens), kpis['sqft_change']),
+                ('Avg Price', 'avg_price', format_price(kpis['avg_price'], vertical_tokens), kpis['price_change']),
+                ('Avg Price/Sqft', 'avg_price_per_sqft', format_price(kpis['avg_price_per_sqft'], vertical_tokens), kpis['sqft_change']),
                 ('Days on Market', 'days_on_market', kpis['days_on_market'], kpis['velocity_change'])
-            ]
-            
+            ]       
+           
             template_data = {
                 'location': full_location,
                 'report_date': datetime.now().strftime('%B %Y'),
