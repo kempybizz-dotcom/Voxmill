@@ -7,9 +7,9 @@ from app.utils import format_analyst_response, log_interaction
 
 logger = logging.getLogger(__name__)
 
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
-WHATSAPP_PHONE_ID = os.getenv("WHATSAPP_PHONE_ID")
-WHATSAPP_API_URL = f"https://graph.facebook.com/v18.0/{WHATSAPP_PHONE_ID}/messages"
+ULTRAMSG_INSTANCE_ID = os.getenv("ULTRAMSG_INSTANCE_ID")
+ULTRAMSG_TOKEN = os.getenv("ULTRAMSG_TOKEN")
+ULTRAMSG_API_URL = f"https://api.ultramsg.com/{ULTRAMSG_INSTANCE_ID}/messages/chat"
 
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
@@ -17,7 +17,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     1. Load latest dataset
     2. Classify message intent
     3. Generate LLM response
-    4. Send reply via WhatsApp
+    4. Send reply via UltraMsg
     5. Log interaction
     """
     try:
@@ -29,7 +29,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         formatted_response = format_analyst_response(response_text, category)
         
-        await send_whatsapp_message(sender, formatted_response)
+        await send_ultramsg_message(sender, formatted_response)
         
         log_interaction(sender, message_text, category, formatted_response)
         
@@ -38,39 +38,29 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "Unable to process your request at this time. Please try again shortly."
-        await send_whatsapp_message(sender, error_msg)
+        await send_ultramsg_message(sender, error_msg)
 
-async def send_whatsapp_message(recipient: str, message: str):
-    """Send message via WhatsApp Cloud API"""
+async def send_ultramsg_message(recipient: str, message: str):
+    """Send message via UltraMsg API"""
     try:
-        headers = {
-            "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-            "Content-Type": "application/json"
-        }
-        
         payload = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
+            "token": ULTRAMSG_TOKEN,
             "to": recipient,
-            "type": "text",
-            "text": {
-                "body": message
-            }
+            "body": message
         }
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                WHATSAPP_API_URL,
-                headers=headers,
-                json=payload,
+                ULTRAMSG_API_URL,
+                data=payload,
                 timeout=30.0
             )
             
             if response.status_code != 200:
-                logger.error(f"WhatsApp API error: {response.status_code} - {response.text}")
+                logger.error(f"UltraMsg API error: {response.status_code} - {response.text}")
             else:
                 logger.info(f"Message sent successfully to {recipient}")
                 
     except Exception as e:
-        logger.error(f"Error sending WhatsApp message: {str(e)}", exc_info=True)
+        logger.error(f"Error sending UltraMsg message: {str(e)}", exc_info=True)
         raise
