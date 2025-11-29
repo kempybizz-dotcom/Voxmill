@@ -1,21 +1,11 @@
-# WHATSAPP BACKEND ONLY
-# Minimal dependencies - no PDF generation
+# WHATSAPP BACKEND - Python 3.11 compatible
 
-# Core
 requests==2.31.0
 python-dotenv==1.0.0
-python-dateutil==2.8.2
 
-# AI
 openai==1.12.0
 
-# WhatsApp Backend
 fastapi==0.109.0
 uvicorn==0.27.0
 httpx==0.26.0
-
-# Pre-compiled Pydantic (no Rust)
-pydantic==2.5.0
-pydantic-core==2.14.1
-annotated-types==0.6.0
-typing-extensions==4.9.0
+pydantic==2.6.0
