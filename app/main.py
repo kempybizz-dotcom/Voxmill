@@ -37,35 +37,3 @@ async def health_check():
         "service": "voxmill-whatsapp-analyst",
         "version": "1.0.0"
     }
-```
-
----
-
-## 🎯 DEPLOYMENT STEPS
-
-### **1. Update GitHub Files**
-
-- Replace `app/whatsapp.py` with UltraMsg version
-- Replace `app/main.py` with UltraMsg version
-- Commit: `Switch to UltraMsg for V1 shipping speed`
-
-### **2. Update Render Environment Variables**
-
-Render Dashboard → voxmill-whatsapp → Environment
-
-**Remove:**
-- `WHATSAPP_TOKEN`
-- `WHATSAPP_PHONE_ID`
-- `WHATSAPP_VERIFY_TOKEN`
-
-**Add:**
-- `ULTRAMSG_INSTANCE_ID` = your instance ID
-- `ULTRAMSG_TOKEN` = your API token
-
-### **3. Configure Webhook in UltraMsg**
-
-UltraMsg Dashboard → Settings → Webhooks
-
-**Webhook URL:**
-```
-https://voxmill-whatsapp.onrender.com/webhook/whatsapp
