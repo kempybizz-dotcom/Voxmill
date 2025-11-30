@@ -23,6 +23,8 @@ cssselect2>=0.7.0
 matplotlib==3.9.2
 numpy==2.1.3
 
+pymongo==4.6.1
+
 # Email (uses stdlib smtplib - no additional packages needed)
 # No additional email packages needed (uses stdlib smtplib)
 # System dependencies for WeasyPrint (install via apt-get in Render build script):
