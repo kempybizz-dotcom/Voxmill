@@ -19,6 +19,8 @@ CATEGORIES = [
     "competitive_landscape",
     "analysis_snapshot",
     "comparative_analysis",
+    "scenario_modelling",
+    "strategic_outlook",
     "weekly_briefing",
     "send_pdf"
 ]
