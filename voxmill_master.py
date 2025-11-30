@@ -12,6 +12,7 @@ WHAT IT DOES:
     2. Analyzes with GPT-4o AI
     3. Generates elite PDF with vertical-specific terminology
     4. Sends professional HTML email
+    5. Saves dataset to MongoDB for WhatsApp service
 
 ONE COMMAND. FULL EXECUTION.
 """
@@ -21,7 +22,7 @@ import sys
 import json
 import argparse
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ============================================================================
 # CONFIGURATION
@@ -83,6 +84,64 @@ VERTICAL_CONFIG = {
 }
 
 # ============================================================================
+# MONGODB SAVE FUNCTION
+# ============================================================================
+
+def save_to_mongodb(area, vertical, vertical_config):
+    """Save generated dataset to MongoDB for WhatsApp service"""
+    try:
+        from pymongo import MongoClient
+        
+        mongo_uri = os.getenv("MONGODB_URI")
+        if not mongo_uri:
+            print("⚠️  MONGODB_URI not set, skipping MongoDB save")
+            return False
+        
+        # Load the analysis data that was just generated
+        analysis_file = '/tmp/voxmill_analysis.json'
+        if not os.path.exists(analysis_file):
+            print(f"⚠️  Analysis file not found: {analysis_file}")
+            return False
+        
+        with open(analysis_file, 'r') as f:
+            analysis_data = json.load(f)
+        
+        # Connect to MongoDB
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        db = client['voxmill']
+        collection = db['datasets']
+        
+        # Create document with metadata
+        dataset_doc = {
+            "area": area,
+            "vertical": vertical,
+            "vertical_config": vertical_config,
+            "timestamp": datetime.now(timezone.utc),
+            "data": analysis_data
+        }
+        
+        # Replace existing document for this area (keep only latest)
+        result = collection.replace_one(
+            {"area": area, "vertical": vertical},
+            dataset_doc,
+            upsert=True
+        )
+        
+        client.close()
+        
+        if result.upserted_id or result.modified_count > 0:
+            print(f"✅ Dataset saved to MongoDB for {area}")
+            return True
+        else:
+            print(f"⚠️  MongoDB save returned no changes")
+            return False
+        
+    except Exception as e:
+        print(f"⚠️  Error saving to MongoDB: {str(e)}")
+        # Don't fail the entire job if MongoDB save fails
+        return False
+
+# ============================================================================
 # PIPELINE EXECUTION
 # ============================================================================
 
@@ -115,7 +174,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
     
     try:
         # Step 1: Data Collection
-        print(f"\n[STEP 1/4] DATA COLLECTION")
+        print(f"\n[STEP 1/5] DATA COLLECTION")
         print(f"   Collecting real market data...")
         print(f"   Vertical: {vertical_config['name']}")
         
@@ -137,7 +196,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         print(result.stdout)
         
         # Step 2: AI Analysis
-        print(f"\n[STEP 2/4] AI ANALYSIS")
+        print(f"\n[STEP 2/5] AI ANALYSIS")
         print(f"   Analyzing data with GPT-4o...")
         print(f"   Context: {vertical_config['name']} intelligence")
         
@@ -158,7 +217,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         print(result.stdout)
         
         # Step 3: PDF Generation
-        print(f"\n[STEP 3/4] PDF GENERATION")
+        print(f"\n[STEP 3/5] PDF GENERATION")
         print(f"   Creating elite PDF report...")
         print(f"   Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
         
@@ -175,9 +234,20 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         
         print(result.stdout)
         
-        # Step 4: Email Delivery
+        # Step 4: MongoDB Save
+        print(f"\n[STEP 4/5] MONGODB SAVE")
+        print(f"   Saving dataset for WhatsApp service...")
+        
+        mongodb_success = save_to_mongodb(area, vertical, vertical_config)
+        
+        if mongodb_success:
+            print(f"   ✅ MongoDB save successful")
+        else:
+            print(f"   ⚠️  MongoDB save failed (non-critical)")
+        
+        # Step 5: Email Delivery
         if not skip_email:
-            print(f"\n[STEP 4/4] EMAIL DELIVERY")
+            print(f"\n[STEP 5/5] EMAIL DELIVERY")
             print(f"   Sending professional email...")
             
             result = subprocess.run(
@@ -195,7 +265,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             
             print(result.stdout)
         else:
-            print(f"\n[STEP 4/4] EMAIL DELIVERY")
+            print(f"\n[STEP 5/5] EMAIL DELIVERY")
             print(f"   ⚠️ Email skipped (--skip-email flag)")
             print(f"   PDF saved: /tmp/Voxmill_Executive_Intelligence_Deck.pdf")
         
@@ -208,6 +278,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         print(f"   • Location: {area}, {city}")
         print(f"   • Recipient: {recipient_name}")
         print(f"   • Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
+        print(f"   • MongoDB: {'✅ Saved' if mongodb_success else '⚠️ Skipped'}")
         
         if not skip_email:
             print(f"   • Email: SENT to {recipient_email}")
@@ -283,6 +354,7 @@ ENVIRONMENT VARIABLES REQUIRED:
   • OPENAI_API_KEY      - For GPT-4o AI analysis
   • VOXMILL_EMAIL       - For email delivery (optional)
   • VOXMILL_EMAIL_PASSWORD - For email delivery (optional)
+  • MONGODB_URI         - For WhatsApp service dataset storage (optional)
         """
     )
     
