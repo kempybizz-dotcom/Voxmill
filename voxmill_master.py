@@ -108,7 +108,7 @@ def save_to_mongodb(area, vertical, vertical_config):
         
         # Connect to MongoDB
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-        db = client['voxmill']
+        db = client['Voxmill']
         collection = db['datasets']
         
         # Create document with metadata
