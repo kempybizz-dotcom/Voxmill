@@ -17,7 +17,7 @@ def load_dataset(area: str = "Mayfair", vertical: str = "uk-real-estate"):
             logger.error("MongoDB client not initialized - MONGODB_URI missing")
             raise Exception("Database connection not configured")
         
-        db = mongo_client['Voxmill']
+        db = mongo_client['Voxmill']  # Capital V
         collection = db['datasets']
         
         # Get latest dataset for this area
@@ -31,7 +31,15 @@ def load_dataset(area: str = "Mayfair", vertical: str = "uk-real-estate"):
             raise Exception(f"No dataset available for {area}")
         
         dataset = dataset_doc['data']
-        total_props = dataset.get('metadata', {}).get('total_properties', 0)
+        
+        # Get property count from the actual data structure
+        total_props = 0
+        if 'metadata' in dataset and 'property_count' in dataset['metadata']:
+            total_props = dataset['metadata']['property_count']
+        elif 'kpis' in dataset and 'total_properties' in dataset['kpis']:
+            total_props = dataset['kpis']['total_properties']
+        elif 'properties' in dataset:
+            total_props = len(dataset['properties'])
         
         logger.info(f"Dataset loaded from MongoDB: {total_props} properties for {area}")
         return dataset
