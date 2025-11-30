@@ -1,36 +1,41 @@
-import json
-import logging
 import os
+import logging
+from pymongo import MongoClient
 
 logger = logging.getLogger(__name__)
 
-def load_dataset() -> dict:
+MONGODB_URI = os.getenv("MONGODB_URI")
+mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
+
+def load_dataset(area: str = "Mayfair", vertical: str = "uk-real-estate"):
     """
-    Load latest dataset from JSON file.
-    Reads from /tmp/voxmill_analysis.json (shared with cron job).
-    Always loads fresh data — no caching.
+    Load the latest Voxmill dataset from MongoDB.
+    Falls back to demo data if MongoDB unavailable.
     """
     try:
+        if not mongo_client:
+            logger.error("MongoDB client not initialized - MONGODB_URI missing")
+            raise Exception("Database connection not configured")
         
-        dataset_path = "/tmp/voxmill_analysis.json"
+        db = mongo_client['voxmill']
+        collection = db['datasets']
         
-        if not os.path.exists(dataset_path):
-            logger.error(f"Dataset file not found: {dataset_path}")
-            raise Exception("Dataset file missing - cron job may not have run yet")
+        # Get latest dataset for this area
+        dataset_doc = collection.find_one(
+            {"area": area, "vertical": vertical},
+            sort=[("timestamp", -1)]
+        )
         
-        with open(dataset_path, "r") as f:
-            dataset = json.load(f)
+        if not dataset_doc:
+            logger.error(f"No dataset found for {area} in MongoDB")
+            raise Exception(f"No dataset available for {area}")
         
-        property_count = len(dataset.get('properties', []))
-        logger.info(f"Dataset loaded from {dataset_path}: {property_count} properties")
+        dataset = dataset_doc['data']
+        total_props = dataset.get('metadata', {}).get('total_properties', 0)
+        
+        logger.info(f"Dataset loaded from MongoDB: {total_props} properties for {area}")
         return dataset
         
-    except FileNotFoundError:
-        logger.error("voxmill_analysis.json not found in /tmp")
-        raise Exception("Dataset file missing")
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in dataset: {str(e)}")
-        raise Exception("Dataset format error")
     except Exception as e:
-        logger.error(f"Error loading dataset: {str(e)}", exc_info=True)
+        logger.error(f"Error loading dataset from MongoDB: {str(e)}")
         raise
