@@ -381,3 +381,41 @@ Classify this message and generate an executive analyst response with V3 predict
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
         return "market_overview", "Unable to process request. Please try again.", {}
+
+
+async def call_gpt4(user_prompt: str) -> str:
+    """Call OpenAI GPT-4 API with V3 extended context"""
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=2500,  # Increased for strategic outlook
+            temperature=0.3
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        logger.error(f"GPT-4 API error: {str(e)}", exc_info=True)
+        raise
+```
+
+---
+
+## ✅ NEXT: YOUR `app/whatsapp.py` IS PERFECT
+
+No changes needed there.
+
+---
+
+## 🎯 COMMIT & DEPLOY
+```
+Add missing call_gpt4() function to complete V3
+```
+
+**Wait for Render redeploy, then test:**
+```
+Give me the full strategic outlook
