@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import JSONResponse
-import logging 
+from fastapi.responses import Response
+import logging
 from app.whatsapp import handle_whatsapp_message
 
 logging.basicConfig(level=logging.INFO)
@@ -10,24 +10,25 @@ app = FastAPI(title="Voxmill WhatsApp Executive Analyst")
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(
-    data: str = Form(...),
-    from_: str = Form(None, alias="from")
+    From: str = Form(...),
+    Body: str = Form(...)
 ):
     """
-    Receives WhatsApp messages from UltraMsg.
-    UltraMsg sends form data, not JSON.
+    Receives WhatsApp messages from Twilio.
+    Twilio sends form data with From (sender) and Body (message text).
     """
     try:
-        logger.info(f"Received UltraMsg webhook from {from_}: {data}")
+        logger.info(f"Received Twilio webhook from {From}: {Body}")
         
-        if from_ and data:
-            await handle_whatsapp_message(from_, data)
+        if From and Body:
+            await handle_whatsapp_message(From, Body)
         
-        return JSONResponse(content={"status": "success"}, status_code=200)
+        # Twilio expects empty 200 response
+        return Response(status_code=200)
     
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}", exc_info=True)
-        return JSONResponse(content={"status": "error"}, status_code=200)
+        return Response(status_code=200)
 
 @app.get("/health")
 async def health_check():
