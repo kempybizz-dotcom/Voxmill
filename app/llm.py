@@ -303,13 +303,14 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 }, indent=2))
         
         # Add client profile if available
-        if client_profile:
-            context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps({
-                'preferred_regions': client_profile.get('preferences', {}).get('preferred_regions', []),
-                'risk_appetite': client_profile.get('preferences', {}).get('risk_appetite', 'balanced'),
-                'budget_range': client_profile.get('preferences', {}).get('budget_range', {}),
-                'tier': client_profile.get('tier', 'unknown')
-            }, indent=2)}")
+       if client_profile:
+    client_context = {
+        'preferred_regions': client_profile.get('preferences', {}).get('preferred_regions', []),
+        'risk_appetite': client_profile.get('preferences', {}).get('risk_appetite', 'balanced'),
+        'budget_range': client_profile.get('preferences', {}).get('budget_range', {}),
+        'tier': client_profile.get('tier', 'unknown')
+    }
+    context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
         
         # Determine mode
         if is_scenario:
