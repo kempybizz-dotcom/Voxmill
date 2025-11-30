@@ -3,7 +3,7 @@ from fastapi.responses import Response
 import logging
 from app.whatsapp import handle_whatsapp_message
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Voxmill WhatsApp Executive Analyst")
