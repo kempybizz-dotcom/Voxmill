@@ -16,13 +16,7 @@ twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_
 
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    Main message handler:
-    1. Load client profile
-    2. Load latest dataset
-    3. Classify message intent
-    4. Generate LLM response
-    5. Send reply via Twilio
-    6. Log interaction + update client history
+    Main message handler with V3 predictive intelligence
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
@@ -37,8 +31,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Load dataset for preferred region
         dataset = load_dataset(area=preferred_region)
         
-        # Classify and respond (with client context)
-        category, response_text = await classify_and_respond(
+        # Classify and respond (with client context) - V3 returns metadata
+        category, response_text, response_metadata = await classify_and_respond(
             message_text, 
             dataset,
             client_profile=client_profile
@@ -47,6 +41,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Format response
         formatted_response = format_analyst_response(response_text, category)
         
+        # Add urgency indicator for high-urgency scenarios
+        if response_metadata.get('recommendation_urgency') == 'immediate':
+            formatted_response = f"⚡ IMMEDIATE ACTION\n\n{formatted_response}"
+        
         # Send via Twilio
         await send_twilio_message(sender, formatted_response)
         
@@ -54,7 +52,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         log_interaction(sender, message_text, category, formatted_response)
         update_client_history(sender, message_text, category, preferred_region)
         
-        logger.info(f"Message processed successfully: {category}")
+        logger.info(f"Message processed: {category} | Confidence: {response_metadata.get('confidence_level')} | Urgency: {response_metadata.get('recommendation_urgency')}")
         
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
