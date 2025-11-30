@@ -401,21 +401,3 @@ async def call_gpt4(user_prompt: str) -> str:
     except Exception as e:
         logger.error(f"GPT-4 API error: {str(e)}", exc_info=True)
         raise
-```
-
----
-
-## ✅ NEXT: YOUR `app/whatsapp.py` IS PERFECT
-
-No changes needed there.
-
----
-
-## 🎯 COMMIT & DEPLOY
-```
-Add missing call_gpt4() function to complete V3
-```
-
-**Wait for Render redeploy, then test:**
-```
-Give me the full strategic outlook
