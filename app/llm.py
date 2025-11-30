@@ -178,7 +178,7 @@ BAD (Never do this):
 REMEMBER: You are a quantitative intelligence unit providing institutional-grade predictive analysis. Every statement must be defensible with data or clearly marked as inference with confidence bounds.
 """
 
-async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str]:
+async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
     """
     Classify message intent and generate response using LLM.
     
@@ -188,7 +188,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         client_profile: Client preferences and history (optional)
         comparison_datasets: Additional datasets for comparative analysis (optional)
     
-    Returns: (category, response_text)
+    Returns: (category, response_text, metadata)
     """
     try:
         # Extract primary dataset metrics
@@ -197,20 +197,50 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         properties = dataset.get('properties', [])
         intelligence = dataset.get('intelligence', {})
         
-        # Build primary dataset summary
+        # Calculate additional V3 analytics
+        property_prices = [p.get('price', 0) for p in properties if p.get('price')]
+        if property_prices:
+            import statistics
+            price_std_dev = statistics.stdev(property_prices) if len(property_prices) > 1 else 0
+            price_coefficient_variation = (price_std_dev / statistics.mean(property_prices)) * 100 if property_prices else 0
+        else:
+            price_std_dev = 0
+            price_coefficient_variation = 0
+        
+        # Detect duplicates (same address)
+        addresses = [p.get('address', '') for p in properties]
+        duplicates_count = len(addresses) - len(set(addresses))
+        
+        # Detect outliers (beyond 2 std dev)
+        if property_prices and price_std_dev > 0:
+            mean_price = statistics.mean(property_prices)
+            outliers = [p for p in property_prices if abs(p - mean_price) > 2 * price_std_dev]
+            outliers_count = len(outliers)
+        else:
+            outliers_count = 0
+        
+        # Build V3 enhanced dataset summary
         primary_summary = {
             "MARKET_CONTEXT": {
                 "location": f"{metadata.get('area', 'Unknown')}, {metadata.get('city', 'Unknown')}",
                 "vertical": metadata.get('vertical', {}).get('name', 'Unknown'),
-                "timestamp": metadata.get('analysis_timestamp', 'Unknown')
+                "timestamp": metadata.get('analysis_timestamp', 'Unknown'),
+                "data_quality": {
+                    "total_records": len(properties),
+                    "duplicates_filtered": duplicates_count,
+                    "outliers_detected": outliers_count,
+                    "data_source": metadata.get('data_source', 'Unknown')
+                }
             },
             "CORE_METRICS": {
-                "total_inventory": metadata.get('property_count', metrics.get('total_properties', len(properties))),
+                "total_inventory": metadata.get('property_count', len(properties)),
                 "avg_price": metrics.get('avg_price', 0),
                 "median_price": metrics.get('median_price', 0),
                 "price_range": {
                     "min": metrics.get('min_price', 0),
-                    "max": metrics.get('max_price', 0)
+                    "max": metrics.get('max_price', 0),
+                    "std_dev": price_std_dev,
+                    "coefficient_variation": round(price_coefficient_variation, 2)
                 },
                 "avg_price_per_sqft": metrics.get('avg_price_per_sqft', 0),
                 "most_common_type": metrics.get('most_common_type', 'Unknown')
@@ -223,16 +253,35 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 "risk_assessment": intelligence.get('risk_assessment', '')
             },
             "COMPETITIVE_LANDSCAPE": {
-                "top_agents": list(set([p.get('agent', 'Private') for p in properties[:15] if p.get('agent') and p.get('agent') != 'Private']))[:5],
-                "submarkets": list(set([p.get('submarket', '') for p in properties if p.get('submarket')]))[:5]
+                "top_agents": list(set([p.get('agent', 'Private') for p in properties[:20] if p.get('agent') and p.get('agent') != 'Private']))[:5],
+                "agent_distribution": {},  # Will be calculated
+                "submarkets": list(set([p.get('submarket', '') for p in properties if p.get('submarket')]))[:5],
+                "property_type_mix": {}  # Will be calculated
             }
         }
         
+        # Calculate agent market share
+        agent_counts = {}
+        for prop in properties:
+            agent = prop.get('agent', 'Private')
+            if agent != 'Private':
+                agent_counts[agent] = agent_counts.get(agent, 0) + 1
+        total_listings = len([p for p in properties if p.get('agent') != 'Private'])
+        if total_listings > 0:
+            primary_summary["COMPETITIVE_LANDSCAPE"]["agent_distribution"] = {
+                agent: round((count / total_listings) * 100, 1)
+                for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            }
+        
         # Detect query mode
+        scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'forecast', 'model']
+        strategic_keywords = ['full outlook', 'strategic view', 'director level', 'comprehensive', 'big picture']
         comparison_keywords = ['compare', 'vs', 'versus', 'which is better', 'difference between']
         briefing_keywords = ['briefing', 'weekly summary', 'this week', 'prepare summary']
         analysis_keywords = ['analyse', 'analyze', 'snapshot', 'breakdown', 'deep dive']
         
+        is_scenario = any(keyword in message.lower() for keyword in scenario_keywords)
+        is_strategic = any(keyword in message.lower() for keyword in strategic_keywords)
         is_comparison = any(keyword in message.lower() for keyword in comparison_keywords)
         is_briefing = any(keyword in message.lower() for keyword in briefing_keywords)
         is_analysis = any(keyword in message.lower() for keyword in analysis_keywords)
@@ -243,7 +292,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # Add comparison datasets if available
         if comparison_datasets and is_comparison:
             context_parts.append("\nCOMPARISON DATASETS:")
-            for idx, comp_dataset in enumerate(comparison_datasets[:2]):  # Max 2 comparisons
+            for idx, comp_dataset in enumerate(comparison_datasets[:3]):
                 comp_meta = comp_dataset.get('metadata', {})
                 comp_metrics = comp_dataset.get('metrics', comp_dataset.get('kpis', {}))
                 context_parts.append(f"\nREGION {idx+2}: {comp_meta.get('area', 'Unknown')}")
@@ -255,10 +304,19 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         
         # Add client profile if available
         if client_profile:
-            context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_profile, indent=2)}")
+            context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps({
+                'preferred_regions': client_profile.get('preferences', {}).get('preferred_regions', []),
+                'risk_appetite': client_profile.get('preferences', {}).get('risk_appetite', 'balanced'),
+                'budget_range': client_profile.get('preferences', {}).get('budget_range', {}),
+                'tier': client_profile.get('tier', 'unknown')
+            }, indent=2)}")
         
         # Determine mode
-        if is_comparison and comparison_datasets:
+        if is_scenario:
+            mode = "SCENARIO MODELLING"
+        elif is_strategic:
+            mode = "STRATEGIC OUTLOOK"
+        elif is_comparison and comparison_datasets:
             mode = "COMPARATIVE ANALYSIS"
         elif is_briefing:
             mode = "WEEKLY BRIEFING"
@@ -273,22 +331,31 @@ User message: "{message}"
 
 Analysis mode: {mode}
 
-Classify this message and generate an executive analyst response."""
+Classify this message and generate an executive analyst response with V3 predictive intelligence capabilities."""
 
         if openai_client:
             response = await call_gpt4(user_prompt)
         else:
             logger.error("No LLM provider configured")
-            return "market_overview", "System configuration error. Please contact support."
+            return "market_overview", "System configuration error. Please contact support.", {}
         
         # Parse JSON response
         try:
             parsed = json.loads(response)
             category = parsed.get("category", "market_overview")
             response_text = parsed.get("response", "")
+            response_metadata = {
+                "confidence_level": parsed.get("confidence_level", "medium"),
+                "data_filtered": parsed.get("data_filtered", []),
+                "recommendation_urgency": parsed.get("recommendation_urgency", "monitor")
+            }
         except json.JSONDecodeError:
             logger.warning(f"LLM returned non-JSON response, using as-is")
-            if is_comparison:
+            if is_scenario:
+                category = "scenario_modelling"
+            elif is_strategic:
+                category = "strategic_outlook"
+            elif is_comparison:
                 category = "comparative_analysis"
             elif is_briefing:
                 category = "weekly_briefing"
@@ -297,34 +364,20 @@ Classify this message and generate an executive analyst response."""
             else:
                 category = "market_overview"
             response_text = response
+            response_metadata = {
+                "confidence_level": "medium",
+                "data_filtered": [],
+                "recommendation_urgency": "monitor"
+            }
         
         # Validate category
         if category not in CATEGORIES:
             logger.warning(f"Invalid category returned: {category}, defaulting")
             category = "market_overview"
         
-        logger.info(f"Classification: {category} (mode: {mode})")
-        return category, response_text
+        logger.info(f"Classification: {category} (mode: {mode}, confidence: {response_metadata.get('confidence_level')})")
+        return category, response_text, response_metadata
         
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
-        return "market_overview", "Unable to process request. Please try again."
-
-async def call_gpt4(user_prompt: str) -> str:
-    """Call OpenAI GPT-4 API"""
-    try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            max_tokens=2000,  # Increased for comparative analysis
-            temperature=0.3
-        )
-        
-        return response.choices[0].message.content
-        
-    except Exception as e:
-        logger.error(f"GPT-4 API error: {str(e)}", exc_info=True)
-        raise
+        return "market_overview", "Unable to process request. Please try again.", {}
