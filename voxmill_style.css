@@ -675,8 +675,15 @@ EXECUTIVE SUMMARY BULLETS — LEFT-ALIGNED TITLES
 }
 
 /* ============================================
-KPI GRID — MARKET OVERVIEW (REFINED)
-============================================ */
+   MARKET OVERVIEW — SVG CHART BULLETPROOF REBUILD
+   ============================================ */
+
+.market-overview-slide .slide-content {
+    top: 190px;
+    padding-bottom: 80px;
+}
+
+/* KPI Grid */
 .kpi-grid {
     display: grid;
     gap: 32px;
@@ -685,7 +692,6 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     page-break-inside: avoid;
 }
 
-/* Responsive grid based on item count */
 .kpi-grid.kpi-count-2 {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: minmax(188px, auto);
@@ -699,7 +705,7 @@ KPI GRID — MARKET OVERVIEW (REFINED)
 .kpi-grid.kpi-count-4 {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    height: auto;  /* Removed fixed height */
+    height: auto;
     min-height: 360px;
 }
 
@@ -715,7 +721,11 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 48px 30px; /* ✅ FIXED: 28px → 36px (increased vertical breathing room) */
+    padding: 48px 30px;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    box-shadow: none;
 }
 
 .kpi-content {
@@ -735,7 +745,8 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     letter-spacing: 0.2em;
     margin-bottom: 12px;
     font-weight: 500;
-    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 (global typography alignment) */
+    line-height: 1.2;
+    overflow-wrap: break-word;
 }
 
 .kpi-value {
@@ -743,15 +754,17 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     font-size: 68px;
     font-weight: 800;
     color: #BFA670;
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 (global typography alignment) */
+    line-height: 1.2;
     margin: 0 0 14px 0;
     padding: 0;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191, 166, 112, 0.5);
-    display: flex; /* ✅ ADDED: vertical center alignment */
-    flex-direction: column; /* ✅ ADDED: vertical center alignment */
-    justify-content: center; /* ✅ ADDED: vertical center alignment */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .kpi-change {
@@ -761,20 +774,18 @@ KPI GRID — MARKET OVERVIEW (REFINED)
     border-radius: 4px;
     font-weight: 600;
     margin-top: 0;
-    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 (global typography alignment) */
+    line-height: 1.2;
     display: inline-block;
     vertical-align: middle;
 }
 
-/* ============================================
-VALUE DISTRIBUTION CHART (REFINED)
-============================================ */
+/* Chart Section */
 .chart-section {
-    margin-top: 68px;
+    margin-top: 32px;
     margin-bottom: 0;
     page-break-inside: avoid;
-    border-top: 1px solid rgba(255, 255, 255, 0.06); /* ✅ ADDED: subtle divider */
-    padding-top: 48px; /* ✅ ADDED: spacing above chart */
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 48px;
 }
 
 .chart-divider {
@@ -786,7 +797,7 @@ VALUE DISTRIBUTION CHART (REFINED)
 
 .chart-container {
     height: auto;
-    min-height: 560px; /* ✅ FIXED: 500px → 560px (increased by 60px) */
+    min-height: 560px;
     page-break-inside: avoid;
     width: 100%;
     display: flex;
@@ -794,6 +805,10 @@ VALUE DISTRIBUTION CHART (REFINED)
     padding: 26px 30px;
     justify-content: flex-start;
     gap: 0;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    box-shadow: none;
 }
 
 .chart-container .chart-title {
@@ -805,7 +820,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     margin-bottom: 0;
     padding-bottom: 12px;
     text-align: center;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .chart-container .chart-context {
@@ -827,6 +842,17 @@ VALUE DISTRIBUTION CHART (REFINED)
     display: block;
     margin: 16px auto 0 auto;
     max-width: 100%;
+    height: 380px;
+    width: 100%;
+}
+
+.chart-axis-label {
+    font-family: var(--font-body);
+    font-size: 18px;
+    color: rgba(234, 234, 234, 0.9);
+    opacity: 1;
+    font-weight: 600;
+    letter-spacing: 0.08em;
 }
 
 .chart-mini-insight {
@@ -835,7 +861,7 @@ VALUE DISTRIBUTION CHART (REFINED)
     padding: 18px 26px;
     margin-top: 22px;
     margin-bottom: 0;
-    border-radius: 10px; /* ✅ FIXED: 8px → 10px (global border-radius) */
+    border-radius: 10px;
     font-family: var(--font-body);
     font-size: 14px;
     color: rgba(234, 234, 234, 0.9);
@@ -995,14 +1021,22 @@ PERFORMANCE ANALYSIS
 }
 
 /* ============================================
-COMPETITIVE LANDSCAPE — REFINED VERSION
-============================================ */
+   COMPETITIVE LANDSCAPE — FOOTER COLLISION BULLETPROOF FIX
+   ============================================ */
+
+.competitive-landscape-slide .slide-content {
+    top: 190px;
+    padding-bottom: 80px;
+}
 
 .competitive-landscape-slide .two-column {
     margin-top: 56px;
-    gap: 72px; /* ✅ FIXED: 32px → 72px (increased spacing between columns) */
-    align-items: start;
+    gap: 72px;
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
+
 .competitive-info-panel {
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
@@ -1012,16 +1046,17 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    backdrop-filter: none; /* ✅ REMOVED: blur effect */
-    box-shadow: none; /* ✅ FIXED: var(--card-shadow) → none */
+    backdrop-filter: none;
+    box-shadow: none;
     min-height: 665px;
+    height: auto;
 }
 
 .competitive-info-panel:first-child {
     min-height: 820px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .competitive-info-panel .chart-title {
@@ -1033,7 +1068,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 0;
     text-align: center;
     padding-bottom: 14px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .competitive-info-panel .chart-context {
@@ -1051,7 +1086,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-top: auto;
     padding-top: 20px;
     font-style: italic;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .risk-dial-card {
@@ -1059,13 +1094,13 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 32px; /* ✅ FIXED: 20px 22px → 32px (global card padding) */
+    padding: 32px;
     min-height: 155px;
     height: 155px;
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
-    box-shadow: none; /* ✅ REMOVED: all shadows */
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
+    box-shadow: none;
     margin-bottom: 0;
 }
 
@@ -1078,7 +1113,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 13px;
     font-weight: 600;
     padding-top: 0;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
+    overflow-wrap: break-word;
 }
 
 .risk-dial-value {
@@ -1088,7 +1124,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: var(--vm-gold);
     margin-bottom: 11px;
     text-shadow: 0 2px 10px rgba(191, 166, 112, 0.5);
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .risk-dial-status {
@@ -1096,14 +1134,15 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 13px;
     color: var(--vm-text-body);
     font-weight: 400;
-    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 */
+    line-height: 1.2;
+    overflow-wrap: break-word;
 }
 
 .competitor-rank {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
+    background: rgba(10, 10, 10, 0.55);
     border: 2px solid var(--vm-gold);
     display: flex;
     align-items: center;
@@ -1112,9 +1151,9 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 14px;
     font-weight: 700;
     color: var(--vm-gold);
-    box-shadow: none; /* ✅ REMOVED: shadow */
+    box-shadow: none;
     flex-shrink: 0;
-    margin-top: 12px; /* ✅ ADDED: top margin for institution cards */
+    margin-top: 12px;
 }
 
 .competitor-premium-name {
@@ -1123,8 +1162,11 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 600;
     color: #E6E6E6;
     letter-spacing: 0.3px;
-    line-height: 1.2; /* ✅ FIXED: 1.3 → 1.2 */
+    line-height: 1.2;
     margin-bottom: 6px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .competitor-premium-count {
@@ -1133,7 +1175,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-weight: 500;
     color: rgba(191,166,112,0.65);
     letter-spacing: 0.6px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .metric-label {
@@ -1144,7 +1186,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     text-transform: uppercase;
     letter-spacing: 1.6px;
     margin-bottom: 6px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .metric-value {
@@ -1152,26 +1194,25 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     font-size: 24px;
     font-weight: 700;
     color: var(--vm-gold);
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
     min-width: 70px;
     text-align: left;
+    overflow-wrap: break-word;
 }
 
-/* ✅ Institution card container - add width increase */
-/* ✅ Institution card container - width increase */
 .competitive-institutional-ranking {
-    width: calc(100% + 18px); /* ✅ ADDED: increase institution card width by +18px */
+    width: calc(100% + 18px);
 }
 
-/* ✅ Competitive Insights Strip Spacing - ROUND 4 FIX 2A */
 .competitive-insights-strip {
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
-    padding: 12px 32px; /* ✅ ROUND 4: 24px → 18px vertical (-6px for symmetry) */
-    margin-top: 30px;
+    padding: 24px 32px;
+    margin-top: 40px;
+    margin-bottom: 40px;
 }
 
 .competitive-insights-grid {
@@ -1189,7 +1230,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
 .competitive-insight-icon {
     font-size: 20px;
     color: var(--vm-gold);
-    line-height: 1.2; /* ✅ FIXED: 1.6 → 1.2 */
+    line-height: 1.2;
     flex-shrink: 0;
     min-width: 24px;
 }
@@ -1201,16 +1242,18 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     line-height: 1.8;
     font-weight: 400;
     flex: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
-/* ✅ Bottom Callout Box Spacing - ROUND 4 FIX 2B */
 .bottom-callout-box {
     background: rgba(10,10,10,0.55);
     border: 1px solid rgba(255,215,167,0.06);
     border-radius: 10px;
     padding: 32px;
-    margin-top: 20px; /* ✅ ROUND 4: 20px → 40px (+20px for vertical symmetry) */
-    margin-bottom: 0;
+    margin-top: 40px;
+    margin-bottom: 60px;
 }
 
 .bottom-callout-title {
@@ -1220,7 +1263,7 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 14px;
     font-weight: 600;
     letter-spacing: 0.06em;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .bottom-callout-text {
@@ -1235,6 +1278,8 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     margin-bottom: 7px;
     padding-left: 20px;
     position: relative;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .bottom-callout-text > div:last-child {
@@ -1248,6 +1293,15 @@ COMPETITIVE LANDSCAPE — REFINED VERSION
     color: var(--vm-gold);
     font-weight: 700;
     font-size: 18px;
+}
+
+/* Section stacking rules */
+.two-column + .competitive-insights-strip {
+    margin-top: 40px;
+}
+
+.competitive-insights-strip + .bottom-callout-box {
+    margin-top: 40px;
 }
 
 /* ============================================
@@ -3156,16 +3210,42 @@ TOP MARKET OPPORTUNITIES
 
 
 /* ============================================
-SEGMENT PERFORMANCE BREAKDOWN
-============================================ */
+   SEGMENT PERFORMANCE BREAKDOWN — BULLETPROOF REBUILD
+   ============================================ */
 
-.district-performance-grid {
-    display: grid;
-    gap: 32px;
-    margin-top: 56px;
-    margin-bottom: 84px;
+.segment-performance-slide .slide-content {
+    top: 205px;
+    padding-bottom: 80px;
 }
 
+/* TOP BANNER - Fixed height container */
+.segment-performance-slide .chart-context {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(234, 234, 234, 0.65);
+    text-align: center;
+    margin: 40px auto 56px;
+    max-width: 1400px;
+    line-height: 1.5;
+    font-style: italic;
+    font-weight: 400;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* DISTRICT GRID - Stress-tested responsive grid */
+.district-performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin-top: 0;
+    margin-bottom: 40px;
+    align-items: stretch;
+}
+
+/* Force 3-column when we have exactly 3 items */
 .district-grid-single {
     grid-template-columns: 1fr;
     max-width: 600px;
@@ -3183,20 +3263,22 @@ SEGMENT PERFORMANCE BREAKDOWN
 
 /* Handle 4+ submarkets with wrapping */
 .district-performance-grid:not(.district-grid-single):not(.district-grid-double):not(.district-grid-triple) {
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+/* DISTRICT CARDS - Bulletproof layout */
 .district-card-premium {
-    background: rgba(10, 10, 10, 0.55); /* ✅ FIXED: gradient → flat background */
-    border: 1px solid rgba(255, 215, 167, 0.06); /* ✅ FIXED: global border */
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 215, 167, 0.06);
+    border-radius: 10px;
     padding: 0;
     display: flex;
     flex-direction: column;
-    box-shadow: none; /* ✅ REMOVED: all shadows and glows */
+    box-shadow: none;
     overflow: hidden;
     position: relative;
-    min-height: 510px; /* ✅ FIXED: 540px → 510px (reduced by 30px) */
+    min-height: 360px;
+    height: auto;
 }
 
 .district-card-premium::before {
@@ -3210,14 +3292,16 @@ SEGMENT PERFORMANCE BREAKDOWN
     opacity: 0.5;
 }
 
+/* Card header - fixed height */
 .district-card-header {
     background: linear-gradient(135deg, rgba(191,166,112,0.15), rgba(181,152,84,0.08));
     border-bottom: 2px solid rgba(191,166,112,0.25);
-    padding: 22px 26px;
+    padding: 24px 26px;
     min-height: 96px;
     display: flex;
     align-items: center;
-    justify-content: center; /* ✅ ADDED: center-align card data */
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .district-header-content {
@@ -3225,7 +3309,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    align-items: center; /* ✅ ADDED: center-align via flexbox */
+    align-items: center;
 }
 
 .district-tier-badge {
@@ -3240,8 +3324,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     border-radius: 4px;
     border: 1px solid rgba(191,166,112,0.35);
     display: inline-block;
-    align-self: center; /* ✅ FIXED: flex-start → center */
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    align-self: center;
+    line-height: 1.2;
 }
 
 .district-name {
@@ -3253,16 +3337,22 @@ SEGMENT PERFORMANCE BREAKDOWN
     margin: 0;
     line-height: 1.2;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
-    text-align: center; /* ✅ ADDED: center alignment */
+    text-align: center;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    max-width: 100%;
 }
 
+/* Card body - flexible spacing */
 .district-metrics-grid {
-    padding: 26px 26px;
+    padding: 32px 26px;
     display: flex;
     flex-direction: column;
     gap: 24px;
     flex: 1;
-    align-items: center; /* ✅ ADDED: center-align via flexbox */
+    justify-content: space-between;
+    align-items: center;
 }
 
 .district-metric-row {
@@ -3270,8 +3360,9 @@ SEGMENT PERFORMANCE BREAKDOWN
     grid-template-columns: 1fr auto 1fr;
     gap: 20px;
     align-items: center;
-    justify-content: center; /* ✅ ADDED: center alignment */
+    justify-content: center;
     min-height: 76px;
+    width: 100%;
 }
 
 .district-metric-divider {
@@ -3286,9 +3377,10 @@ SEGMENT PERFORMANCE BREAKDOWN
     align-items: center;
     padding: 16px 0;
     background: rgba(191,166,112,0.04);
-    border-radius: 10px; /* ✅ FIXED: 8px → 10px */
+    border-radius: 10px;
     border: 1px solid rgba(191,166,112,0.1);
     min-height: 116px;
+    width: 100%;
 }
 
 .district-metric-block {
@@ -3300,29 +3392,34 @@ SEGMENT PERFORMANCE BREAKDOWN
     justify-content: center;
 }
 
-/* ABSORPTION RATE HEADER - READABILITY FIX */
-
 .district-metric-label {
     font-family: 'Inter', sans-serif;
-    font-size: 12px; /* INCREASED by +1px */
+    font-size: 12px;
     font-weight: 600;
     color: rgba(255,255,255,0.7);
     text-transform: uppercase;
-    letter-spacing: 2px; /* REDUCED from 4px */
+    letter-spacing: 2px;
     margin-bottom: 8px;
     line-height: 1.2;
-    border-bottom: 1px solid rgba(255,215,167,0.15); /* ADD subtle separator */
-    padding-bottom: 4px; /* ADD spacing */
+    border-bottom: 1px solid rgba(255,215,167,0.15);
+    padding-bottom: 4px;
+    overflow-wrap: break-word;
+    text-align: center;
+    max-width: 100%;
 }
+
 .district-metric-value {
     font-family: var(--font-body);
     font-size: 26px;
     font-weight: 700;
     color: var(--vm-gold);
-    line-height: 1.2; /* ✅ FIXED: 1.1 → 1.2 */
+    line-height: 1.2;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 6px rgba(191,166,112,0.3);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    text-align: center;
 }
 
 .district-metric-value-large {
@@ -3330,10 +3427,13 @@ SEGMENT PERFORMANCE BREAKDOWN
     font-size: 48px;
     font-weight: 800;
     color: var(--vm-gold);
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 10px rgba(191,166,112,0.4);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    text-align: center;
 }
 
 .metric-unit {
@@ -3343,7 +3443,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     color: rgba(191,166,112,0.7);
     margin-left: 6px;
     letter-spacing: 0.5px;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .district-metric-note {
@@ -3354,6 +3454,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     line-height: 1.5;
     font-style: italic;
     margin-top: 6px;
+    overflow-wrap: break-word;
+    text-align: center;
 }
 
 .district-summary-insight {
@@ -3363,13 +3465,14 @@ SEGMENT PERFORMANCE BREAKDOWN
     padding: 16px 20px;
     background: rgba(191,166,112,0.08);
     border-left: 3px solid var(--vm-gold);
-    border-radius: 10px; /* ✅ FIXED: 6px → 10px */
+    border-radius: 10px;
     min-height: 72px;
+    width: 100%;
 }
 
 .insight-icon {
     font-size: 24px;
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
     flex-shrink: 0;
 }
 
@@ -3380,8 +3483,11 @@ SEGMENT PERFORMANCE BREAKDOWN
     color: rgba(234,234,234,0.85);
     line-height: 1.7;
     letter-spacing: 0.02em;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
+/* Card footer - fixed height */
 .district-inventory-footer {
     background: rgba(0,0,0,0.35);
     border-top: 1px solid rgba(191,166,112,0.2);
@@ -3391,6 +3497,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     justify-content: center;
     gap: 12px;
     min-height: 76px;
+    flex-shrink: 0;
+    margin-top: auto;
 }
 
 .inventory-count {
@@ -3398,7 +3506,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     font-size: 32px;
     font-weight: 700;
     color: var(--vm-gold);
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
     font-variant-numeric: tabular-nums;
     text-shadow: 0 2px 8px rgba(191,166,112,0.3);
 }
@@ -3410,16 +3518,17 @@ SEGMENT PERFORMANCE BREAKDOWN
     color: rgba(184,184,184,0.8);
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    line-height: 1.2; /* ✅ FIXED: 1.4 → 1.2 */
+    line-height: 1.2;
 }
 
+/* MOMENTUM STREETS PANEL - Section spacing */
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
-    margin-top: 84px; /* ✅ FIXED: 60px → 84px (increased spacing +24px) */
+    margin-top: 40px;
     margin-bottom: 60px;
-    padding: 32px; /* ✅ FIXED: 22px 30px → 32px (global card padding) */
+    padding: 32px;
     border: 1px solid rgba(191,166,112,0.15);
-    border-radius: 10px; /* ✅ FIXED: var(--card-radius) → 10px */
+    border-radius: 10px;
 }
 
 .momentum-streets-title {
@@ -3429,7 +3538,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     margin-bottom: 20px;
     font-weight: 600;
     letter-spacing: 0.06em;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .momentum-list {
@@ -3447,6 +3556,8 @@ SEGMENT PERFORMANCE BREAKDOWN
     color: var(--vm-text);
     line-height: 1.8;
     font-weight: 400;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .momentum-list li:last-child {
@@ -3458,7 +3569,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     left: 0;
     color: var(--vm-gold);
     font-size: 20px;
-    line-height: 1.2; /* ✅ FIXED: 1 → 1.2 */
+    line-height: 1.2;
     top: 14px;
 }
 
@@ -3467,16 +3578,14 @@ SEGMENT PERFORMANCE BREAKDOWN
     font-weight: 600;
 }
 
+/* STRATEGIC SUMMARY - Bottom section */
 .strategic-summary-band {
     background: rgba(191, 166, 112, 0.08);
     border-left: 4px solid #BFA670;
-    border-radius: 10px; /* ✅ FIXED: 8px → 10px */
-    box-shadow: none; /* ✅ REMOVED: shadows */
-    padding: 32px; /* ✅ FIXED: 22px 32px → 32px (increased padding) */
-    margin: 36px 0;
-    width: calc(100% + 40px); /* ✅ ADDED: expand width by +40px */
-    margin-left: -20px; /* ✅ ADDED: center expansion */
-    margin-right: -20px; /* ✅ ADDED: center expansion */
+    border-radius: 10px;
+    padding: 32px;
+    margin: 40px 0 60px 0;
+    box-shadow: none;
 }
 
 .summary-band-title {
@@ -3486,7 +3595,7 @@ SEGMENT PERFORMANCE BREAKDOWN
     margin-bottom: 14px;
     font-weight: 600;
     letter-spacing: 0.06em;
-    line-height: 1.2; /* ✅ ADDED: global typography alignment */
+    line-height: 1.2;
 }
 
 .summary-band-text {
@@ -3496,11 +3605,18 @@ SEGMENT PERFORMANCE BREAKDOWN
     line-height: 1.85;
     font-weight: 400;
     margin: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .summary-band-text strong {
     color: var(--vm-gold);
     font-weight: 600;
+}
+
+/* Section separation enforcement */
+.momentum-streets-panel + .strategic-summary-band {
+    margin-top: 40px;
 }
 /* ============================================
 AI OPPORTUNITIES
