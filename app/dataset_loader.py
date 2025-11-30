@@ -17,7 +17,7 @@ def load_dataset(area: str = "Mayfair", vertical: str = "uk-real-estate"):
             logger.error("MongoDB client not initialized - MONGODB_URI missing")
             raise Exception("Database connection not configured")
         
-        db = mongo_client['voxmill']
+        db = mongo_client['Voxmill']
         collection = db['datasets']
         
         # Get latest dataset for this area
