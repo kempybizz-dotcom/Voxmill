@@ -28,23 +28,24 @@ def format_analyst_response(response_text: str, category: str) -> str:
     if category == "send_pdf":
         return "Sending your latest executive market briefing now.\n\n[PDF URL will be provided here]"
     
-    # Add category header for executive context
+    # Add institutional category header
     category_headers = {
-        'scenario_modelling': '📊 SCENARIO ANALYSIS',
-        'strategic_outlook': '🎯 STRATEGIC OUTLOOK',
-        'comparative_analysis': '⚖️ COMPARATIVE INTELLIGENCE',
-        'weekly_briefing': '📅 WEEKLY BRIEFING',
-        'analysis_snapshot': '🔍 MARKET ANALYSIS',
-        'market_overview': '📈 MARKET OVERVIEW',
-        'competitive_landscape': '🏢 COMPETITIVE LANDSCAPE',
-        'opportunities': '💎 OPPORTUNITIES',
-        'price_band': '💰 PRICE INTELLIGENCE',
-        'segment_performance': '📊 SEGMENT PERFORMANCE'
+        'scenario_modelling': 'SCENARIO ANALYSIS',
+        'strategic_outlook': 'STRATEGIC OUTLOOK',
+        'comparative_analysis': 'COMPARATIVE INTELLIGENCE',
+        'weekly_briefing': 'WEEKLY BRIEFING',
+        'analysis_snapshot': 'MARKET ANALYSIS',
+        'market_overview': 'MARKET OVERVIEW',
+        'competitive_landscape': 'COMPETITIVE LANDSCAPE',
+        'opportunities': 'OPPORTUNITIES',
+        'price_band': 'PRICE INTELLIGENCE',
+        'segment_performance': 'SEGMENT PERFORMANCE'
     }
     
-    header = category_headers.get(category, '📊 VOXMILL INTELLIGENCE')
+    header = category_headers.get(category, 'VOXMILL INTELLIGENCE')
     
-    return f"{header}\n\n{prose_response}"
+    # Institutional formatting: header + separator + content
+    return f"{header}\n{'—' * 40}\n\n{prose_response}"
 
 def log_interaction(sender: str, message: str, category: str, response: str):
     """Log interaction for monitoring"""
