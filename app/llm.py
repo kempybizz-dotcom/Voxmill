@@ -134,11 +134,13 @@ CATEGORIES:
 OUTPUT FORMAT (JSON):
 {
   "category": "scenario_modelling",
-  "response": "Your analyst response here.",
+  "response": "Write your COMPLETE analyst response here in natural executive prose. Use clear section headers like 'SCENARIO IMPACT:', 'CASCADE EFFECTS:', etc. This should be the full formatted intelligence brief - structured paragraphs, NOT JSON keys. Write exactly as you would present to a Fortune 500 board: authoritative, quantified, actionable.",
   "confidence_level": "high/medium/low",
   "data_filtered": ["duplicate_listing_count: 3", "anomaly_outliers: 2"],
   "recommendation_urgency": "immediate/near_term/monitor"
 }
+
+CRITICAL RULE: The "response" field contains your FULL analysis in readable prose format. Section headers in caps (e.g., "SCENARIO IMPACT:"), followed by clear professional paragraphs. Never nest JSON inside the response field.
 
 TONE EXAMPLES:
 
