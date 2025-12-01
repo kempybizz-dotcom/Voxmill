@@ -503,43 +503,6 @@
             </div>
         </div>
         
-        <div class="competitive-insights-strip">
-            <div class="competitive-insights-grid">
-                {% if competitor_agencies and competitor_agencies|length > 0 %}
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        Leading participant maintains {{ competitor_agencies[0].market_share_pct }}% market share with {{ competitor_agencies[0].listings }} active {{ inventory_label|lower }}
-                    </div>
-                </div>
-                
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        {% if competitor_agencies|length > 1 %}
-                        Secondary participants average {{ "%.1f"|format((competitor_agencies[1].market_share_pct + (competitor_agencies[2].market_share_pct if competitor_agencies|length > 2 else 0)) / 2) }}% share through specialized positioning
-                        {% else %}
-                        Market demonstrates concentrated participant structure with limited secondary competition
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        {{ "Emerging participants gaining traction through niche service models" if competitor_agencies|length > 3 else "Opportunity exists for new market entrants in underserved segments" }}
-                    </div>
-                </div>
-                {% else %}
-                <div class="competitive-insight-point">
-                    <div class="competitive-insight-icon">→</div>
-                    <div class="competitive-insight-text">
-                        Competitive landscape analysis unavailable — insufficient agency attribution in current data set
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
         
         <div class="bottom-callout-box">
             <h4 class="bottom-callout-title">Competitive Advantage Signals</h4>
