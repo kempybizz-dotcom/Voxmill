@@ -3,7 +3,7 @@ Agent Behavior Profiling Engine
 Classifies agents into behavioral archetypes based on historical patterns
 """
 
-AGENT_ARCHETYPES = {
+AGENT_ARCHETYPES = { 
     'momentum_follower': {
         'pattern': 'Matches competitor moves within 7-14 days',
         'trigger': 'Waits for 2+ agents to move first',
