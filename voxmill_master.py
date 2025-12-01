@@ -88,7 +88,7 @@ VERTICAL_CONFIG = {
 # ============================================================================
 
 def save_to_mongodb(area, vertical, vertical_config):
-    """Save generated dataset to MongoDB for WhatsApp service"""
+    """Save generated dataset to MongoDB for WhatsApp service + price_history"""
     try:
         from pymongo import MongoClient
         
@@ -109,36 +109,100 @@ def save_to_mongodb(area, vertical, vertical_config):
         # Connect to MongoDB
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
         db = client['Voxmill']
-        collection = db['datasets']
         
-        # Create document with metadata
+        # ==============================================================
+        # EXISTING: Save full dataset to 'datasets' collection
+        # ==============================================================
+        datasets_collection = db['datasets']
+        
         dataset_doc = {
-            "area": area,
-            "vertical": vertical,
-            "vertical_config": vertical_config,
-            "timestamp": datetime.now(timezone.utc),
-            "data": analysis_data
+            "metadata": {
+                "area": area,
+                "city": analysis_data.get('metadata', {}).get('city', 'London'),
+                "vertical": vertical_config,
+                "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
+                "property_count": len(analysis_data.get('properties', []))
+            },
+            "properties": analysis_data.get('properties', []),
+            "metrics": analysis_data.get('metrics', analysis_data.get('kpis', {})),
+            "kpis": analysis_data.get('kpis', analysis_data.get('metrics', {})),
+            "intelligence": analysis_data.get('intelligence', {}),
+            "forecast": analysis_data.get('forecast', {})
         }
         
-        # Replace existing document for this area (keep only latest)
-        result = collection.replace_one(
-            {"area": area, "vertical": vertical},
+        result = datasets_collection.replace_one(
+            {"metadata.area": area, "metadata.vertical.type": vertical_config.get('type')},
             dataset_doc,
             upsert=True
         )
         
+        datasets_saved = result.upserted_id or result.modified_count > 0
+        
+        # ==============================================================
+        # NEW: Save agent-level snapshots to 'price_history' collection
+        # ==============================================================
+        price_history_collection = db['price_history']
+        
+        properties = analysis_data.get('properties', [])
+        agent_snapshots = {}
+        
+        # Group properties by agent
+        for prop in properties:
+            agent = prop.get('agent', prop.get('agency', 'Unknown'))
+            
+            # Skip Private and empty agents
+            if not agent or agent.strip() == '' or agent == 'Private' or agent == 'Unknown':
+                continue
+            
+            if agent not in agent_snapshots:
+                agent_snapshots[agent] = {
+                    'agent': agent,
+                    'area': area,
+                    'timestamp': datetime.now(timezone.utc),
+                    'properties': [],
+                    'avg_price': 0,
+                    'total_inventory': 0
+                }
+            
+            agent_snapshots[agent]['properties'].append({
+                'address': prop.get('address', 'N/A'),
+                'price': prop.get('price', 0),
+                'type': prop.get('type', prop.get('property_type', 'Unknown')),
+                'sqft': prop.get('sqft', 0),
+                'days_listed': prop.get('days_listed', prop.get('days_on_market', 0))
+            })
+        
+        # Calculate averages and store each agent snapshot
+        price_history_count = 0
+        for agent, snapshot in agent_snapshots.items():
+            prices = [p['price'] for p in snapshot['properties'] if p['price'] > 0]
+            
+            if prices:
+                snapshot['avg_price'] = sum(prices) / len(prices)
+                snapshot['total_inventory'] = len(snapshot['properties'])
+                
+                # Insert snapshot into price_history
+                price_history_collection.insert_one(snapshot)
+                price_history_count += 1
+        
         client.close()
         
-        if result.upserted_id or result.modified_count > 0:
-            print(f"✅ Dataset saved to MongoDB for {area}")
-            return True
+        # Report results
+        if datasets_saved:
+            print(f"✅ Dataset saved to MongoDB 'datasets' collection for {area}")
+        
+        if price_history_count > 0:
+            print(f"✅ Saved {price_history_count} agent snapshots to 'price_history' collection")
+            print(f"   Agents tracked: {', '.join(agent_snapshots.keys())}")
         else:
-            print(f"⚠️  MongoDB save returned no changes")
-            return False
+            print(f"⚠️  No agent-level data to save (all properties Private/Unknown)")
+        
+        return datasets_saved or price_history_count > 0
         
     except Exception as e:
         print(f"⚠️  Error saving to MongoDB: {str(e)}")
-        # Don't fail the entire job if MongoDB save fails
+        import traceback
+        traceback.print_exc()
         return False
 
 # ============================================================================
