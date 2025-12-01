@@ -20,19 +20,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
-
-        # Load dataset for preferred region
-        dataset = load_dataset(area=preferred_region)
-
-        # Detect trends (add this)
-        from app.intelligence.trend_detector import detect_market_trends
-        trends = detect_market_trends(area=preferred_region, lookback_days=14)
-
-        # Add trends to dataset for LLM context
-        if trends:
-        dataset['detected_trends'] = trends
         
-        # Load client profile
+        # Load client profile FIRST (need preferred region)
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
         
@@ -41,6 +30,44 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # Load dataset for preferred region
         dataset = load_dataset(area=preferred_region)
+        
+        # Detect trends
+        from app.intelligence.trend_detector import detect_market_trends
+        trends = detect_market_trends(area=preferred_region, lookback_days=14)
+        
+        # Add trends to dataset for LLM context
+        if trends:
+            dataset['detected_trends'] = trends
+        
+        # ADD LAYER 1: Agent Profiling (if module exists)
+        try:
+            from app.intelligence.agent_profiler import get_agent_profiles
+            agent_profiles = get_agent_profiles(area=preferred_region)
+            if agent_profiles:
+                dataset['agent_profiles'] = agent_profiles
+        except ImportError:
+            logger.debug("Agent profiler not yet implemented")
+        
+        # ADD LAYER 2: Micro-Market Segmentation (if module exists)
+        try:
+            from app.intelligence.micromarket_segmenter import segment_micromarkets
+            micromarkets = segment_micromarkets(dataset.get('properties', []), preferred_region)
+            if micromarkets and 'error' not in micromarkets:
+                dataset['micromarkets'] = micromarkets
+        except ImportError:
+            logger.debug("Micromarket segmenter not yet implemented")
+        
+        # ADD LAYER 3: Liquidity Velocity (if module exists)
+        try:
+            from app.intelligence.liquidity_velocity import calculate_liquidity_velocity
+            from app.dataset_loader import load_historical_snapshots
+            historical = load_historical_snapshots(area=preferred_region, days=30)
+            if historical:
+                velocity = calculate_liquidity_velocity(dataset.get('properties', []), historical)
+                if velocity and 'error' not in velocity:
+                    dataset['liquidity_velocity'] = velocity
+        except ImportError:
+            logger.debug("Liquidity velocity not yet implemented")
         
         # Classify and respond (with client context) - V3 returns metadata
         category, response_text, response_metadata = await classify_and_respond(
