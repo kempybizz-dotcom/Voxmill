@@ -41,8 +41,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Format response
         formatted_response = format_analyst_response(response_text, category)
         
-        
-        # Send via Twilio
+        # Send via Twilio (with smart chunking)
         await send_twilio_message(sender, formatted_response)
         
         # Log interaction and update client history
@@ -58,20 +57,93 @@ async def handle_whatsapp_message(sender: str, message_text: str):
 
 
 async def send_twilio_message(recipient: str, message: str):
-    """Send message via Twilio WhatsApp API"""
+    """Send message via Twilio WhatsApp API with auto-chunking for long messages"""
     try:
         if not twilio_client:
             logger.error("Twilio client not initialized")
             return
         
-        twilio_client.messages.create(
-            from_=TWILIO_WHATSAPP_NUMBER,
-            to=recipient,
-            body=message
-        )
+        # WhatsApp limit: 1600 characters
+        MAX_LENGTH = 1500  # Safety margin
         
-        logger.info(f"Message sent successfully to {recipient}")
+        if len(message) <= MAX_LENGTH:
+            # Send as single message
+            twilio_client.messages.create(
+                from_=TWILIO_WHATSAPP_NUMBER,
+                to=recipient,
+                body=message
+            )
+            logger.info(f"Message sent successfully to {recipient} ({len(message)} chars)")
+        else:
+            # Split intelligently at paragraph breaks
+            chunks = smart_split_message(message, MAX_LENGTH)
+            
+            for i, chunk in enumerate(chunks, 1):
+                if i == 1:
+                    # First chunk - include original header
+                    chunk_message = chunk
+                else:
+                    # Subsequent chunks - add continuation marker
+                    chunk_message = f"[Part {i}/{len(chunks)}]\n\n{chunk}"
+                
+                twilio_client.messages.create(
+                    from_=TWILIO_WHATSAPP_NUMBER,
+                    to=recipient,
+                    body=chunk_message
+                )
+                
+                # Small delay between messages to maintain order
+                import asyncio
+                await asyncio.sleep(0.5)
+            
+            logger.info(f"Multi-part message sent successfully to {recipient} ({len(chunks)} parts, {len(message)} total chars)")
                 
     except Exception as e:
         logger.error(f"Error sending Twilio message: {str(e)}", exc_info=True)
         raise
+
+
+def smart_split_message(message: str, max_length: int) -> list:
+    """
+    Split message intelligently at natural break points.
+    Priority: double line breaks > single line breaks > sentences > words
+    """
+    if len(message) <= max_length:
+        return [message]
+    
+    chunks = []
+    remaining = message
+    
+    while remaining:
+        if len(remaining) <= max_length:
+            chunks.append(remaining)
+            break
+        
+        # Try to split at double line break (paragraph boundary)
+        chunk = remaining[:max_length]
+        split_point = chunk.rfind('\n\n')
+        
+        if split_point == -1:
+            # Try single line break
+            split_point = chunk.rfind('\n')
+        
+        if split_point == -1:
+            # Try sentence end
+            split_point = max(
+                chunk.rfind('. '),
+                chunk.rfind('! '),
+                chunk.rfind('? ')
+            )
+        
+        if split_point == -1:
+            # Last resort: split at word boundary
+            split_point = chunk.rfind(' ')
+        
+        if split_point == -1:
+            # Absolute last resort: hard cut
+            split_point = max_length
+        
+        chunks.append(remaining[:split_point].strip())
+        remaining = remaining[split_point:].strip()
+    
+    return chunks
