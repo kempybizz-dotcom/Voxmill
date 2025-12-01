@@ -68,6 +68,42 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     dataset['liquidity_velocity'] = velocity
         except ImportError:
             logger.debug("Liquidity velocity not yet implemented")
+
+        try:
+    from app.intelligence.cascade_predictor import build_agent_network, predict_cascade
+    
+    # Check if user query implies scenario modelling
+    scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'cascade']
+    is_scenario_query = any(keyword in message_text.lower() for keyword in scenario_keywords)
+    
+    if is_scenario_query:
+        # Build network if not cached
+        network = build_agent_network(area=preferred_region, lookback_days=90)
+        
+        if not network.get('error'):
+            # Try to extract scenario from query
+            # Simple pattern matching for "Agent X drops Y%"
+            import re
+            
+            # Look for patterns like "Knight Frank drops 10%" or "if Savills reduces by 8%"
+            agent_pattern = r'(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|[\w\s&]+?)\s+(?:drops?|reduces?|lowers?|cuts?|increases?|raises?)(?:\s+by)?\s+(\d+\.?\d*)%'
+            match = re.search(agent_pattern, message_text, re.IGNORECASE)
+            
+            if match:
+                initiating_agent = match.group(1).strip()
+                magnitude = float(match.group(2))
+                
+                # Determine if increase or decrease
+                if any(word in message_text.lower() for word in ['drop', 'reduce', 'lower', 'cut']):
+                    magnitude = -magnitude
+                
+                # Run cascade prediction
+                cascade = predict_cascade(network, initiating_agent, magnitude)
+                if not cascade.get('error'):
+                    dataset['cascade_prediction'] = cascade
+                    logger.info(f"Cascade predicted: {initiating_agent} {magnitude:+.1f}% -> {cascade['total_affected_agents']} agents affected")
+except ImportError:
+    logger.debug("Cascade predictor not yet implemented")
         
         # Classify and respond (with client context) - V3 returns metadata
         category, response_text, response_metadata = await classify_and_respond(
