@@ -20,6 +20,17 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
+
+        # Load dataset for preferred region
+        dataset = load_dataset(area=preferred_region)
+
+        # Detect trends (add this)
+        from app.intelligence.trend_detector import detect_market_trends
+        trends = detect_market_trends(area=preferred_region, lookback_days=14)
+
+        # Add trends to dataset for LLM context
+        if trends:
+        dataset['detected_trends'] = trends
         
         # Load client profile
         from app.client_manager import get_client_profile, update_client_history
