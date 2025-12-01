@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 
-MONGODB_URI = os.getenv("MONGODB_URI")
+MONGODB_URI = os.getenv("MONGODB_URI") 
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 
 
