@@ -393,6 +393,24 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
         
+        # ========================================
+        # CONVERSATIONAL INTELLIGENCE DETECTION
+        # ========================================
+        
+        # Detect conversational patterns
+        message_lower = message.lower().strip()
+        
+        is_greeting = message_lower in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'yo', 'hiya', 'greetings']
+        
+        is_small_talk = any(phrase in message_lower for phrase in [
+            'how are you', 'how r u', 'what should i eat', 'tell me a joke', 
+            'what\'s up', 'wassup', 'how\'s it going', 'whats good',
+            'tell me about yourself', 'who are you', 'what can you do',
+            'weather', 'recommend a restaurant', 'movie recommendation'
+        ])
+        
+        is_returning_user = client_profile and client_profile.get('total_queries', 0) > 0
+        
         # Detect query mode
         scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'forecast', 'model']
         strategic_keywords = ['full outlook', 'strategic view', 'director level', 'comprehensive', 'big picture']
@@ -401,12 +419,12 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         analysis_keywords = ['analyse', 'analyze', 'snapshot', 'breakdown', 'deep dive']
         trend_keywords = ['trend', 'pattern', 'unusual', 'changed', 'different', 'movement']
         
-        is_scenario = any(keyword in message.lower() for keyword in scenario_keywords)
-        is_strategic = any(keyword in message.lower() for keyword in strategic_keywords)
-        is_comparison = any(keyword in message.lower() for keyword in comparison_keywords)
-        is_briefing = any(keyword in message.lower() for keyword in briefing_keywords)
-        is_analysis = any(keyword in message.lower() for keyword in analysis_keywords)
-        is_trend_query = any(keyword in message.lower() for keyword in trend_keywords)
+        is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
+        is_strategic = any(keyword in message_lower for keyword in strategic_keywords)
+        is_comparison = any(keyword in message_lower for keyword in comparison_keywords)
+        is_briefing = any(keyword in message_lower for keyword in briefing_keywords)
+        is_analysis = any(keyword in message_lower for keyword in analysis_keywords)
+        is_trend_query = any(keyword in message_lower for keyword in trend_keywords)
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
@@ -417,13 +435,47 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             for trend in dataset['detected_trends'][:5]:
                 context_parts.append(f"• {trend['insight']}")
 
-        # ADD THIS BLOCK HERE (after trends, before comparison datasets)
         # Agent behavioral profiles
         if 'agent_profiles' in dataset and dataset['agent_profiles']:
             context_parts.append("\nAGENT BEHAVIORAL PROFILES:")
             for profile in dataset['agent_profiles'][:5]:
                 context_parts.append(f"• {profile['agent']}: {profile['archetype']} ({profile['confidence']*100:.0f}% confidence)")
                 context_parts.append(f"  Pattern: {profile['behavioral_pattern']}")
+        
+        # Add cascade prediction if available
+        if 'cascade_prediction' in dataset and dataset['cascade_prediction']:
+            cascade = dataset['cascade_prediction']
+            context_parts.append("\nCASCADE PREDICTION:")
+            context_parts.append(f"Initiating agent: {cascade['initiating_agent']}")
+            context_parts.append(f"Initial magnitude: {cascade['initial_magnitude']:+.1f}%")
+            context_parts.append(f"Total affected agents: {cascade['total_affected_agents']}")
+            context_parts.append(f"Cascade probability: {cascade['cascade_probability']*100:.0f}%")
+            context_parts.append(f"Expected duration: {cascade['expected_duration_days']} days")
+            context_parts.append(f"Market impact: {cascade['market_impact'].upper()}")
+            
+            # Add wave summaries
+            for wave_data in cascade.get('waves', [])[:2]:
+                wave_num = wave_data['wave_number']
+                context_parts.append(f"\nWave {wave_num} ({wave_data['agent_count']} agents):")
+                for agent in wave_data['agents'][:3]:
+                    context_parts.append(f"  • {agent['agent']}: {agent['predicted_magnitude']:+.1f}% in {agent['timing_days']} days ({agent['probability']*100:.0f}%)")
+        
+        # Add micromarket segmentation if available
+        if 'micromarkets' in dataset and dataset['micromarkets']:
+            micro = dataset['micromarkets']
+            if not micro.get('error'):
+                context_parts.append(f"\nMICROMARKET SEGMENTATION ({micro['total_micromarkets']} zones):")
+                for zone in micro.get('micromarkets', [])[:3]:
+                    context_parts.append(f"  • {zone['name']}: Avg £{zone['avg_price']:,.0f} ({zone['property_count']} properties, {zone['classification']})")
+        
+        # Add liquidity velocity if available
+        if 'liquidity_velocity' in dataset and dataset['liquidity_velocity']:
+            velocity = dataset['liquidity_velocity']
+            if not velocity.get('error'):
+                context_parts.append(f"\nLIQUIDITY VELOCITY:")
+                context_parts.append(f"Score: {velocity['velocity_score']}/100 ({velocity['velocity_class']})")
+                context_parts.append(f"Market health: {velocity['market_health']}")
+                context_parts.append(f"Momentum: {velocity['historical_comparison']['momentum']}")
         
         # Add comparison datasets if available
         if comparison_datasets and is_comparison:
@@ -450,7 +502,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             
             # Add recent conversation history for continuity
             if client_profile.get('query_history'):
-                recent_queries = client_profile['query_history'][-5:]  # Last 5 queries
+                recent_queries = client_profile['query_history'][-5:]
                 if recent_queries:
                     context_parts.append("\nRECENT CONVERSATION HISTORY:")
                     for q in recent_queries:
@@ -461,8 +513,17 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                             date_str = timestamp.strftime('%Y-%m-%d') if timestamp else 'Unknown'
                         context_parts.append(f"- {date_str}: {q.get('query', 'N/A')} (category: {q.get('category', 'N/A')})")
         
-        # Determine mode
-        if is_scenario:
+        # ========================================
+        # DETERMINE ANALYSIS MODE
+        # ========================================
+        
+        if is_greeting and not is_returning_user:
+            mode = "FIRST CONTACT GREETING"
+        elif is_greeting and is_returning_user:
+            mode = "RETURNING USER GREETING"
+        elif is_small_talk:
+            mode = "OFF-TOPIC REDIRECT"
+        elif is_scenario:
             mode = "SCENARIO MODELLING"
         elif is_strategic:
             mode = "STRATEGIC OUTLOOK"
@@ -483,13 +544,22 @@ User message: "{message}"
 
 Analysis mode: {mode}
 
+User context:
+- Is greeting: {is_greeting}
+- Is returning user: {is_returning_user}
+- Is small talk: {is_small_talk}
+- Total queries from user: {client_profile.get('total_queries', 0) if client_profile else 0}
+
 Classify this message and generate an executive analyst response with V3 predictive intelligence capabilities.
 
 REMEMBER: 
-- Include confidence levels on predictions (e.g., "85% confidence based on 12 historical precedents")
+- Adapt response length to query complexity (150 chars for greeting, 400-600 for quick query, 1200-1500 for strategic)
+- Include confidence levels on predictions
 - Reference conversation history naturally when relevant
 - Highlight detected trends if they relate to the query
-- Keep response under 1400 characters if possible"""
+- For greetings: Be warm but professional, introduce capabilities
+- For small talk: Politely redirect to market intelligence focus
+- Use intelligent structure (bullets only when needed, headers for multi-topic responses)"""
 
         if openai_client:
             response = await call_gpt4(user_prompt)
