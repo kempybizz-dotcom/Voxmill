@@ -41,9 +41,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Format response
         formatted_response = format_analyst_response(response_text, category)
         
-        # Add urgency indicator for high-urgency scenarios
-        if response_metadata.get('recommendation_urgency') == 'immediate':
-            formatted_response = f"⚡ IMMEDIATE ACTION\n\n{formatted_response}"
         
         # Send via Twilio
         await send_twilio_message(sender, formatted_response)
