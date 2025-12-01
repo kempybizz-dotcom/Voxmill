@@ -16,12 +16,49 @@ twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_
 
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    Main message handler with V3 predictive intelligence
+    Main message handler with V3 predictive intelligence + edge case handling
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
         
-        # Load client profile FIRST (need preferred region)
+        # ========================================
+        # EDGE CASE HANDLING
+        # ========================================
+        
+        # Case 1: Empty message
+        if not message_text or not message_text.strip():
+            await send_twilio_message(
+                sender, 
+                "I didn't receive a message. Please send your market intelligence query."
+            )
+            return
+        
+        # Case 2: Message too short (likely accidental)
+        if len(message_text.strip()) < 2:
+            await send_twilio_message(
+                sender,
+                "I didn't catch that. Ask me about market analysis, competitive intelligence, or strategic forecasting."
+            )
+            return
+        
+        # Case 3: Only emojis/symbols (no actual text)
+        import re
+        text_only = re.sub(r'[^\w\s]', '', message_text)
+        if len(text_only.strip()) < 2:
+            await send_twilio_message(
+                sender,
+                "I specialise in market intelligence analysis. What would you like to explore? (Market overview, opportunities, competitive landscape, scenario modelling)"
+            )
+            return
+        
+        # Case 4: Detect common typos and normalize
+        message_normalized = normalize_query(message_text)
+        
+        # ========================================
+        # NORMAL PROCESSING CONTINUES
+        # ========================================
+        
+        # Load client profile
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
         
@@ -76,7 +113,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             
             # Check if user query implies scenario modelling
             scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'cascade']
-            is_scenario_query = any(keyword in message_text.lower() for keyword in scenario_keywords)
+            is_scenario_query = any(keyword in message_normalized.lower() for keyword in scenario_keywords)
             
             if is_scenario_query:
                 # Build network if not cached
@@ -84,19 +121,18 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 
                 if not network.get('error'):
                     # Try to extract scenario from query
-                    # Simple pattern matching for "Agent X drops Y%"
                     import re
                     
-                    # Look for patterns like "Knight Frank drops 10%" or "if Savills reduces by 8%"
+                    # Look for patterns like "Knight Frank drops 10%"
                     agent_pattern = r'(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|[\w\s&]+?)\s+(?:drops?|reduces?|lowers?|cuts?|increases?|raises?)(?:\s+by)?\s+(\d+\.?\d*)%'
-                    match = re.search(agent_pattern, message_text, re.IGNORECASE)
+                    match = re.search(agent_pattern, message_normalized, re.IGNORECASE)
                     
                     if match:
                         initiating_agent = match.group(1).strip()
                         magnitude = float(match.group(2))
                         
                         # Determine if increase or decrease
-                        if any(word in message_text.lower() for word in ['drop', 'reduce', 'lower', 'cut']):
+                        if any(word in message_normalized.lower() for word in ['drop', 'reduce', 'lower', 'cut']):
                             magnitude = -magnitude
                         
                         # Run cascade prediction
@@ -107,9 +143,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
         
-        # Classify and respond (with client context) - V3 returns metadata
+        # Classify and respond (use normalized message)
         category, response_text, response_metadata = await classify_and_respond(
-            message_text, 
+            message_normalized,  # Use normalized version
             dataset,
             client_profile=client_profile
         )
@@ -120,7 +156,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Send via Twilio (with smart chunking)
         await send_twilio_message(sender, formatted_response)
         
-        # Log interaction and update client history
+        # Log interaction and update client history (use original message)
         log_interaction(sender, message_text, category, formatted_response)
         update_client_history(sender, message_text, category, preferred_region)
         
@@ -128,8 +164,43 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
-        error_msg = "Unable to process your request at this time. Please try again shortly."
+        error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
+
+
+def normalize_query(text: str) -> str:
+    """
+    Normalize common typos and variations
+    """
+    # Common typo corrections
+    corrections = {
+        'markrt': 'market',
+        'overveiw': 'overview',
+        'overviw': 'overview',
+        'competitve': 'competitive',
+        'competetive': 'competitive',
+        'oppertunities': 'opportunities',
+        'oportunities': 'opportunities',
+        'analyise': 'analyse',
+        'analize': 'analyse',
+        'scenerio': 'scenario',
+        'forcast': 'forecast',
+        'forceast': 'forecast',
+        'whats': 'what is',
+        'whta': 'what',
+        'teh': 'the',
+        'adn': 'and',
+        'hte': 'the'
+    }
+    
+    normalized = text
+    for typo, correct in corrections.items():
+        # Case-insensitive replacement
+        import re
+        pattern = re.compile(re.escape(typo), re.IGNORECASE)
+        normalized = pattern.sub(correct, normalized)
+    
+    return normalized
 
 
 async def send_twilio_message(recipient: str, message: str):
