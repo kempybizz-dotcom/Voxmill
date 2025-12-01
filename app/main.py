@@ -44,16 +44,16 @@ async def shutdown_event():
 async def whatsapp_webhook(request: Request):
     """
     Receives WhatsApp messages from Twilio.
-    Twilio sends form data with From (sender) and Body (message text).
+    Handles text, media, and edge cases.
     """
     try:
-        # Parse form data manually for flexibility
+        # Parse form data
         form_data = await request.form()
         
-        # Log all received fields for debugging
+        # Log all received fields
         logger.info(f"Received webhook with fields: {dict(form_data)}")
         
-        # Extract sender and message (handle different field names)
+        # Extract sender and message
         sender = (
             form_data.get('From') or 
             form_data.get('from') or 
@@ -66,6 +66,22 @@ async def whatsapp_webhook(request: Request):
             form_data.get('message') or
             form_data.get('text')
         )
+        
+        # Check for media attachments
+        num_media = int(form_data.get('NumMedia', 0))
+        
+        # HANDLE MEDIA MESSAGES
+        if num_media > 0:
+            media_response = (
+                "I've received your media file. Currently, I focus on text-based market intelligence queries. "
+                "For document analysis, please describe what you'd like me to examine or send specific data points as text."
+            )
+            
+            if sender:
+                from app.whatsapp import send_twilio_message
+                await send_twilio_message(sender, media_response)
+            
+            return Response(status_code=200)
         
         # Log extracted values
         logger.info(f"Extracted - Sender: {sender}, Message: {message}")
