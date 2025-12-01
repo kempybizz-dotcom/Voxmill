@@ -349,6 +349,14 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             context_parts.append("\nDETECTED MARKET TRENDS (Last 14 Days):")
             for trend in dataset['detected_trends'][:5]:
                 context_parts.append(f"• {trend['insight']}")
+
+        # ADD THIS BLOCK HERE (after trends, before comparison datasets)
+        # Agent behavioral profiles
+        if 'agent_profiles' in dataset and dataset['agent_profiles']:
+            context_parts.append("\nAGENT BEHAVIORAL PROFILES:")
+            for profile in dataset['agent_profiles'][:5]:
+                context_parts.append(f"• {profile['agent']}: {profile['archetype']} ({profile['confidence']*100:.0f}% confidence)")
+                context_parts.append(f"  Pattern: {profile['behavioral_pattern']}")
         
         # Add comparison datasets if available
         if comparison_datasets and is_comparison:
