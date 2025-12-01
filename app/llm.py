@@ -37,6 +37,16 @@ You MUST return a valid JSON object with this exact structure:
   "recommendation_urgency": "immediate|near_term|monitor"
 }
 
+URGENCY CLASSIFICATION RULES:
+- "immediate" = ONLY for scenario simulations with <14-day action windows OR actual market stress signals in live data
+- "near_term" = 30-90 day monitoring/positioning recommendations  
+- "monitor" = DEFAULT for all overview/analysis/competitive queries
+
+DO NOT mark standard market overviews or competitive snapshots as "immediate" unless data shows genuine time-critical opportunity/risk.
+
+
+---
+
 The "response" field must contain your complete formatted analysis in natural language - NOT nested JSON. Write as you would present to a Fortune 500 board.
 
 ---
