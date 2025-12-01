@@ -1,9 +1,9 @@
 """
-VOXMILL EXECUTIVE EMAIL SENDER
-===============================
-Fortune-500 black/bronze design system
-Full functionality preserved
-UPDATED: PDF filename to match pdf_generator.py
+VOXMILL EXECUTIVE EMAIL SENDER V2.0
+===================================
+Matte black + bronze luxury aesthetic
+Matches PDF design system exactly
+Full logo integration
 """
 
 import smtplib
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
-DEFAULT_PDF_PATH = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"  # UPDATED: Match pdf_generator.py
+DEFAULT_PDF_PATH = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
 DEFAULT_LOGO_PATH = "/mnt/user-data/uploads/voxmill_logo.png"
 
 def validate_environment():
@@ -40,7 +40,7 @@ def validate_environment():
     return sender_email, sender_password
 
 def create_voxmill_email(recipient_name, area, city):
-    """Create elite executive email - 9.5/10 refinement"""
+    """Create executive-grade email matching PDF aesthetic"""
     
     year = datetime.now().year
     date = datetime.now().strftime('%B %d, %Y')
@@ -50,91 +50,93 @@ def create_voxmill_email(recipient_name, area, city):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Voxmill Market Intelligence</title>
+<title>Voxmill Executive Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body style="margin:0;padding:0;background-color:#0B0B0B;font-family:'Inter',Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;background:#000000;font-family:'Inter',Arial,sans-serif;">
 
-<!-- OUTER WRAPPER -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B0B0B;margin:0;padding:0;">
+<!-- OUTER CONTAINER -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#000000;margin:0;padding:40px 0;">
 <tr>
-<td align="center" style="padding:0;">
+<td align="center">
 
-<!-- MAIN CONTAINER 640px -->
-<table width="640" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;margin:0 auto;">
+<!-- MAIN CARD 700px -->
+<table width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px;background:linear-gradient(135deg,#0C0C0C 0%,#111111 100%);border:3px solid #BFA670;border-radius:0;margin:0 auto;position:relative;">
 
-<!-- HEADER -->
+<!-- GOLD TOP BAR -->
 <tr>
-<td style="background-color:#0B0B0B;padding:32px 0 26px;text-align:center;">
-<!-- V Diamond Logo - 10% smaller -->
-<div style="width:50px;height:50px;margin:0 auto 14px;background:linear-gradient(135deg,#B08D57,#CBA135);transform:rotate(45deg);position:relative;">
-<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-family:'Times New Roman',Times,serif;font-size:26px;font-weight:700;color:#0B0B0B;line-height:1;">V</div>
+<td style="height:3px;background:linear-gradient(90deg,#A77B3A 0%,#BFA670 50%,#A77B3A 100%);"></td>
+</tr>
+
+<!-- HEADER WITH LOGO -->
+<tr>
+<td style="padding:48px 48px 32px;text-align:center;background:linear-gradient(135deg,#0C0C0C 0%,#111111 100%);">
+<!-- Logo -->
+<img src="cid:voxmill_logo" alt="Voxmill" width="120" height="120" style="display:block;margin:0 auto 20px;filter:drop-shadow(0 8px 40px rgba(198,161,91,0.9));" />
+<!-- Label -->
+<div style="font-family:'Inter',Arial,sans-serif;font-size:11px;font-weight:600;color:#A77B3A;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:8px;">
+CONFIDENTIAL EXECUTIVE BRIEF
 </div>
-<!-- Brand name - vertically aligned with divider -->
-<div style="font-family:'Times New Roman',Times,serif;font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;line-height:1.2;">
-VOXMILL MARKET INTELLIGENCE
+<!-- Title -->
+<h1 style="margin:0;font-family:'Playfair Display','Times New Roman',serif;font-size:42px;font-weight:700;color:#BFA670;letter-spacing:0.01em;line-height:1.2;">
+Market Intelligence Snapshot
+</h1>
+<!-- Subtitle -->
+<div style="font-family:'Inter',Arial,sans-serif;font-size:16px;color:rgba(234,234,234,0.85);letter-spacing:0.1em;text-transform:uppercase;margin-top:12px;">
+<span style="color:#BFA670;font-weight:600;">{area}</span> · {city}
 </div>
-<!-- Gold divider -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="height:1px;background-color:#CBA135;"></td></tr>
-</table>
+<div style="font-family:'Inter',Arial,sans-serif;font-size:11px;color:#B8B8B8;letter-spacing:0.15em;margin-top:8px;font-style:italic;">
+Precision Intelligence. Strategic Foresight. Capital Deployment Clarity.
+</div>
 </td>
 </tr>
 
-<!-- CONTENT PANEL -->
+<!-- DIVIDER -->
 <tr>
-<td style="padding:0 20px 20px;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#121212;border:1px solid rgba(176,161,53,0.25);border-radius:14px;">
-<tr>
-<td style="padding:40px;">
+<td style="padding:0 48px;">
+<div style="height:2px;background:rgba(191,166,112,0.2);"></div>
+</td>
+</tr>
 
-<!-- GREETING - muted grey -->
-<p style="margin:0 0 26px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:#B3B3B3;line-height:1.5;">
+<!-- MAIN CONTENT -->
+<tr>
+<td style="padding:48px;">
+
+<!-- Greeting -->
+<p style="margin:0 0 32px;font-family:'Inter',Arial,sans-serif;font-size:16px;color:#EAEAEA;line-height:1.6;">
 {recipient_name},
 </p>
 
-<!-- TAG LINE -->
-<p style="margin:0 0 10px;font-family:'Times New Roman',Times,serif;font-size:11px;font-weight:600;color:#B08D57;letter-spacing:1px;text-transform:uppercase;text-align:center;">
-WEEKLY PRECISION REPORT
+<!-- Body Text -->
+<p style="margin:0 0 28px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:rgba(234,234,234,0.85);line-height:1.85;">
+Following our conversation — I've compiled this week's <strong style="color:#BFA670;">Voxmill Executive Intelligence</strong> report for <strong style="color:#BFA670;">{area}, {city}</strong>. This analysis provides institutional-grade market positioning, competitive dynamics, and strategic acquisition signals.
 </p>
 
-<!-- TITLE - pure white Playfair -->
-<h1 style="margin:0 0 10px;font-family:'Times New Roman',Times,serif;font-size:24px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.3;letter-spacing:1px;">
-Market Intelligence Snapshot
-</h1>
-
-<!-- SUBTITLE -->
-<p style="margin:0 0 28px;font-family:'Inter',Arial,sans-serif;font-size:13px;color:#AFAFAF;text-align:center;text-transform:uppercase;letter-spacing:0.5px;line-height:1.4;">
-{area}, {city} • {date}
-</p>
-
-<!-- MAIN PARAGRAPH - Inter Regular, #D8D8D8, enhanced line-height -->
-<p style="margin:0 0 28px;font-family:'Inter',Arial,sans-serif;font-size:16px;color:#D8D8D8;line-height:1.75;">
-Following our conversation — I've attached this week's Voxmill Market Intelligence report for <strong style="color:#B08D57;">{area}, {city}</strong>. This analysis provides executive-level insights into current market positioning and competitive dynamics.
-</p>
-
-<!-- HIGHLIGHT BOX - enhanced depth with shadow and softer border -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:rgba(176,141,87,0.06);border-left:4px solid rgba(176,141,87,0.35);border-radius:0 8px 8px 0;margin:24px 0;box-shadow:0 0 20px rgba(176,141,87,0.15);">
+<!-- HIGHLIGHT BOX - Matte Black Card -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(10,10,10,0.55);border:1px solid rgba(255,215,167,0.06);border-radius:10px;margin:32px 0;">
 <tr>
-<td style="padding:26px 22px;">
+<td style="padding:32px;">
 
-<!-- BOX TITLE -->
-<p style="margin:0 0 18px;font-family:'Inter',Arial,sans-serif;font-size:11px;font-weight:700;color:#B08D57;letter-spacing:1px;text-transform:uppercase;">
-REPORT HIGHLIGHTS
-</p>
+<!-- Box Title -->
+<div style="font-family:'Inter',Arial,sans-serif;font-size:12px;font-weight:700;color:#BFA670;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:20px;border-bottom:1px solid rgba(191,166,112,0.2);padding-bottom:12px;">
+📊 EXECUTIVE SUMMARY
+</div>
 
-<!-- BULLET LIST - enhanced spacing -->
-<table cellpadding="0" cellspacing="0" border="0">
-<tr><td style="padding-bottom:12px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:#D8D8D8;line-height:1.65;">
-<span style="color:#CBA135;font-weight:700;margin-right:10px;">—</span>40+ luxury properties analyzed with AI-powered deal scoring
+<!-- Bullet List -->
+<table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+<tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Market Overview — KPI dashboard with velocity & liquidity metrics
 </td></tr>
-<tr><td style="padding-bottom:12px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:#D8D8D8;line-height:1.65;">
-<span style="color:#CBA135;font-weight:700;margin-right:10px;">—</span>Competitor landscape analysis and strategic market positioning
+<tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Competitive Landscape — Institutional positioning & market share analysis
 </td></tr>
-<tr><td style="padding-bottom:12px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:#D8D8D8;line-height:1.65;">
-<span style="color:#CBA135;font-weight:700;margin-right:10px;">—</span>Executive intelligence briefing with actionable insights
+<tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Strategic Forecast — 30/90-day projections with AI-powered insights
 </td></tr>
-<tr><td style="font-family:'Inter',Arial,sans-serif;font-size:15px;color:#D8D8D8;line-height:1.65;">
-<span style="color:#CBA135;font-weight:700;margin-right:10px;">—</span>Pricing trend analysis and market anomaly detection
+<tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Top Opportunities — Algorithm-flagged acquisition targets
 </td></tr>
 </table>
 
@@ -142,17 +144,17 @@ REPORT HIGHLIGHTS
 </tr>
 </table>
 
-<!-- CTA BUTTON - polished with letter-spacing and weight -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:30px 0 22px;">
+<!-- CTA BUTTON -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:40px 0 32px;">
 <tr>
 <td align="center">
 <!--[if mso]>
-<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="cid:voxmill_report_pdf" style="height:38px;v-text-anchor:middle;width:180px;" arcsize="16%" stroke="f" fillcolor="#B08D57">
+<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="cid:voxmill_report_pdf" style="height:50px;v-text-anchor:middle;width:240px;" arcsize="12%" stroke="f" fillcolor="#BFA670">
 <w:anchorlock/>
 <center>
 <![endif]-->
-<a href="cid:voxmill_report_pdf" style="display:inline-block;background:linear-gradient(135deg,#B08D57 0%,#CBA135 100%);color:#FFFFFF;text-decoration:none;padding:12px 22px;border-radius:6px;font-family:'Inter',Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;mso-hide:all;">
-OPEN FULL REPORT
+<a href="cid:voxmill_report_pdf" style="display:inline-block;background:linear-gradient(90deg,#A77B3A 0%,#BFA670 50%,#A77B3A 100%);color:#0C0C0C;text-decoration:none;padding:16px 40px;border-radius:6px;font-family:'Inter',Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;box-shadow:0 6px 16px rgba(191,166,112,0.4);">
+VIEW FULL INTELLIGENCE DECK
 </a>
 <!--[if mso]>
 </center>
@@ -162,78 +164,80 @@ OPEN FULL REPORT
 </tr>
 </table>
 
-<!-- ATTACHMENT NOTE -->
-<p style="margin:0 0 12px;font-family:'Inter',Arial,sans-serif;font-size:12px;font-weight:600;color:#CBA135;text-align:center;">
-📎 Full report attached above
+<!-- Attachment Note -->
+<div style="text-align:center;margin:0 0 32px;">
+<div style="font-family:'Inter',Arial,sans-serif;font-size:11px;font-weight:600;color:#BFA670;letter-spacing:0.5px;">
+📎 FULL REPORT ATTACHED
+</div>
+<div style="font-family:'Inter',Arial,sans-serif;font-size:12px;color:#B8B8B8;margin-top:6px;">
+Voxmill_{area.replace(' ','_')}_{city.replace(' ','_')}_Intelligence.pdf
+</div>
+</div>
+
+<!-- Closing -->
+<p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:rgba(234,234,234,0.75);line-height:1.75;">
+I'll follow up within 24–48 hours to discuss strategic implications and how this intelligence can enhance your competitive positioning in {area}.
 </p>
 
-<!-- FOLLOW UP - muted grey for softer tone -->
-<p style="margin:22px 0 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#B3B3B3;line-height:1.7;text-align:center;">
-I'll follow up within 24–48 hours to discuss strategic implications and how this intelligence can enhance your competitive positioning.
-</p>
-
-<!-- SIGNATURE -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:36px;padding-top:22px;border-top:1px solid #2E2E2E;">
+<!-- SIGNATURE BLOCK -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(191,166,112,0.2);">
 <tr>
 <td>
-<p style="margin:0 0 5px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:#FFFFFF;font-weight:600;line-height:1.3;">Olly</p>
-<p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:11px;color:#AFAFAF;line-height:1.4;">Voxmill Market Intelligence</p>
+<p style="margin:0 0 4px;font-family:'Inter',Arial,sans-serif;font-size:16px;color:#EAEAEA;font-weight:600;">Olly</p>
+<p style="margin:0 0 2px;font-family:'Inter',Arial,sans-serif;font-size:12px;color:#BFA670;font-weight:500;">Founder, Voxmill Market Intelligence</p>
+<p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:11px;color:#B8B8B8;">Institutional-Grade Market Analysis</p>
 </td>
 </tr>
 </table>
 
-</td>
-</tr>
-</table>
 </td>
 </tr>
 
 <!-- FOOTER -->
 <tr>
-<td style="background-color:#0B0B0B;padding:26px 20px 28px;text-align:center;">
+<td style="padding:32px 48px;background:#0C0C0C;border-top:2px solid rgba(191,166,112,0.15);">
 <!-- Gold divider -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:18px;">
-<tr><td style="height:1px;background-color:#CBA135;"></td></tr>
-</table>
-<p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:10px;color:#B08D57;line-height:1.6;letter-spacing:1px;text-transform:uppercase;">
-VOXMILL AUTOMATIONS — CONFIDENTIAL | {year}
+<div style="height:1px;background:linear-gradient(90deg,transparent,#BFA670,transparent);margin-bottom:20px;"></div>
+<!-- Footer text -->
+<p style="margin:0 0 8px;font-family:'Inter',Arial,sans-serif;font-size:10px;color:#A77B3A;text-align:center;letter-spacing:1px;text-transform:uppercase;">
+VOXMILL AUTOMATIONS — CONFIDENTIAL INTELLIGENCE | {year}
 </p>
-<p style="margin:10px 0 0;font-family:'Inter',Arial,sans-serif;font-size:10px;color:#AFAFAF;line-height:1.6;">
+<p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:10px;color:#B8B8B8;text-align:center;line-height:1.6;">
 This briefing contains proprietary analysis for authorized recipients only
 </p>
 </td>
 </tr>
 
-</table>
+<!-- GOLD BOTTOM BAR -->
+<tr>
+<td style="height:3px;background:linear-gradient(90deg,#A77B3A 0%,#BFA670 50%,#A77B3A 100%);"></td>
+</tr>
 
-<!-- MOBILE RESPONSIVE -->
-<style type="text/css">
-@media only screen and (max-width: 480px) {{
-table[class="container"] {{
-width: 100% !important;
-}}
-td[class="content-padding"] {{
-padding-left: 24px !important;
-padding-right: 24px !important;
-}}
-h1 {{
-font-size: 22px !important;
-}}
-.highlight-box {{
-margin: 24px 0 !important;
-}}
-}}
-/* Button hover for supporting clients */
-@media screen {{
-a[href^="cid:"]:hover {{
-background: linear-gradient(135deg,#9C7A45,#B08D57) !important;
-}}
-}}
-</style>
+</table>
 
 </td>
 </tr>
 </table>
+
+<!-- MOBILE RESPONSIVE -->
+<style type="text/css">
+@media only screen and (max-width: 750px) {{
+table[width="700"] {{
+width: 100% !important;
+}}
+td {{
+padding-left: 24px !important;
+padding-right: 24px !important;
+}}
+h1 {{
+font-size: 32px !important;
+}}
+img[width="120"] {{
+width: 80px !important;
+height: 80px !important;
+}}
+}}
+</style>
 
 </body>
 </html>"""
@@ -242,7 +246,7 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
     """Send executive email"""
     
     logger.info("=" * 70)
-    logger.info("VOXMILL EXECUTIVE EMAIL SENDER")
+    logger.info("VOXMILL EXECUTIVE EMAIL SENDER V2.0")
     logger.info("=" * 70)
     
     try:
@@ -262,24 +266,22 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         pdf_size = pdf_file.stat().st_size
         logger.info(f"✅ PDF: {pdf_size:,} bytes ({pdf_size/1024:.1f} KB)")
         
-        # Step 3: Load logo
+        # Step 3: Load logo (REQUIRED)
         logger.info("Step 3/6: Loading logo...")
         if logo_path is None:
             logo_path = DEFAULT_LOGO_PATH
         
-        logo_exists = Path(logo_path).exists()
-        if logo_exists:
-            logger.info(f"✅ Logo: {logo_path}")
-        else:
-            logger.warning(f"⚠️  Logo not found at {logo_path}, using text fallback")
-            logo_path = None
+        if not Path(logo_path).exists():
+            raise FileNotFoundError(f"Logo not found at {logo_path} - REQUIRED for design")
+        
+        logger.info(f"✅ Logo: {logo_path}")
         
         # Step 4: Build email
         logger.info("Step 4/6: Building email message...")
         msg = MIMEMultipart('related')
         msg['From'] = f"Olly - Voxmill Intelligence <{sender_email}>"
         msg['To'] = recipient_email
-        msg['Subject'] = f"Market intelligence snapshot — {area}"
+        msg['Subject'] = f"Market Intelligence Snapshot — {area}"
         
         # HTML content
         html_content = create_voxmill_email(recipient_name, area, city)
@@ -288,17 +290,14 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         
         logger.info("✅ HTML created")
         
-        # Step 5: Attach logo (if available)
-        if logo_path:
-            logger.info("Step 5/6: Attaching inline logo...")
-            with open(logo_path, 'rb') as f:
-                logo_img = MIMEImage(f.read())
-                logo_img.add_header('Content-ID', '<voxmill_logo>')
-                logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
-                msg.attach(logo_img)
-            logger.info("✅ Logo embedded")
-        else:
-            logger.info("Step 5/6: Skipping logo (using text fallback)")
+        # Step 5: Attach logo (REQUIRED)
+        logger.info("Step 5/6: Attaching inline logo...")
+        with open(logo_path, 'rb') as f:
+            logo_img = MIMEImage(f.read())
+            logo_img.add_header('Content-ID', '<voxmill_logo>')
+            logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
+            msg.attach(logo_img)
+        logger.info("✅ Logo embedded")
         
         # Step 6: Attach PDF
         logger.info("Step 6/6: Attaching PDF...")
@@ -316,7 +315,6 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
             msg.attach(part)
         
         logger.info(f"✅ PDF attached: {filename}")
-        logger.info(f"✅ PDF button linked")
         
         # Send
         logger.info(f"\nSending to {recipient_email}...")
