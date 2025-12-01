@@ -3521,6 +3521,57 @@ TOP MARKET OPPORTUNITIES
     line-height: 1.2;
 }
 
+/* NEW: Market Snapshot Panel (fills the gap) */
+.segment-market-snapshot {
+    background: rgba(191, 166, 112, 0.08);
+    border-left: 4px solid #BFA670;
+    border-radius: 10px;
+    padding: 28px 36px;
+    margin: 48px 0;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.segment-snapshot-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #C5A46D;
+    margin-bottom: 16px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.segment-snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.segment-snapshot-metric {
+    text-align: center;
+}
+
+.segment-snapshot-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+}
+
+.segment-snapshot-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #C5A46D;
+    line-height: 1.2;
+}
+
 /* MOMENTUM STREETS PANEL - Section spacing */
 .momentum-streets-panel {
     background: rgba(191, 166, 112, 0.05);
@@ -3619,58 +3670,6 @@ TOP MARKET OPPORTUNITIES
     margin-top: 40px;
 }
 
-/* Add to voxmill_style_v5_7_SURGICAL.css */
-
-/* Segment Performance - Fill Gap Solution */
-.segment-market-snapshot {
-    background: rgba(191, 166, 112, 0.08);
-    border-left: 4px solid #BFA670;
-    border-radius: 10px;
-    padding: 28px 36px;
-    margin: 48px 0;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.segment-snapshot-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #C5A46D;
-    margin-bottom: 16px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-}
-
-.segment-snapshot-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-}
-
-.segment-snapshot-metric {
-    text-align: center;
-}
-
-.segment-snapshot-label {
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.6);
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    margin-bottom: 8px;
-}
-
-.segment-snapshot-value {
-    font-family: 'Inter', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #C5A46D;
-    line-height: 1.2;
-}
 /* ============================================
 AI OPPORTUNITIES
 ============================================ */
