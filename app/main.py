@@ -41,25 +41,47 @@ async def shutdown_event():
 
 
 @app.post("/webhook/whatsapp")
-async def whatsapp_webhook(
-    From: str = Form(...),
-    Body: str = Form(...)
-):
+async def whatsapp_webhook(request: Request):
     """
     Receives WhatsApp messages from Twilio.
     Twilio sends form data with From (sender) and Body (message text).
     """
     try:
-        logger.info(f"Received Twilio webhook from {From}: {Body}")
+        # Parse form data manually for flexibility
+        form_data = await request.form()
         
-        if From and Body:
-            await handle_whatsapp_message(From, Body)
+        # Log all received fields for debugging
+        logger.info(f"Received webhook with fields: {dict(form_data)}")
+        
+        # Extract sender and message (handle different field names)
+        sender = (
+            form_data.get('From') or 
+            form_data.get('from') or 
+            form_data.get('sender')
+        )
+        
+        message = (
+            form_data.get('Body') or 
+            form_data.get('body') or 
+            form_data.get('message') or
+            form_data.get('text')
+        )
+        
+        # Log extracted values
+        logger.info(f"Extracted - Sender: {sender}, Message: {message}")
+        
+        if sender and message:
+            await handle_whatsapp_message(sender, message)
+            logger.info(f"Successfully processed message from {sender}")
+        else:
+            logger.warning(f"Missing required fields - Sender: {sender}, Message: {message}")
         
         # Twilio expects empty 200 response
         return Response(status_code=200)
     
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}", exc_info=True)
+        # Still return 200 to Twilio to prevent retries
         return Response(status_code=200)
 
 
