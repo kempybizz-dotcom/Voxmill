@@ -37,6 +37,15 @@ You MUST return a valid JSON object with this exact structure:
   "recommendation_urgency": "immediate|near_term|monitor"
 }
 
+CONVERSATION CONTINUITY:
+When appropriate, reference the client's recent query history from their profile.
+Example contexts:
+- "Following up on your question about Knight Frank yesterday..."
+- "Since your last briefing on Tuesday..."
+- "As discussed in our previous conversation..."
+
+Use client's query_history to provide continuity, but don't force it if irrelevant.
+
 CRITICAL LENGTH CONSTRAINT:
 Target 1200-1400 characters total (including headers). If analysis naturally exceeds this, it will auto-split across multiple messages, but aim for concision first.
 
@@ -323,15 +332,23 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         comparison_keywords = ['compare', 'vs', 'versus', 'which is better', 'difference between']
         briefing_keywords = ['briefing', 'weekly summary', 'this week', 'prepare summary']
         analysis_keywords = ['analyse', 'analyze', 'snapshot', 'breakdown', 'deep dive']
+        trend_keywords = ['trend', 'pattern', 'unusual', 'changed', 'different', 'movement']
         
         is_scenario = any(keyword in message.lower() for keyword in scenario_keywords)
         is_strategic = any(keyword in message.lower() for keyword in strategic_keywords)
         is_comparison = any(keyword in message.lower() for keyword in comparison_keywords)
         is_briefing = any(keyword in message.lower() for keyword in briefing_keywords)
         is_analysis = any(keyword in message.lower() for keyword in analysis_keywords)
+        is_trend_query = any(keyword in message.lower() for keyword in trend_keywords)
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
+        
+        # Add detected trends if available
+        if 'detected_trends' in dataset and dataset['detected_trends']:
+            context_parts.append("\nDETECTED MARKET TRENDS (Last 14 Days):")
+            for trend in dataset['detected_trends'][:5]:
+                context_parts.append(f"• {trend['insight']}")
         
         # Add comparison datasets if available
         if comparison_datasets and is_comparison:
@@ -346,7 +363,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                     "sentiment": comp_dataset.get('intelligence', {}).get('market_sentiment', 'Unknown')
                 }, indent=2))
         
-        # Add client profile if available
+        # Add client profile with query history
         if client_profile:
             client_context = {
                 'preferred_regions': client_profile.get('preferences', {}).get('preferred_regions', []),
@@ -355,6 +372,19 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 'tier': client_profile.get('tier', 'unknown')
             }
             context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
+            
+            # Add recent conversation history for continuity
+            if client_profile.get('query_history'):
+                recent_queries = client_profile['query_history'][-5:]  # Last 5 queries
+                if recent_queries:
+                    context_parts.append("\nRECENT CONVERSATION HISTORY:")
+                    for q in recent_queries:
+                        timestamp = q.get('timestamp')
+                        if isinstance(timestamp, str):
+                            date_str = timestamp[:10]
+                        else:
+                            date_str = timestamp.strftime('%Y-%m-%d') if timestamp else 'Unknown'
+                        context_parts.append(f"- {date_str}: {q.get('query', 'N/A')} (category: {q.get('category', 'N/A')})")
         
         # Determine mode
         if is_scenario:
@@ -367,6 +397,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             mode = "WEEKLY BRIEFING"
         elif is_analysis:
             mode = "FULL STRUCTURED ANALYSIS"
+        elif is_trend_query:
+            mode = "TREND ANALYSIS"
         else:
             mode = "QUICK RESPONSE"
         
@@ -376,7 +408,13 @@ User message: "{message}"
 
 Analysis mode: {mode}
 
-Classify this message and generate an executive analyst response with V3 predictive intelligence capabilities."""
+Classify this message and generate an executive analyst response with V3 predictive intelligence capabilities.
+
+REMEMBER: 
+- Include confidence levels on predictions (e.g., "85% confidence based on 12 historical precedents")
+- Reference conversation history naturally when relevant
+- Highlight detected trends if they relate to the query
+- Keep response under 1400 characters if possible"""
 
         if openai_client:
             response = await call_gpt4(user_prompt)
@@ -406,6 +444,8 @@ Classify this message and generate an executive analyst response with V3 predict
                 category = "weekly_briefing"
             elif is_analysis:
                 category = "analysis_snapshot"
+            elif is_trend_query:
+                category = "market_overview"
             else:
                 category = "market_overview"
             response_text = response
