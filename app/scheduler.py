@@ -40,3 +40,11 @@ async def daily_intelligence_cycle():
         except Exception as e:
             logger.error(f"Error in daily intelligence cycle: {str(e)}", exc_info=True)
             await asyncio.sleep(600)
+
+# Add to app/main.py startup:
+# import asyncio
+# from app.scheduler import daily_intelligence_cycle
+# 
+# @app.on_event("startup")
+# async def start_scheduler():
+#     asyncio.create_task(daily_intelligence_cycle())
