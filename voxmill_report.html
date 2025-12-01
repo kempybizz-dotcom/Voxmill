@@ -1168,6 +1168,29 @@
                         <h3 class="district-name">{{ submarket.name }}</h3>
                     </div>
                 </div>
+
+                <!-- NEW: Market Snapshot Panel (fills the gap) -->
+<div class="segment-market-snapshot">
+    <h4 class="segment-snapshot-title">📊 Cross-District Market Snapshot</h4>
+    <div class="segment-snapshot-grid">
+        <div class="segment-snapshot-metric">
+            <div class="segment-snapshot-label">Total Inventory</div>
+            <div class="segment-snapshot-value">{{ submarkets|sum(attribute='count') if submarkets else kpis.total_properties }}</div>
+        </div>
+        <div class="segment-snapshot-metric">
+            <div class="segment-snapshot-label">Market Average</div>
+            <div class="segment-snapshot-value">£{{ "{:,.1f}".format((submarkets|sum(attribute='avg_price') / submarkets|length / 1000000) if submarkets and submarkets|length > 0 else (kpis.avg_price / 1000000)) }}M</div>
+        </div>
+        <div class="segment-snapshot-metric">
+            <div class="segment-snapshot-label">Fastest Velocity</div>
+            <div class="segment-snapshot-value">{{ (submarkets|sort(attribute='days_on_market')|first).days_on_market if submarkets else kpis.days_on_market }}d</div>
+        </div>
+        <div class="segment-snapshot-metric">
+            <div class="segment-snapshot-label">Districts Tracked</div>
+            <div class="segment-snapshot-value">{{ submarkets|length if submarkets else 1 }}</div>
+        </div>
+    </div>
+</div>
                 
                 <div class="district-metrics-grid">
                     <div class="district-metric-row">
