@@ -2,8 +2,7 @@
 VOXMILL EXECUTIVE EMAIL SENDER V2.0
 ===================================
 Matte black + bronze luxury aesthetic
-Matches PDF design system exactly
-Full logo integration
+Auto-generates logo if not found
 """
 
 import smtplib
@@ -17,6 +16,7 @@ from email.mime.image import MIMEImage
 from email import encoders
 from datetime import datetime
 from pathlib import Path
+from io import BytesIO
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 DEFAULT_PDF_PATH = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
-DEFAULT_LOGO_PATH = "/mnt/user-data/uploads/voxmill_logo.png"
+DEFAULT_LOGO_PATH = "/opt/render/project/src/voxmill_logo.png"  # FIXED: Render path
 
 def validate_environment():
     """Validate email credentials"""
@@ -38,6 +38,59 @@ def validate_environment():
     
     logger.info(f"✅ Credentials: {sender_email}")
     return sender_email, sender_password
+
+def generate_logo_svg():
+    """Generate Voxmill logo as SVG (fallback if PNG not found)"""
+    svg = """<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#A77B3A;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#BFA670;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#A77B3A;stop-opacity:1" />
+        </linearGradient>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <rect width="120" height="120" fill="#0C0C0C"/>
+    <path d="M60,20 L85,60 L60,100 L35,60 Z" fill="url(#goldGradient)" stroke="#BFA670" stroke-width="2" filter="url(#glow)"/>
+    <text x="60" y="72" font-family="Playfair Display, serif" font-size="52" font-weight="700" fill="#0C0C0C" text-anchor="middle">V</text>
+</svg>"""
+    return svg.encode('utf-8')
+
+def get_logo_bytes(logo_path):
+    """Get logo as bytes - tries PNG first, generates SVG fallback"""
+    # Try multiple paths
+    possible_paths = [
+        logo_path,
+        "/opt/render/project/src/voxmill_logo.png",
+        "/tmp/voxmill_logo.png",
+        "voxmill_logo.png"
+    ]
+    
+    for path in possible_paths:
+        if Path(path).exists():
+            logger.info(f"✅ Logo found: {path}")
+            with open(path, 'rb') as f:
+                return f.read(), 'png'
+    
+    # Generate SVG fallback
+    logger.info("⚠️  PNG not found, generating SVG logo...")
+    
+    # Try to convert SVG to PNG using cairosvg if available
+    try:
+        import cairosvg
+        svg_bytes = generate_logo_svg()
+        png_bytes = cairosvg.svg2png(bytestring=svg_bytes, output_width=120, output_height=120)
+        logger.info("✅ Generated PNG from SVG")
+        return png_bytes, 'png'
+    except ImportError:
+        logger.info("✅ Using SVG logo (cairosvg not available)")
+        return generate_logo_svg(), 'svg+xml'
 
 def create_voxmill_email(recipient_name, area, city):
     """Create executive-grade email matching PDF aesthetic"""
@@ -266,15 +319,13 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         pdf_size = pdf_file.stat().st_size
         logger.info(f"✅ PDF: {pdf_size:,} bytes ({pdf_size/1024:.1f} KB)")
         
-        # Step 3: Load logo (REQUIRED)
+        # Step 3: Load logo (with fallback)
         logger.info("Step 3/6: Loading logo...")
         if logo_path is None:
             logo_path = DEFAULT_LOGO_PATH
         
-        if not Path(logo_path).exists():
-            raise FileNotFoundError(f"Logo not found at {logo_path} - REQUIRED for design")
-        
-        logger.info(f"✅ Logo: {logo_path}")
+        logo_bytes, logo_type = get_logo_bytes(logo_path)
+        logger.info(f"✅ Logo loaded: {logo_type.upper()} ({len(logo_bytes)} bytes)")
         
         # Step 4: Build email
         logger.info("Step 4/6: Building email message...")
@@ -290,13 +341,12 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         
         logger.info("✅ HTML created")
         
-        # Step 5: Attach logo (REQUIRED)
+        # Step 5: Attach logo
         logger.info("Step 5/6: Attaching inline logo...")
-        with open(logo_path, 'rb') as f:
-            logo_img = MIMEImage(f.read())
-            logo_img.add_header('Content-ID', '<voxmill_logo>')
-            logo_img.add_header('Content-Disposition', 'inline', filename='voxmill_logo.png')
-            msg.attach(logo_img)
+        logo_img = MIMEImage(logo_bytes, _subtype=logo_type)
+        logo_img.add_header('Content-ID', '<voxmill_logo>')
+        logo_img.add_header('Content-Disposition', 'inline', filename=f'voxmill_logo.{logo_type.split("/")[-1]}')
+        msg.attach(logo_img)
         logger.info("✅ Logo embedded")
         
         # Step 6: Attach PDF
