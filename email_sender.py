@@ -3,6 +3,7 @@ VOXMILL EXECUTIVE EMAIL SENDER V2.0
 ===================================
 Matte black + bronze luxury aesthetic
 Auto-generates logo if not found
+No emojis - pure professional design
 """
 
 import smtplib
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 DEFAULT_PDF_PATH = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
-DEFAULT_LOGO_PATH = "/opt/render/project/src/voxmill_logo.png"  # FIXED: Render path
+DEFAULT_LOGO_PATH = "/opt/render/project/src/voxmill_logo.png"
 
 def validate_environment():
     """Validate email credentials"""
@@ -174,22 +175,22 @@ Following our conversation — I've compiled this week's <strong style="color:#B
 
 <!-- Box Title -->
 <div style="font-family:'Inter',Arial,sans-serif;font-size:12px;font-weight:700;color:#BFA670;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:20px;border-bottom:1px solid rgba(191,166,112,0.2);padding-bottom:12px;">
-📊 EXECUTIVE SUMMARY
+EXECUTIVE SUMMARY
 </div>
 
 <!-- Bullet List -->
 <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
 <tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
-<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Market Overview — KPI dashboard with velocity & liquidity metrics
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">—</span>Market Overview — KPI dashboard with velocity & liquidity metrics
 </td></tr>
 <tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
-<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Competitive Landscape — Institutional positioning & market share analysis
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">—</span>Competitive Landscape — Institutional positioning & market share analysis
 </td></tr>
 <tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
-<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Strategic Forecast — 30/90-day projections with AI-powered insights
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">—</span>Strategic Forecast — 30/90-day projections with AI-powered insights
 </td></tr>
 <tr><td style="padding:8px 0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:#EAEAEA;line-height:1.7;">
-<span style="color:#BFA670;font-weight:700;margin-right:12px;">→</span>Top Opportunities — Algorithm-flagged acquisition targets
+<span style="color:#BFA670;font-weight:700;margin-right:12px;">—</span>Top Opportunities — Algorithm-flagged acquisition targets
 </td></tr>
 </table>
 
@@ -220,7 +221,7 @@ VIEW FULL INTELLIGENCE DECK
 <!-- Attachment Note -->
 <div style="text-align:center;margin:0 0 32px;">
 <div style="font-family:'Inter',Arial,sans-serif;font-size:11px;font-weight:600;color:#BFA670;letter-spacing:0.5px;">
-📎 FULL REPORT ATTACHED
+FULL REPORT ATTACHED
 </div>
 <div style="font-family:'Inter',Arial,sans-serif;font-size:12px;color:#B8B8B8;margin-top:6px;">
 Voxmill_{area.replace(' ','_')}_{city.replace(' ','_')}_Intelligence.pdf
