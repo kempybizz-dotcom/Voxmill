@@ -1,13 +1,23 @@
+"""
+VOXMILL WHATSAPP HANDLER
+========================
+Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages
+"""
+
 import os
 import logging
 import httpx
+from datetime import datetime, timezone
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Twilio configuration
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
@@ -15,9 +25,106 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
 
+async def send_first_time_welcome(sender: str, client_profile: dict):
+    """
+    Send welcome message to first-time users
+    """
+    try:
+        tier = client_profile.get('tier', 'tier_1')
+        name = client_profile.get('name', 'there')
+        
+        # Split name to get first name only
+        first_name = name.split()[0] if name != 'there' else 'there'
+        
+        # Tier-specific welcome messages
+        welcome_messages = {
+            "tier_1": f"""Welcome to Voxmill Intelligence, {first_name}.
+
+Your Tier 1 access is now active.
+
+You have access to:
+- Real-time market overview
+- Competitive intelligence
+- Opportunity identification
+- Price corridor analysis
+
+Ask me anything about luxury markets. Try:
+- "Market overview"
+- "Top opportunities"
+- "Competitive landscape"
+
+Available 24/7 at this number.""",
+
+            "tier_2": f"""Welcome to Voxmill Intelligence, {first_name}.
+
+Your Tier 2 Analyst Desk is now active.
+
+You have full access to:
+- Real-time market intelligence
+- Competitive dynamics analysis
+- Trend detection (14-day windows)
+- Strategic recommendations
+- Liquidity velocity tracking
+- Up to 10 analyses per day
+
+Your intelligence is personalized to your preferences and will learn from our conversations.
+
+Ask me anything. Try:
+- "What's the market outlook?"
+- "Analyze competitive positioning"
+- "Show me liquidity trends"
+
+Available 24/7.""",
+
+            "tier_3": f"""Welcome to Voxmill Intelligence, {first_name}.
+
+Your Tier 3 Strategic Partner access is now active.
+
+You have unlimited access to our complete intelligence suite:
+
+REAL-TIME ANALYSIS:
+- Market overview & trends
+- Competitive landscape
+- Opportunity identification
+
+PREDICTIVE INTELLIGENCE:
+- Agent behavioral profiling (85-91% confidence)
+- Multi-wave cascade forecasting
+- Liquidity velocity tracking
+- Micromarket segmentation
+
+SCENARIO MODELING:
+- "What if Knight Frank drops 10%?"
+- Strategic response recommendations
+- Risk/opportunity mapping
+
+No message limits. Full institutional-grade intelligence.
+
+Ask me anything, anytime. Examples:
+- "Strategic outlook for Mayfair"
+- "What if Savills raises prices 8%?"
+- "Analyze liquidity velocity"
+- "Predict cascade effects"
+
+Your dedicated intelligence partner, available 24/7."""
+        }
+        
+        message = welcome_messages.get(tier, welcome_messages["tier_1"])
+        
+        await send_twilio_message(sender, message)
+        logger.info(f"Welcome message sent to {sender} (Tier: {tier})")
+        
+        # Small delay before processing their first query
+        import asyncio
+        await asyncio.sleep(1.5)
+        
+    except Exception as e:
+        logger.error(f"Error sending welcome message: {str(e)}", exc_info=True)
+
+
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery
+    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
@@ -56,6 +163,20 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         message_normalized = normalize_query(message_text)
         
         # ========================================
+        # LOAD CLIENT PROFILE & CHECK FIRST TIME
+        # ========================================
+        
+        from app.client_manager import get_client_profile, update_client_history
+        client_profile = get_client_profile(sender)
+        
+        # Check if first-time user (total_queries == 0)
+        is_first_time = client_profile.get('total_queries', 0) == 0
+        
+        if is_first_time:
+            # Send welcome message for first-time users
+            await send_first_time_welcome(sender, client_profile)
+        
+        # ========================================
         # PDF REQUEST DETECTION
         # ========================================
         
@@ -66,54 +187,13 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         is_pdf_request = any(keyword in message_normalized.lower() for keyword in pdf_keywords)
         
         if is_pdf_request:
-            # Load client profile to get preferred region
-            from app.client_manager import get_client_profile
-            client_profile = get_client_profile(sender)
             preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-            
-            # Handle PDF request
             await send_pdf_report(sender, preferred_region)
             return
-
-        async def handle_whatsapp_message(sender: str, message_text: str):
-    """
-    Main message handler with first-time user welcome
-    """
-    try:
-        logger.info(f"Processing message from {sender}: {message_text}")
-        
-        # Load client profile
-        from app.client_manager import get_client_profile, update_client_history
-        client_profile = get_client_profile(sender)
-        
-        # CHECK IF FIRST MESSAGE
-        if client_profile.get('total_queries', 0) == 0:
-            # First time user - send welcome
-            tier = client_profile.get('tier', 'tier_1')
-            name = client_profile.get('name', 'there')
-            
-            # Tier-specific intro
-            if tier == 'tier_3':
-                intro = f"Welcome {name}! Your Tier 3 Strategic Partner access is active. You have unlimited access to our complete predictive intelligence suite."
-            elif tier == 'tier_2':
-                intro = f"Welcome {name}! Your Tier 2 Analyst Desk is active. You have 10 analyses per day with full intelligence access."
-            else:
-                intro = f"Welcome {name}! Your Tier 1 Intelligence Access is active."
-            
-            # Send intro before processing query
-            await send_twilio_message(sender, intro)
-            
-            # Small delay
-            import asyncio
-            await asyncio.sleep(1)
         
         # ========================================
         # NORMAL PROCESSING CONTINUES
         # ========================================
-        
-        # Load client profile
-        from app.client_manager import get_client_profile, update_client_history
-        client_profile = get_client_profile(sender)
         
         # Get preferred region from profile
         preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
@@ -219,38 +299,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
-
-
-async def send_onboarding_sequence(whatsapp_number: str, tier: str, name: str):
-    """
-    Multi-message onboarding sequence
-    """
-    import asyncio
-    
-    # Message 1: Welcome
-    msg1 = f"Welcome to Voxmill Intelligence, {name}! 🎉"
-    await send_twilio_message(whatsapp_number, msg1)
-    await asyncio.sleep(2)
-    
-    # Message 2: Access confirmation
-    msg2 = f"Your {tier.upper().replace('_', ' ')} access is now active."
-    await send_twilio_message(whatsapp_number, msg2)
-    await asyncio.sleep(2)
-    
-    # Message 3: Capabilities
-    if tier == 'tier_3':
-        msg3 = "You have unlimited access to:\n• Predictive intelligence\n• Agent profiling\n• Cascade forecasting\n• Scenario modeling"
-    elif tier == 'tier_2':
-        msg3 = "You have 10 daily analyses including:\n• Market intelligence\n• Trend detection\n• Liquidity tracking"
-    else:
-        msg3 = "You have access to:\n• Market overview\n• Competitive analysis\n• Opportunity identification"
-    
-    await send_twilio_message(whatsapp_number, msg3)
-    await asyncio.sleep(2)
-    
-    # Message 4: Quick start
-    msg4 = "Quick start - try asking:\n• \"Market overview\"\n• \"Show opportunities\"\n• \"Analyze competitors\"\n\nI'm available 24/7."
-    await send_twilio_message(whatsapp_number, msg4)
 
 
 async def send_pdf_report(sender: str, area: str):
