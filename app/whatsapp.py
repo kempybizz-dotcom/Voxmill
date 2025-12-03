@@ -14,6 +14,7 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
+
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + PDF delivery
@@ -165,7 +166,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # Classify and respond (use normalized message)
         category, response_text, response_metadata = await classify_and_respond(
-            message_normalized,  # Use normalized version
+            message_normalized,
             dataset,
             client_profile=client_profile
         )
@@ -265,7 +266,6 @@ def normalize_query(text: str) -> str:
     """
     Normalize common typos and variations
     """
-    # Common typo corrections
     corrections = {
         'markrt': 'market',
         'overveiw': 'overview',
@@ -290,96 +290,6 @@ def normalize_query(text: str) -> str:
     
     normalized = text
     for typo, correct in corrections.items():
-        # Case-insensitive replacement
-        import re
-        pattern = re.compile(re.escape(typo), re.IGNORECASE)
-        normalized = pattern.sub(correct, normalized)
-    
-    return normalized
-```
-
----
-
-## **KEY ADDITIONS**
-
-### **1. PDF Request Detection (Lines 52-67)**
-- Detects 15+ different ways users might ask for PDF
-- Intercepts before normal processing
-- Routes to `send_pdf_report()` function
-
-### **2. New `send_pdf_report()` Function (Lines 206-265)**
-- Checks for existing uploaded PDF
-- Falls back to temp PDF if available
-- Handles missing PDF gracefully
-- Professional formatting with date and validity
-
-### **3. Enhanced `normalize_query()` (Lines 268-299)**
-- Added PDF-related typo corrections
-- Handles "reportt", "reprot" etc.
-
----
-
-## **USER EXPERIENCE EXAMPLES**
-
-### **Scenario 1: PDF Exists in Cloud**
-```
-User: "Send me the PDF"
-Bot: "📊 EXECUTIVE INTELLIGENCE BRIEFING
-————————————————————————————————————————
-
-Mayfair Market Analysis
-Generated: December 1, 2025
-
-View your report:
-https://r2.cloudflarestorage.com/voxmill-reports/447780565645/Mayfair_20251201_180000.pdf
-
-📌 Link valid for 7 days
-📄 14-page institutional-grade analysis"
-```
-
-### **Scenario 2: No PDF Yet (Daily Cron Hasn't Run)**
-```
-User: "Full report please"
-Bot: "Your Mayfair executive briefing is being prepared.
-
-Reports are generated daily at midnight GMT. The latest report will be available shortly.
-
-In the meantime, I can provide real-time intelligence. Ask me about market overview, opportunities, or competitive landscape."
-```
-
-### **Scenario 3: PDF Storage Not Configured**
-```
-User: "Send PDF"
-Bot: "PDF delivery is being configured for your account. In the meantime, I can provide comprehensive intelligence via text. Ask me about market overview, opportunities, or strategic outlook."
-
-def normalize_query(text: str) -> str:
-    """
-    Normalize common typos and variations
-    """
-    # Common typo corrections
-    corrections = {
-        'markrt': 'market',
-        'overveiw': 'overview',
-        'overviw': 'overview',
-        'competitve': 'competitive',
-        'competetive': 'competitive',
-        'oppertunities': 'opportunities',
-        'oportunities': 'opportunities',
-        'analyise': 'analyse',
-        'analize': 'analyse',
-        'scenerio': 'scenario',
-        'forcast': 'forecast',
-        'forceast': 'forecast',
-        'whats': 'what is',
-        'whta': 'what',
-        'teh': 'the',
-        'adn': 'and',
-        'hte': 'the'
-    }
-    
-    normalized = text
-    for typo, correct in corrections.items():
-        # Case-insensitive replacement
         import re
         pattern = re.compile(re.escape(typo), re.IGNORECASE)
         normalized = pattern.sub(correct, normalized)
@@ -388,7 +298,9 @@ def normalize_query(text: str) -> str:
 
 
 async def send_twilio_message(recipient: str, message: str):
-    """Send message via Twilio WhatsApp API with intelligent chunking"""
+    """
+    Send message via Twilio WhatsApp API with intelligent chunking
+    """
     try:
         if not twilio_client:
             logger.error("Twilio client not initialized")
@@ -428,8 +340,7 @@ async def send_twilio_message(recipient: str, message: str):
 
 def smart_split_message(message: str, max_length: int) -> list:
     """
-    Split message intelligently at natural break points.
-    Aims for roughly equal-sized chunks, never orphan headers.
+    Split message intelligently at natural break points
     """
     if len(message) <= max_length:
         return [message]
@@ -450,7 +361,7 @@ def smart_split_message(message: str, max_length: int) -> list:
         
         # 1. Try double line break (major section boundary)
         double_break = chunk.rfind('\n\n')
-        if double_break > max_length * 0.5:  # Only if >50% through chunk
+        if double_break > max_length * 0.5:
             split_point = double_break
         
         # 2. Try single line break
@@ -467,7 +378,7 @@ def smart_split_message(message: str, max_length: int) -> list:
                 chunk.rfind('? ')
             )
             if sentence_end > max_length * 0.4:
-                split_point = sentence_end + 1  # Include the period
+                split_point = sentence_end + 1
         
         # 4. Try bullet point
         if split_point == -1:
@@ -489,7 +400,7 @@ def smart_split_message(message: str, max_length: int) -> list:
         chunks.append(remaining[:split_point].strip())
         remaining = remaining[split_point:].strip()
     
-    # Post-process: If first chunk is tiny (<200 chars), merge with second
+    # Post-process: If first chunk is tiny, merge with second
     if len(chunks) > 1 and len(chunks[0]) < 200:
         chunks[0] = f"{chunks[0]}\n\n{chunks[1]}"
         chunks.pop(1)
