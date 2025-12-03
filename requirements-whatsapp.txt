@@ -9,3 +9,4 @@ twilio==8.11.0
 pymongo==4.6.1
 boto3==1.34.34
 stripe==7.4.0
+email-validator==2.1.0
