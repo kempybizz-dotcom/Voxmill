@@ -74,6 +74,38 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             # Handle PDF request
             await send_pdf_report(sender, preferred_region)
             return
+
+        async def handle_whatsapp_message(sender: str, message_text: str):
+    """
+    Main message handler with first-time user welcome
+    """
+    try:
+        logger.info(f"Processing message from {sender}: {message_text}")
+        
+        # Load client profile
+        from app.client_manager import get_client_profile, update_client_history
+        client_profile = get_client_profile(sender)
+        
+        # CHECK IF FIRST MESSAGE
+        if client_profile.get('total_queries', 0) == 0:
+            # First time user - send welcome
+            tier = client_profile.get('tier', 'tier_1')
+            name = client_profile.get('name', 'there')
+            
+            # Tier-specific intro
+            if tier == 'tier_3':
+                intro = f"Welcome {name}! Your Tier 3 Strategic Partner access is active. You have unlimited access to our complete predictive intelligence suite."
+            elif tier == 'tier_2':
+                intro = f"Welcome {name}! Your Tier 2 Analyst Desk is active. You have 10 analyses per day with full intelligence access."
+            else:
+                intro = f"Welcome {name}! Your Tier 1 Intelligence Access is active."
+            
+            # Send intro before processing query
+            await send_twilio_message(sender, intro)
+            
+            # Small delay
+            import asyncio
+            await asyncio.sleep(1)
         
         # ========================================
         # NORMAL PROCESSING CONTINUES
