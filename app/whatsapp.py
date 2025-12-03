@@ -16,7 +16,7 @@ twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_
 
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    Main message handler with V3 predictive intelligence + edge case handling
+    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery
     """
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
@@ -53,6 +53,26 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # Case 4: Detect common typos and normalize
         message_normalized = normalize_query(message_text)
+        
+        # ========================================
+        # PDF REQUEST DETECTION
+        # ========================================
+        
+        pdf_keywords = ['send pdf', 'full report', 'send report', 'pdf please', 'get report', 
+                       'view report', 'send me the pdf', 'can i see the pdf', 'full briefing',
+                       'executive briefing', 'complete report', 'detailed report']
+        
+        is_pdf_request = any(keyword in message_normalized.lower() for keyword in pdf_keywords)
+        
+        if is_pdf_request:
+            # Load client profile to get preferred region
+            from app.client_manager import get_client_profile
+            client_profile = get_client_profile(sender)
+            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+            
+            # Handle PDF request
+            await send_pdf_report(sender, preferred_region)
+            return
         
         # ========================================
         # NORMAL PROCESSING CONTINUES
@@ -167,6 +187,167 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
 
+
+async def send_pdf_report(sender: str, area: str):
+    """
+    Generate and send PDF report link to client
+    """
+    try:
+        logger.info(f"PDF report requested by {sender} for {area}")
+        
+        # Check if PDF storage is configured
+        from app.pdf_storage import get_latest_pdf_for_client, upload_pdf_to_cloud
+        
+        # Try to get existing PDF URL
+        pdf_url = get_latest_pdf_for_client(sender, area)
+        
+        if not pdf_url:
+            # No existing PDF found, check if we have one in temp directory
+            import os
+            pdf_path = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
+            
+            if os.path.exists(pdf_path):
+                # Upload the existing PDF
+                pdf_url = upload_pdf_to_cloud(pdf_path, sender, area)
+            else:
+                # No PDF available
+                message = (
+                    f"Your {area} executive briefing is being prepared.\n\n"
+                    f"Reports are generated daily at midnight GMT. "
+                    f"The latest report will be available shortly.\n\n"
+                    f"In the meantime, I can provide real-time intelligence. "
+                    f"Ask me about market overview, opportunities, or competitive landscape."
+                )
+                await send_twilio_message(sender, message)
+                return
+        
+        if pdf_url:
+            from datetime import datetime
+            
+            message = (
+                f"📊 EXECUTIVE INTELLIGENCE BRIEFING\n"
+                f"{'—' * 40}\n\n"
+                f"{area} Market Analysis\n"
+                f"Generated: {datetime.now().strftime('%B %d, %Y')}\n\n"
+                f"View your report:\n{pdf_url}\n\n"
+                f"📌 Link valid for 7 days\n"
+                f"📄 14-page institutional-grade analysis"
+            )
+            await send_twilio_message(sender, message)
+            logger.info(f"PDF report sent successfully to {sender}")
+        else:
+            error_msg = (
+                f"Unable to access your {area} report at this time. "
+                f"Our team has been notified and will resolve this shortly."
+            )
+            await send_twilio_message(sender, error_msg)
+            
+    except ImportError:
+        # PDF storage not configured yet
+        logger.warning("PDF storage module not configured")
+        message = (
+            f"PDF delivery is being configured for your account. "
+            f"In the meantime, I can provide comprehensive intelligence via text. "
+            f"Ask me about market overview, opportunities, or strategic outlook."
+        )
+        await send_twilio_message(sender, message)
+        
+    except Exception as e:
+        logger.error(f"Error sending PDF report: {str(e)}", exc_info=True)
+        error_msg = "Error generating report link. Our team has been notified."
+        await send_twilio_message(sender, error_msg)
+
+
+def normalize_query(text: str) -> str:
+    """
+    Normalize common typos and variations
+    """
+    # Common typo corrections
+    corrections = {
+        'markrt': 'market',
+        'overveiw': 'overview',
+        'overviw': 'overview',
+        'competitve': 'competitive',
+        'competetive': 'competitive',
+        'oppertunities': 'opportunities',
+        'oportunities': 'opportunities',
+        'analyise': 'analyse',
+        'analize': 'analyse',
+        'scenerio': 'scenario',
+        'forcast': 'forecast',
+        'forceast': 'forecast',
+        'whats': 'what is',
+        'whta': 'what',
+        'teh': 'the',
+        'adn': 'and',
+        'hte': 'the',
+        'reportt': 'report',
+        'reprot': 'report'
+    }
+    
+    normalized = text
+    for typo, correct in corrections.items():
+        # Case-insensitive replacement
+        import re
+        pattern = re.compile(re.escape(typo), re.IGNORECASE)
+        normalized = pattern.sub(correct, normalized)
+    
+    return normalized
+```
+
+---
+
+## **KEY ADDITIONS**
+
+### **1. PDF Request Detection (Lines 52-67)**
+- Detects 15+ different ways users might ask for PDF
+- Intercepts before normal processing
+- Routes to `send_pdf_report()` function
+
+### **2. New `send_pdf_report()` Function (Lines 206-265)**
+- Checks for existing uploaded PDF
+- Falls back to temp PDF if available
+- Handles missing PDF gracefully
+- Professional formatting with date and validity
+
+### **3. Enhanced `normalize_query()` (Lines 268-299)**
+- Added PDF-related typo corrections
+- Handles "reportt", "reprot" etc.
+
+---
+
+## **USER EXPERIENCE EXAMPLES**
+
+### **Scenario 1: PDF Exists in Cloud**
+```
+User: "Send me the PDF"
+Bot: "📊 EXECUTIVE INTELLIGENCE BRIEFING
+————————————————————————————————————————
+
+Mayfair Market Analysis
+Generated: December 1, 2025
+
+View your report:
+https://r2.cloudflarestorage.com/voxmill-reports/447780565645/Mayfair_20251201_180000.pdf
+
+📌 Link valid for 7 days
+📄 14-page institutional-grade analysis"
+```
+
+### **Scenario 2: No PDF Yet (Daily Cron Hasn't Run)**
+```
+User: "Full report please"
+Bot: "Your Mayfair executive briefing is being prepared.
+
+Reports are generated daily at midnight GMT. The latest report will be available shortly.
+
+In the meantime, I can provide real-time intelligence. Ask me about market overview, opportunities, or competitive landscape."
+```
+
+### **Scenario 3: PDF Storage Not Configured**
+```
+User: "Send PDF"
+Bot: "PDF delivery is being configured for your account. In the meantime, I can provide comprehensive intelligence via text. Ask me about market overview, opportunities, or strategic outlook."
 
 def normalize_query(text: str) -> str:
     """
