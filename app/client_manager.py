@@ -45,6 +45,68 @@ def get_client_profile(whatsapp_number: str) -> dict:
         logger.error(f"Error loading client profile: {str(e)}")
         return {}
 
+def check_rate_limit(whatsapp_number: str) -> tuple[bool, str]:
+    """
+    Check if client has exceeded daily message limit
+    Returns: (allowed, message)
+    """
+    try:
+        if not mongo_client:
+            return (True, "")  # Allow if DB unavailable
+        
+        db = mongo_client['Voxmill']
+        clients = db['clients']
+        
+        client = clients.find_one({"whatsapp_number": whatsapp_number})
+        
+        if not client:
+            return (False, "This line is reserved for active Voxmill clients.")
+        
+        # Check status
+        if client.get('status') != 'active':
+            return (False, "Your intelligence access is inactive. Contact Voxmill to restore service.")
+        
+        # Check tier
+        tier = client.get('tier', 'tier_1')
+        
+        if tier == 'tier_1':
+            return (False, "Your plan does not include the analyst line. Contact Voxmill to upgrade.")
+        
+        # Rate limiting for Tier 2
+        if tier == 'tier_2':
+            today = datetime.now(timezone.utc).date()
+            last_message_date = client.get('last_message_date')
+            daily_count = client.get('daily_message_count', 0)
+            
+            # Reset counter if new day
+            if last_message_date:
+                last_date = last_message_date.date() if hasattr(last_message_date, 'date') else last_message_date
+                if last_date != today:
+                    daily_count = 0
+            
+            # Check limit
+            TIER_2_DAILY_LIMIT = 10
+            if daily_count >= TIER_2_DAILY_LIMIT:
+                return (False, "You've reached today's analysis limit for your tier. Upgrade to Tier 3 for unlimited access.")
+            
+            # Increment counter
+            clients.update_one(
+                {"whatsapp_number": whatsapp_number},
+                {
+                    "$set": {
+                        "daily_message_count": daily_count + 1,
+                        "last_message_date": datetime.now(timezone.utc)
+                    }
+                }
+            )
+        
+        # Tier 3 has unlimited access
+        return (True, "")
+        
+    except Exception as e:
+        logger.error(f"Rate limit check error: {str(e)}", exc_info=True)
+        return (True, "")  # Allow on error
+
 def update_client_history(whatsapp_number: str, query: str, category: str, region: str):
     """Log query to client history"""
     try:
