@@ -196,66 +196,69 @@ async def send_pdf_report(sender: str, area: str):
         logger.info(f"PDF report requested by {sender} for {area}")
         
         # Check if PDF storage is configured
-        from app.pdf_storage import get_latest_pdf_for_client, upload_pdf_to_cloud
+        try:
+            from app.pdf_storage import get_latest_pdf_for_client, upload_pdf_to_cloud
+            storage_available = True
+        except ImportError:
+            storage_available = False
+        
+        if not storage_available:
+            logger.warning("PDF storage module not configured")
+            message = (
+                "PDF delivery is being configured for your account. "
+                "In the meantime, I can provide comprehensive intelligence via text. "
+                "Ask me about market overview, opportunities, or strategic outlook."
+            )
+            await send_twilio_message(sender, message)
+            return
         
         # Try to get existing PDF URL
         pdf_url = get_latest_pdf_for_client(sender, area)
         
         if not pdf_url:
-            # No existing PDF found, check if we have one in temp directory
+            # No existing PDF found, check temp directory
             import os
             pdf_path = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
             
             if os.path.exists(pdf_path):
-                # Upload the existing PDF
                 pdf_url = upload_pdf_to_cloud(pdf_path, sender, area)
             else:
                 # No PDF available
-                message = (
+                await send_twilio_message(
+                    sender,
                     f"Your {area} executive briefing is being prepared.\n\n"
-                    f"Reports are generated daily at midnight GMT. "
-                    f"The latest report will be available shortly.\n\n"
-                    f"In the meantime, I can provide real-time intelligence. "
-                    f"Ask me about market overview, opportunities, or competitive landscape."
+                    "Reports are generated daily at midnight GMT. "
+                    "The latest report will be available shortly.\n\n"
+                    "In the meantime, I can provide real-time intelligence. "
+                    "Ask me about market overview, opportunities, or competitive landscape."
                 )
-                await send_twilio_message(sender, message)
                 return
         
         if pdf_url:
             from datetime import datetime
+            date_str = datetime.now().strftime('%B %d, %Y')
             
             message = (
-                f"📊 EXECUTIVE INTELLIGENCE BRIEFING\n"
-                f"{'—' * 40}\n\n"
+                "📊 EXECUTIVE INTELLIGENCE BRIEFING\n"
+                "————————————————————————————————————————\n\n"
                 f"{area} Market Analysis\n"
-                f"Generated: {datetime.now().strftime('%B %d, %Y')}\n\n"
+                f"Generated: {date_str}\n\n"
                 f"View your report:\n{pdf_url}\n\n"
-                f"📌 Link valid for 7 days\n"
-                f"📄 14-page institutional-grade analysis"
+                "📌 Link valid for 7 days\n"
+                "📄 14-page institutional-grade analysis"
             )
             await send_twilio_message(sender, message)
             logger.info(f"PDF report sent successfully to {sender}")
         else:
-            error_msg = (
+            await send_twilio_message(
+                sender,
                 f"Unable to access your {area} report at this time. "
-                f"Our team has been notified and will resolve this shortly."
+                "Our team has been notified and will resolve this shortly."
             )
-            await send_twilio_message(sender, error_msg)
             
-    except ImportError:
-        # PDF storage not configured yet
-        logger.warning("PDF storage module not configured")
-        message = (
-            f"PDF delivery is being configured for your account. "
-            f"In the meantime, I can provide comprehensive intelligence via text. "
-            f"Ask me about market overview, opportunities, or strategic outlook."
-        )
-        await send_twilio_message(sender, message)
-        
     except Exception as e:
         logger.error(f"Error sending PDF report: {str(e)}", exc_info=True)
-        error_msg = "Error generating report link. Our team has been notified."
-        await send_twilio_message(sender, error_msg)
+        await send_twilio_message(sender, "Error generating report link. Our team has been notified.")
 
 
 def normalize_query(text: str) -> str:
