@@ -221,6 +221,38 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         await send_twilio_message(sender, error_msg)
 
 
+async def send_onboarding_sequence(whatsapp_number: str, tier: str, name: str):
+    """
+    Multi-message onboarding sequence
+    """
+    import asyncio
+    
+    # Message 1: Welcome
+    msg1 = f"Welcome to Voxmill Intelligence, {name}! 🎉"
+    await send_twilio_message(whatsapp_number, msg1)
+    await asyncio.sleep(2)
+    
+    # Message 2: Access confirmation
+    msg2 = f"Your {tier.upper().replace('_', ' ')} access is now active."
+    await send_twilio_message(whatsapp_number, msg2)
+    await asyncio.sleep(2)
+    
+    # Message 3: Capabilities
+    if tier == 'tier_3':
+        msg3 = "You have unlimited access to:\n• Predictive intelligence\n• Agent profiling\n• Cascade forecasting\n• Scenario modeling"
+    elif tier == 'tier_2':
+        msg3 = "You have 10 daily analyses including:\n• Market intelligence\n• Trend detection\n• Liquidity tracking"
+    else:
+        msg3 = "You have access to:\n• Market overview\n• Competitive analysis\n• Opportunity identification"
+    
+    await send_twilio_message(whatsapp_number, msg3)
+    await asyncio.sleep(2)
+    
+    # Message 4: Quick start
+    msg4 = "Quick start - try asking:\n• \"Market overview\"\n• \"Show opportunities\"\n• \"Analyze competitors\"\n\nI'm available 24/7."
+    await send_twilio_message(whatsapp_number, msg4)
+
+
 async def send_pdf_report(sender: str, area: str):
     """
     Generate and send PDF report link to client
