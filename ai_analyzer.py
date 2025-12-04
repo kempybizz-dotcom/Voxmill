@@ -287,8 +287,14 @@ def calculate_metrics(properties):
     
     print(f"\n📈 CALCULATING MARKET METRICS")
     
+    # STRICT VALIDATION
     if not properties or len(properties) == 0:
-        raise Exception("No properties to analyze")
+        logger.error("CRITICAL: No properties returned by data collector")
+        raise Exception("No properties to analyze - data collection failed")
+    
+    if len(properties) < 5:
+        logger.warning(f"Only {len(properties)} properties found - results may be unreliable")
+        # Don't raise, but warn user
     
     prices = [p['price'] for p in properties if p.get('price', 0) > 0]
     prices_per_sqft = [p['price_per_sqft'] for p in properties if p.get('price_per_sqft', 0) > 0]
