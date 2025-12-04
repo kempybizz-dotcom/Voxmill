@@ -60,12 +60,13 @@ logger.info("✅ All required environment variables present")
 def normalize_phone_number(phone: str) -> str:
     """
     Normalize phone number format for WhatsApp
+    Remove whatsapp: prefix and ensure + prefix
     """
     if not phone:
         return phone
     
-    # Remove whatsapp: prefix if present
-    phone = phone.replace('whatsapp:', '')
+    # Remove whatsapp: prefix if present (also handle URL-encoded version)
+    phone = phone.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     # Ensure it starts with +
     if not phone.startswith('+'):
@@ -373,6 +374,7 @@ async def get_client_info(phone: str):
     try:
         from app.client_manager import get_client_profile
         
+        # Normalize the phone number (remove whatsapp: prefix)
         normalized_phone = normalize_phone_number(phone)
         profile = get_client_profile(normalized_phone)
         
