@@ -224,7 +224,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
             cache_key = f"webhook_processed:{message_sid}"
             if redis_client.get(cache_key):
                 logger.info(f"⚠️  Duplicate webhook ignored: {message_sid}")
-                return PlainTextResponse("OK", status_code=200)
+                return PlainTextResponse("", status_code=200)
             
             # Mark as processed with 60s TTL
             redis_client.setex(cache_key, 60, "1")
@@ -232,7 +232,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         # Validate required fields
         if not sender or not message_body:
             logger.warning(f"⚠️  Empty message from {sender}")
-            return PlainTextResponse("OK", status_code=200)
+            return PlainTextResponse("", status_code=200)
         
         # Normalize phone number
         normalized_sender = normalize_phone_number(sender)
@@ -243,24 +243,24 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         from app.client_manager import check_rate_limit
         allowed, rate_limit_message = check_rate_limit(normalized_sender)
         
-     if not allowed:
-    from app.whatsapp import send_twilio_message
-    await send_twilio_message(normalized_sender, f"⚠️ {rate_limit_message}")
-    return PlainTextResponse("", status_code=200)  # ← Change here
-
-# Process message in background
-background_tasks.add_task(
-    process_message_async,
-    normalized_sender,
-    message_body
-)
-
-# Return 200 immediately to Twilio
-return PlainTextResponse("", status_code=200)  # ← And here
+        if not allowed:
+            from app.whatsapp import send_twilio_message
+            await send_twilio_message(normalized_sender, f"⚠️ {rate_limit_message}")
+            return PlainTextResponse("", status_code=200)
+        
+        # Process message in background
+        background_tasks.add_task(
+            process_message_async,
+            normalized_sender,
+            message_body
+        )
+        
+        # Return 200 immediately to Twilio
+        return PlainTextResponse("", status_code=200)
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
-        return PlainTextResponse("OK", status_code=200)
+        return PlainTextResponse("", status_code=200)
 
 
 async def process_message_async(sender: str, message_body: str):
