@@ -1715,7 +1715,9 @@ class VoxmillPDFGenerator:
                 'insights': insights,
                 'competitive_analysis': competitive_analysis,
                 'strategic_intelligence': strategic_intelligence,
-                'top_opportunities': self.prepare_opportunities(data),
+                'top_opportunities': self.prepare_opportunities(data)
+                'is_demo_data': data.get('metadata', {}).get('data_source', '').startswith('Demo') or 
+                               data.get('metadata', {}).get('data_source', '') == 'fallback',
                 
                 'cross_vertical': cross_vertical_data,
                 
