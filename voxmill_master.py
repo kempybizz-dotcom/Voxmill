@@ -297,20 +297,8 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             return False
         
         print(result.stdout)
-        
-        # Step 4: MongoDB Save
-        print(f"\n[STEP 4/5] MONGODB SAVE")
-        print(f"   Saving dataset for WhatsApp service...")
-        
-        mongodb_success = save_to_mongodb(area, vertical, vertical_config)
-        
-        if mongodb_success:
-            print(f"   ✅ MongoDB save successful")
-        else:
-            print(f"   ⚠️  MongoDB save failed (non-critical)")
-        
-        # Step 5: Email Delivery
-        if not skip_email:
+
+         if not skip_email:
             print(f"\n[STEP 5/5] EMAIL DELIVERY")
             print(f"   Sending professional email...")
             
@@ -344,7 +332,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         print(f"   • Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
         print(f"   • MongoDB: {'✅ Saved' if mongodb_success else '⚠️ Skipped'}")
         
-        if not skip_email:
+           if not skip_email:
             print(f"   • Email: SENT to {recipient_email}")
         else:
             print(f"   • Email: SKIPPED (manual send required)")
@@ -357,6 +345,18 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             print(f"   Follow up with {recipient_name} in 24-48 hours")
         
         return True
+        
+        # Step 4: MongoDB Save
+        print(f"\n[STEP 4/5] MONGODB SAVE")
+        print(f"   Saving dataset for WhatsApp service...")
+        
+        mongodb_success = save_to_mongodb(area, vertical, vertical_config)
+        
+        if mongodb_success:
+             print(f"   • MongoDB: {'✅ Saved' if mongodb_success else '⚠️ Skipped'}")
+        else:
+            print(f"   ⚠️  MongoDB save failed (non-critical)")
+        
         
     except Exception as e:
         print(f"\n❌ CRITICAL ERROR: {str(e)}")
