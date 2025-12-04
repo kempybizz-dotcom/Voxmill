@@ -85,17 +85,108 @@ async def root():
     }
 
 
-@app.get("/health")
-async def health_check():
+@app.get("/health/intelligence")
+async def intelligence_health_check():
     """
-    Health check endpoint
+    Check health of all intelligence layers
     """
-    return {
-        "status": "healthy",
-        "service": "voxmill-whatsapp-analyst",
-        "version": "3.0.0",
-        "background_tasks_active": len(background_tasks)
+    health = {
+        'overall_status': 'healthy',
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'layers': {}
     }
+    
+    # Test MongoDB connection
+    try:
+        from app.dataset_loader import mongo_client
+        if mongo_client:
+            mongo_client.admin.command('ping')
+            health['layers']['mongodb'] = {'status': 'healthy', 'message': 'Connected'}
+        else:
+            health['layers']['mongodb'] = {'status': 'unhealthy', 'message': 'Not configured'}
+            health['overall_status'] = 'degraded'
+    except Exception as e:
+        health['layers']['mongodb'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Redis connection
+    try:
+        if redis_client:
+            redis_client.ping()
+            health['layers']['redis'] = {'status': 'healthy', 'message': 'Connected'}
+        else:
+            health['layers']['redis'] = {'status': 'unhealthy', 'message': 'Not configured'}
+            health['overall_status'] = 'degraded'
+    except Exception as e:
+        health['layers']['redis'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Trend Detector
+    try:
+        from app.intelligence.trend_detector import detect_market_trends
+        trends = detect_market_trends(area="Mayfair", lookback_days=1)
+        health['layers']['trend_detector'] = {'status': 'healthy', 'trends_found': len(trends)}
+    except Exception as e:
+        health['layers']['trend_detector'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Agent Profiler
+    try:
+        from app.intelligence.agent_profiler import AGENT_ARCHETYPES
+        health['layers']['agent_profiler'] = {'status': 'healthy', 'archetypes': len(AGENT_ARCHETYPES)}
+    except Exception as e:
+        health['layers']['agent_profiler'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Micromarket Segmenter
+    try:
+        from app.intelligence.micromarket_segmenter import segment_micromarkets
+        health['layers']['micromarket_segmenter'] = {'status': 'healthy', 'message': 'Module loaded'}
+    except Exception as e:
+        health['layers']['micromarket_segmenter'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Liquidity Velocity
+    try:
+        from app.intelligence.liquidity_velocity import calculate_liquidity_velocity
+        health['layers']['liquidity_velocity'] = {'status': 'healthy', 'message': 'Module loaded'}
+    except Exception as e:
+        health['layers']['liquidity_velocity'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Cascade Predictor
+    try:
+        from app.intelligence.cascade_predictor import build_agent_network
+        health['layers']['cascade_predictor'] = {'status': 'healthy', 'message': 'Module loaded'}
+    except Exception as e:
+        health['layers']['cascade_predictor'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test OpenAI connection
+    try:
+        from app.llm import openai_client
+        if openai_client:
+            health['layers']['openai'] = {'status': 'healthy', 'message': 'Client configured'}
+        else:
+            health['layers']['openai'] = {'status': 'unhealthy', 'message': 'Not configured'}
+            health['overall_status'] = 'degraded'
+    except Exception as e:
+        health['layers']['openai'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    # Test Twilio connection
+    try:
+        from app.whatsapp import twilio_client
+        if twilio_client:
+            health['layers']['twilio'] = {'status': 'healthy', 'message': 'Client configured'}
+        else:
+            health['layers']['twilio'] = {'status': 'unhealthy', 'message': 'Not configured'}
+            health['overall_status'] = 'degraded'
+    except Exception as e:
+        health['layers']['twilio'] = {'status': 'unhealthy', 'message': str(e)}
+        health['overall_status'] = 'degraded'
+    
+    return health
 
 
 @app.post("/webhook/whatsapp", response_class=PlainTextResponse)
