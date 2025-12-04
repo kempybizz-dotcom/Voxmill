@@ -309,13 +309,28 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         sender_email, sender_password = validate_environment()
         
         # Step 2: Check PDF
+     # Step 2: Check PDF
         if pdf_path is None:
             pdf_path = DEFAULT_PDF_PATH
         
         logger.info(f"Step 2/6: Checking PDF at {pdf_path}...")
         pdf_file = Path(pdf_path)
+        
+        # ENHANCED VALIDATION
         if not pdf_file.exists():
+            logger.error(f"PDF file does not exist: {pdf_path}")
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
+        
+        if not pdf_file.is_file():
+            logger.error(f"PDF path is not a file: {pdf_path}")
+            raise FileNotFoundError(f"PDF path is not a file: {pdf_path}")
+        
+        if pdf_file.stat().st_size == 0:
+            logger.error(f"PDF file is empty (0 bytes): {pdf_path}")
+            raise ValueError(f"PDF file is empty: {pdf_path}")
+        
+        if pdf_file.stat().st_size < 10000:  # Less than 10KB is suspicious
+            logger.warning(f"PDF file suspiciously small: {pdf_file.stat().st_size} bytes")
         
         pdf_size = pdf_file.stat().st_size
         logger.info(f"✅ PDF: {pdf_size:,} bytes ({pdf_size/1024:.1f} KB)")
