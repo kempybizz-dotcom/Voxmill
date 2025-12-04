@@ -196,6 +196,8 @@ def generate_fallback_intelligence(metrics, area, city):
         
         "market_sentiment": sentiment,
         "confidence_level": confidence
+        "data_source": "data_driven_fallback",  # Flag for PDF generation
+        "ai_disclaimer": "Analysis generated from statistical models (OpenAI API unavailable)"
     }
     
     print(f"   ✅ Fallback intelligence generated")
