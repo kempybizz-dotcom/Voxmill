@@ -309,9 +309,33 @@ class VoxmillPDFGenerator:
             with open(self.data_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Validate required top-level keys
+            # COMPREHENSIVE VALIDATION
             required_keys = ['metadata']
             missing_keys = [k for k in required_keys if k not in data]
+            
+            if missing_keys:
+                logger.error(f"Missing required keys in data: {missing_keys}")
+                raise ValueError(f"Invalid data structure: missing {missing_keys}")
+            
+            # Ensure nested structures exist (create if missing)
+            if 'metrics' not in data and 'kpis' not in data:
+                logger.warning("No metrics/kpis found, creating empty dict")
+                data['metrics'] = {}
+                data['kpis'] = {}
+            
+            if 'properties' not in data:
+                logger.warning("No properties found, creating empty list")
+                data['properties'] = []
+            
+            if 'intelligence' not in data:
+                logger.warning("No intelligence found, creating empty dict")
+                data['intelligence'] = {}
+            
+            # Validate metadata has required fields
+            metadata = data.get('metadata', {})
+            if 'area' not in metadata or 'city' not in metadata:
+                logger.error("Metadata missing area or city")
+                raise ValueError("Metadata must contain 'area' and 'city'")
             
             if missing_keys:
                 logger.warning(f"Missing keys in data: {missing_keys}")
