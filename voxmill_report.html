@@ -28,6 +28,13 @@
     </svg>
 
     <div style="position: relative; z-index: 1;">
+        {% if is_demo_data %}
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); 
+                    font-size: 120px; font-weight: 900; color: rgba(191, 166, 112, 0.08); 
+                    z-index: 9999; pointer-events: none; font-family: 'Playfair Display', serif;">
+            DEMO DATA
+        </div>
+        {% endif %}
         <div class="logo-container">
             <img src="voxmill_logo.png" alt="Voxmill" style="width: 216px; height: auto; max-height: 216px; filter: drop-shadow(0 8px 40px rgba(198, 161, 91, 0.9));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <svg class="voxmill-logo" width="216" height="216" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -41,6 +48,7 @@
                 </defs>
             </svg>
         </div>
+
 
         <div class="cover-label">CONFIDENTIAL EXECUTIVE BRIEF</div>
         <h1 class="cover-title">Market Intelligence Snapshot</h1>
@@ -1102,6 +1110,17 @@
                 <li>Outlier detection using 3-sigma methodology with contextual market condition adjustments</li>
                 <li>Statistical consistency validation across 14-day rolling windows with automated flagging</li>
             </ul>
+
+            {% if show_ai_disclaimer %}
+        <div class="data-quality-panel" style="margin-top: 30px; border: 2px solid rgba(191, 166, 112, 0.3);">
+            <h3 class="data-quality-title">⚠️ Analysis Note</h3>
+            <ul class="data-quality-list">
+                <li style="color: #C8AA6E; font-weight: 600;">{{ ai_disclaimer_text }}</li>
+                <li>Report generated using statistical models and historical pattern analysis</li>
+                <li>Intelligence quality maintained through proprietary fallback methodology</li>
+            </ul>
+        </div>
+        {% endif %}
         </div>
     </div>
 </div>
