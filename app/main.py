@@ -18,7 +18,7 @@ from app.whatsapp import (
     send_twilio_message,
     send_first_time_welcome
 )
-from app.dataset_loader import load_latest_dataset
+from app.dataset_loader import load_dataset
 from app.client_manager import (
     get_client_profile,
     increment_message_count,
@@ -50,7 +50,7 @@ try:
         redis_client = redis.from_url(REDIS_URL, decode_responses=True)
         logger.info("✅ Redis connected for webhook deduplication")
 except ImportError:
-    logger.warning("⚠️  Redis not installed - install with: pip install redis")
+    logger.warning("⚠️  Redis not installed")
 except Exception as e:
     logger.warning(f"⚠️  Redis not configured: {e}")
 
@@ -350,7 +350,7 @@ async def get_latest_data(area: Optional[str] = None):
     Get latest market data for testing/debugging
     """
     try:
-        dataset = load_latest_dataset(area)
+        dataset = load_dataset(area)
         
         if not dataset:
             return {"error": "No data found", "area": area}
