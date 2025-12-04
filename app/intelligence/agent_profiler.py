@@ -65,7 +65,10 @@ def classify_agent_archetype(agent: str, history: list) -> dict:
     initiation_rate = initiated_moves / total_moves if total_moves > 0 else 0
     
     # CLASSIFICATION LOGIC
-    if avg_premium >= 10 and len([p for p in premium_maintenance if abs(p - avg_premium) < 3]) / len(premium_maintenance) > 0.7:
+  # CLASSIFICATION LOGIC
+    archetype = 'institutional'  # Default fallback
+    
+    if avg_premium >= 10 and len(premium_maintenance) > 0 and len([p for p in premium_maintenance if abs(p - avg_premium) < 3]) / len(premium_maintenance) > 0.7:
         archetype = 'premium_holder'
     elif initiation_rate > 0.6:
         archetype = 'market_leader'
@@ -73,23 +76,11 @@ def classify_agent_archetype(agent: str, history: list) -> dict:
         archetype = 'momentum_follower'
     elif any(e.get('drop_magnitude', 0) > 12 for e in history):
         archetype = 'opportunist'
-    else:
-        archetype = 'institutional'
     
-    return {
-        'agent': agent,
-        'archetype': archetype,
-        'confidence': AGENT_ARCHETYPES[archetype]['prediction_confidence'],
-        'behavioral_pattern': AGENT_ARCHETYPES[archetype]['pattern'],
-        'trigger_conditions': AGENT_ARCHETYPES[archetype]['trigger'],
-        'risk_profile': AGENT_ARCHETYPES[archetype]['risk_profile'],
-        'supporting_metrics': {
-            'avg_response_time_days': round(avg_response_time, 1),
-            'avg_premium_pct': round(avg_premium, 1),
-            'initiation_rate': round(initiation_rate, 2),
-            'data_points': len(history)
-        }
-    }
+    # Validate archetype exists in AGENT_ARCHETYPES
+    if archetype not in AGENT_ARCHETYPES:
+        logger.warning(f"Unknown archetype '{archetype}', using institutional")
+        archetype = 'institutional'
 
 
 def predict_agent_response(agent_profile: dict, market_scenario: dict) -> dict:
