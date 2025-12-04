@@ -8,28 +8,24 @@ import sys
 import logging
 from datetime import datetime
 from typing import Optional
-import json
 
 from fastapi import FastAPI, Request, Response, HTTPException, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 import redis
 
-# Import local modules
+# Import local modules with CORRECTED function names
 from app.whatsapp import (
-    process_incoming_message,
-    send_whatsapp_message,
-    handle_first_time_user,
-    detect_pdf_request
+    handle_incoming_message,
+    send_message,
+    send_welcome_message,
+    is_pdf_request
 )
-from app.dataset_loader import load_latest_dataset, get_agent_snapshot_history
+from app.dataset_loader import load_latest_dataset
 from app.client_manager import (
     get_client_profile,
-    update_client_profile,
     increment_message_count,
     check_rate_limit
 )
-from app.llm import generate_gpt4_response
-from app.models import IncomingMessage, ClientProfile
 from app.scheduler import start_scheduler, stop_scheduler
 from app.utils import normalize_phone_number
 
@@ -187,7 +183,6 @@ async def intelligence_health_check():
     try:
         import openai
         openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        # Don't actually call API, just verify client initializes
         health_status["components"]["openai"] = {"status": "healthy", "message": "Client initialized"}
     except Exception as e:
         health_status["components"]["openai"] = {"status": "unhealthy", "error": str(e)}
@@ -200,7 +195,6 @@ async def intelligence_health_check():
             os.getenv("TWILIO_ACCOUNT_SID"),
             os.getenv("TWILIO_AUTH_TOKEN")
         )
-        # Verify client initializes
         health_status["components"]["twilio"] = {"status": "healthy", "message": "Client initialized"}
     except Exception as e:
         health_status["components"]["twilio"] = {"status": "unhealthy", "error": str(e)}
@@ -228,13 +222,12 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         
         # FIX #2: WEBHOOK DEDUPLICATION
         if redis_client and message_sid:
-            # Check if we've already processed this message
             cache_key = f"webhook_processed:{message_sid}"
             if redis_client.get(cache_key):
                 logger.info(f"⚠️  Duplicate webhook ignored: {message_sid}")
                 return PlainTextResponse("OK", status_code=200)
             
-            # Mark as processed with 60s TTL (Twilio stops retrying after ~30s)
+            # Mark as processed with 60s TTL
             redis_client.setex(cache_key, 60, "1")
         
         # Validate required fields
@@ -263,13 +256,12 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
                 "Upgrade your plan for unlimited access.\n\n"
                 "Reply UPGRADE for pricing options."
             )
-            send_whatsapp_message(normalized_sender, rate_limit_msg)
+            send_message(normalized_sender, rate_limit_msg)
             return PlainTextResponse("OK", status_code=200)
         
-        # Handle first-time users (with NO sleep to avoid race condition)
+        # Handle first-time users
         if is_first_time:
-            handle_first_time_user(normalized_sender)
-            # Increment message count immediately to prevent duplicate welcome
+            send_welcome_message(normalized_sender)
             increment_message_count(normalized_sender)
             return PlainTextResponse("OK", status_code=200)
         
@@ -277,15 +269,14 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         increment_message_count(normalized_sender)
         
         # Check if user is requesting PDF report
-        if detect_pdf_request(message_body):
-            # TODO: Implement PDF generation and send
+        if is_pdf_request(message_body):
             response_text = (
                 "📊 *PDF Report Generation*\n\n"
                 "Generating your complete market intelligence PDF report...\n\n"
                 "This will be available in the next release. "
                 "For now, you can access all data via text queries."
             )
-            send_whatsapp_message(normalized_sender, response_text)
+            send_message(normalized_sender, response_text)
             return PlainTextResponse("OK", status_code=200)
         
         # Process message in background to avoid Twilio timeout
@@ -301,7 +292,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
-        return PlainTextResponse("OK", status_code=200)  # Always return 200 to Twilio
+        return PlainTextResponse("OK", status_code=200)
 
 
 async def process_message_async(sender: str, message_body: str, client_profile: dict):
@@ -309,11 +300,11 @@ async def process_message_async(sender: str, message_body: str, client_profile: 
     Process message asynchronously to avoid webhook timeout
     """
     try:
-        # Process the message (includes GPT-4 call with 15s timeout)
-        response_text = process_incoming_message(sender, message_body, client_profile)
+        # Process the message
+        response_text = handle_incoming_message(sender, message_body, client_profile)
         
         # Send response back to user
-        send_whatsapp_message(sender, response_text)
+        send_message(sender, response_text)
         
     except Exception as e:
         logger.error(f"❌ Error processing message for {sender}: {e}", exc_info=True)
@@ -321,7 +312,7 @@ async def process_message_async(sender: str, message_body: str, client_profile: 
             "⚠️ Sorry, I encountered an error processing your request. "
             "Our team has been notified. Please try again in a moment."
         )
-        send_whatsapp_message(sender, error_msg)
+        send_message(sender, error_msg)
 
 
 @app.get("/webhook/whatsapp")
@@ -336,9 +327,7 @@ async def whatsapp_webhook_get(request: Request):
 async def admin_broadcast(request: Request):
     """
     Admin endpoint to send broadcast messages
-    Requires admin auth token
     """
-    # TODO: Implement admin authentication
     try:
         data = await request.json()
         
@@ -353,7 +342,7 @@ async def admin_broadcast(request: Request):
         
         for recipient in recipients:
             try:
-                send_whatsapp_message(recipient, message)
+                send_message(recipient, message)
                 sent_count += 1
             except Exception as e:
                 logger.error(f"Failed to send to {recipient}: {e}")
@@ -422,7 +411,7 @@ async def get_client_info(phone: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Import routes
+# Import additional routes
 try:
     from app.routes.onboarding import router as onboarding_router
     from app.routes.stripe_webhooks import router as stripe_router
@@ -446,6 +435,6 @@ if __name__ == "__main__":
         "app.main:app",
         host="0.0.0.0",
         port=port,
-        reload=False,  # Disable in production
+        reload=False,
         log_level="info"
     )
