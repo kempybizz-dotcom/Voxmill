@@ -25,15 +25,19 @@ def segment_micromarkets(properties: list, area: str) -> dict:
             return {'error': 'insufficient_data', 'message': 'Need at least 5 properties for segmentation'}
         
         # Filter properties with valid coordinates and prices
-        valid_props = [
-            p for p in properties 
-            if p.get('lat') and p.get('lng') and p.get('price', 0) > 0
-        ]
-        
-        if len(valid_props) < 5:
-            logger.info(f"Insufficient properties with coordinates for {area}: {len(valid_props)}")
-            # Fallback: segment by address-based clustering
-            return segment_by_address(properties, area)
+       # Filter properties with valid coordinates and prices
+        valid_props = []
+        for p in properties:
+            lat = p.get('lat')
+            lng = p.get('lng')
+            price = p.get('price', 0)
+            
+            # Validate coordinates are in valid UK bounds
+            if lat and lng and price > 0:
+                if 49.0 <= lat <= 61.0 and -8.0 <= lng <= 2.0:
+                    valid_props.append(p)
+                else:
+                    logger.debug(f"Property with invalid UK coordinates: lat={lat}, lng={lng}")
         
         # Try sklearn clustering first (best results)
         try:
