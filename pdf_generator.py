@@ -1715,6 +1715,8 @@ class VoxmillPDFGenerator:
                 'insights': insights,
                 'competitive_analysis': competitive_analysis,
                 'strategic_intelligence': strategic_intelligence,
+                'show_ai_disclaimer': intelligence.get('data_source') == 'data_driven_fallback',
+                'ai_disclaimer_text': intelligence.get('ai_disclaimer', ''),
                 'top_opportunities': self.prepare_opportunities(data)
                 'is_demo_data': data.get('metadata', {}).get('data_source', '').startswith('Demo') or 
                                data.get('metadata', {}).get('data_source', '') == 'fallback',
