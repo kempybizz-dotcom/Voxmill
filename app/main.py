@@ -11,14 +11,12 @@ from typing import Optional
 
 from fastapi import FastAPI, Request, Response, HTTPException, BackgroundTasks
 from fastapi.responses import PlainTextResponse
-import redis
 
-# Import local modules with CORRECTED function names
+# Import whatsapp module - CORRECTED IMPORTS
 from app.whatsapp import (
-    handle_incoming_message,
-    send_message,
-    send_welcome_message,
-    is_pdf_request
+    handle_whatsapp_message,
+    send_twilio_message,
+    send_first_time_welcome
 )
 from app.dataset_loader import load_latest_dataset
 from app.client_manager import (
@@ -26,7 +24,6 @@ from app.client_manager import (
     increment_message_count,
     check_rate_limit
 )
-from app.scheduler import start_scheduler, stop_scheduler
 from app.utils import normalize_phone_number
 
 # Configure logging
@@ -45,12 +42,17 @@ app = FastAPI(
 
 # Initialize Redis client for deduplication
 REDIS_URL = os.getenv("REDIS_URL")
-redis_client = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else None
+redis_client = None
 
-if redis_client:
-    logger.info("✅ Redis connected for webhook deduplication")
-else:
-    logger.warning("⚠️  Redis not configured - duplicate message prevention disabled")
+try:
+    import redis
+    if REDIS_URL:
+        redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+        logger.info("✅ Redis connected for webhook deduplication")
+except ImportError:
+    logger.warning("⚠️  Redis not installed - install with: pip install redis")
+except Exception as e:
+    logger.warning(f"⚠️  Redis not configured: {e}")
 
 # Environment validation
 REQUIRED_ENV_VARS = [
@@ -81,6 +83,7 @@ async def startup_event():
     
     # Start background scheduler for data collection
     try:
+        from app.scheduler import start_scheduler
         scheduler = start_scheduler()
         logger.info("✅ Background scheduler started")
     except Exception as e:
@@ -97,8 +100,12 @@ async def shutdown_event():
     logger.info("🛑 Shutting down Voxmill service...")
     
     if scheduler:
-        stop_scheduler(scheduler)
-        logger.info("✅ Scheduler stopped")
+        try:
+            from app.scheduler import stop_scheduler
+            stop_scheduler(scheduler)
+            logger.info("✅ Scheduler stopped")
+        except Exception as e:
+            logger.error(f"Error stopping scheduler: {e}")
     
     logger.info("✅ Shutdown complete")
 
@@ -210,7 +217,6 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     """
     Main Twilio WhatsApp webhook endpoint
     FIX #2: Added webhook deduplication via Redis
-    FIX #8: Added first-time user race condition fix
     """
     try:
         # Parse incoming webhook data
@@ -243,11 +249,6 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         # Get or create client profile
         client_profile = get_client_profile(normalized_sender)
         
-        # FIX #8: IMPROVED FIRST-TIME USER DETECTION
-        is_first_time = False
-        if not client_profile or not client_profile.get('message_count', 0):
-            is_first_time = True
-        
         # Check rate limit
         if not check_rate_limit(normalized_sender):
             rate_limit_msg = (
@@ -256,35 +257,17 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
                 "Upgrade your plan for unlimited access.\n\n"
                 "Reply UPGRADE for pricing options."
             )
-            send_message(normalized_sender, rate_limit_msg)
+            await send_twilio_message(normalized_sender, rate_limit_msg)
             return PlainTextResponse("OK", status_code=200)
         
-        # Handle first-time users
-        if is_first_time:
-            send_welcome_message(normalized_sender)
-            increment_message_count(normalized_sender)
-            return PlainTextResponse("OK", status_code=200)
-        
-        # Increment message count for returning users
+        # Increment message count
         increment_message_count(normalized_sender)
-        
-        # Check if user is requesting PDF report
-        if is_pdf_request(message_body):
-            response_text = (
-                "📊 *PDF Report Generation*\n\n"
-                "Generating your complete market intelligence PDF report...\n\n"
-                "This will be available in the next release. "
-                "For now, you can access all data via text queries."
-            )
-            send_message(normalized_sender, response_text)
-            return PlainTextResponse("OK", status_code=200)
         
         # Process message in background to avoid Twilio timeout
         background_tasks.add_task(
             process_message_async,
             normalized_sender,
-            message_body,
-            client_profile
+            message_body
         )
         
         # Return 200 immediately to Twilio
@@ -295,16 +278,18 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         return PlainTextResponse("OK", status_code=200)
 
 
-async def process_message_async(sender: str, message_body: str, client_profile: dict):
+async def process_message_async(sender: str, message_body: str):
     """
     Process message asynchronously to avoid webhook timeout
     """
     try:
-        # Process the message
-        response_text = handle_incoming_message(sender, message_body, client_profile)
-        
-        # Send response back to user
-        send_message(sender, response_text)
+        # The handle_whatsapp_message function handles everything:
+        # - First-time welcome
+        # - PDF requests
+        # - Intelligence layers
+        # - Response generation
+        # - Message sending
+        await handle_whatsapp_message(sender, message_body)
         
     except Exception as e:
         logger.error(f"❌ Error processing message for {sender}: {e}", exc_info=True)
@@ -312,7 +297,7 @@ async def process_message_async(sender: str, message_body: str, client_profile: 
             "⚠️ Sorry, I encountered an error processing your request. "
             "Our team has been notified. Please try again in a moment."
         )
-        send_message(sender, error_msg)
+        await send_twilio_message(sender, error_msg)
 
 
 @app.get("/webhook/whatsapp")
@@ -342,7 +327,7 @@ async def admin_broadcast(request: Request):
         
         for recipient in recipients:
             try:
-                send_message(recipient, message)
+                await send_twilio_message(recipient, message)
                 sent_count += 1
             except Exception as e:
                 logger.error(f"Failed to send to {recipient}: {e}")
