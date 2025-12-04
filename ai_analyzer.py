@@ -9,16 +9,46 @@ import os
 import json
 import requests
 from datetime import datetime
+import time
+from functools import wraps
+
+def retry_on_transient_error(max_retries=2, base_delay=1.0):
+    """
+    Retry on 5xx errors (transient) but not 4xx (client errors)
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    error_str = str(e).lower()
+                    
+                    # Check if it's a transient error (5xx)
+                    is_transient = any(code in error_str for code in ['500', '502', '503', '504', 'timeout'])
+                    
+                    if is_transient and attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        print(f"   ⚠️  OpenAI transient error, retrying in {delay}s...")
+                        time.sleep(delay)
+                    else:
+                        raise
+            return None
+        return wrapper
+    return decorator
 
 # Environment
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 INPUT_FILE = "/tmp/voxmill_raw_data.json"
 OUTPUT_FILE = "/tmp/voxmill_analysis.json"
 
+@retry_on_transient_error(max_retries=2, base_delay=2.0)
 def generate_ai_intelligence(metrics, area, city):
     """
     Generate AI-powered market intelligence using GPT-4o.
     Uses direct HTTP requests to bypass Render proxy issues.
+    Includes retry logic for transient 5xx errors.
     """
     
     print(f"\n🤖 GENERATING AI INTELLIGENCE")
