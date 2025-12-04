@@ -5,26 +5,12 @@ FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence
 
 import os
 import sys
-import logging 
+import logging
 from datetime import datetime
 from typing import Optional
 
-from fastapi import FastAPI, Request, Response, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import PlainTextResponse
-
-# Import whatsapp module - CORRECTED IMPORTS
-from app.whatsapp import (
-    handle_whatsapp_message,
-    send_twilio_message,
-    send_first_time_welcome
-)
-from app.dataset_loader import load_dataset
-from app.client_manager import (
-    get_client_profile,
-    increment_message_count,
-    check_rate_limit
-)
-from app.utils import normalize_phone_number
 
 # Configure logging
 logging.basicConfig(
@@ -70,24 +56,37 @@ if missing_vars:
 
 logger.info("✅ All required environment variables present")
 
-# Global scheduler reference
-scheduler = None
+
+def normalize_phone_number(phone: str) -> str:
+    """
+    Normalize phone number format for WhatsApp
+    """
+    if not phone:
+        return phone
+    
+    # Remove whatsapp: prefix if present
+    phone = phone.replace('whatsapp:', '')
+    
+    # Ensure it starts with +
+    if not phone.startswith('+'):
+        phone = '+' + phone
+    
+    return phone
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup"""
-    global scheduler
-    
     logger.info("🚀 Starting Voxmill WhatsApp Intelligence Service...")
     
     # Start background scheduler for data collection
     try:
-        from app.scheduler import start_scheduler
-        scheduler = start_scheduler()
+        from app.scheduler import daily_intelligence_cycle
+        import asyncio
+        asyncio.create_task(daily_intelligence_cycle())
         logger.info("✅ Background scheduler started")
     except Exception as e:
-        logger.error(f"❌ Failed to start scheduler: {e}")
+        logger.warning(f"⚠️  Scheduler not started: {e}")
     
     logger.info("✅ Voxmill service ready")
 
@@ -95,18 +94,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global scheduler
-    
     logger.info("🛑 Shutting down Voxmill service...")
-    
-    if scheduler:
-        try:
-            from app.scheduler import stop_scheduler
-            stop_scheduler(scheduler)
-            logger.info("✅ Scheduler stopped")
-        except Exception as e:
-            logger.error(f"Error stopping scheduler: {e}")
-    
     logger.info("✅ Shutdown complete")
 
 
@@ -127,15 +115,14 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "redis": "connected" if redis_client else "not configured",
-        "scheduler": "running" if scheduler and scheduler.running else "stopped"
+        "redis": "connected" if redis_client else "not configured"
     }
 
 
 @app.get("/health/intelligence")
 async def intelligence_health_check():
     """
-    FIX #10: Intelligence layer health check endpoint
+    Intelligence layer health check endpoint
     Tests all critical dependencies and intelligence modules
     """
     health_status = {
@@ -148,10 +135,15 @@ async def intelligence_health_check():
     
     # Test MongoDB connection
     try:
-        from app.dataset_loader import get_mongodb_client
-        client = get_mongodb_client()
-        client.admin.command('ping')
-        health_status["components"]["mongodb"] = {"status": "healthy", "message": "Connection successful"}
+        from pymongo import MongoClient
+        MONGODB_URI = os.getenv("MONGODB_URI")
+        if MONGODB_URI:
+            client = MongoClient(MONGODB_URI)
+            client.admin.command('ping')
+            health_status["components"]["mongodb"] = {"status": "healthy", "message": "Connection successful"}
+        else:
+            health_status["components"]["mongodb"] = {"status": "not_configured", "message": "MONGODB_URI not set"}
+            overall_healthy = False
     except Exception as e:
         health_status["components"]["mongodb"] = {"status": "unhealthy", "error": str(e)}
         overall_healthy = False
@@ -216,7 +208,7 @@ async def intelligence_health_check():
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     """
     Main Twilio WhatsApp webhook endpoint
-    FIX #2: Added webhook deduplication via Redis
+    With webhook deduplication via Redis
     """
     try:
         # Parse incoming webhook data
@@ -226,7 +218,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         sender = form_data.get('From', '')
         message_body = form_data.get('Body', '').strip()
         
-        # FIX #2: WEBHOOK DEDUPLICATION
+        # WEBHOOK DEDUPLICATION
         if redis_client and message_sid:
             cache_key = f"webhook_processed:{message_sid}"
             if redis_client.get(cache_key):
@@ -246,22 +238,15 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         
         logger.info(f"📱 Incoming message from {normalized_sender}: {message_body[:100]}")
         
-        # Get or create client profile
-        client_profile = get_client_profile(normalized_sender)
+        # Check rate limit using actual function signature
+        from app.client_manager import check_rate_limit
+        allowed, rate_limit_message = check_rate_limit(normalized_sender)
         
-        # Check rate limit
-        if not check_rate_limit(normalized_sender):
-            rate_limit_msg = (
-                "⚠️ *Rate Limit Reached*\n\n"
-                "You've reached your message limit for this period. "
-                "Upgrade your plan for unlimited access.\n\n"
-                "Reply UPGRADE for pricing options."
-            )
-            await send_twilio_message(normalized_sender, rate_limit_msg)
+        if not allowed:
+            # Send rate limit message via Twilio
+            from app.whatsapp import send_twilio_message
+            await send_twilio_message(normalized_sender, f"⚠️ {rate_limit_message}")
             return PlainTextResponse("OK", status_code=200)
-        
-        # Increment message count
-        increment_message_count(normalized_sender)
         
         # Process message in background to avoid Twilio timeout
         background_tasks.add_task(
@@ -283,21 +268,30 @@ async def process_message_async(sender: str, message_body: str):
     Process message asynchronously to avoid webhook timeout
     """
     try:
-        # The handle_whatsapp_message function handles everything:
-        # - First-time welcome
-        # - PDF requests
-        # - Intelligence layers
+        # Import here to avoid startup crashes if module has issues
+        from app.whatsapp import handle_whatsapp_message
+        
+        # Process message - handle_whatsapp_message does everything:
+        # - First-time welcome detection
+        # - PDF request detection
+        # - Intelligence layer loading
         # - Response generation
         # - Message sending
         await handle_whatsapp_message(sender, message_body)
         
     except Exception as e:
         logger.error(f"❌ Error processing message for {sender}: {e}", exc_info=True)
-        error_msg = (
-            "⚠️ Sorry, I encountered an error processing your request. "
-            "Our team has been notified. Please try again in a moment."
-        )
-        await send_twilio_message(sender, error_msg)
+        
+        # Try to send error message
+        try:
+            from app.whatsapp import send_twilio_message
+            error_msg = (
+                "⚠️ Sorry, I encountered an error processing your request. "
+                "Our team has been notified. Please try again in a moment."
+            )
+            await send_twilio_message(sender, error_msg)
+        except:
+            logger.error("Failed to send error message to user")
 
 
 @app.get("/webhook/whatsapp")
@@ -321,6 +315,8 @@ async def admin_broadcast(request: Request):
         
         if not recipients or not message:
             raise HTTPException(status_code=400, detail="Missing recipients or message")
+        
+        from app.whatsapp import send_twilio_message
         
         sent_count = 0
         failed_count = 0
@@ -350,9 +346,11 @@ async def get_latest_data(area: Optional[str] = None):
     Get latest market data for testing/debugging
     """
     try:
-        dataset = load_dataset(area)
+        from app.dataset_loader import load_dataset
         
-        if not dataset:
+        dataset = load_dataset(area if area else "Mayfair")
+        
+        if not dataset or dataset.get('error'):
             return {"error": "No data found", "area": area}
         
         return {
@@ -373,20 +371,22 @@ async def get_client_info(phone: str):
     Get client profile for testing/debugging
     """
     try:
+        from app.client_manager import get_client_profile
+        
         normalized_phone = normalize_phone_number(phone)
         profile = get_client_profile(normalized_phone)
         
         if not profile:
             return {"error": "Client not found", "phone": normalized_phone}
         
-        # Remove sensitive data
+        # Remove sensitive data and MongoDB _id
         safe_profile = {
             "phone": profile.get("whatsapp_number"),
             "tier": profile.get("tier"),
-            "message_count": profile.get("message_count"),
-            "areas_of_interest": profile.get("areas_of_interest"),
-            "created_at": profile.get("created_at"),
-            "last_active": profile.get("last_active")
+            "total_queries": profile.get("total_queries"),
+            "last_region_queried": profile.get("last_region_queried"),
+            "created_at": profile.get("created_at").isoformat() if profile.get("created_at") else None,
+            "preferences": profile.get("preferences", {})
         }
         
         return safe_profile
@@ -396,7 +396,7 @@ async def get_client_info(phone: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Import additional routes
+# Import additional routes (optional, won't crash if missing)
 try:
     from app.routes.onboarding import router as onboarding_router
     from app.routes.stripe_webhooks import router as stripe_router
