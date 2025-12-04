@@ -28,10 +28,23 @@ def calculate_liquidity_velocity(properties: list, historical_snapshots: list) -
         if not historical_snapshots or len(historical_snapshots) < 2:
             return {'error': 'insufficient_historical_data', 'message': 'Need at least 2 historical snapshots'}
         
-        # 1. INVENTORY TURNOVER RATE
+       
+     # 1. INVENTORY TURNOVER RATE
         # How many properties are NEW vs carried over from last snapshot
-        current_addresses = set([p.get('address', '') for p in properties if p.get('address')])
-        previous_addresses = set([p.get('address', '') for p in historical_snapshots[-1] if p.get('address')])
+        current_addresses = set([
+            p.get('address', '').strip() 
+            for p in properties 
+            if p.get('address', '').strip()  # Filter out empty strings
+        ])
+        previous_addresses = set([
+            p.get('address', '').strip() 
+            for p in historical_snapshots[-1] 
+            if p.get('address', '').strip()
+        ])
+        
+        # Safety check: ensure we have addresses
+        if len(current_addresses) == 0:
+            return {'error': 'no_valid_addresses', 'message': 'All properties missing addresses'}
         
         new_listings = len(current_addresses - previous_addresses)
         carried_over = len(current_addresses & previous_addresses)
