@@ -675,7 +675,8 @@ async def call_gpt4(user_prompt: str) -> str:
                 {"role": "user", "content": user_prompt}
             ],
             max_tokens=2500,
-            temperature=0.3
+            temperature=0.3,
+            timeout=15.0  # 15 second timeout
         )
         
         return response.choices[0].message.content
