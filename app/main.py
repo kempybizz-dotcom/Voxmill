@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import Response, PlainTextResponse
 import logging
 import asyncio
+import redis
 from app.whatsapp import handle_whatsapp_message
 
 # Import new route modules
