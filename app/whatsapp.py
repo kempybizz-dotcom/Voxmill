@@ -418,24 +418,33 @@ async def send_twilio_message(recipient: str, message: str):
             logger.error("Twilio client not initialized")
             return
         
+        # ENSURE WHATSAPP PREFIX
+        from_number = TWILIO_WHATSAPP_NUMBER
+        if not from_number.startswith('whatsapp:'):
+            from_number = f'whatsapp:{from_number}'
+        
+        to_number = recipient
+        if not to_number.startswith('whatsapp:'):
+            to_number = f'whatsapp:{to_number}'
+        
         MAX_LENGTH = 1500
         
         if len(message) <= MAX_LENGTH:
             # Short message - send as-is
             twilio_client.messages.create(
-                from_=TWILIO_WHATSAPP_NUMBER,
-                to=recipient,
+                from_=from_number,
+                to=to_number,
                 body=message
             )
-            logger.info(f"Message sent successfully to {recipient} ({len(message)} chars)")
+            logger.info(f"Message sent successfully to {to_number} ({len(message)} chars)")
         else:
             # Long message - intelligent splitting
             chunks = smart_split_message(message, MAX_LENGTH)
             
             for i, chunk in enumerate(chunks, 1):
                 twilio_client.messages.create(
-                    from_=TWILIO_WHATSAPP_NUMBER,
-                    to=recipient,
+                    from_=from_number,
+                    to=to_number,
                     body=chunk
                 )
                 
@@ -443,7 +452,7 @@ async def send_twilio_message(recipient: str, message: str):
                 import asyncio
                 await asyncio.sleep(0.5)
             
-            logger.info(f"Multi-part message sent to {recipient} ({len(chunks)} parts, {len(message)} total chars)")
+            logger.info(f"Multi-part message sent to {to_number} ({len(chunks)} parts, {len(message)} total chars)")
                 
     except Exception as e:
         logger.error(f"Error sending Twilio message: {str(e)}", exc_info=True)
