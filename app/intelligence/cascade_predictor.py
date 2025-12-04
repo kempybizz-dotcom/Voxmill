@@ -13,19 +13,26 @@ MONGODB_URI = os.getenv("MONGODB_URI")
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 
 
-def build_agent_network(area: str = "Mayfair", lookback_days: int = 90) -> dict:
+def build_agent_network(area: str = "Mayfair", lookback_days: int = 90, use_cache: bool = True) -> dict:
     """
     Build directed graph of agent influence relationships
-    
-    Edge weight = probability that Agent B responds when Agent A moves
-    Edge attributes = avg response time, typical magnitude
     
     Args:
         area: Market area
         lookback_days: Historical period to analyze
+        use_cache: If True, use Redis cache (1 hour TTL)
     
-    Returns: Network dict with nodes (agents) and edges (influence relationships)
+    Returns: Network dict with nodes and edges
     """
+    # TRY CACHE FIRST
+    if use_cache and redis_client:
+        cache_key = f"agent_network:{area}:{lookback_days}"
+        cached = redis_client.get(cache_key)
+        if cached:
+            logger.info(f"Using cached agent network for {area}")
+            return json.loads(cached)
+    
+        # CACHE MISS - BUILD NETWORK
     try:
         if not mongo_client:
             logger.warning("MongoDB not connected, cannot build agent network")
@@ -434,3 +441,15 @@ def store_cascade_prediction(cascade: dict):
         
     except Exception as e:
         logger.error(f"Error storing cascade prediction: {str(e)}", exc_info=True)
+
+
+def invalidate_network_cache(area: str):
+    """
+    Manually invalidate cached network (call when new data arrives)
+    """
+    if redis_client:
+        pattern = f"agent_network:{area}:*"
+        keys = redis_client.keys(pattern)
+        if keys:
+            redis_client.delete(*keys)
+            logger.info(f"Invalidated {len(keys)} network caches for {area}")
