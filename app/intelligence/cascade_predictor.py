@@ -1,8 +1,11 @@
- import os
+import os
 import logging
 from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 import json
+import redis
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = redis.from_url(REDIS_URL) if REDIS_URL else None
 
 logger = logging.getLogger(__name__)
 
