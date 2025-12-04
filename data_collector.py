@@ -10,6 +10,33 @@ import os
 import json
 import requests
 from datetime import datetime
+import time
+from functools import wraps
+
+def retry_with_backoff(max_retries=3, base_delay=1.0):
+    """
+    Decorator for exponential backoff retry logic
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.RequestException as e:
+                    if attempt == max_retries - 1:
+                        raise
+                    
+                    # Check if it's a rate limit error
+                    if hasattr(e, 'response') and e.response and e.response.status_code == 429:
+                        delay = base_delay * (2 ** attempt)  # Exponential backoff
+                        print(f"   ⚠️  Rate limit hit, retrying in {delay}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                    else:
+                        raise
+            return None
+        return wrapper
+    return decorator
 
 # API Configuration
 RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
@@ -98,9 +125,11 @@ def extract_price_from_text(text):
 # UK REAL ESTATE - PRIMARY: RIGHTMOVE API
 # ============================================================================
 
+@retry_with_backoff(max_retries=3, base_delay=2.0)
 def collect_rightmove_data(area, max_properties=40):
     """
     Primary data source: UK Real Estate Rightmove API via RapidAPI
+    Includes exponential backoff retry for rate limits
     """
     print(f"\n   🎯 PRIMARY SOURCE: UK Real Estate Rightmove API")
     
@@ -415,6 +444,11 @@ def generate_demo_properties(area, count=25):
     Generate realistic demo properties when all APIs fail.
     This ensures the system NEVER crashes.
     """
+    # ENSURE MINIMUM COUNT
+    if count < 5:
+        logger.warning(f"Demo property count too low ({count}), using minimum of 25")
+        count = 25
+    
     print(f"\n   🎲 DEMO DATA GENERATOR")
     print(f"   ⚠️  All API sources failed - generating realistic demo data")
     
