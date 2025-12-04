@@ -442,6 +442,22 @@ ENVIRONMENT VARIABLES REQUIRED:
                        help='Skip email delivery (generate PDF only)')
     
     args = parser.parse_args()
+
+    args = parser.parse_args()
+    
+    # VALIDATE VERTICAL FIRST (before checking environment)
+    if args.vertical not in VERTICAL_CONFIG:
+        print(f"\n❌ ERROR: Unsupported vertical '{args.vertical}'")
+        print(f"\n✅ Supported verticals:")
+        for v, config in VERTICAL_CONFIG.items():
+            print(f"   • {v:25s} - {config['name']}")
+        print(f"\nExample usage:")
+        print(f"   python voxmill_master.py --vertical uk-real-estate --area Mayfair --city London \\")
+        print(f"      --email test@example.com --name 'Test User'")
+        sys.exit(1)
+    
+    # Validate environment
+    required_env = ['RAPIDAPI_KEY', 'OPENAI_API_KEY']
     
     # Validate environment
     required_env = ['RAPIDAPI_KEY', 'OPENAI_API_KEY']
