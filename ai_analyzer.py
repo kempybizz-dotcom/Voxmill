@@ -8,9 +8,14 @@ Uses direct HTTP requests - bypasses OpenAI library proxy issues
 import os
 import json
 import requests
+import logging
 from datetime import datetime
 import time
 from functools import wraps
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def retry_on_transient_error(max_retries=2, base_delay=1.0):
     """
@@ -225,8 +230,8 @@ def generate_fallback_intelligence(metrics, area, city):
         "risk_assessment": f"Market concentration in {metrics['most_common_type'].lower()} properties (dominant type) creates potential supply pressure and pricing compression risk. Price volatility of {int(price_volatility * 100)}% suggests active trading but requires careful timing and positioning. Monitor £/sqft trends weekly for early signals of directional shifts or competitive repositioning that could impact valuations and transaction velocity.",
         
         "market_sentiment": sentiment,
-        "confidence_level": confidence
-        "data_source": "data_driven_fallback",  # Flag for PDF generation
+        "confidence_level": confidence,
+        "data_source": "data_driven_fallback",
         "ai_disclaimer": "Analysis generated from statistical models (OpenAI API unavailable)"
     }
     
