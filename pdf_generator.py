@@ -931,7 +931,7 @@ class VoxmillPDFGenerator:
             'submarkets': submarket_list  # ✅ NO LIMIT — template handles N submarkets
         }
 
-   def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+ def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Generate momentum streets section.
         Returns list of streets with activity metrics.
@@ -950,21 +950,17 @@ class VoxmillPDFGenerator:
                 {'street': 'Grosvenor Square', 'listings': 5, 'transactions': 5, 'avg_price': 6800000, 'momentum': '+8%'}
             ]
         
-        # Extract streets from addresses - WITH NONE HANDLING
         from collections import defaultdict
         street_data = defaultdict(lambda: {'count': 0, 'prices': []})
         
         for prop in properties:
             address = prop.get('address', prop.get('full_address'))
             
-            # ✅ FIX: Check for None before string operations
             if not address or address is None:
                 continue
             
-            # Extract street name (first part of address before comma)
             street = address.split(',')[0].strip() if ',' in address else address[:30]
             
-            # ✅ FIX: Additional validation
             if not street or len(street) < 3:
                 continue
             
@@ -973,29 +969,25 @@ class VoxmillPDFGenerator:
                 street_data[street]['count'] += 1
                 street_data[street]['prices'].append(price)
         
-        # Convert to list and calculate metrics
         momentum_streets = []
         
         for street, data_dict in street_data.items():
-            if data_dict['count'] >= 2:  # Only streets with 2+ listings
+            if data_dict['count'] >= 2:
                 avg_price = sum(data_dict['prices']) / len(data_dict['prices'])
-                momentum_pct = random.randint(5, 20)  # Simulated momentum
+                momentum_pct = random.randint(5, 20)
                 
                 momentum_streets.append({
                     'street': street,
                     'listings': data_dict['count'],
-                    'transactions': data_dict['count'],  # ✅ ADD transactions field
+                    'transactions': data_dict['count'],
                     'avg_price': int(avg_price),
                     'momentum': f'+{momentum_pct}%'
                 })
         
-        # Sort by listing count
         momentum_streets.sort(key=lambda x: x['listings'], reverse=True)
         
-        # Return top 5
         result = momentum_streets[:5]
         
-        # If we have fewer than 3, add defaults
         if len(result) < 3:
             metadata = data.get('metadata', {})
             area = metadata.get('area', 'Central')
@@ -1006,11 +998,9 @@ class VoxmillPDFGenerator:
                 {'street': f'{area} High Street', 'listings': 5, 'transactions': 5, 'avg_price': 2800000, 'momentum': '+8%'}
             ]
             
-            # Add defaults until we have at least 3
             for default in defaults:
                 if len(result) >= 3:
                     break
-                # Check if street name already exists
                 if not any(s['street'] == default['street'] for s in result):
                     result.append(default)
         
