@@ -4,6 +4,7 @@ VOXMILL ELITE DATA COLLECTOR - PRODUCTION VERSION
 Multi-source data collection with intelligent fallbacks
 NEVER FAILS - Always returns usable data
 FULLY UNIVERSAL - Supports all verticals with dynamic terminology
+GLOBAL DEMO DATA - Works for any city worldwide
 """
 
 import os
@@ -323,9 +324,10 @@ def collect_rightmove_data(area, max_properties=40):
 # UK REAL ESTATE - FALLBACK: OUTSCRAPER
 # ============================================================================
 
-def collect_outscraper_data(area, max_properties=40):
+def collect_outscraper_data(area, city="London", max_properties=40):
     """
     Fallback data source: Outscraper Google Maps scraping
+    NOW SUPPORTS ANY CITY GLOBALLY
     """
     print(f"\n   🔄 FALLBACK SOURCE: Outscraper Google Maps")
     
@@ -337,12 +339,12 @@ def collect_outscraper_data(area, max_properties=40):
         from outscraper import ApiClient
         client = ApiClient(api_key=OUTSCRAPER_API_KEY)
         
-        # Multiple search queries for better coverage
+        # Multiple search queries for better coverage - CITY-AWARE
         search_queries = [
-            f"luxury properties for sale {area} London",
-            f"luxury homes {area} London",
+            f"luxury properties for sale {area} {city}",
+            f"luxury homes {area} {city}",
             f"premium properties {area}",
-            f"high end real estate {area} London"
+            f"high end real estate {area} {city}"
         ]
         
         all_properties = []
@@ -397,9 +399,9 @@ def collect_outscraper_data(area, max_properties=40):
                     property_data = {
                         'source': 'Outscraper',
                         'listing_id': f"OS_{item.get('place_id', len(all_properties)+1)}",
-                        'address': item.get('full_address', item.get('address', f'{area}, London')),
+                        'address': item.get('full_address', item.get('address', f'{area}, {city}')),
                         'area': area,
-                        'city': 'London',
+                        'city': city,
                         'submarket': area,
                         'district': area,
                         'price': price,
@@ -436,67 +438,291 @@ def collect_outscraper_data(area, max_properties=40):
 
 
 # ============================================================================
-# DEMO DATA GENERATOR (Last Resort)
+# DEMO DATA GENERATOR (Last Resort) - GLOBAL VERSION
 # ============================================================================
 
-def generate_demo_properties(area, count=25):
+def generate_demo_properties(area, count=25, city="London"):
     """
-    Generate realistic demo properties when all APIs fail.
-    This ensures the system NEVER crashes.
+    Generate realistic demo properties for ANY global region.
+    Adapts price ranges and property types based on location.
+    This ensures the system NEVER crashes - works for any city worldwide.
     """
+    import random
+    
     # ENSURE MINIMUM COUNT
     if count < 5:
-        logger.warning(f"Demo property count too low ({count}), using minimum of 25")
+        print(f"      ⚠️  Demo property count too low ({count}), using minimum of 25")
         count = 25
     
     print(f"\n   🎲 DEMO DATA GENERATOR")
-    print(f"   ⚠️  All API sources failed - generating realistic demo data")
+    print(f"      Area: {area}")
+    print(f"      City: {city}")
+    print(f"      Count: {count}")
     
-    import random
+    # GLOBAL PRICE RANGES - Adapt to city/region
+    price_ranges = {
+        # UK Cities
+        'London': (800000, 15000000),
+        'Edinburgh': (300000, 3000000),
+        'Manchester': (200000, 1500000),
+        'Birmingham': (180000, 1200000),
+        'Bristol': (250000, 2000000),
+        'Glasgow': (150000, 1000000),
+        'Leeds': (180000, 1000000),
+        'Oxford': (400000, 3500000),
+        'Cambridge': (350000, 3000000),
+        'Bath': (300000, 2500000),
+        'Liverpool': (150000, 800000),
+        'Newcastle': (140000, 700000),
+        'Cardiff': (200000, 1000000),
+        'Belfast': (150000, 800000),
+        
+        # US Cities
+        'New York': (1000000, 50000000),
+        'Miami': (400000, 20000000),
+        'Los Angeles': (800000, 30000000),
+        'San Francisco': (1200000, 25000000),
+        'Boston': (600000, 15000000),
+        'Chicago': (300000, 10000000),
+        'Seattle': (500000, 12000000),
+        'Austin': (400000, 8000000),
+        'Denver': (400000, 7000000),
+        'Nashville': (350000, 5000000),
+        'Dallas': (350000, 8000000),
+        'Houston': (300000, 7000000),
+        'Phoenix': (300000, 6000000),
+        'Atlanta': (300000, 5000000),
+        'Washington': (500000, 12000000),
+        'Philadelphia': (400000, 8000000),
+        'San Diego': (600000, 15000000),
+        'Portland': (400000, 8000000),
+        'Las Vegas': (300000, 7000000),
+        
+        # European Cities
+        'Paris': (500000, 20000000),
+        'Monaco': (5000000, 100000000),
+        'Geneva': (1000000, 30000000),
+        'Zurich': (800000, 25000000),
+        'Amsterdam': (400000, 10000000),
+        'Berlin': (300000, 8000000),
+        'Madrid': (300000, 10000000),
+        'Barcelona': (350000, 12000000),
+        'Rome': (400000, 15000000),
+        'Vienna': (350000, 8000000),
+        'Milan': (450000, 15000000),
+        'Brussels': (300000, 8000000),
+        'Lisbon': (300000, 7000000),
+        'Copenhagen': (400000, 10000000),
+        'Stockholm': (400000, 10000000),
+        'Oslo': (400000, 10000000),
+        'Helsinki': (300000, 7000000),
+        'Dublin': (400000, 8000000),
+        'Prague': (250000, 5000000),
+        'Budapest': (200000, 4000000),
+        'Warsaw': (200000, 4000000),
+        
+        # Middle East
+        'Dubai': (500000, 50000000),
+        'Abu Dhabi': (400000, 30000000),
+        'Riyadh': (300000, 20000000),
+        'Doha': (400000, 25000000),
+        'Kuwait City': (350000, 20000000),
+        'Muscat': (250000, 10000000),
+        'Beirut': (300000, 8000000),
+        'Tel Aviv': (500000, 15000000),
+        
+        # Asia Pacific
+        'Singapore': (1000000, 40000000),
+        'Hong Kong': (1200000, 80000000),
+        'Tokyo': (500000, 30000000),
+        'Sydney': (800000, 25000000),
+        'Melbourne': (600000, 15000000),
+        'Brisbane': (500000, 10000000),
+        'Auckland': (600000, 12000000),
+        'Wellington': (500000, 8000000),
+        'Bangkok': (200000, 10000000),
+        'Kuala Lumpur': (200000, 8000000),
+        'Jakarta': (150000, 5000000),
+        'Manila': (150000, 5000000),
+        'Mumbai': (300000, 20000000),
+        'Delhi': (200000, 15000000),
+        'Bangalore': (200000, 10000000),
+        'Shanghai': (400000, 30000000),
+        'Beijing': (400000, 25000000),
+        'Shenzhen': (350000, 20000000),
+        'Seoul': (500000, 20000000),
+        
+        # Latin America
+        'São Paulo': (200000, 10000000),
+        'Rio de Janeiro': (200000, 8000000),
+        'Buenos Aires': (150000, 5000000),
+        'Santiago': (200000, 7000000),
+        'Mexico City': (200000, 8000000),
+        'Lima': (150000, 5000000),
+        'Bogotá': (150000, 5000000),
+        
+        # Africa
+        'Cape Town': (200000, 8000000),
+        'Johannesburg': (150000, 6000000),
+        'Nairobi': (100000, 3000000),
+        'Lagos': (100000, 3000000),
+        'Cairo': (100000, 3000000),
+        'Casablanca': (150000, 4000000),
+        
+        # Canada
+        'Toronto': (500000, 15000000),
+        'Vancouver': (600000, 20000000),
+        'Montreal': (350000, 8000000),
+        'Calgary': (350000, 7000000),
+        'Ottawa': (400000, 8000000),
+        
+        # Australia (additional)
+        'Perth': (450000, 10000000),
+        'Adelaide': (400000, 8000000),
+        'Gold Coast': (500000, 12000000),
+        
+        # Default (if city not found)
+        'DEFAULT': (200000, 5000000)
+    }
     
-    property_types = ['Penthouse', 'Townhouse', 'Apartment', 'Mews House', 'Duplex', 'Mansion']
-    streets = ['Park Lane', 'Mount Street', 'Grosvenor Square', 'Berkeley Square', 
-               'Curzon Street', 'Charles Street', 'South Audley Street', 'Davies Street']
-    agents = ['Knight Frank', 'Savills', 'Strutt & Parker', 'Hamptons', 'Chestertons']
+    # Get price range for this city (fallback to DEFAULT)
+    min_price, max_price = price_ranges.get(city, price_ranges['DEFAULT'])
+    
+    # Adjust prices for area premiums within cities
+    area_lower = area.lower()
+    premium_keywords = ['west end', 'mayfair', 'knightsbridge', 'chelsea', 'kensington', 
+                        'tribeca', 'soho', 'upper', 'downtown', 'centrum', 'centre', 
+                        'beach', 'marina', 'bay', 'waterfront', 'park', 'hill']
+    
+    is_premium_area = any(keyword in area_lower for keyword in premium_keywords)
+    
+    if is_premium_area:
+        # Premium areas: increase prices by 30-50%
+        min_price = int(min_price * 1.3)
+        max_price = int(max_price * 1.5)
+    
+    # UK-specific property types vs Global
+    uk_cities = ['London', 'Edinburgh', 'Manchester', 'Birmingham', 'Bristol', 'Glasgow', 
+                 'Leeds', 'Oxford', 'Cambridge', 'Bath', 'Liverpool', 'Newcastle', 
+                 'Cardiff', 'Belfast']
+    
+    if city in uk_cities:
+        property_types = ['Flat', 'Terraced House', 'Semi-Detached House', 'Detached House', 'Penthouse', 'Mews']
+        type_weights = [35, 20, 15, 15, 10, 5]
+    else:
+        # Global property types
+        property_types = ['Apartment', 'Condo', 'Villa', 'Penthouse', 'Townhouse', 'Estate']
+        type_weights = [35, 20, 15, 15, 10, 5]
+    
+    # Generate street names appropriate to region
+    if city in uk_cities:
+        street_suffixes = ['Street', 'Road', 'Avenue', 'Square', 'Gardens', 'Place', 'Lane', 'Mews', 'Terrace', 'Close']
+        street_prefixes = ['King', 'Queen', 'Victoria', 'Albert', 'George', 'Elizabeth', 'Park', 'High', 'Station', 
+                          'Church', 'Castle', 'Royal', 'Prince', 'Duke', 'Market', 'Bridge', 'Hill', 'Grove']
+    elif city in ['New York', 'Los Angeles', 'Chicago', 'Boston', 'Miami', 'San Francisco', 'Seattle', 
+                  'Austin', 'Denver', 'Nashville', 'Dallas', 'Houston', 'Phoenix', 'Atlanta']:
+        # US style
+        street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Way', 'Court', 'Place', 'Lane', 'Road', 'Circle']
+        street_prefixes = ['Main', 'Park', 'Ocean', 'Lake', 'Hill', 'Valley', 'Forest', 'River', 'Sunset', 
+                          'Harbor', 'Maple', 'Oak', 'Pine', 'Cedar', 'Washington', 'Madison', 'Lincoln']
+    elif city in ['Paris', 'Monaco', 'Geneva', 'Zurich', 'Amsterdam', 'Berlin', 'Madrid', 'Barcelona', 
+                  'Rome', 'Vienna', 'Milan', 'Brussels', 'Lisbon']:
+        # European style
+        street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Place', 'Square', 'Way', 'Road', 'Alley']
+        street_prefixes = ['Grand', 'Royal', 'Central', 'Republic', 'Liberty', 'Victory', 'Peace', 'Unity',
+                          'Triumph', 'Cathedral', 'Palace', 'Museum', 'Opera', 'Theatre', 'Garden']
+    else:
+        # Generic international
+        street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Way', 'Road', 'Place']
+        street_prefixes = ['Main', 'Central', 'Park', 'Lake', 'Ocean', 'Harbor', 'Bay', 'Hill', 
+                          'Valley', 'River', 'Garden', 'Market', 'Palace', 'Royal']
+    
+    # Agency names (mix of global and local)
+    if city in uk_cities:
+        agencies = ['Knight Frank', 'Savills', 'Hamptons', 'Strutt & Parker', 'Chestertons', 
+                   'Foxtons', 'Marsh & Parsons', 'John D Wood & Co', 'Douglas & Gordon', 
+                   'Winkworth', 'Private']
+    elif city in ['New York', 'Los Angeles', 'Miami', 'Chicago', 'San Francisco']:
+        agencies = ['Sotheby\'s International Realty', 'Douglas Elliman', 'Compass', 
+                   'Corcoran', 'Coldwell Banker', 'Keller Williams', 'RE/MAX', 
+                   'The Agency', 'Engel & Völkers', 'Private']
+    else:
+        agencies = ['Sotheby\'s International Realty', 'Christie\'s Real Estate', 
+                   'Engel & Völkers', 'Knight Frank', 'Savills', 'CBRE', 
+                   'Cushman & Wakefield', 'JLL', 'Colliers', 'Private']
+    
+    properties = []
     
     # Generate varied submarkets for testing
     submarkets = [area] * 10 + [f"{area} North", f"{area} South", f"{area} East"] * 5
     
-    properties = []
-    
     for i in range(count):
-        prop_type = random.choice(property_types)
-        bedrooms = random.randint(2, 6)
-        bathrooms = random.randint(2, bedrooms)
-        sqft = random.randint(1500, 5000)
-        price = random.randint(1500000, 8000000)
-        price_per_sqft = round(price / sqft, 2)
+        # Random but realistic data
+        prop_type = random.choices(property_types, weights=type_weights)[0]
+        
+        # Sqft varies by property type
+        if prop_type in ['Flat', 'Apartment', 'Condo']:
+            sqft = random.randint(500, 2500)
+        elif prop_type in ['Penthouse']:
+            sqft = random.randint(2000, 8000)
+        elif prop_type in ['Villa', 'Estate', 'Detached House']:
+            sqft = random.randint(3000, 15000)
+        else:
+            sqft = random.randint(1000, 4000)
+        
+        price = random.randint(min_price, max_price)
+        
+        # Bedrooms based on sqft
+        if sqft < 800:
+            bedrooms = random.randint(1, 2)
+        elif sqft < 1500:
+            bedrooms = random.randint(2, 3)
+        elif sqft < 3000:
+            bedrooms = random.randint(3, 4)
+        else:
+            bedrooms = random.randint(4, 7)
+        
+        bathrooms = random.randint(1, bedrooms)
         days_listed = random.randint(14, 90)
+        
+        # Generate address
+        street_prefix = random.choice(street_prefixes)
+        street_suffix = random.choice(street_suffixes)
+        street_number = random.randint(1, 500)
+        address = f"{street_number} {street_prefix} {street_suffix}, {area}"
         
         properties.append({
             'source': 'Demo Data (APIs unavailable)',
-            'listing_id': f"DEMO_{i+1:03d}",
-            'address': f"{random.randint(1, 99)} {random.choice(streets)}, {area}, London W1K",
+            'listing_id': f"DEMO-{area[:3].upper()}-{i+1:04d}",
+            'address': address,
             'area': area,
-            'city': 'London',
+            'city': city,
             'submarket': random.choice(submarkets),
             'district': random.choice(submarkets),
             'price': price,
             'beds': bedrooms,
             'baths': bathrooms,
             'sqft': sqft,
-            'price_per_sqft': price_per_sqft,
+            'price_per_sqft': round(price / sqft, 2),
             'property_type': prop_type,
-            'agent': random.choice(agents),
+            'agent': random.choice(agencies),
             'url': 'https://example.com',
             'description': f"Stunning {bedrooms}-bedroom {prop_type.lower()} in prime {area} location with modern finishes and exceptional views.",
             'image_url': '',
             'listed_date': datetime.now().strftime('%Y-%m-%d'),
             'days_listed': days_listed,
-            'days_on_market': days_listed
+            'days_on_market': days_listed,
+            'coordinates': {
+                'lat': 51.5074 + random.uniform(-0.5, 0.5),  # Approximate
+                'lng': -0.1278 + random.uniform(-0.5, 0.5)
+            }
         })
     
-    print(f"   ✅ Generated {len(properties)} realistic demo properties")
+    print(f"      ✅ Generated {len(properties)} demo properties")
+    print(f"      Price range: £{min_price:,} - £{max_price:,}")
+    print(f"      Property types: {', '.join(property_types)}")
+    print(f"      Agencies: {', '.join(agencies[:3])} (+{len(agencies)-3} more)")
+    
     return properties
 
 
@@ -504,10 +730,11 @@ def generate_demo_properties(area, count=25):
 # UK REAL ESTATE - MASTER COLLECTOR
 # ============================================================================
 
-def collect_uk_real_estate(area, max_properties=40):
+def collect_uk_real_estate(area, city="London", max_properties=40):
     """
     Master UK real estate collector with intelligent fallbacks.
     NEVER FAILS - Always returns usable data.
+    NOW SUPPORTS ANY CITY GLOBALLY
     
     Strategy:
     1. Try Rightmove API (best data quality)
@@ -515,29 +742,31 @@ def collect_uk_real_estate(area, max_properties=40):
     3. Generate demo data (ensures system never crashes)
     """
     
-    print(f"\n🏠 COLLECTING UK REAL ESTATE DATA")
+    print(f"\n🏠 COLLECTING REAL ESTATE DATA")
     print(f"   Target Area: {area}")
+    print(f"   Target City: {city}")
     print(f"   Target Count: {max_properties} properties")
     print(f"   Strategy: Multi-source with fallbacks")
     
-    # Try primary source
-    properties = collect_rightmove_data(area, max_properties)
-    
-    if properties and len(properties) >= 5:
-        print(f"\n   ✅ PRIMARY SOURCE SUCCESS: {len(properties)} properties from Rightmove")
-        return properties
+    # Try primary source (only for London/UK for now)
+    if city == "London" or city in ["Edinburgh", "Manchester", "Birmingham", "Bristol"]:
+        properties = collect_rightmove_data(area, max_properties)
+        
+        if properties and len(properties) >= 5:
+            print(f"\n   ✅ PRIMARY SOURCE SUCCESS: {len(properties)} properties from Rightmove")
+            return properties
     
     # Try fallback source
     print(f"\n   ⚠️  Primary source insufficient, trying fallback...")
-    properties = collect_outscraper_data(area, max_properties)
+    properties = collect_outscraper_data(area, city, max_properties)
     
     if properties and len(properties) >= 5:
         print(f"\n   ✅ FALLBACK SUCCESS: {len(properties)} properties from Outscraper")
         return properties
     
-    # Last resort: demo data
+    # Last resort: demo data - CITY-AWARE
     print(f"\n   ⚠️  All API sources failed or returned insufficient data")
-    properties = generate_demo_properties(area, max_properties)
+    properties = generate_demo_properties(area, max_properties, city)
     
     print(f"\n   ✅ DEMO DATA READY: {len(properties)} properties generated")
     return properties
@@ -547,15 +776,16 @@ def collect_uk_real_estate(area, max_properties=40):
 # MIAMI REAL ESTATE
 # ============================================================================
 
-def collect_miami_real_estate(area, max_properties=40):
+def collect_miami_real_estate(area, city="Miami", max_properties=40):
     """Collect Miami luxury real estate data"""
     
     print(f"\n🏠 COLLECTING MIAMI REAL ESTATE DATA")
     print(f"   Area: {area}")
+    print(f"   City: {city}")
     
     if not REALTY_US_API_KEY:
         print("   ⚠️  REALTY_US_API_KEY not configured - generating demo data")
-        return generate_demo_properties(area, max_properties)
+        return generate_demo_properties(area, max_properties, city)
     
     try:
         url = "https://realty-mole-property-api.p.rapidapi.com/saleListings"
@@ -566,12 +796,12 @@ def collect_miami_real_estate(area, max_properties=40):
         }
         
         querystring = {
-            "city": "Miami",
+            "city": city,
             "state": "FL",
             "limit": str(max_properties)
         }
         
-        if area and area.lower() != "miami":
+        if area and area.lower() != city.lower():
             querystring["neighborhood"] = area
         
         response = requests.get(url, headers=headers, params=querystring, timeout=20)
@@ -593,7 +823,7 @@ def collect_miami_real_estate(area, max_properties=40):
                 'listing_id': listing.get('id', ''),
                 'address': listing.get('formattedAddress', ''),
                 'area': area,
-                'city': 'Miami',
+                'city': city,
                 'submarket': area,
                 'district': area,
                 'price': price,
@@ -616,7 +846,7 @@ def collect_miami_real_estate(area, max_properties=40):
         
     except Exception as e:
         print(f"   ⚠️  Miami API failed: {str(e)} - using demo data")
-        return generate_demo_properties(area, max_properties)
+        return generate_demo_properties(area, max_properties, city)
 
 
 # ============================================================================
@@ -627,6 +857,7 @@ def collect_market_data(vertical, area, city, vertical_config_json='{}'):
     """
     Main data collection orchestrator.
     NEVER FAILS - Always returns usable data.
+    SUPPORTS ANY CITY GLOBALLY
     """
     
     print("\n" + "="*70)
@@ -660,12 +891,12 @@ def collect_market_data(vertical, area, city, vertical_config_json='{}'):
     
     try:
         if vertical == 'uk-real-estate':
-            properties = collect_uk_real_estate(area)
+            properties = collect_uk_real_estate(area, city)
             data['raw_data']['properties'] = properties
             data['metadata']['property_count'] = len(properties)
             
         elif vertical == 'miami-real-estate':
-            properties = collect_miami_real_estate(area)
+            properties = collect_miami_real_estate(area, city)
             data['raw_data']['properties'] = properties
             data['metadata']['property_count'] = len(properties)
             
@@ -708,6 +939,7 @@ def main():
     if len(sys.argv) < 4:
         print("Usage: python data_collector.py <vertical> <area> <city> [vertical_config_json]")
         print("Example: python data_collector.py uk-real-estate Mayfair London")
+        print("Example: python data_collector.py uk-real-estate \"West End\" Edinburgh")
         sys.exit(1)
     
     vertical = sys.argv[1]
