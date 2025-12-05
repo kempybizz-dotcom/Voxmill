@@ -1705,7 +1705,7 @@ class VoxmillPDFGenerator:
             logger.info(f"🔍 DEBUG kpi_items: {kpi_items}")
             logger.info(f"🔍 DEBUG kpi_items[0] length: {len(kpi_items[0])}")
            
-            template_data = {
+          template_data = {
                 'location': full_location,
                 'report_date': datetime.now().strftime('%B %Y'),
                 'client_name': data.get('client_name', 'Strategic Market Participants'),
@@ -1717,7 +1717,7 @@ class VoxmillPDFGenerator:
                 'strategic_intelligence': strategic_intelligence,
                 'show_ai_disclaimer': intelligence.get('data_source') == 'data_driven_fallback',
                 'ai_disclaimer_text': intelligence.get('ai_disclaimer', ''),
-                'top_opportunities': self.prepare_opportunities(data)
+                'top_opportunities': self.prepare_opportunities(data),  # ← ADD COMMA HERE
                 'is_demo_data': data.get('metadata', {}).get('data_source', '').startswith('Demo') or 
                                data.get('metadata', {}).get('data_source', '') == 'fallback',
                 
