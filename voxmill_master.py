@@ -297,8 +297,20 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             return False
         
         print(result.stdout)
-
-         if not skip_email:
+        
+        # Step 4: MongoDB Save
+        print(f"\n[STEP 4/5] MONGODB SAVE")
+        print(f"   Saving dataset for WhatsApp service...")
+        
+        mongodb_success = save_to_mongodb(area, vertical, vertical_config)
+        
+        if mongodb_success:
+            print(f"   ✅ MongoDB save successful")
+        else:
+            print(f"   ⚠️  MongoDB save failed (non-critical)")
+        
+        # Step 5: Email Delivery
+        if not skip_email:
             print(f"\n[STEP 5/5] EMAIL DELIVERY")
             print(f"   Sending professional email...")
             
@@ -313,9 +325,9 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
                 print(f"\n⚠️ Email delivery failed:")
                 print(result.stderr)
                 print(f"\n   PDF saved locally: /tmp/Voxmill_Executive_Intelligence_Deck.pdf")
-                return False
-            
-            print(result.stdout)
+                # Don't return False - email failure is not critical
+            else:
+                print(result.stdout)
         else:
             print(f"\n[STEP 5/5] EMAIL DELIVERY")
             print(f"   ⚠️ Email skipped (--skip-email flag)")
@@ -332,7 +344,7 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
         print(f"   • Terminology: {vertical_config['inventory_label']}, {vertical_config['velocity_metric_label']}")
         print(f"   • MongoDB: {'✅ Saved' if mongodb_success else '⚠️ Skipped'}")
         
-           if not skip_email:
+        if not skip_email:
             print(f"   • Email: SENT to {recipient_email}")
         else:
             print(f"   • Email: SKIPPED (manual send required)")
@@ -345,18 +357,6 @@ def run_pipeline(vertical, area, city, recipient_email, recipient_name, skip_ema
             print(f"   Follow up with {recipient_name} in 24-48 hours")
         
         return True
-        
-        # Step 4: MongoDB Save
-        print(f"\n[STEP 4/5] MONGODB SAVE")
-        print(f"   Saving dataset for WhatsApp service...")
-        
-        mongodb_success = save_to_mongodb(area, vertical, vertical_config)
-        
-        if mongodb_success:
-             print(f"   • MongoDB: {'✅ Saved' if mongodb_success else '⚠️ Skipped'}")
-        else:
-            print(f"   ⚠️  MongoDB save failed (non-critical)")
-        
         
     except Exception as e:
         print(f"\n❌ CRITICAL ERROR: {str(e)}")
@@ -397,28 +397,6 @@ SUPPORTED VERTICALS:
   • miami-real-estate   - Miami luxury real estate (sqft, absorption rate, price)
   • uk-car-rentals      - UK luxury vehicle fleet (daily rates, utilization, fleet)
   • chartering          - Yacht/jet charter services (bookings, booking velocity, charter rates)
-
-VERTICAL-SPECIFIC TERMINOLOGY:
-  Real Estate:
-    - Unit: sqft
-    - Velocity: Absorption Rate
-    - Inventory: Active Listings
-    - Value: Price
-  
-  Luxury Goods (Cars/Charter):
-    - Unit: unit/booking
-    - Velocity: Utilization/Booking Velocity
-    - Inventory: Active Fleet/Available Assets
-    - Value: Daily/Charter Rate
-
-ENVIRONMENT VARIABLES REQUIRED:
-  • RAPIDAPI_KEY        - For UK Real Estate (Rightmove) data
-  • REALTY_US_API_KEY   - For Miami Real Estate data (optional)
-  • OUTSCRAPER_API_KEY  - For fallback scraping (optional)
-  • OPENAI_API_KEY      - For GPT-4o AI analysis
-  • VOXMILL_EMAIL       - For email delivery (optional)
-  • VOXMILL_EMAIL_PASSWORD - For email delivery (optional)
-  • MONGODB_URI         - For WhatsApp service dataset storage (optional)
         """
     )
     
@@ -442,8 +420,6 @@ ENVIRONMENT VARIABLES REQUIRED:
                        help='Skip email delivery (generate PDF only)')
     
     args = parser.parse_args()
-
-    args = parser.parse_args()
     
     # VALIDATE VERTICAL FIRST (before checking environment)
     if args.vertical not in VERTICAL_CONFIG:
@@ -458,9 +434,6 @@ ENVIRONMENT VARIABLES REQUIRED:
     
     # Validate environment
     required_env = ['RAPIDAPI_KEY', 'OPENAI_API_KEY']
-    
-    # Validate environment
-    required_env = ['RAPIDAPI_KEY', 'OPENAI_API_KEY']
     missing = [e for e in required_env if not os.environ.get(e)]
     
     if missing:
@@ -468,9 +441,6 @@ ENVIRONMENT VARIABLES REQUIRED:
         for var in missing:
             print(f"   • {var}")
         print(f"\nSet these in your Render environment or export locally.")
-        print(f"\nFor local testing, you can export them:")
-        print(f"   export RAPIDAPI_KEY='your_key_here'")
-        print(f"   export OPENAI_API_KEY='your_key_here'")
         sys.exit(1)
     
     if not args.skip_email:
@@ -483,14 +453,6 @@ ENVIRONMENT VARIABLES REQUIRED:
                 print(f"   • {var}")
             print(f"\n   Will skip email delivery (PDF only mode)")
             args.skip_email = True
-    
-    # Validate vertical
-    if args.vertical not in VERTICAL_CONFIG:
-        print(f"\n❌ ERROR: Unsupported vertical '{args.vertical}'")
-        print(f"\nSupported verticals:")
-        for v, config in VERTICAL_CONFIG.items():
-            print(f"   • {v:20s} - {config['name']}")
-        sys.exit(1)
     
     # Run pipeline
     success = run_pipeline(
