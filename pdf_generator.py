@@ -932,86 +932,89 @@ class VoxmillPDFGenerator:
         }
 
     def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    Generate momentum streets section.
-    Returns list of streets with activity metrics.
-    
-    ✅ FIXED: Handles None addresses safely
-    """
-    properties = data.get('properties', data.get('top_opportunities', []))
-    
-    if not properties or len(properties) == 0:
-        return [
-            {'street': 'Park Lane', 'listings': 8, 'avg_price': 4500000, 'momentum': '+15%'},
-            {'street': 'Mount Street', 'listings': 6, 'avg_price': 5200000, 'momentum': '+12%'},
-            {'street': 'Grosvenor Square', 'listings': 5, 'avg_price': 6800000, 'momentum': '+8%'}
-        ]
-    
-    # Extract streets from addresses - WITH NONE HANDLING
-    from collections import defaultdict
-    street_data = defaultdict(lambda: {'count': 0, 'prices': []})
-    
-    for prop in properties:
-        address = prop.get('address', prop.get('full_address'))
+        """
+        Generate momentum streets section.
+        Returns list of streets with activity metrics.
         
-        # ✅ FIX: Check for None before string operations
-        if not address or address is None:
-            continue
+        ✅ FIXED: Handles None addresses safely
+        """
+        import random
         
-        # Extract street name (first part of address before comma)
-        street = address.split(',')[0].strip() if ',' in address else address[:30]
+        properties = data.get('properties', data.get('top_opportunities', []))
         
-        # ✅ FIX: Additional validation
-        if not street or len(street) < 3:
-            continue
+        if not properties or len(properties) == 0:
+            return [
+                {'street': 'Park Lane', 'listings': 8, 'avg_price': 4500000, 'momentum': '+15%'},
+                {'street': 'Mount Street', 'listings': 6, 'avg_price': 5200000, 'momentum': '+12%'},
+                {'street': 'Grosvenor Square', 'listings': 5, 'avg_price': 6800000, 'momentum': '+8%'}
+            ]
         
-        price = prop.get('price', 0)
-        if price > 0:
-            street_data[street]['count'] += 1
-            street_data[street]['prices'].append(price)
-    
-    # Convert to list and calculate metrics
-    momentum_streets = []
-    
-    for street, data_dict in street_data.items():
-        if data_dict['count'] >= 2:  # Only streets with 2+ listings
-            avg_price = sum(data_dict['prices']) / len(data_dict['prices'])
-            momentum_pct = random.randint(5, 20)  # Simulated momentum
+        # Extract streets from addresses - WITH NONE HANDLING
+        from collections import defaultdict
+        street_data = defaultdict(lambda: {'count': 0, 'prices': []})
+        
+        for prop in properties:
+            address = prop.get('address', prop.get('full_address'))
             
-            momentum_streets.append({
-                'street': street,
-                'listings': data_dict['count'],
-                'avg_price': int(avg_price),
-                'momentum': f'+{momentum_pct}%'
-            })
-    
-    # Sort by listing count
-    momentum_streets.sort(key=lambda x: x['listings'], reverse=True)
-    
-    # Return top 5
-    result = momentum_streets[:5]
-    
-    # If we have fewer than 3, add defaults
-    if len(result) < 3:
-        metadata = data.get('metadata', {})
-        area = metadata.get('area', 'Central')
+            # ✅ FIX: Check for None before string operations
+            if not address or address is None:
+                continue
+            
+            # Extract street name (first part of address before comma)
+            street = address.split(',')[0].strip() if ',' in address else address[:30]
+            
+            # ✅ FIX: Additional validation
+            if not street or len(street) < 3:
+                continue
+            
+            price = prop.get('price', 0)
+            if price > 0:
+                street_data[street]['count'] += 1
+                street_data[street]['prices'].append(price)
         
-        defaults = [
-            {'street': f'{area} Main Street', 'listings': 8, 'avg_price': 2500000, 'momentum': '+15%'},
-            {'street': f'{area} Park Avenue', 'listings': 6, 'avg_price': 3200000, 'momentum': '+12%'},
-            {'street': f'{area} High Street', 'listings': 5, 'avg_price': 2800000, 'momentum': '+8%'}
-        ]
+        # Convert to list and calculate metrics
+        momentum_streets = []
         
-        # Add defaults until we have at least 3
-        for default in defaults:
-            if len(result) >= 3:
-                break
-            # Check if street name already exists
-            if not any(s['street'] == default['street'] for s in result):
-                result.append(default)
+        for street, data_dict in street_data.items():
+            if data_dict['count'] >= 2:  # Only streets with 2+ listings
+                avg_price = sum(data_dict['prices']) / len(data_dict['prices'])
+                momentum_pct = random.randint(5, 20)  # Simulated momentum
+                
+                momentum_streets.append({
+                    'street': street,
+                    'listings': data_dict['count'],
+                    'avg_price': int(avg_price),
+                    'momentum': f'+{momentum_pct}%'
+                })
+        
+        # Sort by listing count
+        momentum_streets.sort(key=lambda x: x['listings'], reverse=True)
+        
+        # Return top 5
+        result = momentum_streets[:5]
+        
+        # If we have fewer than 3, add defaults
+        if len(result) < 3:
+            metadata = data.get('metadata', {})
+            area = metadata.get('area', 'Central')
+            
+            defaults = [
+                {'street': f'{area} Main Street', 'listings': 8, 'avg_price': 2500000, 'momentum': '+15%'},
+                {'street': f'{area} Park Avenue', 'listings': 6, 'avg_price': 3200000, 'momentum': '+12%'},
+                {'street': f'{area} High Street', 'listings': 5, 'avg_price': 2800000, 'momentum': '+8%'}
+            ]
+            
+            # Add defaults until we have at least 3
+            for default in defaults:
+                if len(result) >= 3:
+                    break
+                # Check if street name already exists
+                if not any(s['street'] == default['street'] for s in result):
+                    result.append(default)
+        
+        return result
     
-    return result
-    # ========================================================================
+   # ========================================================================
     # COMPETITOR INTELLIGENCE (NEVER RETURNS EMPTY)
     # ========================================================================
 
