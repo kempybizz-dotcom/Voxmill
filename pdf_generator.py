@@ -931,7 +931,7 @@ class VoxmillPDFGenerator:
             'submarkets': submarket_list  # ✅ NO LIMIT — template handles N submarkets
         }
 
- def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Generate momentum streets section.
         Returns list of streets with activity metrics.
