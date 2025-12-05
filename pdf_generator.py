@@ -931,7 +931,7 @@ class VoxmillPDFGenerator:
             'submarkets': submarket_list  # ✅ NO LIMIT — template handles N submarkets
         }
 
-def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Generate momentum streets section.
         Returns list of streets with activity metrics.
@@ -1006,10 +1006,10 @@ def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         
         return result
     
-   # ========================================================================
+    # ========================================================================
     # COMPETITOR INTELLIGENCE (NEVER RETURNS EMPTY)
     # ========================================================================
-
+    
     def get_competitor_agencies(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Generate competitor agency data with intelligent Private handling.
@@ -1621,7 +1621,7 @@ def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
             'macro_analysis': 'Market fundamentals remain supported by stable macroeconomic conditions. Interest rate environment and capital flow dynamics continue to influence market segment performance.'
         }
     
-  # ========================================================================
+    # ========================================================================
     # TEMPLATE RENDERING
     # ========================================================================
     
@@ -1786,6 +1786,7 @@ def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
             import traceback
             logger.error(traceback.format_exc())
             raise
+    
     # ========================================================================
     # PDF GENERATION
     # ========================================================================
