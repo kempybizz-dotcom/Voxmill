@@ -931,12 +931,13 @@ class VoxmillPDFGenerator:
             'submarkets': submarket_list  # ✅ NO LIMIT — template handles N submarkets
         }
 
-    def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+   def get_momentum_streets(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Generate momentum streets section.
         Returns list of streets with activity metrics.
         
         ✅ FIXED: Handles None addresses safely
+        ✅ FIXED: Includes 'transactions' field required by template
         """
         import random
         
@@ -944,9 +945,9 @@ class VoxmillPDFGenerator:
         
         if not properties or len(properties) == 0:
             return [
-                {'street': 'Park Lane', 'listings': 8, 'avg_price': 4500000, 'momentum': '+15%'},
-                {'street': 'Mount Street', 'listings': 6, 'avg_price': 5200000, 'momentum': '+12%'},
-                {'street': 'Grosvenor Square', 'listings': 5, 'avg_price': 6800000, 'momentum': '+8%'}
+                {'street': 'Park Lane', 'listings': 8, 'transactions': 8, 'avg_price': 4500000, 'momentum': '+15%'},
+                {'street': 'Mount Street', 'listings': 6, 'transactions': 6, 'avg_price': 5200000, 'momentum': '+12%'},
+                {'street': 'Grosvenor Square', 'listings': 5, 'transactions': 5, 'avg_price': 6800000, 'momentum': '+8%'}
             ]
         
         # Extract streets from addresses - WITH NONE HANDLING
@@ -983,6 +984,7 @@ class VoxmillPDFGenerator:
                 momentum_streets.append({
                     'street': street,
                     'listings': data_dict['count'],
+                    'transactions': data_dict['count'],  # ✅ ADD transactions field
                     'avg_price': int(avg_price),
                     'momentum': f'+{momentum_pct}%'
                 })
@@ -999,9 +1001,9 @@ class VoxmillPDFGenerator:
             area = metadata.get('area', 'Central')
             
             defaults = [
-                {'street': f'{area} Main Street', 'listings': 8, 'avg_price': 2500000, 'momentum': '+15%'},
-                {'street': f'{area} Park Avenue', 'listings': 6, 'avg_price': 3200000, 'momentum': '+12%'},
-                {'street': f'{area} High Street', 'listings': 5, 'avg_price': 2800000, 'momentum': '+8%'}
+                {'street': f'{area} Main Street', 'listings': 8, 'transactions': 8, 'avg_price': 2500000, 'momentum': '+15%'},
+                {'street': f'{area} Park Avenue', 'listings': 6, 'transactions': 6, 'avg_price': 3200000, 'momentum': '+12%'},
+                {'street': f'{area} High Street', 'listings': 5, 'transactions': 5, 'avg_price': 2800000, 'momentum': '+8%'}
             ]
             
             # Add defaults until we have at least 3
