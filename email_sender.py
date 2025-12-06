@@ -296,7 +296,7 @@ height: 80px !important;
 </body>
 </html>"""
 
-def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None, max_attempts=3)
+def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None, max_attempts=3):
     """Send executive email"""
 
     import time
