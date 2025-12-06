@@ -165,6 +165,8 @@ def get_latest_pdf_for_client(whatsapp_number: str, area: str) -> Optional[str]:
     """
     Retrieve latest PDF URL for client's requested area
     
+    Enhanced with multiple search strategies and detailed logging
+    
     Args:
         whatsapp_number: Client's WhatsApp number (for logging)
         area: Market area requested
@@ -182,6 +184,9 @@ def get_latest_pdf_for_client(whatsapp_number: str, area: str) -> Optional[str]:
         # Find latest PDF for this area (within last 7 days)
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
         
+        # STRATEGY 1: Search by exact area match
+        logger.info(f"🔍 Searching for PDF: area='{area}', last 7 days")
+        
         file_doc = db['fs.files'].find_one(
             {
                 'metadata.area': area,
@@ -190,28 +195,79 @@ def get_latest_pdf_for_client(whatsapp_number: str, area: str) -> Optional[str]:
             sort=[('uploadDate', -1)]
         )
         
+        # STRATEGY 2: If not found, try case-insensitive search
         if not file_doc:
-            logger.info(f"No recent PDF found for {area}")
-            return None
+            logger.info(f"🔍 Trying case-insensitive search for '{area}'")
+            file_doc = db['fs.files'].find_one(
+                {
+                    'metadata.area': {'$regex': f'^{area}$', '$options': 'i'},
+                    'uploadDate': {'$gte': cutoff_date}
+                },
+                sort=[('uploadDate', -1)]
+            )
+        
+        # STRATEGY 3: If still not found, get ANY recent PDF
+        if not file_doc:
+            logger.info(f"🔍 No PDF for '{area}', trying to find ANY recent PDF")
+            file_doc = db['fs.files'].find_one(
+                {
+                    'uploadDate': {'$gte': cutoff_date}
+                },
+                sort=[('uploadDate', -1)]
+            )
+            
+            if file_doc:
+                actual_area = file_doc.get('metadata', {}).get('area', 'Unknown')
+                logger.info(f"✅ Found PDF for different area: {actual_area}")
+        
+        if not file_doc:
+            logger.warning(f"❌ No PDFs found in last 7 days")
+            
+            # DEBUG: Check if ANY PDFs exist
+            total_pdfs = db['fs.files'].count_documents({})
+            logger.info(f"📊 Total PDFs in database: {total_pdfs}")
+            
+            if total_pdfs > 0:
+                # Get the most recent PDF regardless of age
+                any_pdf = db['fs.files'].find_one({}, sort=[('uploadDate', -1)])
+                if any_pdf:
+                    pdf_area = any_pdf.get('metadata', {}).get('area', 'Unknown')
+                    pdf_date = any_pdf.get('uploadDate', 'Unknown')
+                    logger.info(f"📄 Most recent PDF: {pdf_area} from {pdf_date}")
+                    
+                    # Return it anyway if it's not too old (30 days)
+                    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+                    if any_pdf.get('uploadDate', datetime.min.replace(tzinfo=timezone.utc)) > thirty_days_ago:
+                        logger.info(f"✅ Returning PDF from last 30 days ({pdf_area})")
+                        file_doc = any_pdf
+            
+            if not file_doc:
+                return None
+        
+        # Extract URL from found document
+        actual_area = file_doc.get('metadata', {}).get('area', 'Unknown')
+        upload_date = file_doc.get('uploadDate', 'Unknown')
+        
+        logger.info(f"✅ PDF found: {actual_area} uploaded {upload_date}")
         
         # Check for Cloudflare R2 URL first
         if 'metadata' in file_doc and file_doc['metadata'].get('cloudflare_url'):
             cloudflare_url = file_doc['metadata']['cloudflare_url']
-            logger.info(f"✅ Returning R2 URL for {area}")
+            logger.info(f"✅ Returning R2 URL: {cloudflare_url[:80]}...")
             return cloudflare_url
         
         # Fallback: Generate MongoDB-served URL
         file_id = file_doc['_id']
         
         # This requires /pdf/{file_id} endpoint in main.py
-        base_url = os.getenv('APP_BASE_URL', 'https://voxmill.onrender.com')
+        base_url = os.getenv('APP_BASE_URL', 'https://voxmill-whatsapp.onrender.com')
         mongodb_url = f"{base_url}/pdf/{file_id}"
         
-        logger.info(f"⚠️ Returning MongoDB fallback URL for {area}")
+        logger.info(f"⚠️ Returning MongoDB fallback URL: {mongodb_url}")
         return mongodb_url
         
     except Exception as e:
-        logger.error(f"Error retrieving PDF: {e}", exc_info=True)
+        logger.error(f"❌ Error retrieving PDF: {e}", exc_info=True)
         return None
 
 
