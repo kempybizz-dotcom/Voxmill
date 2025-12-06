@@ -296,8 +296,42 @@ height: 80px !important;
 </body>
 </html>"""
 
-def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
+def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None, max_attempts=3)
     """Send executive email"""
+
+    import time
+    
+    for attempt in range(1, max_attempts + 1):
+        try:
+            logger.info(f"\n📧 Send Attempt {attempt}/{max_attempts}")
+            
+            # [KEEP ALL EXISTING EMAIL BUILDING CODE]
+            
+            # Send
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+            
+            logger.info(f"✅ EMAIL SENT (attempt {attempt})")
+            return True  # SUCCESS
+            
+        except smtplib.SMTPException as e:
+            logger.warning(f"⚠️ SMTP error on attempt {attempt}: {e}")
+            
+            if attempt < max_attempts:
+                wait_time = 2 ** attempt  # Exponential: 2s, 4s, 8s
+                logger.info(f"   Waiting {wait_time}s before retry...")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"❌ All {max_attempts} attempts failed")
+                raise
+        
+        except Exception as e:
+            logger.error(f"❌ Non-retryable error: {e}")
+            raise
+    
+    return False
     
     logger.info("=" * 70)
     logger.info("VOXMILL EXECUTIVE EMAIL SENDER V2.0")
