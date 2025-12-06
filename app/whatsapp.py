@@ -127,14 +127,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
     """
-
-    async def handle_whatsapp_message(sender: str, message_text: str):
-    """
-    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
-    """
     
     # ========================================
-    # PREFERENCE SELF-SERVICE (NEW - 13 LINES)
+    # PREFERENCE SELF-SERVICE (NEW)
     # ========================================
     try:
         pref_response = handle_whatsapp_preference_message(sender, message_text)
@@ -149,6 +144,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
     except Exception as e:
         logger.debug(f"Preference handler skipped: {e}")
+        # Continue to normal processing
+    
+    # ========================================
+    # NORMAL MESSAGE PROCESSING
     # ========================================
     
     try:
@@ -166,7 +165,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-    
         # Case 2: Message too short (likely accidental)
         if len(message_text.strip()) < 2:
             await send_twilio_message(
@@ -329,7 +327,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
 
 async def send_pdf_report(sender: str, area: str):
     """
-    Generate and send PDF report link to client
+    Generate and send PDF report link to client (NO EMOJIS VERSION)
     """
     try:
         logger.info(f"PDF report requested by {sender} for {area}")
@@ -344,8 +342,8 @@ async def send_pdf_report(sender: str, area: str):
         if not storage_available:
             logger.warning("PDF storage module not configured")
             message = (
-                "PDF delivery is being configured for your account. "
-                "In the meantime, I can provide comprehensive intelligence via text. "
+                "PDF delivery is being configured for your account.\n\n"
+                "In the meantime, I can provide comprehensive intelligence via text.\n\n"
                 "Ask me about market overview, opportunities, or strategic outlook."
             )
             await send_twilio_message(sender, message)
@@ -377,15 +375,17 @@ async def send_pdf_report(sender: str, area: str):
             from datetime import datetime
             date_str = datetime.now().strftime('%B %d, %Y')
             
+            # NO EMOJIS VERSION - Professional institutional format
             message = (
-                "📊 EXECUTIVE INTELLIGENCE BRIEFING\n"
+                "EXECUTIVE INTELLIGENCE BRIEFING\n"
                 "————————————————————————————————————————\n\n"
                 f"{area} Market Analysis\n"
                 f"Generated: {date_str}\n\n"
                 f"View your report:\n{pdf_url}\n\n"
-                "📌 Link valid for 7 days\n"
-                "📄 14-page institutional-grade analysis"
+                "Link valid for 7 days\n"
+                "14-page institutional-grade analysis"
             )
+            
             await send_twilio_message(sender, message)
             logger.info(f"PDF report sent successfully to {sender}")
         else:
