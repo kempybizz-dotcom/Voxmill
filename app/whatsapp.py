@@ -310,7 +310,7 @@ async def send_pdf_report(sender: str, area: str):
         
         # Check if PDF storage is configured
         try:
-            from app.pdf_storage import get_latest_pdf_for_client, upload_pdf_to_cloud
+            from app.pdf_storage import (Import is correct, but ensure pdf_storage.py exists - FILE 6)
             storage_available = True
         except ImportError:
             storage_available = False
