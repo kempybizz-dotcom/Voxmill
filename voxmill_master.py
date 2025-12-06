@@ -500,55 +500,40 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
         return False
 
 
-def send_email(workspace: ExecutionWorkspace, client_email: str, client_name: str, pdf_url: str) -> bool:
-    """
-    Step 6: Send email with PDF (optional if using WhatsApp)
-    
-    Args:
-        workspace: Execution workspace
-        client_email: Recipient email
-        client_name: Recipient name
-        pdf_url: Cloudflare R2 URL
-    
-    Returns: True if successful
-    """
+# Around line 485-495 in send_email() function
+
+def send_email(area: str, city: str, recipient_email: str, recipient_name: str, 
+               workspace_dir: Path, cloudflare_url: str, exec_id: str) -> bool:
+    """Send email with PDF attachment"""
     logger.info("\n" + "="*70)
     logger.info("STEP 6: EMAIL DELIVERY")
     logger.info("="*70)
     
-    # Skip if no email provided
-    if not client_email or client_email == "none":
-        logger.info("   ⏭️  Email delivery skipped (no email provided)")
-        return True
-    
     try:
-        cmd = [
-            sys.executable,
-            'email_sender.py',
-            client_email,
-            client_name,
-            str(workspace.pdf_file),
-            workspace.area
-        ]
+        # ✅ FIX: Use workspace PDF, not /tmp root
+        pdf_path = workspace_dir / f"Voxmill_{area}_Intelligence_Deck.pdf"
+        logo_path = Path(__file__).parent / "voxmill_logo.png"
         
-        result = subprocess.run(
-            cmd,
-            env=workspace.get_env_vars(),
-            capture_output=True,
-            text=True,
-            timeout=60
+        # Validate PDF exists in workspace
+        if not pdf_path.exists():
+            raise FileNotFoundError(f"PDF not found in workspace: {pdf_path}")
+        
+        logger.info(f"   📄 PDF: {pdf_path} ({pdf_path.stat().st_size:,} bytes)")
+        
+        send_voxmill_email(
+            recipient_email=recipient_email,
+            recipient_name=recipient_name,
+            area=area,
+            city=city,
+            pdf_path=str(pdf_path),  # ← Using workspace path
+            logo_path=str(logo_path) if logo_path.exists() else None
         )
         
-        if result.returncode != 0:
-            logger.warning(f"   ⚠️  Email sending failed:")
-            logger.warning(f"   {result.stderr[-300:]}")
-            return False
-        
-        logger.info(f"   ✅ Email sent to {client_email}")
+        logger.info("   ✅ Email delivered successfully")
         return True
-    
+        
     except Exception as e:
-        logger.error(f"   ❌ Email error: {e}")
+        logger.warning(f"   ⚠️  Email sending failed:\n{traceback.format_exc()}")
         return False
 
 
