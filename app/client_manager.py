@@ -77,12 +77,13 @@ def get_client_tier(whatsapp_number: str) -> str:
     return "premium_access"
 
 
-def check_rate_limit(whatsapp_number: str) -> bool:
+def check_rate_limit(whatsapp_number: str) -> tuple[bool, str]:
     """
     Check if client has exceeded rate limit
     ✅ V3.1: Unlimited queries for all clients
+    Returns: (allowed, message)
     """
-    return True  # Always allow (no limits during startup)
+    return (True, "")  # Always allow (no limits during startup)
 
 
 def update_client_history(whatsapp_number: str, query: str, category: str, region: str):
