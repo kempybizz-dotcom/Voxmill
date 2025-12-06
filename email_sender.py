@@ -170,9 +170,17 @@ Precision Intelligence. Strategic Foresight. Capital Deployment Clarity.
 {recipient_name},
 </p>
 
-<!-- Body Text -->
+<!-- Body Text - COLD OUTREACH VERSION -->
+<p style="margin:0 0 24px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:rgba(234,234,234,0.85);line-height:1.85;">
+We've identified you as a strategic player in the <strong style="color:#BFA670;">{area}</strong> market.
+</p>
+
+<p style="margin:0 0 24px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:rgba(234,234,234,0.85);line-height:1.85;">
+I've prepared a complimentary <strong style="color:#BFA670;">Voxmill Executive Intelligence</strong> analysis for <strong style="color:#BFA670;">{area}, {city}</strong> — the same institutional-grade intelligence used by leading hedge funds and private equity firms.
+</p>
+
 <p style="margin:0 0 28px;font-family:'Inter',Arial,sans-serif;font-size:15px;color:rgba(234,234,234,0.85);line-height:1.85;">
-Following our conversation — I've compiled this week's <strong style="color:#BFA670;">Voxmill Executive Intelligence</strong> report for <strong style="color:#BFA670;">{area}, {city}</strong>. This analysis provides institutional-grade market positioning, competitive dynamics, and strategic acquisition signals.
+This report includes proprietary market signals we believe could significantly impact your positioning in the next 30-90 days.
 </p>
 
 <!-- HIGHLIGHT BOX - Matte Black Card -->
@@ -235,9 +243,13 @@ Voxmill_{area.replace(' ','_')}_{city.replace(' ','_')}_Intelligence.pdf
 </div>
 </div>
 
-<!-- Closing -->
+<!-- Closing - COLD OUTREACH VERSION -->
+<p style="margin:0 0 20px;font-family:'Inter',Arial,sans-serif;font-size:14px;color:rgba(234,234,234,0.75);line-height:1.75;">
+If this intelligence proves valuable, I'd welcome a brief call to discuss how Voxmill can provide ongoing competitive advantage in {area} and your other markets.
+</p>
+
 <p style="margin:0;font-family:'Inter',Arial,sans-serif;font-size:14px;color:rgba(234,234,234,0.75);line-height:1.75;">
-I'll follow up within 24–48 hours to discuss strategic implications and how this intelligence can enhance your competitive positioning in {area}.
+No obligation — simply evaluate the analysis and decide if it's relevant to your strategy.
 </p>
 
 <!-- SIGNATURE BLOCK -->
