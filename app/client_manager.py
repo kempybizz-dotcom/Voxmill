@@ -69,39 +69,13 @@ def get_client_profile(whatsapp_number: str) -> dict:
         return {}
 
 
-def check_rate_limit(whatsapp_number: str) -> tuple[bool, str]:
-    """
-    Check if client has exceeded daily message limit
-    Returns: (allowed, message)
-    """
-    try:
-        if not mongo_client:
-            return (True, "")  # Allow if DB unavailable
-        
-        db = mongo_client['Voxmill']
-        collection = db['client_profiles']  # Use client_profiles, not clients
-        
-        # Normalize number
-        normalized_number = normalize_phone_number(whatsapp_number)
-        
-        client = collection.find_one({"whatsapp_number": normalized_number})
-        
-        if not client:
-            # Auto-create profile on first message
-            logger.info(f"New client detected: {normalized_number}")
-            return (True, "")  # Allow first message to trigger profile creation
-        
-        # Check status
-        if client.get('status') == 'inactive':
-            return (False, "Your intelligence access is inactive. Contact Voxmill to restore service.")
-        
-        # Check tier
-        def get_client_tier(whatsapp_number: str) -> str:
+def get_client_tier(whatsapp_number: str) -> str:
     """
     Get client tier - NOW RETURNS SINGLE TIER FOR ALL
     """
     # ✅ V3.1: Everyone gets full access (simplified for startup phase)
     return "premium_access"
+
 
 def check_rate_limit(whatsapp_number: str) -> bool:
     """
