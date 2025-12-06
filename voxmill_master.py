@@ -446,9 +446,13 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
     logger.info("="*70)
     
     try:
-        if not db:
+        # ✅ FIX: Database objects don't support bool() - use 'is None' check
+        if mongo_client is None:
             logger.error("   ❌ MongoDB not connected")
             return False
+        
+        # Get database reference
+        db = mongo_client['Voxmill']
         
         # Load analysis JSON
         with open(workspace.analysis_file, 'r') as f:
@@ -559,9 +563,11 @@ def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: l
         error: Error message if failed
     """
     try:
-        if not db:
+        # ✅ FIX: Use mongo_client check instead of db
+        if mongo_client is None:
             return
         
+        db = mongo_client['Voxmill']
         execution_log = db['execution_log']
         
         end_time = datetime.now(timezone.utc)
