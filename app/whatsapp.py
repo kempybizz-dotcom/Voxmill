@@ -12,6 +12,7 @@ from twilio.rest import Client
 from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction
+from app.whatsapp_self_service import handle_whatsapp_preference_message
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -126,6 +127,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
     """
+
+     pref_response = handle_whatsapp_preference_message(from_number, message)
+    if pref_response:
+        return pref_response
+    
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
         
