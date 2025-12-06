@@ -45,8 +45,9 @@ def retry_on_transient_error(max_retries=2, base_delay=1.0):
 
 # Environment
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-INPUT_FILE = "/tmp/voxmill_raw_data.json"
-OUTPUT_FILE = "/tmp/voxmill_analysis.json"
+WORKSPACE = os.environ.get('VOXMILL_WORKSPACE', '/tmp')
+INPUT_FILE = os.path.join(WORKSPACE, "voxmill_raw_data.json")
+OUTPUT_FILE = os.path.join(WORKSPACE, "voxmill_analysis.json")
 
 @retry_on_transient_error(max_retries=2, base_delay=2.0)
 def generate_ai_intelligence(metrics, area, city):
