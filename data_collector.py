@@ -44,7 +44,8 @@ RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
 REALTY_US_API_KEY = os.environ.get('REALTY_US_API_KEY')
 OUTSCRAPER_API_KEY = os.environ.get('OUTSCRAPER_API_KEY')
 
-OUTPUT_FILE = "/tmp/voxmill_raw_data.json"
+WORKSPACE = os.environ.get('VOXMILL_WORKSPACE', '/tmp')
+OUTPUT_FILE = os.path.join(WORKSPACE, "voxmill_raw_data.json")
 
 
 # ============================================================================
