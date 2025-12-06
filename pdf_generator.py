@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """
-VOXMILL MARKET INTELLIGENCE — PDF GENERATOR V3.0 (BULLETPROOF EDITION)
-========================================================================
+VOXMILL MARKET INTELLIGENCE — PDF GENERATOR V3.1 (PRODUCTION-READY)
+=====================================================================
+Production-ready HTML/CSS to PDF converter using WeasyPrint
+Fortune-500 grade executive intelligence deck generation
+
+✅ V3.1 PRODUCTION UPDATES:
+   • WORKSPACE ISOLATION: Accepts --workspace parameter for unique execution paths
+   • CUSTOM FILENAME: Accepts --output parameter for client-specific PDF names
+   • ZERO FILE COLLISIONS: Each execution writes to isolated directory
+   • BACKWARDS COMPATIBLE: Falls back to /tmp/ if no workspace provided
 Production-ready HTML/CSS to PDF converter using WeasyPrint
 Fortune-500 grade executive intelligence deck generation
 
@@ -1877,23 +1885,74 @@ class VoxmillPDFGenerator:
 # ============================================================================
 
 def main():
-    """CLI entry point"""
-    template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/opt/render/project/src')
-    output_dir = os.getenv('VOXMILL_OUTPUT_DIR', '/tmp')
-    data_path = os.getenv('VOXMILL_DATA_PATH', '/tmp/voxmill_analysis.json')
+    """
+    CLI entry point with argument parsing for workspace isolation
     
+    ✅ V3.1 NEW: Accepts --workspace and --output arguments
+    """
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description='Voxmill PDF Generator V3.1 - Production Edition'
+    )
+    
+    # ✅ NEW: Workspace argument
+    parser.add_argument(
+        '--workspace',
+        type=str,
+        default=os.getenv('VOXMILL_WORKSPACE', '/tmp'),
+        help='Workspace directory for isolated execution'
+    )
+    
+    # ✅ NEW: Custom output filename
+    parser.add_argument(
+        '--output',
+        type=str,
+        default='Voxmill_Executive_Intelligence_Deck.pdf',
+        help='Output PDF filename'
+    )
+    
+    # ✅ NEW: Custom data file path (relative to workspace)
+    parser.add_argument(
+        '--data',
+        type=str,
+        default='voxmill_analysis.json',
+        help='Data file name within workspace'
+    )
+    
+    args = parser.parse_args()
+    
+    # Build paths
+    workspace_path = Path(args.workspace)
+    data_path = workspace_path / args.data
+    output_dir = workspace_path
+    
+    # Template directory (always in src/)
+    template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/opt/render/project/src')
+    
+    logger.info("="*70)
+    logger.info("VOXMILL PDF GENERATOR V3.1 - STARTING")
+    logger.info("="*70)
+    logger.info(f"Workspace: {workspace_path}")
+    logger.info(f"Data file: {data_path}")
+    logger.info(f"Output: {output_dir / args.output}")
+    logger.info("="*70)
+    
+    # Create generator with workspace paths
     generator = VoxmillPDFGenerator(
         template_dir=template_dir,
-        output_dir=output_dir,
-        data_path=data_path
+        output_dir=str(output_dir),
+        data_path=str(data_path)
     )
     
     try:
-        pdf_path = generator.generate()
+        pdf_path = generator.generate(output_filename=args.output)
         print(f"\n✅ SUCCESS: PDF generated at {pdf_path}")
         return 0
     except Exception as e:
         print(f"\n❌ ERROR: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         return 1
 
 
