@@ -365,6 +365,39 @@ async def get_latest_data(area: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/pdf/{file_id}")
+async def serve_pdf(file_id: str):
+    """
+    Serve PDF from GridFS (fallback if Cloudflare not configured)
+    """
+    try:
+        from pymongo import MongoClient
+        from bson.objectid import ObjectId
+        import gridfs
+        from fastapi.responses import StreamingResponse
+        
+        MONGODB_URI = os.getenv("MONGODB_URI")
+        client = MongoClient(MONGODB_URI)
+        db = client['Voxmill']
+        fs = gridfs.GridFS(db)
+        
+        # Get file
+        grid_file = fs.get(ObjectId(file_id))
+        
+        # Stream response
+        return StreamingResponse(
+            grid_file,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"inline; filename={grid_file.filename}"
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error serving PDF: {e}")
+        return {"error": "PDF not found"}
+
+
 @app.get("/client/{phone}")
 async def get_client_info(phone: str):
     """
