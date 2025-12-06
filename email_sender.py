@@ -310,7 +310,7 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
             # Send
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
                 server.starttls()
-                server.login(VOXMILL_EMAIL, VOXMILL_EMAIL_PASSWORD)
+                server.login(voxmill_email, voxmill_email_password)
                 server.send_message(msg)
             
             logger.info(f"✅ EMAIL SENT (attempt {attempt})")
