@@ -128,9 +128,28 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
     """
 
-     pref_response = handle_whatsapp_preference_message(from_number, message)
-    if pref_response:
-        return pref_response
+    async def handle_whatsapp_message(sender: str, message_text: str):
+    """
+    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
+    """
+    
+    # ========================================
+    # PREFERENCE SELF-SERVICE (NEW - 13 LINES)
+    # ========================================
+    try:
+        pref_response = handle_whatsapp_preference_message(sender, message_text)
+        if pref_response:
+            await send_twilio_message(sender, pref_response)
+            
+            # Log the preference change
+            from app.client_manager import update_client_history
+            update_client_history(sender, message_text, "preference_update", "Self-Service")
+            
+            logger.info(f"Preference updated via WhatsApp for {sender}")
+            return
+    except Exception as e:
+        logger.debug(f"Preference handler skipped: {e}")
+    # ========================================
     
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
@@ -147,6 +166,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
+    
         # Case 2: Message too short (likely accidental)
         if len(message_text.strip()) < 2:
             await send_twilio_message(
