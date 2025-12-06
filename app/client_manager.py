@@ -96,45 +96,19 @@ def check_rate_limit(whatsapp_number: str) -> tuple[bool, str]:
             return (False, "Your intelligence access is inactive. Contact Voxmill to restore service.")
         
         # Check tier
-        tier = client.get('tier', 'tier_1')
-        
-        if tier == 'tier_1':
-            return (False, "Your plan does not include the analyst line. Contact Voxmill to upgrade.")
-        
-        # Rate limiting for Tier 2
-        if tier == 'tier_2':
-            today = datetime.now(timezone.utc).date()
-            last_message_date = client.get('last_message_date')
-            daily_count = client.get('daily_message_count', 0)
-            
-            # Reset counter if new day
-            if last_message_date:
-                last_date = last_message_date.date() if hasattr(last_message_date, 'date') else last_message_date
-                if last_date != today:
-                    daily_count = 0
-            
-            # Check limit
-            TIER_2_DAILY_LIMIT = 10
-            if daily_count >= TIER_2_DAILY_LIMIT:
-                return (False, "You've reached today's analysis limit for your tier. Upgrade to Tier 3 for unlimited access.")
-            
-            # Increment counter
-            collection.update_one(
-                {"whatsapp_number": normalized_number},
-                {
-                    "$set": {
-                        "daily_message_count": daily_count + 1,
-                        "last_message_date": datetime.now(timezone.utc)
-                    }
-                }
-            )
-        
-        # Tier 3 has unlimited access
-        return (True, "")
-        
-    except Exception as e:
-        logger.error(f"Rate limit check error: {str(e)}", exc_info=True)
-        return (True, "")  # Allow on error
+        def get_client_tier(whatsapp_number: str) -> str:
+    """
+    Get client tier - NOW RETURNS SINGLE TIER FOR ALL
+    """
+    # ✅ V3.1: Everyone gets full access (simplified for startup phase)
+    return "premium_access"
+
+def check_rate_limit(whatsapp_number: str) -> bool:
+    """
+    Check if client has exceeded rate limit
+    ✅ V3.1: Unlimited queries for all clients
+    """
+    return True  # Always allow (no limits during startup)
 
 
 def update_client_history(whatsapp_number: str, query: str, category: str, region: str):
