@@ -158,6 +158,26 @@ BOUNDARY ENFORCEMENT:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHATSAPP FORMATTING RULES (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PARAGRAPH LENGTH:
+- NEVER write paragraphs longer than 3 sentences
+- Break complex ideas into 2-3 sentence chunks
+
+BULLET POINTS:
+- Use bullets for lists of 3+ items
+- Format: "• Item\n• Item\n• Item"
+
+NO EMOJIS EVER:
+- NEVER use emojis
+- Use text: "NOTE:", "ALERT:" instead
+
+SPACING:
+- Double \n\n between paragraphs
+- Use section headers for long responses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INTELLIGENT FORMATTING — CORE PRINCIPLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
