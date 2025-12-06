@@ -1,113 +1,107 @@
+"""
+Voxmill PDF Storage Module
+Handles GridFS storage and retrieval for WhatsApp service
+"""
+
 import os
-import boto3
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta, timezone
+from pymongo import MongoClient
+import gridfs
+from bson.objectid import ObjectId
 
 logger = logging.getLogger(__name__)
 
-# Cloudflare R2 configuration (S3-compatible)
-R2_ENDPOINT = os.getenv("R2_ENDPOINT")  # e.g., https://xxxxx.r2.cloudflarestorage.com
-R2_ACCESS_KEY = os.getenv("R2_ACCESS_KEY")
-R2_SECRET_KEY = os.getenv("R2_SECRET_KEY")
-R2_BUCKET = os.getenv("R2_BUCKET", "voxmill-reports")
-
-# Initialize S3 client (works with R2)
-s3_client = boto3.client(
-    's3',
-    endpoint_url=R2_ENDPOINT,
-    aws_access_key_id=R2_ACCESS_KEY,
-    aws_secret_access_key=R2_SECRET_KEY,
-    region_name='auto'
-) if R2_ENDPOINT and R2_ACCESS_KEY else None
+MONGODB_URI = os.getenv("MONGODB_URI")
+mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 
 
-def upload_pdf_to_cloud(pdf_path: str, client_id: str, area: str) -> str:
+def get_latest_pdf_for_client(whatsapp_number: str, area: str) -> str:
     """
-    Upload PDF to cloud storage and return public URL
-    
-    Args:
-        pdf_path: Local path to PDF file
-        client_id: Client identifier (phone number or name)
-        area: Market area (Mayfair, Chelsea, etc.)
-    
-    Returns: Public URL to PDF
+    Get latest PDF URL for client's preferred area
+    Returns: Cloudflare R2 URL or MongoDB URL
     """
     try:
-        if not s3_client:
-            logger.error("Cloud storage not configured")
+        if not mongo_client:
+            logger.error("MongoDB not configured")
             return None
         
-        # Generate unique filename
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        safe_client_id = client_id.replace('whatsapp:', '').replace('+', '').replace(':', '')
-        filename = f"reports/{safe_client_id}/{area}_{timestamp}.pdf"
+        db = mongo_client['Voxmill']
         
-        # Upload to cloud
-        with open(pdf_path, 'rb') as pdf_file:
-            s3_client.upload_fileobj(
-                pdf_file,
-                R2_BUCKET,
-                filename,
-                ExtraArgs={
-                    'ContentType': 'application/pdf',
-                    'ContentDisposition': f'inline; filename="{area}_Intelligence_Report.pdf"'
-                }
-            )
+        # Find latest PDF for this area (within last 7 days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
         
-        # Generate public URL (valid for 7 days)
-        url = s3_client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': R2_BUCKET, 'Key': filename},
-            ExpiresIn=604800  # 7 days in seconds
+        file_doc = db['fs.files'].find_one(
+            {
+                'metadata.area': area,
+                'uploadDate': {'$gte': cutoff_date}
+            },
+            sort=[('uploadDate', -1)]
         )
         
-        logger.info(f"PDF uploaded successfully: {filename}")
-        return url
+        if not file_doc:
+            logger.info(f"No recent PDF found for {area}")
+            return None
+        
+        file_id = file_doc['_id']
+        
+        # Check if we have Cloudflare R2 URL cached
+        if 'metadata' in file_doc and 'cloudflare_url' in file_doc['metadata']:
+            return file_doc['metadata']['cloudflare_url']
+        
+        # Fallback: Generate MongoDB-served URL
+        # Requires /pdf/ endpoint in main.py
+        return f"https://your-app.onrender.com/pdf/{file_id}"
         
     except Exception as e:
-        logger.error(f"Error uploading PDF: {str(e)}", exc_info=True)
+        logger.error(f"Error getting PDF: {e}", exc_info=True)
         return None
 
 
-def get_latest_pdf_for_client(client_id: str, area: str) -> str:
+def upload_to_cloudflare_r2(pdf_binary: bytes, filename: str) -> str:
     """
-    Get URL for client's most recent PDF report
-    
-    Args:
-        client_id: Client identifier
-        area: Market area
-    
+    Upload PDF to Cloudflare R2 storage
     Returns: Public URL or None
     """
     try:
-        if not s3_client:
+        r2_account_id = os.getenv("CLOUDFLARE_R2_ACCOUNT_ID")
+        r2_access_key = os.getenv("CLOUDFLARE_R2_ACCESS_KEY")
+        r2_secret_key = os.getenv("CLOUDFLARE_R2_SECRET_KEY")
+        r2_bucket = os.getenv("CLOUDFLARE_R2_BUCKET", "voxmill-pdfs")
+        
+        if not all([r2_account_id, r2_access_key, r2_secret_key]):
+            logger.warning("Cloudflare R2 not configured")
             return None
         
-        safe_client_id = client_id.replace('whatsapp:', '').replace('+', '').replace(':', '')
-        prefix = f"reports/{safe_client_id}/"
+        import boto3
         
-        # List objects with this prefix
-        response = s3_client.list_objects_v2(
-            Bucket=R2_BUCKET,
-            Prefix=prefix
+        # R2 uses S3-compatible API
+        s3 = boto3.client(
+            's3',
+            endpoint_url=f'https://{r2_account_id}.r2.cloudflarestorage.com',
+            aws_access_key_id=r2_access_key,
+            aws_secret_access_key=r2_secret_key,
+            region_name='auto'
         )
         
-        if 'Contents' not in response or not response['Contents']:
-            return None
+        # Upload
+        s3.put_object(
+            Bucket=r2_bucket,
+            Key=filename,
+            Body=pdf_binary,
+            ContentType='application/pdf'
+        )
         
-        # Get most recent file
-        objects = sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=True)
-        latest_key = objects[0]['Key']
-        
-        # Generate presigned URL
-        url = s3_client.generate_presigned_url(
+        # Generate presigned URL (7-day expiration)
+        url = s3.generate_presigned_url(
             'get_object',
-            Params={'Bucket': R2_BUCKET, 'Key': latest_key},
-            ExpiresIn=604800
+            Params={'Bucket': r2_bucket, 'Key': filename},
+            ExpiresIn=604800  # 7 days
         )
         
+        logger.info(f"PDF uploaded to R2: {filename}")
         return url
         
     except Exception as e:
-        logger.error(f"Error retrieving PDF: {str(e)}", exc_info=True)
+        logger.error(f"R2 upload failed: {e}", exc_info=True)
         return None
