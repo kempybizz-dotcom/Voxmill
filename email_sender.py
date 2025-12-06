@@ -310,7 +310,7 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
             # Send
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
                 server.starttls()
-                server.login(sender_email, sender_password)
+                server.login(VOXMILL_EMAIL, VOXMILL_EMAIL_PASSWORD)
                 server.send_message(msg)
             
             logger.info(f"✅ EMAIL SENT (attempt {attempt})")
@@ -332,6 +332,9 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
             raise
     
     return False
+
+def send_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
+    """Integration function"""
     
     logger.info("=" * 70)
     logger.info("VOXMILL EXECUTIVE EMAIL SENDER V2.0")
@@ -436,9 +439,7 @@ def send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path=Non
         logger.error(f"\n❌ ERROR: {str(e)}")
         raise
 
-def send_email(recipient_email, recipient_name, area, city, pdf_path=None, logo_path=None):
-    """Integration function"""
-    return send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
+        return send_voxmill_email(recipient_email, recipient_name, area, city, pdf_path, logo_path)
 
 def main():
     """CLI"""
