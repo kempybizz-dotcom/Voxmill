@@ -500,39 +500,59 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
         return False
 
 
-# Around line 485-495 in send_email() function
-
 def send_email(area: str, city: str, recipient_email: str, recipient_name: str, 
                workspace_dir: Path, cloudflare_url: str, exec_id: str) -> bool:
-    """Send email with PDF attachment"""
+    """
+    Step 6: Send email with PDF attachment
+    
+    Args:
+        area: Market area (e.g., "Mayfair")
+        city: City name (e.g., "London")
+        recipient_email: Recipient email address
+        recipient_name: Recipient name
+        workspace_dir: Path to workspace directory
+        cloudflare_url: Cloudflare R2 URL for PDF
+        exec_id: Execution ID
+    
+    Returns: True if successful
+    """
     logger.info("\n" + "="*70)
     logger.info("STEP 6: EMAIL DELIVERY")
     logger.info("="*70)
     
+    # Skip if no email provided
+    if not recipient_email or recipient_email == "none":
+        logger.info("   ⏭️  Email delivery skipped (no email provided)")
+        return True
+    
     try:
-        # ✅ FIX: Use workspace PDF, not /tmp root
+        from email_sender import send_voxmill_email
+        
+        # Build PDF path from workspace
         pdf_path = workspace_dir / f"Voxmill_{area}_Intelligence_Deck.pdf"
         logo_path = Path(__file__).parent / "voxmill_logo.png"
         
-        # Validate PDF exists in workspace
+        # Validate PDF exists
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF not found in workspace: {pdf_path}")
         
         logger.info(f"   📄 PDF: {pdf_path} ({pdf_path.stat().st_size:,} bytes)")
         
+        # Send email with retry logic
         send_voxmill_email(
             recipient_email=recipient_email,
             recipient_name=recipient_name,
             area=area,
             city=city,
-            pdf_path=str(pdf_path),  # ← Using workspace path
+            pdf_path=str(pdf_path),
             logo_path=str(logo_path) if logo_path.exists() else None
         )
         
-        logger.info("   ✅ Email delivered successfully")
+        logger.info(f"   ✅ Email sent to {recipient_email}")
         return True
-        
+    
     except Exception as e:
+        import traceback
         logger.warning(f"   ⚠️  Email sending failed:\n{traceback.format_exc()}")
         return False
 
@@ -666,7 +686,7 @@ def execute_voxmill_pipeline(
         
         # Step 6: Send Email (optional)
         if client_email and client_email != "none":
-            if send_email(workspace, client_email, client_name, pdf_url):
+            if send_email(area, city, client_email, client_name, workspace.workspace, pdf_url, workspace.exec_id):
                 steps_completed.append('email_sent')
         
         # Log success
