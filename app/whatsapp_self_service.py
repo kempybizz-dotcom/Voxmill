@@ -233,6 +233,55 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> str:
     return "I didn't detect any specific preference changes in your message. Could you clarify what you'd like to adjust?"
 
 
+def handle_preference_update(client_email, new_preferences):
+    """Update preferences with premium confirmation message"""
+    
+    # Update MongoDB
+    db.client_profiles.update_one(
+        {"email": client_email},
+        {"$set": {"preferences": new_preferences}}
+    )
+    
+    # Get next Sunday date
+    from datetime import datetime, timedelta
+    today = datetime.now()
+    days_until_sunday = (6 - today.weekday()) % 7
+    if days_until_sunday == 0:
+        days_until_sunday = 7
+    next_sunday = today + timedelta(days=days_until_sunday)
+    
+    # Build confirmation message
+    changes = []
+    if 'competitor_focus' in new_preferences:
+        focus = new_preferences['competitor_focus']
+        count = {'low': 3, 'medium': 6, 'high': 10}[focus]
+        changes.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
+    
+    if 'report_depth' in new_preferences:
+        depth = new_preferences['report_depth']
+        slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}[depth]
+        changes.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
+    
+    message = f"""✅ PREFERENCES UPDATED
+
+{chr(10).join(changes)}
+
+Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 AM UTC.
+
+━━━━━━━━━━━━━━━━━━━━
+⚡ NEED THIS URGENTLY?
+
+Contact your Voxmill operator for immediate regeneration:
+📧 operator@voxmill.uk
+📱 WhatsApp: +44 XXXX XXXXXX
+
+━━━━━━━━━━━━━━━━━━━━
+
+Voxmill Intelligence — Precision at Scale"""
+    
+    return message
+
+
 # ============================================================================
 # INTEGRATION WITH EXISTING WHATSAPP HANDLER
 # ============================================================================
