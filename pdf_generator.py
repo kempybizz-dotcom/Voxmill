@@ -253,81 +253,7 @@ def calculate_quartiles(sorted_values: List[float]) -> Tuple[float, float, float
         return (sorted_values[q1_idx], sorted_values[q2_idx], sorted_values[q3_idx])
 
 
-# ============================================================================
-# PDF GENERATOR CLASS
-# ============================================================================
 
-# Determine which slides to include based on report_depth
-if self.report_depth == 'executive':
-    # Executive: Only 5 critical slides
-    include_slides = {
-        'cover': True,
-        'executive_summary': True,
-        'market_kpis': True,
-        'competitive_landscape': True,
-        'recommendations': True,
-        # Skip these:
-        'property_type_heatmap': False,
-        'supply_demand': False,
-        'price_trends': False,
-        'agent_behavior': False,
-        'risk_analysis': False,
-        'cascade_prediction': False,
-        'market_opportunities': False,
-        'neighborhood_deep_dive': False,
-        'footer': True
-    }
-elif self.report_depth == 'deep':
-    # Deep: All 14 slides + potential extras
-    include_slides = {
-        'cover': True,
-        'executive_summary': True,
-        'market_kpis': True,
-        'property_type_heatmap': True,
-        'supply_demand': True,
-        'price_trends': True,
-        'competitive_landscape': True,
-        'agent_behavior': True,
-        'risk_analysis': True,
-        'cascade_prediction': True,
-        'market_opportunities': True,
-        'neighborhood_deep_dive': True,
-        'recommendations': True,
-        'footer': True
-    }
-else:  # detailed (default - current behavior)
-    # All current slides (14 total)
-    include_slides = {
-        'cover': True,
-        'executive_summary': True,
-        'market_kpis': True,
-        'property_type_heatmap': True,
-        'supply_demand': True,
-        'price_trends': True,
-        'competitive_landscape': True,
-        'agent_behavior': True,
-        'risk_analysis': True,
-        'cascade_prediction': True,
-        'market_opportunities': True,
-        'neighborhood_deep_dive': True,
-        'recommendations': True,
-        'footer': True
-    }
-
-# Render with slide inclusion flags
-html = template.render(
-    data=analysis_data,
-    kpis=kpis,
-    include=include_slides,  # ← ADD THIS
-    # ... other context variables
-)
-
-class VoxmillPDFGenerator:
-    """
-    Fortune-500 grade PDF generator for Voxmill Executive Intelligence Decks.
-    
-    ✅ REFACTORED V3.0: 100% data-reactive, bulletproof architecture
-    """
     
     def __init__(
         self,
@@ -365,6 +291,13 @@ class VoxmillPDFGenerator:
         logger.info(f"Initialized Voxmill PDF Generator V3.0 (Bulletproof Edition)")
         logger.info(f"Template directory: {self.template_dir}")
         logger.info(f"Output directory: {self.output_dir}")
+        logger.info(f"Initialized Voxmill PDF Generator V3.0 (Bulletproof Edition)")
+        logger.info(f"Template directory: {self.template_dir}")
+        logger.info(f"Output directory: {self.output_dir}")
+        
+        # CLIENT PREFERENCE DEFAULTS (overridden via set_preferences())
+        self.competitor_focus = 'medium'  # Options: low, medium, high
+        self.report_depth = 'detailed'    # Options: executive, detailed, deep
     
     def load_data(self) -> Dict[str, Any]:
         """
@@ -1151,10 +1084,18 @@ class VoxmillPDFGenerator:
                 'positioning_label': positioning_label
             })
         
-        # Sort by market share (highest first)
+     # Sort by market share (highest first)
         agency_list.sort(key=lambda x: x['market_share_pct'], reverse=True)
         
-        return agency_list[:6]  # Top 6 agencies
+        # APPLY CLIENT PREFERENCE FOR COMPETITOR COUNT
+        if self.competitor_focus == 'low':
+            competitor_count = 3
+        elif self.competitor_focus == 'high':
+            competitor_count = 10
+        else:  # medium (default)
+            competitor_count = 6
+        
+        return agency_list[:competitor_count]
 
     def _generate_synthetic_agencies(self, properties: List[Dict], private_count: int) -> List[Dict]:
         """
@@ -1711,6 +1652,61 @@ class VoxmillPDFGenerator:
             
             vertical_tokens = self.get_vertical_tokens(data)
             
+            # DETERMINE SLIDE INCLUSION BASED ON REPORT DEPTH PREFERENCE
+            if self.report_depth == 'executive':
+                # Executive: Only 5 critical slides for C-suite
+                include_slides = {
+                    'cover': True,
+                    'executive_summary': True,
+                    'market_kpis': True,
+                    'competitive_landscape': True,
+                    'recommendations': True,
+                    'property_type_heatmap': False,
+                    'supply_demand': False,
+                    'price_trends': False,
+                    'agent_behavior': False,
+                    'risk_analysis': False,
+                    'cascade_prediction': False,
+                    'market_opportunities': False,
+                    'neighborhood_deep_dive': False,
+                    'footer': True
+                }
+            elif self.report_depth == 'deep':
+                # Deep: All 14 standard slides
+                include_slides = {
+                    'cover': True,
+                    'executive_summary': True,
+                    'market_kpis': True,
+                    'property_type_heatmap': True,
+                    'supply_demand': True,
+                    'price_trends': True,
+                    'competitive_landscape': True,
+                    'agent_behavior': True,
+                    'risk_analysis': True,
+                    'cascade_prediction': True,
+                    'market_opportunities': True,
+                    'neighborhood_deep_dive': True,
+                    'recommendations': True,
+                    'footer': True
+                }
+            else:  # detailed (default - current 14-slide behavior)
+                include_slides = {
+                    'cover': True,
+                    'executive_summary': True,
+                    'market_kpis': True,
+                    'property_type_heatmap': True,
+                    'supply_demand': True,
+                    'price_trends': True,
+                    'competitive_landscape': True,
+                    'agent_behavior': True,
+                    'risk_analysis': True,
+                    'cascade_prediction': True,
+                    'market_opportunities': True,
+                    'neighborhood_deep_dive': True,
+                    'recommendations': True,
+                    'footer': True
+                }
+            
             metadata = data.get('metadata', {})
             location = metadata.get('area', 'London')
             city = metadata.get('city', 'UK')
@@ -1797,6 +1793,7 @@ class VoxmillPDFGenerator:
             logger.info(f"🔍 DEBUG kpi_items[0] length: {len(kpi_items[0])}")
             
             template_data = {
+                'include': include_slides,  # ← ADD THIS LINE FIRST
                 'location': full_location,
                 'report_date': datetime.now().strftime('%B %Y'),
                 'client_name': data.get('client_name', 'Strategic Market Participants'),
@@ -2009,6 +2006,14 @@ def main():
         output_dir=str(output_dir),
         data_path=str(data_path)
     )
+
+   # SET CLIENT PREFERENCES FROM COMMAND-LINE ARGS
+    generator.competitor_focus = args.competitor_focus
+    generator.report_depth = args.report_depth
+    
+    # Log preferences being used
+    logger.info(f"🎯 Competitor Focus: {generator.competitor_focus} ({'3' if generator.competitor_focus == 'low' else '6' if generator.competitor_focus == 'medium' else '10'} agencies)")
+    logger.info(f"📊 Report Depth: {generator.report_depth} ({'5' if generator.report_depth == 'executive' else '14' if generator.report_depth == 'detailed' else '14+'} slides)")
     
     try:
         pdf_path = generator.generate(output_filename=args.output)
