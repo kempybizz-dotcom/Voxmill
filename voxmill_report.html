@@ -12,7 +12,7 @@
 <body>
 
 <!-- SLIDE 1: COVER -->
-
+{% if include.cover %}
 <div class="slide slide-cover">
     <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; z-index: 0;" width="1920" height="1280" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -63,9 +63,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 2: EXECUTIVE SUMMARY -->
-
+{% if include.executive_summary %}
 <div class="slide">
     <div class="slide-header">
         <h2 class="slide-title">Executive Summary</h2>
@@ -159,9 +159,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 3: MARKET OVERVIEW -->
-
+{% if include.market_kpis %}
 <div class="slide market-overview-slide">
     <div class="slide-header">
         <h2 class="slide-title">Market Overview</h2>
@@ -286,9 +286,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 4: PERFORMANCE ANALYSIS -->
-
+{% if include.property_type_heatmap %}
 <div class="slide performance-analysis-slide">
     <div class="slide-header">
         <h2 class="slide-title">Performance Analysis</h2>
@@ -428,9 +428,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 5: COMPETITIVE LANDSCAPE -->
-
+{% if include.competitive_landscape %}
 <div class="slide competitive-landscape-slide">
     <div class="slide-header">
         <h2 class="slide-title">Competitive Landscape</h2>
@@ -526,9 +526,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 6: CROSS-VERTICAL INTELLIGENCE -->
-
+{% if include.agent_behavior %}
 <div class="slide cross-vertical-intelligence">
     <div class="slide-header">
         <h2 class="slide-title">Cross-Vertical Intelligence</h2>
@@ -637,9 +637,9 @@
         </div>
     </div>
 </div>
- 
+{% endif %} 
 <!-- SLIDE 7: MARKET DEPTH ANALYSIS -->
-
+{% if include.risk_analysis %}
 <div class="slide market-depth-analysis">
     <div class="slide-header">
         <h2 class="slide-title">Market Depth Analysis</h2>
@@ -728,9 +728,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 8: STRATEGIC FORECAST -->
-
+{% if include.cascade_prediction %}
 <div class="slide">
     <div class="slide-header">
         <h2 class="slide-title">Strategic Forecast</h2>
@@ -837,9 +837,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 9: EXECUTIVE INTELLIGENCE -->
-
+{% if include.market_opportunities %}
 <div class="slide executive-intelligence">
     <div class="slide-header">
         <h2 class="slide-title">Executive Intelligence</h2>
@@ -953,9 +953,9 @@
         </div>
     </div>
 </div> 
-
+{% endif %}
 <!-- SLIDE 10: TOP OPPORTUNITIES -->
-
+{% if include.neighborhood_deep_dive %}
 <div class="slide top-market-opportunities">
     <div class="slide-header">
         <h2 class="slide-title">Top Market Opportunities</h2>
@@ -1036,9 +1036,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 11: METHODOLOGY -->
-
+{% if include.supply_demand %}
 <div class="slide">
     <div class="slide-header">
         <h2 class="slide-title">Methodology & Model Architecture</h2>
@@ -1124,9 +1124,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
 <!-- SLIDE 12: SEGMENT PERFORMANCE BREAKDOWN -->
-
+{% if include.price_trends %}
 <div class="slide segment-performance-slide">
     <div class="slide-header">
         <h2 class="slide-title">Segment Performance Breakdown</h2>
@@ -1250,9 +1250,9 @@
         </div>
     </div>
 </div>
-
+{% endif %}
                                 <!-- SLIDE 13: AI-IDENTIFIED OPPORTUNITIES -->
-
+{% if include.recommendations %}
 <div class="slide ai-identified-opportunities">
     <div class="slide-header">
         <h2 class="slide-title">AI-Identified {{ acquisition_label }} Opportunities</h2>
@@ -1311,6 +1311,7 @@
         <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
 </div>
+{% endif %}
 
 </body>
 </html>
