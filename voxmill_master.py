@@ -26,6 +26,8 @@ from pathlib import Path
 from uuid import uuid4
 import shutil
 import time
+from pymongo import MongoClient
+import os
 
 # MongoDB
 from pymongo import MongoClient
@@ -64,6 +66,37 @@ if REDIS_AVAILABLE and REDIS_URL:
     except Exception as e:
         logger.warning(f"Redis connection failed: {e} - using direct execution")
         redis_client = None
+
+
+def get_client_preferences(email):
+    """
+    Query MongoDB for client preferences.
+    Returns dict with competitor_focus and report_depth.
+    Falls back to defaults if not found.
+    """
+    try:
+        mongodb_uri = os.getenv('MONGODB_URI')
+        if not mongodb_uri:
+            logger.warning("MONGODB_URI not set, using default preferences")
+            return {}
+            
+        client = MongoClient(mongodb_uri)
+        db = client['Voxmill']
+        
+        # Query client profile
+        profile = db['client_profiles'].find_one({"email": email})
+        
+        if profile and 'preferences' in profile:
+            prefs = profile['preferences']
+            logger.info(f"   📋 Loaded preferences: {prefs}")
+            return prefs
+        else:
+            logger.info(f"   📋 No preferences found for {email}, using defaults")
+            return {}
+            
+    except Exception as e:
+        logger.warning(f"   ⚠️  Could not load preferences: {e}")
+        return {}
 
 
 # ============================================================================
@@ -340,17 +373,32 @@ def run_pdf_generation(workspace: ExecutionWorkspace) -> bool:
     
     Returns: True if successful
     """
-    logger.info("\n" + "="*70)
-    logger.info("STEP 3: PDF GENERATION")
-    logger.info("="*70)
+  # STEP 3: PDF GENERATION
+logger.info("="*70)
+logger.info("STEP 3: PDF GENERATION")
+logger.info("="*70)
+
+# Load client preferences from MongoDB
+preferences = get_client_preferences(args.email)
+
+# Build base command
+pdf_cmd = [
+    sys.executable, 'pdf_generator.py',
+    '--workspace', workspace_path,
+    '--output', pdf_filename
+]
+
+# Add preference flags if they exist
+if preferences.get('competitor_focus'):
+    pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
+    logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
     
-    try:
-        cmd = [
-            sys.executable,
-            'pdf_generator.py',
-            '--workspace', str(workspace.workspace),
-            '--output', workspace.pdf_file.name
-        ]
+if preferences.get('report_depth'):
+    pdf_cmd.extend(['--report-depth', preferences['report_depth']])
+    logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
+
+# Log the full command
+logger.info(f"   Command: {' '.join(pdf_cmd)}")
         
         logger.info(f"   Command: {' '.join(cmd)}")
         
