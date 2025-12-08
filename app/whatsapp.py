@@ -131,25 +131,26 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     # ========================================
     # PREFERENCE SELF-SERVICE (NEW)
     # ========================================
-   try:
-    logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
-    pref_response = handle_whatsapp_preference_message(sender, message_text)
-    
-    if pref_response:
-        logger.info(f"✅ Preference request detected, sending confirmation")
-        await send_twilio_message(sender, pref_response)
+    try:
+        logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+        pref_response = handle_whatsapp_preference_message(sender, message_text)
         
-        # Log the preference change
-        from app.client_manager import update_client_history
-        update_client_history(sender, message_text, "preference_update", "Self-Service")
-        
-        logger.info(f"✅ Preference updated via WhatsApp for {sender}")
-        return
-    else:
-        logger.info(f"❌ Not a preference request, continuing to normal analyst")
-        
-except Exception as e:
-    logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)  # ← Changed to ERROR
+        if pref_response:
+            logger.info(f"✅ Preference request detected, sending confirmation")
+            await send_twilio_message(sender, pref_response)
+            
+            # Log the preference change
+            from app.client_manager import update_client_history
+            update_client_history(sender, message_text, "preference_update", "Self-Service")
+            
+            logger.info(f"✅ Preference updated via WhatsApp for {sender}")
+            return
+        else:
+            logger.info(f"❌ Not a preference request, continuing to normal analyst")
+            
+    except Exception as e:
+        logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
+        # Continue to normal processing
     
     # ========================================
     # NORMAL MESSAGE PROCESSING
