@@ -2031,11 +2031,11 @@ if __name__ == "__main__":
     parser.add_argument('--workspace', required=True)
     parser.add_argument('--output', required=True)
     
-    # NEW PREFERENCE ARGUMENTS
+    # ✅ THESE LINES MUST EXIST
     parser.add_argument('--competitor-focus', 
                         choices=['low', 'medium', 'high'],
                         default='medium',
-                        help='Competitor analysis depth (low=3, medium=6, high=10)')
+                        help='Competitor analysis depth')
                         
     parser.add_argument('--report-depth',
                         choices=['executive', 'detailed', 'deep'],
@@ -2043,3 +2043,7 @@ if __name__ == "__main__":
                         help='Report detail level')
     
     args = parser.parse_args()
+    
+    # ✅ THESE LINES MUST EXIST
+    generator.competitor_focus = args.competitor_focus
+    generator.report_depth = args.report_depth
