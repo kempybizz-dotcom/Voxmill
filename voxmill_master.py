@@ -14,6 +14,7 @@ CRITICAL CHANGES FROM v2.0:
 - Redis queue for job coordination (optional, falls back to direct execution)
 - Execution locking prevents duplicate runs
 - Complete error handling with retries
+- CLIENT PREFERENCES INTEGRATION - Reads MongoDB preferences for PDF customization
 """
 
 import os
@@ -27,7 +28,6 @@ from uuid import uuid4
 import shutil
 import time
 from pymongo import MongoClient
-import os
 
 # MongoDB
 from pymongo import MongoClient
@@ -68,35 +68,55 @@ if REDIS_AVAILABLE and REDIS_URL:
         redis_client = None
 
 
-def get_client_preferences(email):
+def get_client_preferences(client_identifier: str) -> dict:
     """
     Query MongoDB for client preferences.
     Returns dict with competitor_focus and report_depth.
     Falls back to defaults if not found.
+    
+    Args:
+        client_identifier: WhatsApp number or email
+    
+    Returns:
+        Dict with 'competitor_focus' and 'report_depth'
     """
     try:
-        mongodb_uri = os.getenv('MONGODB_URI')
-        if not mongodb_uri:
+        if not mongo_client:
             logger.warning("MONGODB_URI not set, using default preferences")
-            return {}
-            
-        client = MongoClient(mongodb_uri)
-        db = client['Voxmill']
+            return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
         
-        # Query client profile
-        profile = db['client_profiles'].find_one({"email": email})
+        db = mongo_client['Voxmill']
+        
+        # Normalize phone number if it's a WhatsApp number
+        normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
+        
+        # Query client profile (try email, whatsapp, or normalized)
+        profile = db['client_profiles'].find_one({
+            "$or": [
+                {"email": client_identifier},
+                {"whatsapp_number": client_identifier},
+                {"whatsapp_number": normalized}
+            ]
+        })
         
         if profile and 'preferences' in profile:
             prefs = profile['preferences']
-            logger.info(f"   📋 Loaded preferences: {prefs}")
-            return prefs
+            competitor_focus = prefs.get('competitor_focus', 'medium')
+            report_depth = prefs.get('report_depth', 'detailed')
+            
+            logger.info(f"   📋 Loaded preferences: competitor_focus={competitor_focus}, report_depth={report_depth}")
+            
+            return {
+                'competitor_focus': competitor_focus,
+                'report_depth': report_depth
+            }
         else:
-            logger.info(f"   📋 No preferences found for {email}, using defaults")
-            return {}
+            logger.info(f"   📋 No preferences found for {client_identifier}, using defaults")
+            return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
             
     except Exception as e:
         logger.warning(f"   ⚠️  Could not load preferences: {e}")
-        return {}
+        return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
 
 
 # ============================================================================
@@ -364,45 +384,51 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
         return False
 
 
-def run_pdf_generation(workspace: ExecutionWorkspace, email: str) -> bool:
+def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) -> bool:
     """
     Step 3: Run pdf_generator.py with client preferences
+    
+    Args:
+        workspace: Execution workspace
+        client_identifier: Email or WhatsApp number for preference lookup
+    
+    Returns: True if successful
     """
-    logger.info("="*70)
+    logger.info("\n" + "="*70)
     logger.info("STEP 3: PDF GENERATION")
     logger.info("="*70)
     
-    # ✅ NEW: Load client preferences
-    preferences = get_client_preferences(email)
-    
-    # Build base command
-    pdf_cmd = [
-        sys.executable, 'pdf_generator.py',
-        '--workspace', str(workspace.workspace),
-        '--output', workspace.pdf_file.name
-    ]
-    
-    # ✅ NEW: Add preference flags
-    if preferences.get('competitor_focus'):
-        pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
-        logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
+    try:
+        # ✅ NEW: Load client preferences from MongoDB
+        preferences = get_client_preferences(client_identifier)
         
-    if preferences.get('report_depth'):
-        pdf_cmd.extend(['--report-depth', preferences['report_depth']])
-        logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
-    
-    logger.info(f"   Command: {' '.join(pdf_cmd)}")
-    
-    # Execute
-    result = subprocess.run(
-        pdf_cmd,
-        env=workspace.get_env_vars(),
-        capture_output=True,
-        text=True,
-        timeout=120
-    )
-    
-    # ... rest of function unchanged
+        # Build base command
+        pdf_cmd = [
+            sys.executable, 'pdf_generator.py',
+            '--workspace', str(workspace.workspace),
+            '--output', workspace.pdf_file.name
+        ]
+        
+        # ✅ NEW: Add preference flags if they exist
+        if preferences.get('competitor_focus'):
+            pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
+            logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
+            
+        if preferences.get('report_depth'):
+            pdf_cmd.extend(['--report-depth', preferences['report_depth']])
+            logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
+        
+        # Log the full command
+        logger.info(f"   Command: {' '.join(pdf_cmd)}")
+        
+        # Execute PDF generation
+        result = subprocess.run(
+            pdf_cmd,
+            env=workspace.get_env_vars(),
+            capture_output=True,
+            text=True,
+            timeout=120  # 2 minute timeout
+        )
         
         if result.returncode != 0:
             logger.error(f"❌ PDF generation failed:")
@@ -433,6 +459,7 @@ def run_pdf_generation(workspace: ExecutionWorkspace, email: str) -> bool:
         logger.error(f"❌ PDF generation error: {e}", exc_info=True)
         return False
 
+
 def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
     """
     Step 4: Upload PDF to Cloudflare R2
@@ -451,7 +478,7 @@ def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
         from app.pdf_storage import upload_pdf_to_cloud
         
         # Use email as client_id (safe for filenames)
-        client_id = client_email.replace('@', '_at_').replace('.', '_')
+        client_id = client_email.replace('@', '_at_').replace('.', '_').replace('whatsapp:', '').replace('+', '')
         
         url = upload_pdf_to_cloud(
             pdf_path=str(workspace.pdf_file),
@@ -487,7 +514,6 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
     logger.info("="*70)
     
     try:
-        # ✅ FIX: Database objects don't support bool() - use 'is None' check
         if mongo_client is None:
             logger.error("   ❌ MongoDB not connected")
             return False
@@ -562,8 +588,8 @@ def send_email(area: str, city: str, recipient_email: str, recipient_name: str,
     logger.info("="*70)
     
     # Skip if no email provided
-    if not recipient_email or recipient_email == "none":
-        logger.info("   ⏭️  Email delivery skipped (no email provided)")
+    if not recipient_email or recipient_email == "none" or recipient_email.startswith('whatsapp:'):
+        logger.info("   ⏭️  Email delivery skipped (WhatsApp client or no email)")
         return True
     
     try:
@@ -609,7 +635,6 @@ def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: l
         error: Error message if failed
     """
     try:
-        # ✅ FIX: Use mongo_client check instead of db
         if mongo_client is None:
             return
         
@@ -660,7 +685,7 @@ def execute_voxmill_pipeline(
         city: City name (e.g., "London")
         vertical: Vertical identifier
         vertical_config: Vertical configuration dict
-        client_email: Client email for PDF delivery
+        client_email: Client email/WhatsApp for PDF delivery and preferences
         client_name: Client name for personalization
     
     Returns: Dict with execution results
@@ -711,8 +736,8 @@ def execute_voxmill_pipeline(
             raise Exception("AI analysis failed")
         steps_completed.append('ai_analysis')
         
-        # Step 3: PDF Generation
-        if not run_pdf_generation(workspace):
+        # Step 3: PDF Generation (with preferences)
+        if not run_pdf_generation(workspace, client_email or "default"):
             raise Exception("PDF generation failed")
         steps_completed.append('pdf_generation')
         
@@ -725,8 +750,8 @@ def execute_voxmill_pipeline(
         if save_to_mongodb(workspace, pdf_url):
             steps_completed.append('mongodb_save')
         
-        # Step 6: Send Email (optional)
-        if client_email and client_email != "none":
+        # Step 6: Send Email (optional, skip for WhatsApp clients)
+        if client_email and client_email != "none" and not client_email.startswith('whatsapp:'):
             if send_email(area, city, client_email, client_name, workspace.workspace, pdf_url, workspace.exec_id):
                 steps_completed.append('email_sent')
         
@@ -816,7 +841,7 @@ def main():
     parser.add_argument('--area', required=True, help='Market area (e.g., Mayfair)')
     parser.add_argument('--city', default='London', help='City name')
     parser.add_argument('--vertical', default='uk-real-estate', help='Vertical identifier')
-    parser.add_argument('--email', default='none', help='Client email')
+    parser.add_argument('--email', default='none', help='Client email or WhatsApp number')
     parser.add_argument('--name', default='Valued Client', help='Client name')
     parser.add_argument('--queue', action='store_true', help='Queue job instead of running directly')
     
