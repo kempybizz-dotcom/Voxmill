@@ -223,7 +223,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     Returns response to send to client, or None if not a preference request
     """
     
-    if not db:
+    if db is None:
         return None
     
     # Find client by WhatsApp number
