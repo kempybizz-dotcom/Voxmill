@@ -553,11 +553,11 @@ To add {preferred_region} coverage:
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
         
-        # ========================================
+       # ========================================
         # GPT-4 ANALYSIS
         # ========================================
         
-       category, response_text, response_metadata = await classify_and_respond(
+        category, response_text, response_metadata = await classify_and_respond(
             message_normalized,
             dataset,
             client_profile=client_profile,
