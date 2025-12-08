@@ -1,12 +1,13 @@
 """
 VOXMILL WHATSAPP HANDLER
 ========================
+Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages
 """
 
 import os
 import logging
 import httpx
-from datetime import datetime, timezone, timedelta  # ← Make sure timedelta is here
+from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
@@ -22,7 +23,8 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 
-twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID
+# Initialize Twilio client
+twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
 
 async def send_first_time_welcome(sender: str, client_profile: dict):
