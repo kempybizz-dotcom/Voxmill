@@ -259,6 +259,10 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     if not client:
         # Not a recognized client - let normal handler deal with it
         return None
+
+       alert_response = handle_alert_preferences(from_number, message)
+    if alert_response:
+        return alert_response
     
     logger.info(f"Client found: {client.get('_id')}")
     
