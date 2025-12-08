@@ -172,7 +172,7 @@ Analyze this message and determine if it's a preference change request."""
 def apply_preference_changes(client_email: str, changes: Dict) -> bool:
     """Apply preference changes to MongoDB"""
     
-    if not db:
+    if db is None:
         return False
     
     update_data = {}
