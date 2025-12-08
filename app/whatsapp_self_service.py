@@ -372,6 +372,99 @@ def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
     return handle_whatsapp_message(from_number, message)
 
 
+# ADD THIS FUNCTION to whatsapp_self_service.py (at the bottom, before if __name__ == "__main__":)
+
+def handle_alert_preferences(whatsapp_number: str, message: str) -> Optional[str]:
+    """
+    Handle alert preference updates
+    
+    Examples:
+    - "Enable price drop alerts"
+    - "Turn off inventory alerts"  
+    - "Alert me when Knight Frank adjusts pricing"
+    """
+    
+    if db is None:
+        return None
+    
+    # Normalize phone number
+    normalized_number = whatsapp_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
+    
+    client = db['client_profiles'].find_one({
+        "$or": [
+            {"whatsapp_number": whatsapp_number},
+            {"whatsapp_number": normalized_number}
+        ]
+    })
+    
+    if not client:
+        return None
+    
+    # Check tier (only Tier 2+ get alerts)
+    tier = client.get('tier', 'tier_1')
+    if tier == 'tier_1':
+        return """Real-Time Alerts are available on Tier 2 and Tier 3 plans.
+
+Upgrade to receive:
+- Price drop alerts (>5% adjustments)
+- Inventory surge notifications
+- Agent behavior shift signals
+- New opportunity detection
+
+Contact ollys@voxmill.uk to upgrade."""
+    
+    # Simple keyword detection for alert preferences
+    message_lower = message.lower()
+    
+    alert_enabled = any(word in message_lower for word in ['enable', 'turn on', 'activate', 'start'])
+    alert_disabled = any(word in message_lower for word in ['disable', 'turn off', 'deactivate', 'stop'])
+    
+    if alert_enabled or alert_disabled:
+        # Update alert preferences
+        db['client_profiles'].update_one(
+            {"_id": client['_id']},
+            {
+                "$set": {
+                    "alert_preferences.enabled": alert_enabled,
+                    "alert_preferences.updated_at": datetime.now(timezone.utc)
+                }
+            }
+        )
+        
+        status = "ENABLED" if alert_enabled else "DISABLED"
+        
+        return f"""✅ ALERT PREFERENCES UPDATED
+
+Real-Time Alerts: {status}
+
+You will {"receive" if alert_enabled else "not receive"} WhatsApp notifications for:
+- Price drops (>5%)
+- Inventory surges (5+ new listings)
+- Agent behavior shifts (>30% inventory change)
+- New opportunities (below-median pricing)
+
+Your preferences can be changed anytime."""
+    
+    # If just asking about alerts (not changing)
+    if 'alert' in message_lower:
+        current_status = client.get('alert_preferences', {}).get('enabled', True)
+        
+        return f"""ALERT SETTINGS
+
+Current Status: {"ENABLED ✅" if current_status else "DISABLED ❌"}
+
+Alert Types:
+- Price Drop Alerts (>5% adjustments)
+- Inventory Surge Alerts (5+ new listings)
+- Agent Behavior Alerts (>30% change)
+- New Opportunity Alerts (below-median)
+
+To change: Send "Enable alerts" or "Disable alerts"
+"""
+    
+    return None
+
+
 if __name__ == "__main__":
     # Test examples
     test_messages = [
