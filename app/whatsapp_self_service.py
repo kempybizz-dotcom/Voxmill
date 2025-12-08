@@ -226,37 +226,52 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     if db is None:
         return None
     
-    # Find client by WhatsApp number
-    client = db['client_profiles'].find_one({"whatsapp_number": from_number})
+    # ✅ FIX #1: Handle both phone number formats (with/without whatsapp: prefix)
+    normalized_number = from_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
+    
+    client = db['client_profiles'].find_one({
+        "$or": [
+            {"whatsapp_number": from_number},      # With prefix
+            {"whatsapp_number": normalized_number}  # Without prefix
+        ]
+    })
     
     if not client:
-        # Not a recognized client - let normal handler deal with it
+        logger.warning(f"Client not found for number: {from_number}")
         return None
+    
+    # ✅ FIX #2: Check for email field
+    if not client.get('email'):
+        logger.error(f"Client profile missing email: {from_number}")
+        return (
+            "⚠️ Your profile is incomplete. "
+            "Please contact support to link your email address: ollys@voxmill.uk"
+        )
     
     # Detect if this is a preference request
     try:
         analysis = detect_preference_request(message, client)
     except Exception as e:
-        logger.error(f"Error analyzing message: {e}")
-        # Fall back to normal query handling
+        logger.error(f"Error analyzing message: {e}", exc_info=True)
         return None
     
-    # If NOT a preference request, return None to use normal analyst
+    # If NOT a preference request, return None
     if not analysis.get('is_preference_request'):
         return None
     
-    # It IS a preference request - apply changes
+    # Extract changes
     changes = analysis.get('changes', {})
     
     if not changes:
-        # Settings inquiry without specific changes
         return analysis.get('confirmation_message', 
             "I can help update your preferences. What would you like to change?\n\n"
             "• Competitor Focus (low/medium/high)\n"
             "• Report Depth (executive/detailed/deep)\n"
             "• Coverage Regions")
     
-    # APPLY CHANGES WITH VALIDATION
+    # ✅ FIX #3: Apply changes with logging
+    logger.info(f"Applying preference changes for {client['email']}: {changes}")
+    
     success = apply_preference_changes(client['email'], changes)
     
     if success:
@@ -271,15 +286,9 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             "source": "whatsapp_self_service"
         })
         
-        # BUILD RICH CONFIRMATION MESSAGE
-        from datetime import timedelta
-        today = datetime.now()
-        days_until_sunday = (6 - today.weekday()) % 7
-        if days_until_sunday == 0:
-            days_until_sunday = 7
-        next_sunday = today + timedelta(days=days_until_sunday)
+        # Build confirmation message
+        next_sunday = get_next_sunday()
         
-        # Build change summary
         change_lines = []
         if 'competitor_focus' in changes:
             focus = changes['competitor_focus']
@@ -295,7 +304,6 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             regions = ', '.join(changes['regions'])
             change_lines.append(f"• Coverage Areas: {regions}")
         
-        # Final confirmation message
         confirmation = f"""✅ PREFERENCES UPDATED
 
 {chr(10).join(change_lines)}
@@ -305,16 +313,28 @@ Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 
 ━━━━━━━━━━━━━━━━━━━━
 ⚡ NEED THIS URGENTLY?
 
-Contact your Voxmill operator for immediate regeneration:
-📧 ollys@voxmill.uk
+Contact: intel@voxmill.uk
 
 ━━━━━━━━━━━━━━━━━━━━
 
 Voxmill Intelligence — Precision at Scale"""
         
+        logger.info(f"✅ Preferences updated for {client['email']}")
         return confirmation
     else:
+        logger.error(f"❌ Failed to update preferences for {client['email']}")
         return "❌ Unable to update preferences. Please try again or contact support."
+
+
+# ✅ FIX #4: Add helper function
+def get_next_sunday():
+    """Calculate next Sunday's date"""
+    from datetime import datetime, timedelta
+    today = datetime.now()
+    days_until_sunday = (6 - today.weekday()) % 7
+    if days_until_sunday == 0:
+        days_until_sunday = 7
+    return today + timedelta(days=days_until_sunday)
 
 def handle_preference_update(client_email, new_preferences):
     """Update preferences with premium confirmation message"""
