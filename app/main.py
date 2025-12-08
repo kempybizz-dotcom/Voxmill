@@ -5,6 +5,7 @@ FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence
 import os
 import sys
 import logging
+import asyncio
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
@@ -58,6 +59,42 @@ MONGODB_URI = os.getenv('MONGODB_URI')
 mongo_client = MongoClient(MONGODB_URI)
 db = mongo_client['Voxmill']
 logger.info("✅ MongoDB connected")
+
+
+
+# Background task that runs forever
+async def alert_checker_loop():
+    """Runs every hour in background"""
+    while True:
+        try:
+            # Wait until the top of the next hour
+            now = datetime.now(timezone.utc)
+            next_hour = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+            wait_seconds = (next_hour - now).total_seconds()
+            
+            logger.info(f"Alert checker sleeping {wait_seconds:.0f}s until {next_hour.strftime('%H:%M UTC')}")
+            await asyncio.sleep(wait_seconds)
+            
+            # Run alert checker
+            logger.info("=" * 70)
+            logger.info("SCHEDULED ALERT CHECKER - Starting")
+            logger.info("=" * 70)
+            
+            await check_and_send_alerts_task()
+            
+            logger.info("SCHEDULED ALERT CHECKER - Complete")
+            
+        except Exception as e:
+            logger.error(f"Alert checker loop error: {e}", exc_info=True)
+            # Wait 5 minutes before retrying on error
+            await asyncio.sleep(300)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background alert checker when app starts"""
+    asyncio.create_task(alert_checker_loop())
+    logger.info("✅ Background alert checker started - Runs every hour")
 
 
 # ============================================================================
