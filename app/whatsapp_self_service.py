@@ -226,48 +226,71 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     if db is None:
         return None
     
-    # ✅ FIX #1: Handle both phone number formats (with/without whatsapp: prefix)
+    # ✅ PASS 1: KEYWORD PRE-FILTER (No API call)
+    message_lower = message.lower()
+    
+    # Strong preference indicators
+    preference_keywords = [
+        'my next report', 'my reports', 'future reports',
+        'my preferences', 'update my preferences', 'change my preferences',
+        'more competitors', 'less competitors', 'fewer competitors',
+        'more detail', 'less detail', 'deeper analysis',
+        'add region', 'remove region', 'stop covering',
+        'change delivery', 'delivery time', 'report depth',
+        'competitor focus', 'executive summary', 'detailed report'
+    ]
+    
+    # Check if ANY keyword matches
+    has_preference_keyword = any(kw in message_lower for kw in preference_keywords)
+    
+    if not has_preference_keyword:
+        # Fast reject - not a preference request
+        return None
+    
+    logger.info(f"🎯 Preference keyword detected in: '{message[:50]}'")
+    
+    # ✅ PASS 2: Find client
     normalized_number = from_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     client = db['client_profiles'].find_one({
         "$or": [
-            {"whatsapp_number": from_number},      # With prefix
-            {"whatsapp_number": normalized_number}  # Without prefix
+            {"whatsapp_number": from_number},
+            {"whatsapp_number": normalized_number}
         ]
     })
     
     if not client:
-        logger.warning(f"Client not found for number: {from_number}")
+        logger.warning(f"Client not found: {from_number}")
         return None
     
-    # ✅ FIX #2: Check for email field
     if not client.get('email'):
-        logger.error(f"Client profile missing email: {from_number}")
+        logger.error(f"Client missing email: {from_number}")
         return (
             "⚠️ Your profile is incomplete. "
-            "Please contact support to link your email address: ollys@voxmill.uk"
+            "Contact support: ollys@voxmill.uk"
         )
     
-    # Detect if this is a preference request
+    # ✅ PASS 3: GPT-4 Intent Detection (Only after keyword match)
     try:
         analysis = detect_preference_request(message, client)
     except Exception as e:
-        logger.error(f"Error analyzing message: {e}", exc_info=True)
-        return None
+        logger.error(f"GPT-4 analysis failed: {e}", exc_info=True)
+        # Fallback: Treat as preference request if keywords matched
+        return handle_ambiguous_preference_request(message)
     
-    # If NOT a preference request, return None
+    # If GPT-4 says NOT a preference request, ask for clarification
     if not analysis.get('is_preference_request'):
-        return None
-    
-    # Extract changes
-    changes = analysis.get('changes', {})
-    
-    if not changes:
-        return analysis.get('confirmation_message', 
-            "I can help update your preferences. What would you like to change?\n\n"
+        logger.warning(f"GPT-4 rejected but keywords matched: '{message}'")
+        return (
+            "I detected you want to update preferences, but I need more details.\n\n"
+            "You can update:\n"
             "• Competitor Focus (low/medium/high)\n"
             "• Report Depth (executive/detailed/deep)\n"
-            "• Coverage Regions")
+            "• Coverage Regions\n\n"
+            "Example: 'Set competitor focus to high'"
+        )
+    
+    # ... rest of function unchanged (apply changes, build confirmation)
     
     # ✅ FIX #3: Apply changes with logging
     logger.info(f"Applying preference changes for {client['email']}: {changes}")
@@ -324,6 +347,43 @@ Voxmill Intelligence — Precision at Scale"""
     else:
         logger.error(f"❌ Failed to update preferences for {client['email']}")
         return "❌ Unable to update preferences. Please try again or contact support."
+
+
+def handle_ambiguous_preference_request(message: str) -> str:
+    """
+    Handle cases where keywords matched but GPT-4 failed or returned unclear intent
+    """
+    
+    message_lower = message.lower()
+    
+    # Try to extract intent from keywords
+    if 'more competitor' in message_lower or 'competitor focus' in message_lower:
+        return (
+            "I see you want to adjust competitor analysis.\n\n"
+            "Please confirm:\n"
+            "• 'Set competitor focus to HIGH' (10 agencies)\n"
+            "• 'Set competitor focus to MEDIUM' (6 agencies)\n"
+            "• 'Set competitor focus to LOW' (3 agencies)"
+        )
+    
+    elif 'more detail' in message_lower or 'report depth' in message_lower:
+        return (
+            "I see you want to adjust report depth.\n\n"
+            "Please confirm:\n"
+            "• 'Set report depth to DEEP' (14+ slides, full analysis)\n"
+            "• 'Set report depth to DETAILED' (14 slides, standard)\n"
+            "• 'Set report depth to EXECUTIVE' (5 slides, C-suite summary)"
+        )
+    
+    else:
+        return (
+            "I detected you want to update preferences, but I need clarification.\n\n"
+            "You can update:\n"
+            "• Competitor Focus: 'Set competitor focus to HIGH'\n"
+            "• Report Depth: 'Set report depth to DETAILED'\n"
+            "• Coverage Regions: 'Add Chelsea to my reports'\n\n"
+            "What would you like to change?"
+        )
 
 
 # ✅ FIX #4: Add helper function
