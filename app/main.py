@@ -97,6 +97,25 @@ async def startup_event():
     logger.info("✅ Background alert checker started - Runs every hour")
 
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+scheduler = AsyncIOScheduler()
+
+@scheduler.scheduled_job(CronTrigger(hour='*', minute=0))
+async def scheduled_alert_checker():
+    logger.info("ALERT CHECKER - Running hourly")
+    try:
+        await check_and_send_alerts_task()
+    except Exception as e:
+        logger.error(f"Alert error: {e}", exc_info=True)
+
+@app.on_event("startup")
+async def startup():
+    scheduler.start()
+    logger.info("✅ Alert scheduler started")
+
+
 # ============================================================================
 # AIRTABLE → MONGODB SYNC ENDPOINTS
 # ============================================================================
