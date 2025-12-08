@@ -3,26 +3,19 @@
 WHATSAPP SELF-SERVICE PREFERENCE MANAGER
 =========================================
 Allows clients to update their own preferences via WhatsApp
-
-Examples:
-- "Add Chelsea to my reports"
-- "Focus more on competitors next week"
-- "Change delivery to 6am"
-- "Increase report depth"
-
-Uses GPT-4 to:
-1. Detect if message is a preference change request
-2. Extract the specific changes requested
-3. Update MongoDB
-4. Confirm professionally to client
 """
 
 import os
 import json
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Optional, List
 from pymongo import MongoClient
 from openai import OpenAI
+
+# ✅ FIX: Add logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configuration
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -31,6 +24,15 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 db = mongo_client['Voxmill'] if mongo_client else None
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
+
+def get_next_sunday():
+    """Calculate next Sunday's date"""
+    today = datetime.now()
+    days_until_sunday = (6 - today.weekday()) % 7
+    if days_until_sunday == 0:
+        days_until_sunday = 7
+    return today + timedelta(days=days_until_sunday)
 
 
 def detect_preference_request(message: str, client_profile: Dict) -> Dict:
@@ -57,6 +59,8 @@ def detect_preference_request(message: str, client_profile: Dict) -> Dict:
     current_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
     current_city = client_profile.get('city', 'London')
     current_tier = client_profile.get('tier', 'tier_3')
+    current_competitor_focus = client_profile.get('preferences', {}).get('competitor_focus', 'medium')
+    current_report_depth = client_profile.get('preferences', {}).get('report_depth', 'detailed')
     
     system_prompt = f"""You are analyzing a WhatsApp message to determine if the user wants to CHANGE THEIR SERVICE PREFERENCES.
 
@@ -64,111 +68,107 @@ RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.
 
 CLIENT CONTEXT:
 - Name: {client_profile.get('name')}
+- Current City: {current_city}
 - Current Regions: {', '.join(current_regions) if current_regions else 'None'}
-- Current Competitor Focus: {client_profile.get('preferences', {}).get('competitor_focus', 'medium')}
-- Current Report Depth: {client_profile.get('preferences', {}).get('report_depth', 'detailed')}
+- Current Competitor Focus: {current_competitor_focus}
+- Current Report Depth: {current_report_depth}
+- Service Tier: {current_tier}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CRITICAL: This message has ALREADY passed keyword detection for:
-- "my next report" / "my reports" / "future reports"
-- "more competitors" / "less competitors" / "fewer competitors"
-- "more detail" / "less detail" / "deeper analysis"
-- "change my preferences" / "update my preferences"
-
+CRITICAL: This message has ALREADY passed keyword detection for preference-related terms.
 Your job is to CONFIRM the intent and EXTRACT specific changes.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 PREFERENCE REQUEST INDICATORS:
-✓ "I need more competitors in my next report" → is_preference_request: TRUE, changes: {{"competitor_focus": "high"}}
-✓ "Add Chelsea to my coverage" → is_preference_request: TRUE, changes: {{"regions": ["Chelsea"]}}
-✓ "Make my reports more detailed" → is_preference_request: TRUE, changes: {{"report_depth": "deep"}}
-✓ "Focus more on competitors going forward" → is_preference_request: TRUE, changes: {{"competitor_focus": "high"}}
+✓ "I need more competitors in my next report" → TRUE, changes: {{"competitor_focus": "high"}}
+✓ "Add Chelsea to my coverage" → TRUE, changes: {{"regions": ["Chelsea"]}}
+✓ "Make my reports more detailed" → TRUE, changes: {{"report_depth": "deep"}}
+✓ "I want to update my preferences" → TRUE, changes: {{}} (ask for specifics)
 
 NOT PREFERENCE REQUESTS:
-✗ "Who are my main competitors?" → is_preference_request: FALSE (market query, not settings change)
-✗ "What's the competitive landscape?" → is_preference_request: FALSE (analysis request)
+✗ "Who are my main competitors?" → FALSE (market query)
+✗ "What's the competitive landscape?" → FALSE (analysis request)
 
-TASK:
-If the message requests a SETTINGS CHANGE (not just asking a question), respond:
+If the message requests a SETTINGS CHANGE, respond:
 {{
     "is_preference_request": true,
-    "intent": "adjust_focus" | "change_depth" | "add_regions" | "remove_regions",
+    "intent": "adjust_focus" | "change_depth" | "add_regions" | "general_update",
     "changes": {{
         "competitor_focus": "low" | "medium" | "high",
         "report_depth": "executive" | "detailed" | "deep",
-        "regions": ["Area1", "Area2"]
+        "regions": ["Area1"]
     }},
     "confirmation_message": "Professional confirmation"
 }}
 
-If it's just a QUESTION (not a settings change), respond:
+If it's just a QUESTION, respond:
 {{
     "is_preference_request": false,
     "intent": "market_query"
 }}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EXAMPLES FOR YOUR SPECIFIC CASE:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLES:
 
 Message: "I need more competitors in my next report"
 Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "..."}}
-Reasoning: "more competitors" + "in my next report" = clear preference change request
-
-Message: "Focus more on competitors"
-Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "..."}}
-
-Message: "Who are my top competitors?"
-Response: {{"is_preference_request": false, "intent": "market_query"}}
-Reasoning: Asking a question, not requesting a settings change
 
 Message: "I want to update my preferences"
 Response: {{"is_preference_request": true, "intent": "general_update", "changes": {{}}, "confirmation_message": "What would you like to update? Competitor focus, report depth, or coverage regions?"}}
-Reasoning: Explicit preference update request, but no specific changes mentioned yet
+
+Message: "Who are my competitors?"
+Response: {{"is_preference_request": false, "intent": "market_query"}}
 """
 
-    # ✅ CORRECT INDENTATION (align with 'system_prompt' above)
     user_prompt = f"""CLIENT MESSAGE:
 "{message}"
 
 Analyze this message and determine if it's a preference change request."""
     
-    response = openai_client.chat.completions.create(
-        model="gpt-4-turbo-preview",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        max_tokens=1000,
-        temperature=0.3,
-        timeout=15.0
-    )
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=1000,
+            temperature=0.3,
+            timeout=15.0
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        # Clean markdown formatting
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+        
+        result = json.loads(response_text)
+        return result
     
-    # Parse response
-    response_text = response.choices[0].message.content.strip()
-    
-    # Clean potential markdown formatting
-    if response_text.startswith('```json'):
-        response_text = response_text.replace('```json', '').replace('```', '').strip()
-    
-    result = json.loads(response_text)
-    return result
+    except Exception as e:
+        logger.error(f"GPT-4 analysis failed: {e}", exc_info=True)
+        raise
 
 
 def apply_preference_changes(client_email: str, changes: Dict) -> bool:
     """Apply preference changes to MongoDB"""
     
     if db is None:
+        logger.error("MongoDB not connected")
         return False
+    
+    logger.info(f"Applying preferences for {client_email}: {changes}")
     
     update_data = {}
     
     # Handle region changes
     if 'regions' in changes:
         current_profile = db['client_profiles'].find_one({"email": client_email})
-        current_regions = current_profile.get('preferences', {}).get('preferred_regions', [])
+        if not current_profile:
+            logger.error(f"Client not found: {client_email}")
+            return False
         
-        # Add new regions (avoid duplicates)
+        current_regions = current_profile.get('preferences', {}).get('preferred_regions', [])
         new_regions = list(set(current_regions + changes['regions']))
         update_data['preferences.preferred_regions'] = new_regions
     
@@ -198,6 +198,7 @@ def apply_preference_changes(client_email: str, changes: Dict) -> bool:
             {"$set": update_data}
         )
         
+        logger.info(f"MongoDB update result: matched={result.matched_count}, modified={result.modified_count}")
         return result.modified_count > 0
     
     return False
@@ -210,12 +211,12 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     """
     
     if db is None:
+        logger.warning("MongoDB not connected")
         return None
     
     # ✅ PASS 1: KEYWORD PRE-FILTER (No API call)
     message_lower = message.lower()
     
-    # Strong preference indicators
     preference_keywords = [
         'my next report', 'my reports', 'future reports',
         'my preferences', 'update my preferences', 'change my preferences',
@@ -226,16 +227,14 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         'competitor focus', 'executive summary', 'detailed report'
     ]
     
-    # Check if ANY keyword matches
     has_preference_keyword = any(kw in message_lower for kw in preference_keywords)
     
     if not has_preference_keyword:
-        # Fast reject - not a preference request
         return None
     
     logger.info(f"🎯 Preference keyword detected in: '{message[:50]}'")
     
-    # ✅ PASS 2: Find client
+    # ✅ PASS 2: Find client (handle both phone formats)
     normalized_number = from_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     client = db['client_profiles'].find_one({
@@ -246,54 +245,67 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     })
     
     if not client:
-        logger.warning(f"Client not found: {from_number}")
+        logger.warning(f"Client not found for: {from_number}")
         return None
     
+    # ✅ Check for email field
     if not client.get('email'):
-        logger.error(f"Client missing email: {from_number}")
+        logger.error(f"Client profile missing email: {from_number}")
         return (
             "⚠️ Your profile is incomplete. "
-            "Contact support: ollys@voxmill.uk"
+            "Please contact support: ollys@voxmill.uk"
         )
     
-    # ✅ PASS 3: GPT-4 Intent Detection (Only after keyword match)
+    # ✅ PASS 3: GPT-4 Intent Detection
     try:
         analysis = detect_preference_request(message, client)
     except Exception as e:
-        logger.error(f"GPT-4 analysis failed: {e}", exc_info=True)
-        # Fallback: Treat as preference request if keywords matched
-        return handle_ambiguous_preference_request(message)
-    
-    # If GPT-4 says NOT a preference request, ask for clarification
-    if not analysis.get('is_preference_request'):
-        logger.warning(f"GPT-4 rejected but keywords matched: '{message}'")
+        logger.error(f"Error analyzing message: {e}", exc_info=True)
+        # Fallback response
         return (
-            "I detected you want to update preferences, but I need more details.\n\n"
-            "You can update:\n"
-            "• Competitor Focus (low/medium/high)\n"
-            "• Report Depth (executive/detailed/deep)\n"
-            "• Coverage Regions\n\n"
-            "Example: 'Set competitor focus to high'"
+            "I can help update your preferences.\n\n"
+            "Please specify:\n"
+            "• Competitor Focus: 'Set competitor focus to HIGH'\n"
+            "• Report Depth: 'Set report depth to DETAILED'\n"
+            "• Coverage Regions: 'Add Chelsea to my reports'"
         )
     
-    # ... rest of function unchanged (apply changes, build confirmation)
+    # If NOT a preference request (GPT-4 disagreed with keywords)
+    if not analysis.get('is_preference_request'):
+        logger.warning(f"GPT-4 rejected preference request: '{message}'")
+        return None
     
-    # ✅ FIX #3: Apply changes with logging
+    # Extract changes
+    changes = analysis.get('changes', {})
+    
+    # If no specific changes, ask for clarification
+    if not changes:
+        return (
+            "I can help update your preferences. What would you like to change?\n\n"
+            "• Competitor Focus (low/medium/high)\n"
+            "• Report Depth (executive/detailed/deep)\n"
+            "• Coverage Regions"
+        )
+    
+    # ✅ Apply changes
     logger.info(f"Applying preference changes for {client['email']}: {changes}")
     
     success = apply_preference_changes(client['email'], changes)
     
     if success:
         # Log the change
-        db['preference_changes'].insert_one({
-            "client_email": client['email'],
-            "client_name": client.get('name'),
-            "whatsapp_number": from_number,
-            "original_message": message,
-            "changes_applied": changes,
-            "timestamp": datetime.now(timezone.utc),
-            "source": "whatsapp_self_service"
-        })
+        try:
+            db['preference_changes'].insert_one({
+                "client_email": client['email'],
+                "client_name": client.get('name'),
+                "whatsapp_number": from_number,
+                "original_message": message,
+                "changes_applied": changes,
+                "timestamp": datetime.now(timezone.utc),
+                "source": "whatsapp_self_service"
+            })
+        except Exception as e:
+            logger.error(f"Failed to log preference change: {e}")
         
         # Build confirmation message
         next_sunday = get_next_sunday()
@@ -301,12 +313,12 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         change_lines = []
         if 'competitor_focus' in changes:
             focus = changes['competitor_focus']
-            count = {'low': 3, 'medium': 6, 'high': 10}[focus]
+            count = {'low': 3, 'medium': 6, 'high': 10}.get(focus, 6)
             change_lines.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
         
         if 'report_depth' in changes:
             depth = changes['report_depth']
-            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}[depth]
+            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}.get(depth, 14)
             change_lines.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
         
         if 'regions' in changes:
@@ -333,200 +345,3 @@ Voxmill Intelligence — Precision at Scale"""
     else:
         logger.error(f"❌ Failed to update preferences for {client['email']}")
         return "❌ Unable to update preferences. Please try again or contact support."
-
-
-def handle_ambiguous_preference_request(message: str) -> str:
-    """
-    Handle cases where keywords matched but GPT-4 failed or returned unclear intent
-    """
-    
-    message_lower = message.lower()
-    
-    # Try to extract intent from keywords
-    if 'more competitor' in message_lower or 'competitor focus' in message_lower:
-        return (
-            "I see you want to adjust competitor analysis.\n\n"
-            "Please confirm:\n"
-            "• 'Set competitor focus to HIGH' (10 agencies)\n"
-            "• 'Set competitor focus to MEDIUM' (6 agencies)\n"
-            "• 'Set competitor focus to LOW' (3 agencies)"
-        )
-    
-    elif 'more detail' in message_lower or 'report depth' in message_lower:
-        return (
-            "I see you want to adjust report depth.\n\n"
-            "Please confirm:\n"
-            "• 'Set report depth to DEEP' (14+ slides, full analysis)\n"
-            "• 'Set report depth to DETAILED' (14 slides, standard)\n"
-            "• 'Set report depth to EXECUTIVE' (5 slides, C-suite summary)"
-        )
-    
-    else:
-        return (
-            "I detected you want to update preferences, but I need clarification.\n\n"
-            "You can update:\n"
-            "• Competitor Focus: 'Set competitor focus to HIGH'\n"
-            "• Report Depth: 'Set report depth to DETAILED'\n"
-            "• Coverage Regions: 'Add Chelsea to my reports'\n\n"
-            "What would you like to change?"
-        )
-
-
-# ✅ FIX #4: Add helper function
-def get_next_sunday():
-    """Calculate next Sunday's date"""
-    from datetime import datetime, timedelta
-    today = datetime.now()
-    days_until_sunday = (6 - today.weekday()) % 7
-    if days_until_sunday == 0:
-        days_until_sunday = 7
-    return today + timedelta(days=days_until_sunday)
-
-def handle_preference_update(client_email, new_preferences):
-    """Update preferences with premium confirmation message"""
-    
-    # Update MongoDB
-    db.client_profiles.update_one(
-        {"email": client_email},
-        {"$set": {"preferences": new_preferences}}
-    )
-    
-    # Get next Sunday date
-    from datetime import datetime, timedelta
-    today = datetime.now()
-    days_until_sunday = (6 - today.weekday()) % 7
-    if days_until_sunday == 0:
-        days_until_sunday = 7
-    next_sunday = today + timedelta(days=days_until_sunday)
-    
-    # Build confirmation message
-    changes = []
-    if 'competitor_focus' in new_preferences:
-        focus = new_preferences['competitor_focus']
-        count = {'low': 3, 'medium': 6, 'high': 10}[focus]
-        changes.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
-    
-    if 'report_depth' in new_preferences:
-        depth = new_preferences['report_depth']
-        slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}[depth]
-        changes.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
-    
-    message = f"""✅ PREFERENCES UPDATED
-
-{chr(10).join(changes)}
-
-Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 AM UTC.
-
-━━━━━━━━━━━━━━━━━━━━
-⚡ NEED THIS URGENTLY?
-
-Contact your Voxmill operator for immediate regeneration:
-📧 operator@voxmill.uk
-📱 WhatsApp: +44 XXXX XXXXXX
-
-━━━━━━━━━━━━━━━━━━━━
-
-Voxmill Intelligence — Precision at Scale"""
-    
-    return message
-
-
-# ============================================================================
-# INTEGRATION WITH EXISTING WHATSAPP HANDLER
-# ============================================================================
-
-def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
-    """
-    Enhanced WhatsApp handler that checks for preference requests first,
-    then falls back to normal market intelligence queries
-    """
-    
-    # Step 1: Check if it's a preference request
-    preference_response = handle_whatsapp_preference_message(from_number, message)
-    
-    # If it's a preference request, return that response
-    if preference_response is not None:
-        return preference_response
-    
-    # Step 2: Otherwise, use normal WhatsApp analyst
-    # (This would call your existing WhatsApp analyst code)
-    from app.whatsapp import handle_whatsapp_message  # Your existing handler
-    return handle_whatsapp_message(from_number, message)
-
-
-# ============================================================================
-# EXAMPLES OF MESSAGES IT CAN HANDLE
-# ============================================================================
-
-EXAMPLE_MESSAGES = """
-CLIENT MESSAGES THE SYSTEM CAN UNDERSTAND:
-
-ADDING REGIONS:
-✓ "Add Chelsea to my reports"
-✓ "Include Knightsbridge and Belgravia next week"
-✓ "Start covering Notting Hill"
-✓ "Can you add Kensington to my coverage?"
-
-ADJUSTING DEPTH:
-✓ "Make my reports more detailed"
-✓ "I want deeper analysis going forward"
-✓ "Switch to executive summary only"
-✓ "Give me the full deep dive version"
-
-COMPETITOR FOCUS:
-✓ "Focus more on my competitors"
-✓ "I want more competitive intelligence"
-✓ "Less competitor info, more market data"
-✓ "Deep dive on competitive landscape"
-
-DELIVERY SETTINGS:
-✓ "Send my reports at 6am instead"
-✓ "Change delivery to morning"
-✓ "I prefer evening reports"
-
-REMOVING REGIONS:
-✓ "Stop covering Mayfair"
-✓ "Remove Chelsea from my reports"
-✓ "Don't need Belgravia anymore"
-
-MIXED REQUESTS:
-✓ "Add Chelsea and increase competitor focus"
-✓ "Send reports at 6am and add Kensington coverage"
-
-STILL HANDLES NORMAL QUERIES:
-✓ "What's happening in Mayfair?"
-✓ "Send me the latest PDF"
-✓ "Show me recent sales data"
-→ These go to normal WhatsApp analyst
-"""
-
-
-if __name__ == "__main__":
-    # Test examples
-    test_messages = [
-        "Add Chelsea to my weekly reports",
-        "Focus more on competitors next week",
-        "What's the latest in Mayfair?",  # Not a preference request
-        "Change delivery to 6am and add Kensington",
-        "Make my reports more detailed"
-    ]
-    
-    print("Testing preference detection...\n")
-    
-    test_client = {
-        "name": "Mark Thompson",
-        "email": "mark@fund.com",
-        "city": "London",
-        "preferences": {
-            "preferred_regions": ["Mayfair", "Knightsbridge"]
-        }
-    }
-    
-    for msg in test_messages:
-        print(f"Message: {msg}")
-        result = detect_preference_request(msg, test_client)
-        print(f"Is Preference: {result.get('is_preference_request')}")
-        if result.get('is_preference_request'):
-            print(f"Changes: {result.get('changes')}")
-            print(f"Response: {result.get('confirmation_message')}")
-        print("-" * 70)
