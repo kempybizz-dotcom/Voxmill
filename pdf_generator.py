@@ -253,6 +253,39 @@ def calculate_quartiles(sorted_values: List[float]) -> Tuple[float, float, float
         q3_idx = 3 * n // 4
         return (sorted_values[q1_idx], sorted_values[q2_idx], sorted_values[q3_idx])
 
+   # ============================================================================
+# PDF GENERATOR CLASS
+# ============================================================================
+
+class VoxmillPDFGenerator:
+    """
+    Fortune-500 grade PDF intelligence deck generator.
+    
+    Handles template rendering, chart generation, and PDF compilation
+    with full support for multiple verticals and dynamic data.
+    """
+    
+    def __init__(
+        self,
+        template_dir: str = "/opt/render/project/src",
+        output_dir: str = "/tmp",
+        data_path: str = "/tmp/voxmill_analysis.json"
+    ):
+        """
+        Initialize PDF generator with paths to templates and data.
+        
+        Args:
+            template_dir: Directory containing HTML and CSS templates
+            output_dir: Directory for PDF output
+            data_path: Path to JSON data file
+        """
+        self.template_dir = Path(template_dir)
+        self.output_dir = Path(output_dir)
+        self.data_path = Path(data_path)
+        
+        # Create output directory if it doesn't exist
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
 
 
     
