@@ -58,87 +58,73 @@ def detect_preference_request(message: str, client_profile: Dict) -> Dict:
     current_city = client_profile.get('city', 'London')
     current_tier = client_profile.get('tier', 'tier_3')
     
-    system_prompt = f"""You are analyzing a WhatsApp message from a luxury real estate intelligence client to determine if they're requesting changes to their service preferences.
+    system_prompt = f"""You are analyzing a WhatsApp message to determine if the user wants to CHANGE THEIR SERVICE PREFERENCES.
 
 RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.
 
 CLIENT CONTEXT:
 - Name: {client_profile.get('name')}
-- Current City: {current_city}
 - Current Regions: {', '.join(current_regions) if current_regions else 'None'}
-- Service Tier: {current_tier}
+- Current Competitor Focus: {client_profile.get('preferences', {}).get('competitor_focus', 'medium')}
+- Current Report Depth: {client_profile.get('preferences', {}).get('report_depth', 'detailed')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CRITICAL: PREFERENCE REQUEST DETECTION RULES
+CRITICAL: This message has ALREADY passed keyword detection for:
+- "my next report" / "my reports" / "future reports"
+- "more competitors" / "less competitors" / "fewer competitors"
+- "more detail" / "less detail" / "deeper analysis"
+- "change my preferences" / "update my preferences"
+
+Your job is to CONFIRM the intent and EXTRACT specific changes.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-A message is a PREFERENCE REQUEST if it contains ANY of these indicators:
+PREFERENCE REQUEST INDICATORS:
+✓ "I need more competitors in my next report" → is_preference_request: TRUE, changes: {{"competitor_focus": "high"}}
+✓ "Add Chelsea to my coverage" → is_preference_request: TRUE, changes: {{"regions": ["Chelsea"]}}
+✓ "Make my reports more detailed" → is_preference_request: TRUE, changes: {{"report_depth": "deep"}}
+✓ "Focus more on competitors going forward" → is_preference_request: TRUE, changes: {{"competitor_focus": "high"}}
 
-STRONG SIGNALS (90%+ confidence):
-- "update my preferences" / "change my settings"
-- "in my next report" / "in my reports" / "in future reports"
-- "from now on" / "going forward" / "starting next week"
-- "I'd like [X] in my report"
-- "I want [X] in my next report"
-- "can you add [X]" / "please include [X]"
-
-COMPETITOR FOCUS SIGNALS:
-- "more competitors" / "focus on competitors"
-- "more competitive intelligence" / "competitor analysis"
-- "strategic moves against competitors"
-- "deeper competitor insights" / "competitor depth"
-- "less competitor info" / "reduce competitor analysis"
-
-REPORT DEPTH SIGNALS:
-- "more detail" / "deeper analysis" / "detailed reports"
-- "executive summary" / "brief version" / "concise report"
-- "comprehensive report" / "full deep dive"
-
-REGION SIGNALS:
-- "add [region]" / "include [region]" / "cover [region]"
-- "remove [region]" / "stop covering [region]"
-
-KEY DISTINCTION:
-PREFERENCE REQUESTS (is_preference_request = TRUE):
-✓ "I'd like more competitors in my next report"
-✓ "Focus more on competitors going forward"
-✓ "Add Chelsea to my coverage"
-✓ "Strategic moves against competitors in my report"
-
-MARKET QUERIES (is_preference_request = FALSE):
-✗ "Who are the main competitors?"
-✗ "What's the competitive landscape?"
-✗ "Analyze competitor positioning"
+NOT PREFERENCE REQUESTS:
+✗ "Who are my main competitors?" → is_preference_request: FALSE (market query, not settings change)
+✗ "What's the competitive landscape?" → is_preference_request: FALSE (analysis request)
 
 TASK:
-Analyze if this is a preference change request (vs. a one-time market question).
-
-If it IS a preference request, extract the specific changes and respond with JSON:
+If the message requests a SETTINGS CHANGE (not just asking a question), respond:
 {{
     "is_preference_request": true,
-    "intent": "add_regions" | "remove_regions" | "change_depth" | "adjust_focus" | "delivery_settings" | "other",
+    "intent": "adjust_focus" | "change_depth" | "add_regions" | "remove_regions",
     "changes": {{
-        "regions": ["Area1", "Area2"],
+        "competitor_focus": "low" | "medium" | "high",
         "report_depth": "executive" | "detailed" | "deep",
-        "competitor_focus": "low" | "medium" | "high"
+        "regions": ["Area1", "Area2"]
     }},
-    "confirmation_message": "Professional confirmation message"
+    "confirmation_message": "Professional confirmation"
 }}
 
-If it's NOT a preference request, respond with:
+If it's just a QUESTION (not a settings change), respond:
 {{
     "is_preference_request": false,
-    "intent": "market_query",
-    "original_query": "the message"
+    "intent": "market_query"
 }}
 
-EXAMPLES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLES FOR YOUR SPECIFIC CASE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Message: "I'd like more competitors and strategic moves against competitors in my next report"
-Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact: ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
+Message: "I need more competitors in my next report"
+Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "..."}}
+Reasoning: "more competitors" + "in my next report" = clear preference change request
 
-Message: "What's happening in Mayfair?"
-Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "What's happening in Mayfair?"}}
+Message: "Focus more on competitors"
+Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "..."}}
+
+Message: "Who are my top competitors?"
+Response: {{"is_preference_request": false, "intent": "market_query"}}
+Reasoning: Asking a question, not requesting a settings change
+
+Message: "I want to update my preferences"
+Response: {{"is_preference_request": true, "intent": "general_update", "changes": {{}}, "confirmation_message": "What would you like to update? Competitor focus, report depth, or coverage regions?"}}
+Reasoning: Explicit preference update request, but no specific changes mentioned yet
 """
 
     # ✅ CORRECT INDENTATION (align with 'system_prompt' above)
