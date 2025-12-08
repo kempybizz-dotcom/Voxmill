@@ -2,15 +2,14 @@
 Voxmill WhatsApp Intelligence Service - Main Application
 FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence stack
 """
-
 import os
 import sys
 import logging
 from datetime import datetime
 from typing import Optional
-
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from fastapi.responses import PlainTextResponse
+from pymongo import MongoClient
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +28,6 @@ app = FastAPI(
 # Initialize Redis client for deduplication
 REDIS_URL = os.getenv("REDIS_URL")
 redis_client = None
-
 try:
     import redis
     if REDIS_URL:
@@ -48,13 +46,144 @@ REQUIRED_ENV_VARS = [
     'OPENAI_API_KEY',
     'MONGODB_URI'
 ]
-
 missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
 if missing_vars:
     logger.error(f"❌ Missing required environment variables: {missing_vars}")
     sys.exit(1)
 
 logger.info("✅ All required environment variables present")
+
+# MongoDB connection
+MONGODB_URI = os.getenv('MONGODB_URI')
+mongo_client = MongoClient(MONGODB_URI)
+db = mongo_client['Voxmill']
+logger.info("✅ MongoDB connected")
+
+
+# ============================================================================
+# AIRTABLE → MONGODB SYNC ENDPOINTS
+# ============================================================================
+
+@app.post("/api/sync-preferences")
+async def sync_preferences_from_airtable(request: Request):
+    """
+    Sync client preferences from Airtable to MongoDB.
+    Called by Airtable automation when preferences are updated manually.
+    
+    Expected payload:
+    {
+        "email": "client@example.com",
+        "preferences": {
+            "competitor_focus": "high",
+            "report_depth": "executive"
+        }
+    }
+    """
+    try:
+        # Get payload from Airtable
+        data = await request.json()
+        
+        email = data.get('email')
+        preferences = data.get('preferences', {})
+        
+        # Validate required fields
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        # Validate preference values
+        valid_competitor_focus = ['low', 'medium', 'high']
+        valid_report_depth = ['executive', 'detailed', 'deep']
+        
+        if 'competitor_focus' in preferences:
+            if preferences['competitor_focus'] not in valid_competitor_focus:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid competitor_focus. Must be one of: {valid_competitor_focus}"
+                )
+        
+        if 'report_depth' in preferences:
+            if preferences['report_depth'] not in valid_report_depth:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid report_depth. Must be one of: {valid_report_depth}"
+                )
+        
+        # Update MongoDB
+        result = db.client_profiles.update_one(
+            {"email": email},
+            {
+                "$set": {
+                    "preferences": preferences,
+                    "preferences_updated_at": datetime.utcnow(),
+                    "preferences_updated_by": "Airtable Manual"
+                }
+            },
+            upsert=True  # Create if doesn't exist
+        )
+        
+        logger.info(f"✅ AIRTABLE SYNC: {email} → {preferences}")
+        
+        # Return success response
+        return {
+            "status": "success",
+            "email": email,
+            "preferences": preferences,
+            "matched": result.matched_count,
+            "modified": result.modified_count,
+            "upserted": result.upserted_id is not None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/preferences/{email}")
+async def get_preferences(email: str):
+    """
+    Get current preferences for a client.
+    Useful for Airtable to fetch current MongoDB state.
+    """
+    try:
+        client = db.client_profiles.find_one({"email": email})
+        
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        preferences = client.get('preferences', {})
+        
+        return {
+            "email": email,
+            "preferences": preferences,
+            "updated_at": client.get('preferences_updated_at'),
+            "updated_by": client.get('preferences_updated_by', 'Unknown')
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Get preferences error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "Voxmill Intelligence API",
+        "version": "2.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+# ============================================================================
+# YOUR EXISTING WHATSAPP WEBHOOK CODE CONTINUES BELOW...
+# ============================================================================
+
+# ... rest of your existing code ...
 
 
 def normalize_phone_number(phone: str) -> str:
