@@ -74,10 +74,6 @@ def detect_alerts_for_region(area: str, vertical: str = "luxury_real_estate") ->
     agent_alerts = detect_agent_behavior_shifts(current_props, historical_props, area)
     alerts.extend(agent_alerts)
     
-    # ALERT TYPE 4: High-Score Opportunities (if deal scoring exists)
-    opportunity_alerts = detect_new_opportunities(current_props, historical_props, area)
-    alerts.extend(opportunity_alerts)
-    
     logger.info(f"Detected {len(alerts)} alerts for {area}")
     return alerts
 
@@ -145,7 +141,7 @@ def detect_inventory_changes(current: List[Dict], historical: List[Dict], area: 
             "urgency": "near_term",
             "area": area,
             "count": len(new_listings),
-            "properties": sorted(new_props, key=lambda x: x.get('price', 0))[:5],  # Top 5 by price
+            "properties": sorted(new_props, key=lambda x: x.get('price', 0))[:5],
             "timestamp": datetime.now(timezone.utc)
         })
     
@@ -192,55 +188,6 @@ def detect_agent_behavior_shifts(current: List[Dict], historical: List[Dict], ar
                 "change_pct": change_pct,
                 "timestamp": datetime.now(timezone.utc)
             })
-    
-    return alerts
-
-
-def detect_new_opportunities(current: List[Dict], historical: List[Dict], area: str) -> List[Dict]:
-    """Detect new high-value opportunities (extended DOM + below median)"""
-    
-    alerts = []
-    
-    # Get addresses that are NEW in current
-    hist_addresses = {p.get('address', '') for p in historical if p.get('address')}
-    
-    # Calculate median price for area
-    current_prices = [p.get('price', 0) for p in current if p.get('price')]
-    if not current_prices:
-        return []
-    
-    median_price = sorted(current_prices)[len(current_prices) // 2]
-    
-    high_value_opportunities = []
-    
-    for prop in current:
-        address = prop.get('address', '')
-        if not address or address in hist_addresses:
-            continue  # Only new listings
-        
-        price = prop.get('price', 0)
-        
-        # New listing that's below median = potential opportunity
-        if price and price < median_price * 0.9:  # 10% below median
-            high_value_opportunities.append({
-                "address": address,
-                "price": price,
-                "median_price": median_price,
-                "discount_pct": ((price - median_price) / median_price) * 100,
-                "agent": prop.get('agent', 'Unknown'),
-                "property_type": prop.get('property_type', 'Unknown')
-            })
-    
-    # Alert if 3+ opportunities detected
-    if len(high_value_opportunities) >= 3:
-        alerts.append({
-            "type": "new_opportunities",
-            "urgency": "near_term",
-            "area": area,
-            "count": len(high_value_opportunities),
-            "opportunities": sorted(high_value_opportunities, key=lambda x: x['discount_pct'])[:3],
-            "timestamp": datetime.now(timezone.utc)
-        })
     
     return alerts
 
@@ -298,44 +245,5 @@ PREVIOUS COUNT: {alert['previous_count']} properties
 
 Strategic Context: {context}. Market leader behavior suggests directional positioning."""
 
-    elif alert['type'] == 'new_opportunities':
-        opps = alert['opportunities']
-        opp_lines = '\n'.join([
-            f"• {o['address']}: £{o['price']/1000000:.2f}M ({o['discount_pct']:+.1f}% vs median)"
-            for o in opps
-        ])
-        
-        return f"""🚨 MARKET ALERT — {area}
-
-{alert['count']} high-value opportunities detected
-
-BELOW-MEDIAN PRICING:
-{opp_lines}
-
-⚡ ACTION WINDOW: 48-72 hours for optimal positioning
-
-Strategic Context: Below-median new listings signal provider flexibility. Early engagement recommended."""
-
     else:
         return f"🚨 MARKET ALERT — {area}\n\nAlert type: {alert['type']}"
-
-
-if __name__ == "__main__":
-    # Test alert detection
-    logging.basicConfig(level=logging.INFO)
-    
-    test_areas = ["Mayfair", "Knightsbridge", "Chelsea"]
-    
-    for area in test_areas:
-        print(f"\n{'='*70}")
-        print(f"Testing alerts for {area}")
-        print(f"{'='*70}\n")
-        
-        alerts = detect_alerts_for_region(area)
-        
-        if alerts:
-            for alert in alerts:
-                print(format_alert_message(alert))
-                print(f"\n{'-'*70}\n")
-        else:
-            print(f"No alerts detected for {area}\n")
