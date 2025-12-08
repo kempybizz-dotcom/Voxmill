@@ -131,20 +131,25 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     # ========================================
     # PREFERENCE SELF-SERVICE (NEW)
     # ========================================
-    try:
-        pref_response = handle_whatsapp_preference_message(sender, message_text)
-        if pref_response:
-            await send_twilio_message(sender, pref_response)
-            
-            # Log the preference change
-            from app.client_manager import update_client_history
-            update_client_history(sender, message_text, "preference_update", "Self-Service")
-            
-            logger.info(f"Preference updated via WhatsApp for {sender}")
-            return
-    except Exception as e:
-        logger.debug(f"Preference handler skipped: {e}")
-        # Continue to normal processing
+   try:
+    logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+    pref_response = handle_whatsapp_preference_message(sender, message_text)
+    
+    if pref_response:
+        logger.info(f"✅ Preference request detected, sending confirmation")
+        await send_twilio_message(sender, pref_response)
+        
+        # Log the preference change
+        from app.client_manager import update_client_history
+        update_client_history(sender, message_text, "preference_update", "Self-Service")
+        
+        logger.info(f"✅ Preference updated via WhatsApp for {sender}")
+        return
+    else:
+        logger.info(f"❌ Not a preference request, continuing to normal analyst")
+        
+except Exception as e:
+    logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)  # ← Changed to ERROR
     
     # ========================================
     # NORMAL MESSAGE PROCESSING
