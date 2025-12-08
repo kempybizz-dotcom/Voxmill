@@ -123,44 +123,19 @@ Your dedicated intelligence partner, available 24/7."""
         logger.error(f"Error sending welcome message: {str(e)}", exc_info=True)
 
 
+# Add to whatsapp.py at the TOP of handle_whatsapp_message()
+
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    Main message handler with V3 predictive intelligence + edge case handling + PDF delivery + welcome messages
+    Main message handler with V3 predictive intelligence + edge case handling + 
+    PDF delivery + welcome messages + rate limiting + spam protection
     """
-    
-    # ========================================
-    # PREFERENCE SELF-SERVICE (NEW)
-    # ========================================
-    try:
-        logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
-        pref_response = handle_whatsapp_preference_message(sender, message_text)
-        
-        if pref_response:
-            logger.info(f"✅ Preference request detected, sending confirmation")
-            await send_twilio_message(sender, pref_response)
-            
-            # Log the preference change
-            from app.client_manager import update_client_history
-            update_client_history(sender, message_text, "preference_update", "Self-Service")
-            
-            logger.info(f"✅ Preference updated via WhatsApp for {sender}")
-            return
-        else:
-            logger.info(f"❌ Not a preference request, continuing to normal analyst")
-            
-    except Exception as e:
-        logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
-        # Continue to normal processing
-    
-    # ========================================
-    # NORMAL MESSAGE PROCESSING
-    # ========================================
     
     try:
         logger.info(f"Processing message from {sender}: {message_text}")
         
         # ========================================
-        # EDGE CASE HANDLING
+        # EDGE CASE HANDLING - FIRST LINE OF DEFENSE
         # ========================================
         
         # Case 1: Empty message
@@ -179,7 +154,15 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-        # Case 3: Only emojis/symbols (no actual text)
+        # Case 3: Meaningless messages (dots, question marks, etc.)
+        if message_text.strip() in ['...', '???', '!!!', '?', '.', '!', '..', '??', '!!']:
+            await send_twilio_message(
+                sender,
+                "I didn't catch that. Ask me about market analysis, competitive intelligence, or strategic forecasting."
+            )
+            return
+        
+        # Case 4: Only emojis/symbols (no actual text)
         import re
         text_only = re.sub(r'[^\w\s]', '', message_text)
         if len(text_only.strip()) < 2:
@@ -189,22 +172,118 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-        # Case 4: Detect common typos and normalize
-        message_normalized = normalize_query(message_text)
-        
         # ========================================
-        # LOAD CLIENT PROFILE & CHECK FIRST TIME
+        # LOAD CLIENT PROFILE
         # ========================================
         
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
         
-        # Check if first-time user (total_queries == 0)
+        # ========================================
+        # RATE LIMITING - PREVENT COST EXPLOSION
+        # ========================================
+        
+        query_history = client_profile.get('query_history', [])
+        
+        # SPAM PROTECTION: Minimum 2 seconds between messages
+        if query_history:
+            last_query_time = query_history[-1].get('timestamp')
+            if last_query_time:
+                seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
+                
+                if seconds_since_last < 2:
+                    # Too fast - silently ignore (likely accidental double-tap)
+                    logger.warning(f"Spam protection triggered for {sender} ({seconds_since_last:.1f}s since last)")
+                    return
+        
+        # RATE LIMITING: Queries per hour by tier
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+        recent_queries = [
+            q for q in query_history 
+            if q.get('timestamp') and q['timestamp'] > one_hour_ago
+        ]
+        
+        tier = client_profile.get('tier', 'tier_1')
+        limits = {
+            'tier_1': 10,   # 10/hour
+            'tier_2': 50,   # 50/hour
+            'tier_3': 200   # 200/hour (not truly unlimited to prevent abuse)
+        }
+        
+        max_queries = limits.get(tier, 10)
+        
+        if len(recent_queries) >= max_queries:
+            # Calculate time until reset
+            oldest_query = min(q['timestamp'] for q in recent_queries)
+            time_until_reset = (oldest_query + timedelta(hours=1) - datetime.now(timezone.utc))
+            minutes_until_reset = int(time_until_reset.total_seconds() / 60)
+            
+            rate_limit_msg = f"""⚠️ RATE LIMIT REACHED
+
+Your {tier.replace('_', ' ').title()} plan allows {max_queries} queries per hour.
+
+Reset in: {minutes_until_reset} minutes
+
+Need more queries? Upgrade or contact:
+📧 ollys@voxmill.uk"""
+            
+            await send_twilio_message(sender, rate_limit_msg)
+            logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
+            return
+        
+        # ========================================
+        # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
+        # ========================================
+        
+        MAX_MESSAGE_LENGTH = 500
+        
+        if len(message_text) > MAX_MESSAGE_LENGTH:
+            await send_twilio_message(
+                sender,
+                f"Message too long ({len(message_text)} characters). "
+                f"Please keep queries under {MAX_MESSAGE_LENGTH} characters for optimal analysis."
+            )
+            logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
+            return
+        
+        # ========================================
+        # PREFERENCE SELF-SERVICE
+        # ========================================
+        
+        try:
+            logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+            pref_response = handle_whatsapp_preference_message(sender, message_text)
+            
+            if pref_response:
+                logger.info(f"✅ Preference request detected, sending confirmation")
+                await send_twilio_message(sender, pref_response)
+                
+                # Log the preference change
+                update_client_history(sender, message_text, "preference_update", "Self-Service")
+                
+                logger.info(f"✅ Preference updated via WhatsApp for {sender}")
+                return
+            else:
+                logger.info(f"❌ Not a preference request, continuing to normal analyst")
+                
+        except Exception as e:
+            logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
+            # Continue to normal processing
+        
+        # ========================================
+        # FIRST-TIME USER WELCOME
+        # ========================================
+        
         is_first_time = client_profile.get('total_queries', 0) == 0
         
         if is_first_time:
-            # Send welcome message for first-time users
             await send_first_time_welcome(sender, client_profile)
+        
+        # ========================================
+        # NORMALIZE QUERY (fix typos)
+        # ========================================
+        
+        message_normalized = normalize_query(message_text)
         
         # ========================================
         # PDF REQUEST DETECTION
@@ -222,16 +301,50 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         # ========================================
-        # NORMAL PROCESSING CONTINUES
+        # LOAD DATASET FOR ANALYSIS
         # ========================================
         
-        # Get preferred region from profile
         preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-        
-        # Load dataset for preferred region
         dataset = load_dataset(area=preferred_region)
         
-        # Detect trends
+        # Check if data exists (not fallback)
+        metadata = dataset.get('metadata', {})
+        is_fallback = metadata.get('is_fallback', False)
+        
+        if is_fallback:
+            # No real data for this region
+            no_data_msg = f"""⚠️ DATA UNAVAILABLE
+
+We don't currently have market intelligence for {preferred_region}.
+
+Available regions:
+- Mayfair
+- Knightsbridge
+- Chelsea
+- Belgravia
+
+To add {preferred_region} coverage:
+📧 ollys@voxmill.uk"""
+            
+            await send_twilio_message(sender, no_data_msg)
+            logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
+            return
+        
+        # Check data freshness and add warning if stale
+        data_timestamp = metadata.get('analysis_timestamp')
+        data_freshness_warning = ""
+        
+        if data_timestamp:
+            data_age_hours = (datetime.now(timezone.utc) - data_timestamp).total_seconds() / 3600
+            
+            if data_age_hours > 48:  # Data older than 2 days
+                data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
+        
+        # ========================================
+        # ADD V3 INTELLIGENCE LAYERS
+        # ========================================
+        
+        # Layer 1: Trend Detection
         try:
             from app.intelligence.trend_detector import detect_market_trends
             trends = detect_market_trends(area=preferred_region, lookback_days=14)
@@ -240,7 +353,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Trend detection unavailable: {str(e)}")
         
-        # ADD LAYER 1: Agent Profiling
+        # Layer 2: Agent Profiling
         try:
             from app.intelligence.agent_profiler import get_agent_profiles
             agent_profiles = get_agent_profiles(area=preferred_region)
@@ -249,7 +362,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Agent profiler unavailable: {str(e)}")
         
-        # ADD LAYER 2: Micro-Market Segmentation
+        # Layer 3: Micro-Market Segmentation
         try:
             from app.intelligence.micromarket_segmenter import segment_micromarkets
             micromarkets = segment_micromarkets(dataset.get('properties', []), preferred_region)
@@ -258,7 +371,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Micromarket segmenter unavailable: {str(e)}")
         
-        # ADD LAYER 3: Liquidity Velocity
+        # Layer 4: Liquidity Velocity
         try:
             from app.intelligence.liquidity_velocity import calculate_liquidity_velocity
             from app.dataset_loader import load_historical_snapshots
@@ -270,23 +383,19 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Liquidity velocity unavailable: {str(e)}")
         
-        # ADD LAYER 4: Cascade Prediction
+        # Layer 5: Cascade Prediction (if scenario query)
         try:
             from app.intelligence.cascade_predictor import build_agent_network, predict_cascade
             
-            # Check if user query implies scenario modelling
             scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'cascade']
             is_scenario_query = any(keyword in message_normalized.lower() for keyword in scenario_keywords)
             
             if is_scenario_query:
-                # Build network if not cached
                 network = build_agent_network(area=preferred_region, lookback_days=90)
                 
                 if not network.get('error'):
-                    # Try to extract scenario from query
+                    # Extract scenario from query
                     import re
-                    
-                    # Look for patterns like "Knight Frank drops 10%"
                     agent_pattern = r'(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|[\w\s&]+?)\s+(?:drops?|reduces?|lowers?|cuts?|increases?|raises?)(?:\s+by)?\s+(\d+\.?\d*)%'
                     match = re.search(agent_pattern, message_normalized, re.IGNORECASE)
                     
@@ -294,11 +403,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         initiating_agent = match.group(1).strip()
                         magnitude = float(match.group(2))
                         
-                        # Determine if increase or decrease
                         if any(word in message_normalized.lower() for word in ['drop', 'reduce', 'lower', 'cut']):
                             magnitude = -magnitude
                         
-                        # Run cascade prediction
                         cascade = predict_cascade(network, initiating_agent, magnitude)
                         if not cascade.get('error'):
                             dataset['cascade_prediction'] = cascade
@@ -306,7 +413,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
         
-        # Classify and respond (use normalized message)
+        # ========================================
+        # GPT-4 ANALYSIS
+        # ========================================
+        
         category, response_text, response_metadata = await classify_and_respond(
             message_normalized,
             dataset,
@@ -316,10 +426,16 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # Format response
         formatted_response = format_analyst_response(response_text, category)
         
-        # Send via Twilio (with smart chunking)
+        # Add data freshness warning if needed
+        formatted_response += data_freshness_warning
+        
+        # ========================================
+        # SEND RESPONSE
+        # ========================================
+        
         await send_twilio_message(sender, formatted_response)
         
-        # Log interaction and update client history (use original message)
+        # Log interaction and update client history
         log_interaction(sender, message_text, category, formatted_response)
         update_client_history(sender, message_text, category, preferred_region)
         
@@ -329,7 +445,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
-
 
 async def send_pdf_report(sender: str, area: str):
     """
