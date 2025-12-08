@@ -300,13 +300,77 @@ Need more queries? Upgrade or contact:
             preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
             await send_pdf_report(sender, preferred_region)
             return
+
+
+        # ========================================
+        # RESPONSE CACHING - SAVE MONEY
+        # ========================================
+        
+        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        
+        # Create cache key
+        cache_key = hashlib.md5(
+            f"{message_normalized.lower().strip()}:{preferred_region}".encode()
+        ).hexdigest()
+        
+        # Check cache (5-minute window)
+        if cache_key in response_cache:
+            cached = response_cache[cache_key]
+            cache_age = (datetime.now(timezone.utc) - cached['timestamp']).total_seconds()
+            
+            if cache_age < 300:  # 5 minutes
+                logger.info(f"✅ Cache hit for {sender} (age: {int(cache_age)}s, saved GPT-4 call)")
+                await send_twilio_message(sender, cached['response'])
+                
+                # Still log interaction
+                log_interaction(sender, message_text, cached['category'], cached['response'])
+                update_client_history(sender, message_text, cached['category'], preferred_region)
+                return
+        
+        # ========================================
+        # COMPARISON QUERY DETECTION
+        # ========================================
+        
+        comparison_keywords = ['compare', 'vs', 'versus', 'difference between', 'which is better']
+        is_comparison = any(kw in message_normalized.lower() for kw in comparison_keywords)
+        
+        comparison_datasets = []
+        
+        if is_comparison:
+            # Extract regions mentioned
+            all_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington', 
+                          'Notting Hill', 'Marylebone', 'South Kensington']
+            mentioned_regions = [r for r in all_regions if r.lower() in message_normalized.lower()]
+            
+            if len(mentioned_regions) >= 2:
+                logger.info(f"Comparison query detected: {mentioned_regions}")
+                
+                # Load datasets for comparison (skip first, it's loaded as primary below)
+                for region in mentioned_regions[1:]:
+                    try:
+                        comp_dataset = load_dataset(area=region)
+                        comparison_datasets.append(comp_dataset)
+                        logger.info(f"Loaded comparison dataset for {region}")
+                    except Exception as e:
+                        logger.warning(f"Failed to load dataset for {region}: {e}")
+                
+                # Update preferred_region to first mentioned
+                preferred_region = mentioned_regions[0]
         
         # ========================================
         # LOAD DATASET FOR ANALYSIS
         # ========================================
         
-        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+       # ========================================
+        # LOAD PRIMARY DATASET FOR ANALYSIS
+        # ========================================
+        
+        # Note: preferred_region might have been updated by comparison query detection
+        if 'preferred_region' not in locals():
+            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        
         dataset = load_dataset(area=preferred_region)
+        
         
         # Check if data exists (not fallback)
         metadata = dataset.get('metadata', {})
@@ -340,6 +404,81 @@ To add {preferred_region} coverage:
             
             if data_age_hours > 48:  # Data older than 2 days
                 data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
+
+
+        # ========================================
+        # INTELLIGENT QUERY PRE-PROCESSING
+        # ========================================
+        
+        # FILTER QUERIES: "properties under £3M", "apartments over £5M"
+        filter_keywords = ['under', 'below', 'above', 'over', 'between', 'cheaper than', 'more expensive than']
+        has_price_filter = any(kw in message_normalized.lower() for kw in filter_keywords)
+        
+        if has_price_filter:
+            import re
+            # Extract price from query (handles £3M, 3M, £3,000,000, etc.)
+            price_match = re.search(r'£?(\d+(?:,\d{3})*(?:\.\d+)?)\s*M?', message_normalized, re.IGNORECASE)
+            
+            if price_match:
+                price_str = price_match.group(1).replace(',', '')
+                price_threshold = float(price_str)
+                
+                # Check if it's in millions
+                if 'M' in message_normalized.upper() or price_threshold < 100:
+                    price_threshold *= 1_000_000
+                
+                # Filter properties
+                original_count = len(dataset['properties'])
+                
+                if 'under' in message_normalized.lower() or 'below' in message_normalized.lower() or 'cheaper' in message_normalized.lower():
+                    dataset['properties'] = [
+                        p for p in dataset['properties'] 
+                        if p.get('price', 0) > 0 and p.get('price', 0) < price_threshold
+                    ]
+                    filter_type = "under"
+                elif 'above' in message_normalized.lower() or 'over' in message_normalized.lower() or 'expensive' in message_normalized.lower():
+                    dataset['properties'] = [
+                        p for p in dataset['properties'] 
+                        if p.get('price', 0) > price_threshold
+                    ]
+                    filter_type = "over"
+                
+                filtered_count = len(dataset['properties'])
+                logger.info(f"Price filter applied: {original_count} → {filtered_count} properties {filter_type} £{price_threshold/1_000_000:.1f}M")
+        
+        # SUPERLATIVE QUERIES: "cheapest", "most expensive", "best value"
+        superlative_keywords = ['cheapest', 'most expensive', 'best value', 'lowest price', 'highest price', 'best deal']
+        has_superlative = any(kw in message_normalized.lower() for kw in superlative_keywords)
+        
+        if has_superlative:
+            # Extract property type if mentioned
+            property_types = ['apartment', 'penthouse', 'house', 'flat', 'studio', 
+                            '1-bed', '2-bed', '3-bed', '4-bed', '5-bed', 
+                            '1 bed', '2 bed', '3 bed', '4 bed', '5 bed']
+            mentioned_type = next((pt for pt in property_types if pt.replace('-', ' ') in message_normalized.lower()), None)
+            
+            # Filter by type if mentioned
+            if mentioned_type:
+                dataset['properties'] = [
+                    p for p in dataset['properties']
+                    if mentioned_type.replace('-', ' ').replace(' bed', '') in p.get('property_type', '').lower()
+                ]
+                logger.info(f"Filtered to {len(dataset['properties'])} {mentioned_type} properties")
+            
+            # Sort by price
+            if 'cheapest' in message_normalized.lower() or 'lowest' in message_normalized.lower() or 'best value' in message_normalized.lower():
+                dataset['properties'] = sorted(
+                    [p for p in dataset['properties'] if p.get('price', 0) > 0],
+                    key=lambda x: x.get('price', float('inf'))
+                )[:10]  # Top 10
+                logger.info(f"Sorted by lowest price, showing top 10")
+            elif 'expensive' in message_normalized.lower() or 'highest' in message_normalized.lower():
+                dataset['properties'] = sorted(
+                    dataset['properties'],
+                    key=lambda x: x.get('price', 0),
+                    reverse=True
+                )[:10]  # Top 10
+                logger.info(f"Sorted by highest price, showing top 10")
         
         # ========================================
         # ADD V3 INTELLIGENCE LAYERS
@@ -418,14 +557,27 @@ To add {preferred_region} coverage:
         # GPT-4 ANALYSIS
         # ========================================
         
-        category, response_text, response_metadata = await classify_and_respond(
+       category, response_text, response_metadata = await classify_and_respond(
             message_normalized,
             dataset,
-            client_profile=client_profile
+            client_profile=client_profile,
+            comparison_datasets=comparison_datasets if comparison_datasets else None
         )
         
         # Format response
         formatted_response = format_analyst_response(response_text, category)
+
+
+        # ========================================
+        # CACHE RESPONSE (for 5 minutes)
+        # ========================================
+        
+        response_cache[cache_key] = {
+            'response': formatted_response,
+            'category': category,
+            'timestamp': datetime.now(timezone.utc)
+        }
+
         
         # Add data freshness warning if needed
         formatted_response += data_freshness_warning
@@ -670,8 +822,11 @@ def smart_split_message(message: str, max_length: int) -> list:
         remaining = remaining[split_point:].strip()
     
     # Post-process: If first chunk is tiny, merge with second
-    if len(chunks) > 1 and len(chunks[0]) < 200:
-        chunks[0] = f"{chunks[0]}\n\n{chunks[1]}"
-        chunks.pop(1)
+     # Add part numbers if multiple chunks
+    if len(chunks) > 1:
+        numbered_chunks = []
+        for i, chunk in enumerate(chunks, 1):
+            numbered_chunks.append(f"[Part {i}/{len(chunks)}]\n\n{chunk}")
+        return numbered_chunks
     
     return chunks
