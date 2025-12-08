@@ -36,6 +36,7 @@ import os
 import sys
 import json
 import logging
+import argparse 
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
@@ -1946,104 +1947,59 @@ def calculate_quartiles(sorted_values: List[float]) -> Tuple[float, float, float
 # CLI ENTRY POINT
 # ============================================================================
 
-def main():
-    """
-    CLI entry point with argument parsing for workspace isolation
-    
-    ✅ V3.1 NEW: Accepts --workspace and --output arguments
-    """
-    import argparse
+if __name__ == "__main__":
+    import argparse  # ✅ OR ADD IT HERE IF NOT AT TOP
     
     parser = argparse.ArgumentParser(
         description='Voxmill PDF Generator V3.1 - Production Edition'
     )
     
-    # ✅ NEW: Workspace argument
+    parser.add_argument('--workspace', type=str, required=True)
+    parser.add_argument('--output', type=str, required=True)
+    
+    # ✅ THESE MUST EXIST
     parser.add_argument(
-        '--workspace',
-        type=str,
-        default=os.getenv('VOXMILL_WORKSPACE', '/tmp'),
-        help='Workspace directory for isolated execution'
+        '--competitor-focus',
+        choices=['low', 'medium', 'high'],
+        default='medium',
+        help='Competitor analysis depth (low=3, medium=6, high=10)'
     )
     
-    # ✅ NEW: Custom output filename
     parser.add_argument(
-        '--output',
-        type=str,
-        default='Voxmill_Executive_Intelligence_Deck.pdf',
-        help='Output PDF filename'
-    )
-    
-    # ✅ NEW: Custom data file path (relative to workspace)
-    parser.add_argument(
-        '--data',
-        type=str,
-        default='voxmill_analysis.json',
-        help='Data file name within workspace'
+        '--report-depth',
+        choices=['executive', 'detailed', 'deep'],
+        default='detailed',
+        help='Report detail level'
     )
     
     args = parser.parse_args()
     
     # Build paths
     workspace_path = Path(args.workspace)
-    data_path = workspace_path / args.data
+    data_path = workspace_path / 'voxmill_analysis.json'
     output_dir = workspace_path
     
-    # Template directory (always in src/)
-    template_dir = os.getenv('VOXMILL_TEMPLATE_DIR', '/opt/render/project/src')
-    
-    logger.info("="*70)
-    logger.info("VOXMILL PDF GENERATOR V3.1 - STARTING")
-    logger.info("="*70)
-    logger.info(f"Workspace: {workspace_path}")
-    logger.info(f"Data file: {data_path}")
-    logger.info(f"Output: {output_dir / args.output}")
-    logger.info("="*70)
-    
-    # Create generator with workspace paths
+    # Create generator
     generator = VoxmillPDFGenerator(
-        template_dir=template_dir,
+        template_dir='/opt/render/project/src',
         output_dir=str(output_dir),
         data_path=str(data_path)
     )
-
-   # SET CLIENT PREFERENCES FROM COMMAND-LINE ARGS
+    
+    # ✅ SET PREFERENCES FROM ARGS
     generator.competitor_focus = args.competitor_focus
     generator.report_depth = args.report_depth
     
-    # Log preferences being used
-    logger.info(f"🎯 Competitor Focus: {generator.competitor_focus} ({'3' if generator.competitor_focus == 'low' else '6' if generator.competitor_focus == 'medium' else '10'} agencies)")
-    logger.info(f"📊 Report Depth: {generator.report_depth} ({'5' if generator.report_depth == 'executive' else '14' if generator.report_depth == 'detailed' else '14+'} slides)")
+    logger.info(f"🎯 Competitor Focus: {generator.competitor_focus}")
+    logger.info(f"📊 Report Depth: {generator.report_depth}")
     
+    # Generate PDF
     try:
         pdf_path = generator.generate(output_filename=args.output)
         print(f"\n✅ SUCCESS: PDF generated at {pdf_path}")
-        return 0
+        sys.exit(0)
     except Exception as e:
         print(f"\n❌ ERROR: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
-        return 1
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--workspace', required=True)
-    parser.add_argument('--output', required=True)
-    
-    # ✅ THESE LINES MUST EXIST
-    parser.add_argument('--competitor-focus', 
-                        choices=['low', 'medium', 'high'],
-                        default='medium',
-                        help='Competitor analysis depth')
-                        
-    parser.add_argument('--report-depth',
-                        choices=['executive', 'detailed', 'deep'],
-                        default='detailed', 
-                        help='Report detail level')
-    
-    args = parser.parse_args()
-    
-    # ✅ THESE LINES MUST EXIST
-    generator.competitor_focus = args.competitor_focus
-    generator.report_depth = args.report_depth
+        sys.exit(1)
