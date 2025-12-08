@@ -364,46 +364,47 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
         return False
 
 
-def run_pdf_generation(workspace: ExecutionWorkspace) -> bool:
+def run_pdf_generation(workspace: ExecutionWorkspace, email: str) -> bool:
     """
     Step 3: Run pdf_generator.py in isolated workspace
     
     Args:
         workspace: Execution workspace
+        email: Client email for preference lookup
     
     Returns: True if successful
     """
-  # STEP 3: PDF GENERATION
-logger.info("="*70)
-logger.info("STEP 3: PDF GENERATION")
-logger.info("="*70)
-
-# Load client preferences from MongoDB
-preferences = get_client_preferences(args.email)
-
-# Build base command
-pdf_cmd = [
-    sys.executable, 'pdf_generator.py',
-    '--workspace', workspace_path,
-    '--output', pdf_filename
-]
-
-# Add preference flags if they exist
-if preferences.get('competitor_focus'):
-    pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
-    logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
-    
-if preferences.get('report_depth'):
-    pdf_cmd.extend(['--report-depth', preferences['report_depth']])
-    logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
-
-# Log the full command
-logger.info(f"   Command: {' '.join(pdf_cmd)}")
+    try:
+        # STEP 3: PDF GENERATION
+        logger.info("="*70)
+        logger.info("STEP 3: PDF GENERATION")
+        logger.info("="*70)
         
-        logger.info(f"   Command: {' '.join(cmd)}")
+        # Load client preferences from MongoDB
+        preferences = get_client_preferences(email)
         
+        # Build base command
+        pdf_cmd = [
+            sys.executable, 'pdf_generator.py',
+            '--workspace', str(workspace.workspace_path),
+            '--output', workspace.pdf_file.name
+        ]
+        
+        # Add preference flags if they exist
+        if preferences.get('competitor_focus'):
+            pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
+            logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
+            
+        if preferences.get('report_depth'):
+            pdf_cmd.extend(['--report-depth', preferences['report_depth']])
+            logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
+        
+        # Log the full command
+        logger.info(f"   Command: {' '.join(pdf_cmd)}")
+        
+        # Execute PDF generation
         result = subprocess.run(
-            cmd,
+            pdf_cmd,
             env=workspace.get_env_vars(),
             capture_output=True,
             text=True,
@@ -438,7 +439,6 @@ logger.info(f"   Command: {' '.join(pdf_cmd)}")
     except Exception as e:
         logger.error(f"❌ PDF generation error: {e}", exc_info=True)
         return False
-
 
 def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
     """
