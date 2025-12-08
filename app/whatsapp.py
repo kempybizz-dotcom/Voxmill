@@ -180,7 +180,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
         
-        # ========================================
+       # ========================================
         # RATE LIMITING - PREVENT COST EXPLOSION
         # ========================================
         
@@ -190,6 +190,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         if query_history:
             last_query_time = query_history[-1].get('timestamp')
             if last_query_time:
+                # Fix timezone-naive datetime issue
+                if last_query_time.tzinfo is None:
+                    last_query_time = last_query_time.replace(tzinfo=timezone.utc)
+                
                 seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
                 
                 if seconds_since_last < 2:
@@ -216,6 +220,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         if len(recent_queries) >= max_queries:
             # Calculate time until reset
             oldest_query = min(q['timestamp'] for q in recent_queries)
+            
+            # Fix timezone-naive datetime issue
+            if oldest_query.tzinfo is None:
+                oldest_query = oldest_query.replace(tzinfo=timezone.utc)
+            
             time_until_reset = (oldest_query + timedelta(hours=1) - datetime.now(timezone.utc))
             minutes_until_reset = int(time_until_reset.total_seconds() / 60)
             
