@@ -35,32 +35,71 @@ def get_client_profile(whatsapp_number: str) -> dict:
         db = mongo_client['Voxmill']
         collection = db['client_profiles']
         
-        # Normalize number (remove whatsapp: prefix)
+        # Normalize number
         normalized_number = normalize_phone_number(whatsapp_number)
         
+        # Try to find profile
         profile = collection.find_one({"whatsapp_number": normalized_number})
         
         if not profile:
-            # Create default profile for new client
+            # ✅ NEW: Create profile WITH email field
+            # Extract email from number or use placeholder
+            # Format: +447780565645 → user_447780565645@temp.voxmill.uk
+            temp_email = f"user_{normalized_number.replace('+', '')}@temp.voxmill.uk"
+            
             default_profile = {
                 "whatsapp_number": normalized_number,
+                "email": temp_email,  # ✅ ADD THIS
                 "created_at": datetime.now(timezone.utc),
                 "preferences": {
                     "preferred_regions": ["Mayfair"],
                     "competitor_set": [],
                     "risk_appetite": "balanced",
                     "budget_range": {"min": 0, "max": 100000000},
-                    "insight_depth": "standard"
+                    "insight_depth": "standard",
+                    "competitor_focus": "medium",  # ✅ ADD DEFAULT
+                    "report_depth": "detailed"     # ✅ ADD DEFAULT
                 },
                 "query_history": [],
                 "last_region_queried": "Mayfair",
                 "total_queries": 0,
-                "tier": "tier_3",  # Default to tier_3 for testing
+                "tier": "tier_3",
                 "status": "active"
             }
             collection.insert_one(default_profile)
             logger.info(f"Created new client profile: {normalized_number}")
             return default_profile
+        
+        # ✅ MIGRATION: If profile exists but missing email, add it
+        if not profile.get('email'):
+            temp_email = f"user_{normalized_number.replace('+', '')}@temp.voxmill.uk"
+            collection.update_one(
+                {"_id": profile['_id']},
+                {"$set": {"email": temp_email}}
+            )
+            profile['email'] = temp_email
+            logger.info(f"Added email to existing profile: {normalized_number}")
+        
+        # ✅ MIGRATION: Add default preference fields if missing
+        if 'preferences' in profile:
+            needs_update = False
+            updates = {}
+            
+            if 'competitor_focus' not in profile['preferences']:
+                updates['preferences.competitor_focus'] = 'medium'
+                needs_update = True
+            
+            if 'report_depth' not in profile['preferences']:
+                updates['preferences.report_depth'] = 'detailed'
+                needs_update = True
+            
+            if needs_update:
+                collection.update_one(
+                    {"_id": profile['_id']},
+                    {"$set": updates}
+                )
+                profile['preferences'].update(updates)
+                logger.info(f"Added default preferences to profile: {normalized_number}")
         
         return profile
         
