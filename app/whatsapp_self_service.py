@@ -246,7 +246,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     if db is None:
         return None
     
-    # ✅ FIX: Handle both phone number formats
+    # ✅ FIX: Normalize phone number and find client
     normalized_number = from_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     client = db['client_profiles'].find_one({
@@ -259,12 +259,13 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     if not client:
         # Not a recognized client - let normal handler deal with it
         return None
-
-       alert_response = handle_alert_preferences(from_number, message)
-    if alert_response:
-        return alert_response
     
     logger.info(f"Client found: {client.get('_id')}")
+    
+    # ✅ CHECK FOR ALERT PREFERENCES FIRST
+    alert_response = handle_alert_preferences(from_number, message)
+    if alert_response:
+        return alert_response
     
     # Detect if this is a preference request
     try:
