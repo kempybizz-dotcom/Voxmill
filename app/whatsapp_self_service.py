@@ -244,28 +244,29 @@ def apply_preference_changes(client_email: str, changes: Dict) -> bool:
     return False
 
 
-def handle_whatsapp_preference_message(from_number: str, message: str) -> str:
+def handle_whatsapp_preference_message(from_number: str, message: str) -> Optional[str]:
     """
     Main handler for WhatsApp messages
-    Returns response to send to client
+    Returns response to send to client, or None if not a preference request
     """
     
     if not db:
-        return "Service temporarily unavailable. Please try again later."
+        return None
     
     # Find client by WhatsApp number
     client = db['client_profiles'].find_one({"whatsapp_number": from_number})
     
     if not client:
-        return "Number not recognized. Please contact support@voxmill.uk to link your account."
+        # Not a recognized client - let normal handler deal with it
+        return None
     
     # Detect if this is a preference request
     try:
         analysis = detect_preference_request(message, client)
     except Exception as e:
-        print(f"Error analyzing message: {e}")
+        logger.error(f"Error analyzing message: {e}")
         # Fall back to normal query handling
-        return None  # Signal to use normal WhatsApp analyst
+        return None
     
     # If NOT a preference request, return None to use normal analyst
     if not analysis.get('is_preference_request'):
@@ -274,30 +275,73 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> str:
     # It IS a preference request - apply changes
     changes = analysis.get('changes', {})
     
-    if changes:
-        success = apply_preference_changes(client['email'], changes)
-        
-        if success:
-            # Log the change
-            db['preference_changes'].insert_one({
-                "client_email": client['email'],
-                "client_name": client.get('name'),
-                "whatsapp_number": from_number,
-                "original_message": message,
-                "changes_applied": changes,
-                "timestamp": datetime.now(timezone.utc),
-                "source": "whatsapp_self_service"
-            })
-            
-            # Return confirmation message
-            return analysis.get('confirmation_message', 
-                "✅ Preferences updated successfully. Changes will be reflected in your next report.")
-        else:
-            return "❌ Unable to update preferences. Please try again or contact support."
+    if not changes:
+        # Settings inquiry without specific changes
+        return analysis.get('confirmation_message', 
+            "I can help update your preferences. What would you like to change?\n\n"
+            "• Competitor Focus (low/medium/high)\n"
+            "• Report Depth (executive/detailed/deep)\n"
+            "• Coverage Regions")
     
-    # No changes detected
-    return "I didn't detect any specific preference changes in your message. Could you clarify what you'd like to adjust?"
+    # APPLY CHANGES WITH VALIDATION
+    success = apply_preference_changes(client['email'], changes)
+    
+    if success:
+        # Log the change
+        db['preference_changes'].insert_one({
+            "client_email": client['email'],
+            "client_name": client.get('name'),
+            "whatsapp_number": from_number,
+            "original_message": message,
+            "changes_applied": changes,
+            "timestamp": datetime.now(timezone.utc),
+            "source": "whatsapp_self_service"
+        })
+        
+        # BUILD RICH CONFIRMATION MESSAGE
+        from datetime import timedelta
+        today = datetime.now()
+        days_until_sunday = (6 - today.weekday()) % 7
+        if days_until_sunday == 0:
+            days_until_sunday = 7
+        next_sunday = today + timedelta(days=days_until_sunday)
+        
+        # Build change summary
+        change_lines = []
+        if 'competitor_focus' in changes:
+            focus = changes['competitor_focus']
+            count = {'low': 3, 'medium': 6, 'high': 10}[focus]
+            change_lines.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
+        
+        if 'report_depth' in changes:
+            depth = changes['report_depth']
+            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}[depth]
+            change_lines.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
+        
+        if 'regions' in changes:
+            regions = ', '.join(changes['regions'])
+            change_lines.append(f"• Coverage Areas: {regions}")
+        
+        # Final confirmation message
+        confirmation = f"""✅ PREFERENCES UPDATED
 
+{chr(10).join(change_lines)}
+
+Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 AM UTC.
+
+━━━━━━━━━━━━━━━━━━━━
+⚡ NEED THIS URGENTLY?
+
+Contact your Voxmill operator for immediate regeneration:
+📧 ollys@voxmill.uk
+
+━━━━━━━━━━━━━━━━━━━━
+
+Voxmill Intelligence — Precision at Scale"""
+        
+        return confirmation
+    else:
+        return "❌ Unable to update preferences. Please try again or contact support."
 
 def handle_preference_update(client_email, new_preferences):
     """Update preferences with premium confirmation message"""
