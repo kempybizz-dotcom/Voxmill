@@ -457,3 +457,49 @@ if __name__ == "__main__":
         reload=False,
         log_level="info"
     )
+
+
+@app.post("/api/regenerate")
+async def emergency_regenerate(request: Request):
+    """
+    Emergency regeneration triggered by operator.
+    Only callable with API key for security.
+    """
+    
+    # Verify API key
+    api_key = request.headers.get('X-API-Key')
+    if api_key != os.getenv('VOXMILL_OPERATOR_KEY'):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    data = await request.json()
+    email = data.get('email')
+    
+    # Get client data
+    client = db.client_profiles.find_one({"email": email})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    # Log emergency regeneration
+    db.generation_log.insert_one({
+        "email": email,
+        "triggered_at": datetime.utcnow(),
+        "triggered_by": "Emergency Manual Override",
+        "status": "Generating"
+    })
+    
+    # Trigger generation in background
+    subprocess.Popen([
+        sys.executable, 'voxmill_master.py',
+        '--area', client.get('default_region', 'Mayfair'),
+        '--city', client.get('city', 'London'),
+        '--email', email,
+        '--name', client.get('name', 'Client')
+    ])
+    
+    logger.info(f"🚨 EMERGENCY REGENERATION: {email}")
+    
+    return {
+        "status": "regenerating",
+        "email": email,
+        "eta_seconds": 90
+    }
