@@ -58,7 +58,7 @@ def detect_preference_request(message: str, client_profile: Dict) -> Dict:
     current_city = client_profile.get('city', 'London')
     current_tier = client_profile.get('tier', 'tier_3')
     
-system_prompt = f"""You are analyzing a WhatsApp message from a luxury real estate intelligence client to determine if they're requesting changes to their service preferences.
+    system_prompt = f"""You are analyzing a WhatsApp message from a luxury real estate intelligence client to determine if they're requesting changes to their service preferences.
 
 RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.
 
@@ -69,57 +69,46 @@ CLIENT CONTEXT:
 - Service Tier: {current_tier}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CRITICAL: PREFERENCE REQUEST DETECTION
+CRITICAL: PREFERENCE REQUEST DETECTION RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 A message is a PREFERENCE REQUEST if it contains ANY of these indicators:
 
-EXPLICIT PREFERENCE LANGUAGE:
-- "update my preferences" / "change my settings" / "adjust my reports"
-- "I'd like [X] in my report" / "I want [X] in my next report"
+STRONG SIGNALS (90%+ confidence):
+- "update my preferences" / "change my settings"
+- "in my next report" / "in my reports" / "in future reports"
+- "from now on" / "going forward" / "starting next week"
+- "I'd like [X] in my report"
+- "I want [X] in my next report"
 - "can you add [X]" / "please include [X]"
-- "focus more on [X]" / "give me more [X]"
-- "less [X], more [Y]" / "reduce [X]"
 
-COMPETITOR FOCUS REQUESTS:
-- "more competitors" / "focus on competitors" / "competitor analysis"
-- "more competitive intelligence" / "deep dive on competitors"
-- "strategic moves against competitors" ← THIS IS A PREFERENCE REQUEST
-- "competitive landscape depth" / "competitive positioning"
+COMPETITOR FOCUS SIGNALS:
+- "more competitors" / "focus on competitors"
+- "more competitive intelligence" / "competitor analysis"
+- "strategic moves against competitors"
+- "deeper competitor insights" / "competitor depth"
+- "less competitor info" / "reduce competitor analysis"
 
-REPORT DEPTH REQUESTS:
+REPORT DEPTH SIGNALS:
 - "more detail" / "deeper analysis" / "detailed reports"
-- "executive summary only" / "brief version"
-- "comprehensive report" / "full analysis"
+- "executive summary" / "brief version" / "concise report"
+- "comprehensive report" / "full deep dive"
 
-REGION REQUESTS:
+REGION SIGNALS:
 - "add [region]" / "include [region]" / "cover [region]"
 - "remove [region]" / "stop covering [region]"
 
-TEMPORAL INDICATORS (STRONG SIGNAL):
-- "in my next report" ← PREFERENCE REQUEST
-- "from now on" / "going forward" / "in future reports"
-- "starting next week" / "for upcoming reports"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 KEY DISTINCTION:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PREFERENCE REQUESTS (is_preference_request = TRUE):
+✓ "I'd like more competitors in my next report"
+✓ "Focus more on competitors going forward"
+✓ "Add Chelsea to my coverage"
+✓ "Strategic moves against competitors in my report"
 
-PREFERENCE REQUESTS (is_preference_request = true):
-✓ "I'd like more competitors IN MY NEXT REPORT" ← temporal + preference keyword
-✓ "Focus more on competitors" ← preference adjustment
-✓ "Add Chelsea to my coverage" ← region change
-✓ "More competitive intelligence going forward" ← temporal + preference
-✓ "I want deeper analysis" ← report depth change
-✓ "Strategic moves against competitors in my report" ← preference keyword + temporal
-
-MARKET QUERIES (is_preference_request = false):
-✗ "Who are the main competitors in Mayfair?" ← factual question
-✗ "What's the competitive landscape?" ← analysis request
-✗ "Analyze competitor positioning" ← one-time analysis
-✗ "What are the strategic moves in the market?" ← general question
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MARKET QUERIES (is_preference_request = FALSE):
+✗ "Who are the main competitors?"
+✗ "What's the competitive landscape?"
+✗ "Analyze competitor positioning"
 
 TASK:
 Analyze if this is a preference change request (vs. a one-time market question).
@@ -131,13 +120,12 @@ If it IS a preference request, extract the specific changes and respond with JSO
     "changes": {{
         "regions": ["Area1", "Area2"],
         "report_depth": "executive" | "detailed" | "deep",
-        "competitor_focus": "low" | "medium" | "high",
-        "delivery_time": "06:00" | "12:00" | "18:00"
+        "competitor_focus": "low" | "medium" | "high"
     }},
-    "confirmation_message": "Professional confirmation message to send client"
+    "confirmation_message": "Professional confirmation message"
 }}
 
-If it's NOT a preference request (just a one-time question), respond with:
+If it's NOT a preference request, respond with:
 {{
     "is_preference_request": false,
     "intent": "market_query",
@@ -147,28 +135,13 @@ If it's NOT a preference request (just a one-time question), respond with:
 EXAMPLES:
 
 Message: "I'd like more competitors and strategic moves against competitors in my next report"
-Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nYour next intelligence deck arrives Sunday, December 15 at 6:00 AM UTC.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact your Voxmill operator for immediate regeneration:\\n📧 ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━\\n\\nVoxmill Intelligence — Precision at Scale"}}
+Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact: ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
 
-Message: "Add Chelsea to my weekly reports"
-Response: {{"is_preference_request": true, "intent": "add_regions", "changes": {{"regions": ["Chelsea"]}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Coverage Areas: Chelsea added\\n\\nYour next report will include Chelsea market analysis.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact your Voxmill operator:\\n📧 ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
-
-Message: "Focus more on my competitors next week"
-Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nChanges apply to all future reports starting next Sunday.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact: ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
-
-Message: "What's happening in Mayfair this week?"
-Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "What's happening in Mayfair this week?"}}
-
-Message: "Who are the main competitors?"
-Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "Who are the main competitors?"}}
-
-Message: "Analyze the competitive landscape"
-Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "Analyze the competitive landscape"}}
-
-Message: "Can I update my preferences?"
-Response: {{"is_preference_request": true, "intent": "settings_inquiry", "changes": {{}}, "confirmation_message": "You can update these preferences:\\n\\n• Competitor Focus (low/medium/high)\\n• Report Depth (executive/detailed/deep)\\n• Coverage Regions\\n\\nWhat would you like to change?"}}
+Message: "What's happening in Mayfair?"
+Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "What's happening in Mayfair?"}}
 """
 
-
+    # ✅ CORRECT INDENTATION (align with 'system_prompt' above)
     user_prompt = f"""CLIENT MESSAGE:
 "{message}"
 
