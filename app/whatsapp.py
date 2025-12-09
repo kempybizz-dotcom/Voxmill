@@ -8,6 +8,7 @@ import os
 import logging
 import httpx
 import hashlib
+import re
 from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
@@ -28,13 +29,11 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
 # Response cache (in-memory)
-response_cache = {}  # ← ADD THIS LINE
+response_cache = {}
 
 
 async def send_first_time_welcome(sender: str, client_profile: dict):
-    """
-    Send welcome message to first-time users
-    """
+    """Send welcome message to first-time users"""
     try:
         tier = client_profile.get('tier', 'tier_1')
         name = client_profile.get('name', 'there')
@@ -128,8 +127,6 @@ Your dedicated intelligence partner, available 24/7."""
         logger.error(f"Error sending welcome message: {str(e)}", exc_info=True)
 
 
-# Add to whatsapp.py at the TOP of handle_whatsapp_message()
-
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + 
@@ -168,7 +165,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         # Case 4: Only emojis/symbols (no actual text)
-        import re
         text_only = re.sub(r'[^\w\s]', '', message_text)
         if len(text_only.strip()) < 2:
             await send_twilio_message(
@@ -184,7 +180,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
         
-       # ========================================
+        # ========================================
         # RATE LIMITING - PREVENT COST EXPLOSION
         # ========================================
         
@@ -253,6 +249,7 @@ Need more queries? Upgrade or contact:
             await send_twilio_message(sender, rate_limit_msg)
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
             return
+        
         # ========================================
         # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
         # ========================================
@@ -321,8 +318,7 @@ Need more queries? Upgrade or contact:
             preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
             await send_pdf_report(sender, preferred_region)
             return
-
-
+        
         # ========================================
         # RESPONSE CACHING - SAVE MONEY
         # ========================================
@@ -379,10 +375,6 @@ Need more queries? Upgrade or contact:
                 preferred_region = mentioned_regions[0]
         
         # ========================================
-        # LOAD DATASET FOR ANALYSIS
-        # ========================================
-        
-       # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
@@ -391,7 +383,6 @@ Need more queries? Upgrade or contact:
             preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
         
         dataset = load_dataset(area=preferred_region)
-        
         
         # Check if data exists (not fallback)
         metadata = dataset.get('metadata', {})
@@ -421,12 +412,26 @@ To add {preferred_region} coverage:
         data_freshness_warning = ""
         
         if data_timestamp:
-            data_age_hours = (datetime.now(timezone.utc) - data_timestamp).total_seconds() / 3600
+            # Convert string to datetime if needed
+            if isinstance(data_timestamp, str):
+                try:
+                    from dateutil import parser
+                    data_timestamp = parser.parse(data_timestamp)
+                except:
+                    # If parsing fails, skip freshness check
+                    data_timestamp = None
             
-            if data_age_hours > 48:  # Data older than 2 days
-                data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
-
-
+            if data_timestamp:
+                # Make timezone-aware if needed
+                if data_timestamp.tzinfo is None:
+                    data_timestamp = data_timestamp.replace(tzinfo=timezone.utc)
+                
+                data_age_hours = (datetime.now(timezone.utc) - data_timestamp).total_seconds() / 3600
+                
+                if data_age_hours > 48:  # Data older than 2 days
+                    data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
+                    logger.warning(f"Stale data for {preferred_region}: {int(data_age_hours)} hours old")
+        
         # ========================================
         # INTELLIGENT QUERY PRE-PROCESSING
         # ========================================
@@ -436,7 +441,6 @@ To add {preferred_region} coverage:
         has_price_filter = any(kw in message_normalized.lower() for kw in filter_keywords)
         
         if has_price_filter:
-            import re
             # Extract price from query (handles £3M, 3M, £3,000,000, etc.)
             price_match = re.search(r'£?(\d+(?:,\d{3})*(?:\.\d+)?)\s*M?', message_normalized, re.IGNORECASE)
             
@@ -556,7 +560,6 @@ To add {preferred_region} coverage:
                 
                 if not network.get('error'):
                     # Extract scenario from query
-                    import re
                     agent_pattern = r'(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|[\w\s&]+?)\s+(?:drops?|reduces?|lowers?|cuts?|increases?|raises?)(?:\s+by)?\s+(\d+\.?\d*)%'
                     match = re.search(agent_pattern, message_normalized, re.IGNORECASE)
                     
@@ -574,7 +577,7 @@ To add {preferred_region} coverage:
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
         
-       # ========================================
+        # ========================================
         # GPT-4 ANALYSIS
         # ========================================
         
@@ -587,8 +590,7 @@ To add {preferred_region} coverage:
         
         # Format response
         formatted_response = format_analyst_response(response_text, category)
-
-
+        
         # ========================================
         # CACHE RESPONSE (for 5 minutes)
         # ========================================
@@ -598,7 +600,6 @@ To add {preferred_region} coverage:
             'category': category,
             'timestamp': datetime.now(timezone.utc)
         }
-
         
         # Add data freshness warning if needed
         formatted_response += data_freshness_warning
@@ -620,10 +621,9 @@ To add {preferred_region} coverage:
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
 
+
 async def send_pdf_report(sender: str, area: str):
-    """
-    Generate and send PDF report link to client (NO EMOJIS VERSION)
-    """
+    """Generate and send PDF report link to client (NO EMOJIS VERSION)"""
     try:
         logger.info(f"PDF report requested by {sender} for {area}")
         
@@ -649,7 +649,6 @@ async def send_pdf_report(sender: str, area: str):
         
         if not pdf_url:
             # No existing PDF found, check temp directory
-            import os
             pdf_path = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
             
             if os.path.exists(pdf_path):
@@ -667,7 +666,6 @@ async def send_pdf_report(sender: str, area: str):
                 return
         
         if pdf_url:
-            from datetime import datetime
             date_str = datetime.now().strftime('%B %d, %Y')
             
             # NO EMOJIS VERSION - Professional institutional format
@@ -696,9 +694,7 @@ async def send_pdf_report(sender: str, area: str):
 
 
 def normalize_query(text: str) -> str:
-    """
-    Normalize common typos and variations
-    """
+    """Normalize common typos and variations"""
     corrections = {
         'markrt': 'market',
         'overveiw': 'overview',
@@ -723,7 +719,6 @@ def normalize_query(text: str) -> str:
     
     normalized = text
     for typo, correct in corrections.items():
-        import re
         pattern = re.compile(re.escape(typo), re.IGNORECASE)
         normalized = pattern.sub(correct, normalized)
     
@@ -731,9 +726,7 @@ def normalize_query(text: str) -> str:
 
 
 async def send_twilio_message(recipient: str, message: str):
-    """
-    Send message via Twilio WhatsApp API with intelligent chunking
-    """
+    """Send message via Twilio WhatsApp API with intelligent chunking"""
     try:
         if not twilio_client:
             logger.error("Twilio client not initialized")
@@ -781,9 +774,7 @@ async def send_twilio_message(recipient: str, message: str):
 
 
 def smart_split_message(message: str, max_length: int) -> list:
-    """
-    Split message intelligently at natural break points
-    """
+    """Split message intelligently at natural break points with part numbers"""
     if len(message) <= max_length:
         return [message]
     
@@ -843,7 +834,11 @@ def smart_split_message(message: str, max_length: int) -> list:
         remaining = remaining[split_point:].strip()
     
     # Post-process: If first chunk is tiny, merge with second
-     # Add part numbers if multiple chunks
+    if len(chunks) > 1 and len(chunks[0]) < 200:
+        chunks[0] = f"{chunks[0]}\n\n{chunks[1]}"
+        chunks.pop(1)
+    
+    # Add part numbers if multiple chunks
     if len(chunks) > 1:
         numbered_chunks = []
         for i, chunk in enumerate(chunks, 1):
