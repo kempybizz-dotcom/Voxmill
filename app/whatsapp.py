@@ -7,6 +7,7 @@ Handles incoming WhatsApp messages with V3 predictive intelligence + welcome mes
 import os
 import logging
 import httpx
+import hashlib
 from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
