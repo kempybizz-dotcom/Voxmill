@@ -27,6 +27,9 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
+# Response cache (in-memory)
+response_cache = {}  # ← ADD THIS LINE
+
 
 async def send_first_time_welcome(sender: str, client_profile: dict):
     """
