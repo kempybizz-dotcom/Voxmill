@@ -203,10 +203,19 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # RATE LIMITING: Queries per hour by tier
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
-        recent_queries = [
-            q for q in query_history 
-            if q.get('timestamp') and q['timestamp'] > one_hour_ago
-        ]
+        
+        # Fix timezone for all query timestamps in history
+        recent_queries = []
+        for q in query_history:
+            timestamp = q.get('timestamp')
+            if timestamp:
+                # Make timezone-aware if needed
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)
+                
+                # Check if within last hour
+                if timestamp > one_hour_ago:
+                    recent_queries.append(q)
         
         tier = client_profile.get('tier', 'tier_1')
         limits = {
@@ -219,13 +228,13 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         if len(recent_queries) >= max_queries:
             # Calculate time until reset
-            oldest_query = min(q['timestamp'] for q in recent_queries)
+            oldest_timestamp = min(q['timestamp'] for q in recent_queries)
             
             # Fix timezone-naive datetime issue
-            if oldest_query.tzinfo is None:
-                oldest_query = oldest_query.replace(tzinfo=timezone.utc)
+            if oldest_timestamp.tzinfo is None:
+                oldest_timestamp = oldest_timestamp.replace(tzinfo=timezone.utc)
             
-            time_until_reset = (oldest_query + timedelta(hours=1) - datetime.now(timezone.utc))
+            time_until_reset = (oldest_timestamp + timedelta(hours=1) - datetime.now(timezone.utc))
             minutes_until_reset = int(time_until_reset.total_seconds() / 60)
             
             rate_limit_msg = f"""⚠️ RATE LIMIT REACHED
@@ -240,7 +249,6 @@ Need more queries? Upgrade or contact:
             await send_twilio_message(sender, rate_limit_msg)
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
             return
-        
         # ========================================
         # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
         # ========================================
