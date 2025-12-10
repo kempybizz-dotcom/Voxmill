@@ -15,6 +15,9 @@ from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction
 from app.whatsapp_self_service import handle_whatsapp_preference_message
+from app.conversation_manager import ConversationSession, resolve_reference, generate_contextualized_prompt
+from app.security import SecurityValidator
+from app.cache_manager import CacheManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -179,6 +182,44 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
+
+        # ============================================================
+        # WAVE 1: Security validation
+        # ============================================================
+        security_validator = SecurityValidator()
+    
+        # Validate incoming message for prompt injection
+        is_safe, security_issues = security_validator.validate_user_input(message_text)
+    
+       if not security_issues:
+        logger.warning(f"Security violation detected from {sender}: {security_issues}")
+        send_whatsapp_message(
+            sender,
+            "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+        )
+        return {"status": "blocked", "reason": "security_violation"}
+    
+        # Check for webhook duplication
+        cache_mgr = CacheManager()
+        webhook_key = f"{sender}:{message_text[:50]}"
+    
+       if cache_mgr.check_webhook_duplicate(webhook_key):
+        logger.info(f"Duplicate webhook ignored: {webhook_key}")
+        return {"status": "duplicate_ignored"}
+    
+        # ============================================================
+        # WAVE 3: Initialize conversation session
+        # ============================================================
+        conversation = ConversationSession(sender)
+    
+    # Check if this is a follow-up query
+        is_followup, context_hints = conversation.detect_followup_query(message_normalized)
+    
+       if is_followup:
+        logger.info(f"Follow-up detected: {context_hints}")
+        # Resolve ambiguous references
+        message_normalized = resolve_reference(message_normalized, context_hints)
+        logger.info(f"Resolved query: {message_normalized}")
         
         # ========================================
         # RATE LIMITING - PREVENT COST EXPLOSION
@@ -343,6 +384,29 @@ Need more queries? Upgrade or contact:
                 log_interaction(sender, message_text, cached['category'], cached['response'])
                 update_client_history(sender, message_text, cached['category'], preferred_region)
                 return
+
+
+           # ============================================================
+    # WAVE 1: Check response cache
+    # ============================================================
+    cached_response = cache_mgr.get_response_cache(
+        query=message_normalized,
+        region=preferred_region,
+        tier=client_profile.get('tier', 'standard')
+    )
+    
+    if cached_response:
+        logger.info(f"Cache hit for query: {message_normalized[:50]}")
+        send_whatsapp_message(sender, cached_response)
+        
+        # Still update conversation session
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response=cached_response,
+            metadata={'cached': True, 'region': preferred_region}
+        )
+        
+        return {"status": "success", "source": "cache"}
         
         # ========================================
         # COMPARISON QUERY DETECTION
@@ -620,6 +684,59 @@ To add {preferred_region} coverage:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
+
+
+# ============================================================
+    # WAVE 1: Validate response for hallucinations
+    # ============================================================
+    from app.validation import HallucinationDetector
+    
+    hallucination_detector = HallucinationDetector()
+    is_valid, confidence, violations = hallucination_detector.validate_response(
+        response=formatted_response,
+        dataset=dataset  # Your dataset variable
+    )
+    
+    if not is_valid and confidence < 0.5:
+        logger.error(f"Hallucination detected (confidence: {confidence}): {violations}")
+        # Add disclaimer to response
+        formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
+    
+    # ============================================================
+    # WAVE 1: Cache the response
+    # ============================================================
+    cache_mgr.set_response_cache(
+        query=message_normalized,
+        region=preferred_region,
+        tier=client_profile.get('tier', 'standard'),
+        response=formatted_response
+    )
+    
+    # ============================================================
+    # WAVE 1: Validate response output (no prompt leakage)
+    # ============================================================
+    security_validator = SecurityValidator()
+    response_safe = security_validator.validate_llm_output(formatted_response)
+    
+    if not response_safe:
+        logger.critical("LLM output failed security validation!")
+        formatted_response = "An error occurred processing your request. Please try again."
+
+
+
+# ============================================================
+    # WAVE 3: Update conversation session
+    # ============================================================
+    conversation.update_session(
+        user_message=message_text,
+        assistant_response=formatted_response,
+        metadata={
+            'category': category if 'category' in locals() else 'unknown',
+            'region': preferred_region,
+            'confidence': confidence if 'confidence' in locals() else None,
+            'cached': False
+        }
+    )
 
 
 async def send_pdf_report(sender: str, area: str):
