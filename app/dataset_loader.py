@@ -2,6 +2,7 @@ import os
 import logging
 from pymongo import MongoClient
 from datetime import datetime, timedelta, timezone
+from app.cache_manager import CacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,20 @@ mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 
 
 def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
+
+    # ============================================================
+    # WAVE 1: Check dataset cache
+    # ============================================================
+    cache_mgr = CacheManager()
+    
+    cached_dataset = cache_mgr.get_dataset_cache(region=region)
+    
+    if cached_dataset:
+        logger.info(f"Dataset cache hit for region: {region}")
+        return cached_dataset
+    
+    logger.info(f"Dataset cache miss, loading from MongoDB: {region}")
+    
     """
     Load market dataset from MongoDB
     
@@ -49,6 +64,14 @@ def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
         
     except Exception as e:
         logger.error(f"Error loading dataset: {str(e)}", exc_info=True)
+
+        # ============================================================
+    # WAVE 1: Cache the dataset
+    # ============================================================
+    cache_mgr.set_dataset_cache(region=region, dataset=dataset)
+    logger.info(f"Dataset cached for region: {region}")
+
+        
         return _get_fallback_dataset(area)
 
 
