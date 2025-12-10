@@ -31,9 +31,6 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
-# Response cache (in-memory)
-response_cache = {}
-
 
 async def send_first_time_welcome(sender: str, client_profile: dict):
     """Send welcome message to first-time users"""
@@ -176,7 +173,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-       # ========================================
+        # ========================================
         # LOAD CLIENT PROFILE
         # ========================================
         
@@ -228,6 +225,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # RATE LIMITING - PREVENT COST EXPLOSION
         # ========================================
         
+        query_history = client_profile.get('query_history', [])
+        
+        # SPAM PROTECTION: Minimum 2 seconds between messages
         if query_history:
             last_query_time = query_history[-1].get('timestamp')
             if last_query_time:
@@ -386,8 +386,6 @@ Need more queries? Upgrade or contact:
             
             return {"status": "success", "source": "cache"}
         
- 
-        
         # ========================================
         # COMPARISON QUERY DETECTION
         # ========================================
@@ -421,10 +419,6 @@ Need more queries? Upgrade or contact:
         # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
-        
-        # Note: preferred_region might have been updated by comparison query detection
-        if 'preferred_region' not in locals():
-            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
         
         dataset = load_dataset(area=preferred_region)
         
@@ -635,15 +629,39 @@ To add {preferred_region} coverage:
         # Format response
         formatted_response = format_analyst_response(response_text, category)
         
-        # ========================================
-        # CACHE RESPONSE (for 5 minutes)
-        # ========================================
+        # ============================================================
+        # WAVE 1: Validate response for hallucinations
+        # ============================================================
+        from app.validation import HallucinationDetector
         
-        response_cache[cache_key] = {
-            'response': formatted_response,
-            'category': category,
-            'timestamp': datetime.now(timezone.utc)
-        }
+        hallucination_detector = HallucinationDetector()
+        is_valid, confidence_score, violations = hallucination_detector.validate_response(
+            response=formatted_response,
+            dataset=dataset
+        )
+        
+        if not is_valid and confidence_score < 0.5:
+            logger.error(f"Hallucination detected (confidence: {confidence_score}): {violations}")
+            formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
+        
+        # ============================================================
+        # WAVE 1: Cache the response
+        # ============================================================
+        cache_mgr.set_response_cache(
+            query=message_normalized,
+            region=preferred_region,
+            tier=client_profile.get('tier', 'standard'),
+            response=formatted_response
+        )
+        
+        # ============================================================
+        # WAVE 1: Validate response output (no prompt leakage)
+        # ============================================================
+        response_safe = security_validator.validate_llm_output(formatted_response)
+        
+        if not response_safe:
+            logger.critical("LLM output failed security validation!")
+            formatted_response = "An error occurred processing your request. Please try again."
         
         # Add data freshness warning if needed
         formatted_response += data_freshness_warning
@@ -653,6 +671,20 @@ To add {preferred_region} coverage:
         # ========================================
         
         await send_twilio_message(sender, formatted_response)
+        
+        # ============================================================
+        # WAVE 3: Update conversation session
+        # ============================================================
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response=formatted_response,
+            metadata={
+                'category': category if 'category' in locals() else 'unknown',
+                'region': preferred_region,
+                'confidence': confidence_score if 'confidence_score' in locals() else None,
+                'cached': False
+            }
+        )
         
         # Log interaction and update client history
         log_interaction(sender, message_text, category, formatted_response)
@@ -664,59 +696,6 @@ To add {preferred_region} coverage:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
-
-
-# ============================================================
-    # WAVE 1: Validate response for hallucinations
-    # ============================================================
-    from app.validation import HallucinationDetector
-    
-    hallucination_detector = HallucinationDetector()
-    is_valid, confidence, violations = hallucination_detector.validate_response(
-        response=formatted_response,
-        dataset=dataset  # Your dataset variable
-    )
-    
-    if not is_valid and confidence < 0.5:
-        logger.error(f"Hallucination detected (confidence: {confidence}): {violations}")
-        # Add disclaimer to response
-        formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
-    
-    # ============================================================
-    # WAVE 1: Cache the response
-    # ============================================================
-    cache_mgr.set_response_cache(
-        query=message_normalized,
-        region=preferred_region,
-        tier=client_profile.get('tier', 'standard'),
-        response=formatted_response
-    )
-    
-    # ============================================================
-    # WAVE 1: Validate response output (no prompt leakage)
-    # ============================================================
-    security_validator = SecurityValidator()
-    response_safe = security_validator.validate_llm_output(formatted_response)
-    
-    if not response_safe:
-        logger.critical("LLM output failed security validation!")
-        formatted_response = "An error occurred processing your request. Please try again."
-
-
-
-# ============================================================
-    # WAVE 3: Update conversation session
-    # ============================================================
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response=formatted_response,
-        metadata={
-            'category': category if 'category' in locals() else 'unknown',
-            'region': preferred_region,
-            'confidence': confidence if 'confidence' in locals() else None,
-            'cached': False
-        }
-    )
 
 
 async def send_pdf_report(sender: str, area: str):
