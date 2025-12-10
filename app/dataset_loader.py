@@ -11,22 +11,8 @@ mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 
 
 def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
-
-    # ============================================================
-    # WAVE 1: Check dataset cache
-    # ============================================================
-    cache_mgr = CacheManager()
-    
-    cached_dataset = cache_mgr.get_dataset_cache(region=region)
-    
-    if cached_dataset:
-        logger.info(f"Dataset cache hit for region: {region}")
-        return cached_dataset
-    
-    logger.info(f"Dataset cache miss, loading from MongoDB: {region}")
-    
     """
-    Load market dataset from MongoDB
+    Load market dataset from MongoDB with Wave 1 caching
     
     Args:
         area: Geographic area (e.g., "Mayfair", "Knightsbridge")
@@ -34,6 +20,20 @@ def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
     
     Returns: Dataset dict with properties, metrics, intelligence
     """
+    
+    # ============================================================
+    # WAVE 1: Check dataset cache
+    # ============================================================
+    cache_mgr = CacheManager()
+    
+    cached_dataset = cache_mgr.get_dataset_cache(region=area)
+    
+    if cached_dataset:
+        logger.info(f"Dataset cache hit for region: {area}")
+        return cached_dataset
+    
+    logger.info(f"Dataset cache miss, loading from MongoDB: {area}")
+    
     try:
         if not mongo_client:
             logger.error("MongoDB client not initialized")
@@ -60,18 +60,17 @@ def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
             del dataset['_id']
         
         logger.info(f"Dataset loaded for {area}: {len(dataset.get('properties', []))} properties")
+        
+        # ============================================================
+        # WAVE 1: Cache the dataset
+        # ============================================================
+        cache_mgr.set_dataset_cache(region=area, dataset=dataset)
+        logger.info(f"Dataset cached for region: {area}")
+        
         return dataset
         
     except Exception as e:
         logger.error(f"Error loading dataset: {str(e)}", exc_info=True)
-
-        # ============================================================
-    # WAVE 1: Cache the dataset
-    # ============================================================
-    cache_mgr.set_dataset_cache(region=region, dataset=dataset)
-    logger.info(f"Dataset cached for region: {region}")
-
-        
         return _get_fallback_dataset(area)
 
 
@@ -261,7 +260,8 @@ def _get_fallback_dataset(area: str) -> dict:
             },
             'property_count': 0,
             'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
-            'data_source': 'fallback'
+            'data_source': 'fallback',
+            'is_fallback': True
         },
         'properties': [],
         'metrics': {
