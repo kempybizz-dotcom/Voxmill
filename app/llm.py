@@ -3,6 +3,8 @@ import logging
 import json
 from openai import OpenAI
 from datetime import datetime
+from app.adaptive_llm import get_adaptive_llm_config, AdaptiveLLMController
+from app.conversation_manager import generate_contextualized_prompt, ConversationSession
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +282,33 @@ QUERY CONTEXT BELOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
+    # ============================================================
+    # WAVE 3: Apply confidence-based tone modulation
+    # ============================================================
+        enhanced_system_prompt = AdaptiveLLMController.modulate_tone_for_confidence(
+        system_prompt=SYSTEM_PROMPT,  # Your existing system prompt
+        confidence_level=adaptive_config['confidence_level'],
+        data_quality=adaptive_config['data_quality']
+    )
+
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
+
+        # ============================================================
+        # WAVE 3: Get adaptive LLM configuration
+        # ============================================================
+        adaptive_config = get_adaptive_llm_config(
+        query=message,
+        dataset=dataset,
+        is_followup=False,  # Will be passed from whatsapp.py later
+        category='market_overview'  # Adjust based on your category logic
+    )
+    
+    logger.info(f"Adaptive LLM config: temp={adaptive_config['temperature']}, "
+               f"complexity={adaptive_config['complexity']}, "
+               f"quality={adaptive_config['data_quality']}, "
+               f"confidence={adaptive_config['confidence_level']}")
+
+    
     """
     Classify message intent and generate response using LLM.
     
@@ -598,16 +626,30 @@ REMEMBER:
 async def call_gpt4(user_prompt: str) -> str:
     """Call OpenAI GPT-4 API with V3 extended context"""
     try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            max_tokens=2500,
-            temperature=0.3,
-            timeout=15.0  # 15 second timeout
-        )
+       response = openai_client.chat.completions.create(
+    model="gpt-4-turbo-preview",
+    messages=[
+        {"role": "system", "content": enhanced_system_prompt},  # ← Changed!
+        {"role": "user", "content": user_prompt}
+    ],
+    max_tokens=adaptive_config['max_tokens'],      # ← Dynamic!
+    temperature=adaptive_config['temperature'],     # ← Dynamic!
+    timeout=15.0
+)
+
+
+    # ============================================================
+    # WAVE 3: Add conversation context if available
+    # ============================================================
+    try:
+        # Get phone number from client_profile if available
+        phone_number = client_profile.get('whatsapp_number', 'unknown') if 'client_profile' in locals() else 'unknown'
+        session = ConversationSession(phone_number)
+        user_prompt = generate_contextualized_prompt(user_prompt, session)
+        logger.info("Added conversation context to prompt")
+    except Exception as e:
+        logger.debug(f"Session context unavailable: {e}")
+        # Continue without conversation context
         
         return response.choices[0].message.content
         
