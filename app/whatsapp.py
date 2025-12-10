@@ -176,7 +176,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-        # ========================================
+       # ========================================
         # LOAD CLIENT PROFILE
         # ========================================
         
@@ -187,47 +187,47 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # WAVE 1: Security validation
         # ============================================================
         security_validator = SecurityValidator()
-    
+        
         # Validate incoming message for prompt injection
         is_safe, security_issues = security_validator.validate_user_input(message_text)
-    
-       if not security_issues:
-        logger.warning(f"Security violation detected from {sender}: {security_issues}")
-        send_whatsapp_message(
-            sender,
-            "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
-        )
-        return {"status": "blocked", "reason": "security_violation"}
-    
+        
+        if not is_safe:
+            logger.warning(f"Security violation detected from {sender}: {security_issues}")
+            await send_twilio_message(
+                sender,
+                "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+            )
+            return {"status": "blocked", "reason": "security_violation"}
+        
         # Check for webhook duplication
         cache_mgr = CacheManager()
         webhook_key = f"{sender}:{message_text[:50]}"
-    
-       if cache_mgr.check_webhook_duplicate(webhook_key):
-        logger.info(f"Duplicate webhook ignored: {webhook_key}")
-        return {"status": "duplicate_ignored"}
-    
+        
+        if cache_mgr.check_webhook_duplicate(webhook_key):
+            logger.info(f"Duplicate webhook ignored: {webhook_key}")
+            return {"status": "duplicate_ignored"}
+        
         # ============================================================
         # WAVE 3: Initialize conversation session
         # ============================================================
         conversation = ConversationSession(sender)
-    
-    # Check if this is a follow-up query
+        
+        # Normalize query (needed before follow-up detection)
+        message_normalized = normalize_query(message_text)
+        
+        # Check if this is a follow-up query
         is_followup, context_hints = conversation.detect_followup_query(message_normalized)
-    
-       if is_followup:
-        logger.info(f"Follow-up detected: {context_hints}")
-        # Resolve ambiguous references
-        message_normalized = resolve_reference(message_normalized, context_hints)
-        logger.info(f"Resolved query: {message_normalized}")
+        
+        if is_followup:
+            logger.info(f"Follow-up detected: {context_hints}")
+            # Resolve ambiguous references
+            message_normalized = resolve_reference(message_normalized, context_hints)
+            logger.info(f"Resolved query: {message_normalized}")
         
         # ========================================
         # RATE LIMITING - PREVENT COST EXPLOSION
         # ========================================
         
-        query_history = client_profile.get('query_history', [])
-        
-        # SPAM PROTECTION: Minimum 2 seconds between messages
         if query_history:
             last_query_time = query_history[-1].get('timestamp')
             if last_query_time:
@@ -340,12 +340,6 @@ Need more queries? Upgrade or contact:
             await send_first_time_welcome(sender, client_profile)
         
         # ========================================
-        # NORMALIZE QUERY (fix typos)
-        # ========================================
-        
-        message_normalized = normalize_query(message_text)
-        
-        # ========================================
         # PDF REQUEST DETECTION
         # ========================================
         
@@ -361,52 +355,38 @@ Need more queries? Upgrade or contact:
             return
         
         # ========================================
-        # RESPONSE CACHING - SAVE MONEY
+        # GET PREFERRED REGION
         # ========================================
         
         preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
         
-        # Create cache key
-        cache_key = hashlib.md5(
-            f"{message_normalized.lower().strip()}:{preferred_region}".encode()
-        ).hexdigest()
-        
-        # Check cache (5-minute window)
-        if cache_key in response_cache:
-            cached = response_cache[cache_key]
-            cache_age = (datetime.now(timezone.utc) - cached['timestamp']).total_seconds()
-            
-            if cache_age < 300:  # 5 minutes
-                logger.info(f"✅ Cache hit for {sender} (age: {int(cache_age)}s, saved GPT-4 call)")
-                await send_twilio_message(sender, cached['response'])
-                
-                # Still log interaction
-                log_interaction(sender, message_text, cached['category'], cached['response'])
-                update_client_history(sender, message_text, cached['category'], preferred_region)
-                return
-
-
-           # ============================================================
-    # WAVE 1: Check response cache
-    # ============================================================
-    cached_response = cache_mgr.get_response_cache(
-        query=message_normalized,
-        region=preferred_region,
-        tier=client_profile.get('tier', 'standard')
-    )
-    
-    if cached_response:
-        logger.info(f"Cache hit for query: {message_normalized[:50]}")
-        send_whatsapp_message(sender, cached_response)
-        
-        # Still update conversation session
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=cached_response,
-            metadata={'cached': True, 'region': preferred_region}
+        # ============================================================
+        # WAVE 1: Check response cache FIRST
+        # ============================================================
+        cached_response = cache_mgr.get_response_cache(
+            query=message_normalized,
+            region=preferred_region,
+            tier=client_profile.get('tier', 'standard')
         )
         
-        return {"status": "success", "source": "cache"}
+        if cached_response:
+            logger.info(f"Cache hit for query: {message_normalized[:50]}")
+            await send_twilio_message(sender, cached_response)
+            
+            # Still update conversation session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=cached_response,
+                metadata={'cached': True, 'region': preferred_region}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "cached", cached_response)
+            update_client_history(sender, message_text, "cached", preferred_region)
+            
+            return {"status": "success", "source": "cache"}
+        
+ 
         
         # ========================================
         # COMPARISON QUERY DETECTION
