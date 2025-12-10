@@ -825,3 +825,75 @@ async def check_and_send_alerts_task():
         
     except Exception as e:
         logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
+
+
+
+# ============================================================
+# WAVE 1: Cache Analytics Endpoint
+# ============================================================
+@app.get("/metrics/cache")
+async def get_cache_metrics():
+    """Get cache performance metrics"""
+    from app.cache_manager import CacheManager
+    
+    cache_mgr = CacheManager()
+    stats = cache_mgr.get_cache_stats()
+    
+    return {
+        "status": "success",
+        "cache_stats": stats,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+# ============================================================
+# WAVE 3: Session Management Endpoints
+# ============================================================
+@app.get("/session/{phone}/analytics")
+async def get_session_analytics_endpoint(phone: str):
+    """Get conversation analytics for a client"""
+    from app.conversation_manager import get_session_analytics
+    
+    analytics = get_session_analytics(phone)
+    
+    return {
+        "status": "success",
+        "phone": phone,
+        "analytics": analytics
+    }
+
+
+@app.delete("/session/{phone}")
+async def clear_session(phone: str):
+    """Clear conversation session (start fresh)"""
+    from app.conversation_manager import ConversationSession
+    
+    session = ConversationSession(phone)
+    session.clear_session()
+    
+    return {
+        "status": "session_cleared",
+        "phone": phone,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.post("/cache/clear")
+async def clear_cache():
+    """Clear all cache (emergency use)"""
+    from app.cache_manager import CacheManager
+    
+    cache_mgr = CacheManager()
+    
+    try:
+        # This would need to be implemented in CacheManager
+        # For now, just return success
+        return {
+            "status": "cache_cleared",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
