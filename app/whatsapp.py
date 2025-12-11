@@ -180,21 +180,26 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         from app.client_manager import get_client_profile, update_client_history
         client_profile = get_client_profile(sender)
 
-        # ============================================================
+      # ============================================================
         # WAVE 1: Security validation
         # ============================================================
         security_validator = SecurityValidator()
         
         # Validate incoming message for prompt injection
-        is_safe, security_issues = security_validator.validate_user_input(message_text)
+        is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
         
         if not is_safe:
-            logger.warning(f"Security violation detected from {sender}: {security_issues}")
+            logger.warning(f"Security violation detected from {sender}: {threats}")
             await send_twilio_message(
                 sender,
                 "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
             )
             return {"status": "blocked", "reason": "security_violation"}
+        
+        # Use sanitized input if threats were detected but sanitized
+        if threats:
+            logger.info(f"Input sanitized: {threats}")
+            message_text = sanitized_input
         
         # Check for webhook duplication
         cache_mgr = CacheManager()
