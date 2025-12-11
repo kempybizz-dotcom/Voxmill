@@ -855,13 +855,35 @@ if __name__ == "__main__":
 
 @app.post("/api/airtable/sync-client")
 async def sync_client_from_airtable(request: Request):
-    """Webhook: Airtable → MongoDB client sync (flat format)"""
+    """Webhook: Airtable → MongoDB client sync"""
     try:
-        data = await request.json()
+        # Get content type
+        content_type = request.headers.get('content-type', '')
         
-        logger.info(f"📥 Webhook received. Keys: {list(data.keys())}")
+        # Try JSON first
+        if 'json' in content_type.lower():
+            try:
+                data = await request.json()
+            except:
+                logger.error("❌ JSON parse failed")
+                return {"success": False, "error": "Invalid JSON"}
+        else:
+            # Try form data
+            try:
+                form = await request.form()
+                data = dict(form)
+            except:
+                # Last resort: get raw body
+                body = await request.body()
+                if not body or len(body) == 0:
+                    logger.error("❌ Empty body received")
+                    return {"success": False, "error": "Empty payload"}
+                logger.error(f"❌ Could not parse. Body: {body[:200]}")
+                return {"success": False, "error": "Could not parse payload"}
         
-        # Extract email (multiple possible key names)
+        logger.info(f"📥 Received keys: {list(data.keys())}")
+        
+        # Extract email
         email = (
             data.get('Email') or 
             data.get('email') or 
@@ -870,7 +892,7 @@ async def sync_client_from_airtable(request: Request):
         
         if not email:
             logger.error(f"❌ No email. Keys: {list(data.keys())}")
-            return {"success": False, "error": "Email required", "keys": list(data.keys())}
+            return {"success": False, "error": "Email required"}
         
         # Extract WhatsApp
         whatsapp_raw = (
@@ -879,23 +901,23 @@ async def sync_client_from_airtable(request: Request):
             data.get('whatsapp_number') or 
             ''
         )
-        whatsapp_clean = whatsapp_raw.replace(' ', '').replace('+', '').replace('whatsapp:', '')
+        whatsapp_clean = str(whatsapp_raw).replace(' ', '').replace('+', '').replace('whatsapp:', '')
         whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
         
-        # Build client profile
+        # Build profile
         client_profile = {
             'email': email,
             'whatsapp_number': whatsapp_formatted,
-            'name': data.get('Name') or data.get('name') or 'Unknown',
-            'company': data.get('Company') or data.get('company') or '',
+            'name': str(data.get('Name') or data.get('name') or 'Unknown'),
+            'company': str(data.get('Company') or data.get('company') or ''),
             'tier': str(data.get('Tier') or data.get('tier') or 'trial').lower(),
             'preferences': {
-                'preferred_region': (
+                'preferred_region': str(
                     data.get('Preferred_Region') or 
                     data.get('Preferred Region') or 
                     'London'
                 ),
-                'preferred_city': (
+                'preferred_city': str(
                     data.get('Preferred_City') or 
                     data.get('Preferred City') or 
                     'London'
@@ -931,12 +953,12 @@ async def sync_client_from_airtable(request: Request):
                 data.get('Subscription Status') or 
                 'trial'
             ).lower(),
-            'stripe_customer_id': (
+            'stripe_customer_id': str(
                 data.get('Stripe_Customer_ID') or 
                 data.get('Stripe Customer ID') or 
                 ''
             ),
-            'airtable_record_id': data.get('id') or data.get('record_id') or 'unknown',
+            'airtable_record_id': str(data.get('id') or data.get('record_id') or 'unknown'),
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
@@ -954,18 +976,17 @@ async def sync_client_from_airtable(request: Request):
         logger.info(f"   Name: {client_profile['name']}")
         logger.info(f"   WhatsApp: {whatsapp_formatted}")
         logger.info(f"   Tier: {client_profile['tier']}")
-        logger.info(f"   Region: {client_profile['preferences']['preferred_region']}")
         
         return {
             "success": True,
             "action": action,
-            "email": email,
-            "name": client_profile['name']
+            "email": email
         }
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
+
 @app.post("/api/airtable/sync-team-member")
 async def sync_team_member_from_airtable(request: Request):
     """
