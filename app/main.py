@@ -858,23 +858,63 @@ async def sync_client_from_airtable(request: Request):
     try:
         data = await request.json()
         
-        # Zapier can send data in different formats - handle both
+        # Log raw data for debugging
+        logger.info(f"📥 Webhook received: {json.dumps(data, indent=2)[:500]}")
+        
+        # Zapier sends data in multiple possible formats - try all
+        fields = None
+        
+        # Format 1: {"fields": {...}}
         if 'fields' in data:
             fields = data['fields']
-            record_id = data.get('id', 'unknown')
-        else:
-            # Zapier might send flat structure
-            fields = data
-            record_id = data.get('recordId', data.get('id', 'unknown'))
         
-        # Extract email (critical field)
+        # Format 2: Flat structure
+        elif 'Email' in data or 'email' in data:
+            fields = data
+        
+        # Format 3: Airtable nested format (what you have)
+        elif 'Airtable' in data:
+            # Flatten the Airtable object
+            airtable_data = data['Airtable']
+            # The values are in order, keys are Airtable internal IDs
+            values = list(airtable_data.values())
+            
+            # Map values to fields (based on Zapier field order)
+            # Order from your test: recID, Name, Email, WhatsApp, Company, Tier, Region, City, CompFocus, ReportDepth, UpdateFreq, Limit, Used, Status, StripeID
+            if len(values) >= 15:
+                fields = {
+                    'record_id': values[0],
+                    'Name': values[1],
+                    'Email': values[2],
+                    'WhatsApp Number': values[3],
+                    'Company': values[4],
+                    'Tier': values[5],
+                    'Preferred Region': values[6],
+                    'Preferred City': values[7],
+                    'Competitor Focus': values[8],
+                    'Report Depth': values[9],
+                    'Update Frequency': values[10],
+                    'Monthly Message Limit': values[11],
+                    'Messages Used This Month': values[12],
+                    'Subscription Status': values[13],
+                    'Stripe Customer ID': values[14]
+                }
+            else:
+                logger.error(f"❌ Unexpected Airtable format with {len(values)} values")
+                return {"success": False, "error": f"Expected 15 values, got {len(values)}"}
+        
+        if not fields:
+            logger.error(f"❌ Could not parse data. Keys: {list(data.keys())}")
+            return {"success": False, "error": "Unknown data format"}
+        
+        # Extract email
         email = fields.get('Email') or fields.get('email')
         
         if not email:
-            logger.error(f"❌ No email in webhook data: {fields.keys()}")
-            return {"success": False, "error": "Email required"}
+            logger.error(f"❌ No email in fields: {list(fields.keys())}")
+            return {"success": False, "error": "Email required", "fields": list(fields.keys())}
         
-        # Extract WhatsApp number
+        # Clean WhatsApp number
         whatsapp_raw = fields.get('WhatsApp Number') or fields.get('whatsapp_number') or ''
         whatsapp_clean = whatsapp_raw.replace(' ', '').replace('+', '').replace('whatsapp:', '')
         whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
@@ -883,45 +923,49 @@ async def sync_client_from_airtable(request: Request):
         client_profile = {
             'email': email,
             'whatsapp_number': whatsapp_formatted,
-            'name': fields.get('Name') or fields.get('name') or 'Unknown',
-            'company': fields.get('Company') or fields.get('company') or '',
-            'tier': (fields.get('Tier') or fields.get('tier') or 'trial').lower(),
+            'name': fields.get('Name') or 'Unknown',
+            'company': fields.get('Company') or '',
+            'tier': (fields.get('Tier') or 'trial').lower(),
             'preferences': {
-                'preferred_region': fields.get('Preferred Region') or fields.get('preferred_region') or 'London',
-                'preferred_city': fields.get('Preferred City') or fields.get('preferred_city') or 'London',
-                'competitor_focus': (fields.get('Competitor Focus') or fields.get('competitor_focus') or 'medium').lower(),
-                'report_depth': (fields.get('Report Depth') or fields.get('report_depth') or 'detailed').lower(),
-                'update_frequency': (fields.get('Update Frequency') or fields.get('update_frequency') or 'weekly').lower()
+                'preferred_region': fields.get('Preferred Region') or 'London',
+                'preferred_city': fields.get('Preferred City') or 'London',
+                'competitor_focus': (fields.get('Competitor Focus') or 'medium').lower(),
+                'report_depth': (fields.get('Report Depth') or 'detailed').lower(),
+                'update_frequency': (fields.get('Update Frequency') or 'weekly').lower()
             },
-            'monthly_message_limit': int(fields.get('Monthly Message Limit') or fields.get('monthly_message_limit') or 100),
-            'messages_used_this_month': int(fields.get('Messages Used This Month') or fields.get('messages_used_this_month') or 0),
-            'subscription_status': (fields.get('Subscription Status') or fields.get('subscription_status') or 'trial').lower(),
-            'stripe_customer_id': fields.get('Stripe Customer ID') or fields.get('stripe_customer_id') or '',
-            'airtable_record_id': record_id,
+            'monthly_message_limit': int(fields.get('Monthly Message Limit') or 100),
+            'messages_used_this_month': int(fields.get('Messages Used This Month') or 0),
+            'subscription_status': (fields.get('Subscription Status') or 'trial').lower(),
+            'stripe_customer_id': fields.get('Stripe Customer ID') or '',
+            'airtable_record_id': fields.get('record_id') or data.get('id') or 'unknown',
+            'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
         
         # Upsert to MongoDB
         result = db['client_profiles'].update_one(
-            {'email': client_profile['email']},
+            {'email': email},
             {'$set': client_profile},
             upsert=True
         )
         
         action = "updated" if result.matched_count > 0 else "created"
-        logger.info(f"✅ Client {action}: {client_profile['email']} (WhatsApp: {whatsapp_formatted})")
+        
+        logger.info(f"✅ Client {action}: {email}")
+        logger.info(f"   Name: {client_profile['name']}")
+        logger.info(f"   WhatsApp: {whatsapp_formatted}")
+        logger.info(f"   Tier: {client_profile['tier']}")
         
         return {
             "success": True,
             "action": action,
-            "email": client_profile['email'],
-            "whatsapp": whatsapp_formatted
+            "email": email,
+            "name": client_profile['name']
         }
         
     except Exception as e:
-        logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
+        logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
-
 
 @app.post("/api/airtable/sync-team-member")
 async def sync_team_member_from_airtable(request: Request):
