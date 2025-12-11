@@ -855,99 +855,88 @@ if __name__ == "__main__":
 
 @app.post("/api/airtable/sync-client")
 async def sync_client_from_airtable(request: Request):
-    """Webhook: Airtable → MongoDB client sync"""
+    """Webhook: Airtable → MongoDB client sync (flat format)"""
     try:
-        # Try to parse JSON, if fails, get raw body
-        try:
-            data = await request.json()
-        except:
-            body = await request.body()
-            logger.error(f"❌ Invalid JSON. Raw body: {body[:500]}")
-            return {"success": False, "error": "Invalid JSON payload"}
+        data = await request.json()
         
-        # Log what we received
-        logger.info(f"📥 Webhook keys: {list(data.keys())}")
+        logger.info(f"📥 Webhook received. Keys: {list(data.keys())}")
         
-        # Handle empty data
-        if not data or len(data) == 0:
-            logger.error("❌ Empty webhook payload")
-            return {"success": False, "error": "Empty payload"}
+        # Extract email (multiple possible key names)
+        email = (
+            data.get('Email') or 
+            data.get('email') or 
+            data.get('EMAIL')
+        )
         
-        # Parse different formats
-        fields = None
+        if not email:
+            logger.error(f"❌ No email. Keys: {list(data.keys())}")
+            return {"success": False, "error": "Email required", "keys": list(data.keys())}
         
-        # Format 1: {"fields": {...}}
-        if 'fields' in data:
-            fields = data['fields']
-        
-        # Format 2: Flat structure
-        elif 'Email' in data or 'email' in data:
-            fields = data
-        
-        # Format 3: Airtable nested format
-        elif 'Airtable' in data:
-            airtable_data = data['Airtable']
-            values = list(airtable_data.values())
-            
-            logger.info(f"📊 Airtable values count: {len(values)}")
-            
-            if len(values) >= 14:  # At minimum need: Name, Email, WhatsApp, etc.
-                fields = {
-                    'record_id': values[0] if len(values) > 0 else '',
-                    'Name': values[1] if len(values) > 1 else '',
-                    'Email': values[2] if len(values) > 2 else '',
-                    'WhatsApp Number': values[3] if len(values) > 3 else '',
-                    'Company': values[4] if len(values) > 4 else '',
-                    'Tier': values[5] if len(values) > 5 else 'trial',
-                    'Preferred Region': values[6] if len(values) > 6 else 'London',
-                    'Preferred City': values[7] if len(values) > 7 else 'London',
-                    'Competitor Focus': values[8] if len(values) > 8 else 'medium',
-                    'Report Depth': values[9] if len(values) > 9 else 'detailed',
-                    'Update Frequency': values[10] if len(values) > 10 else 'weekly',
-                    'Monthly Message Limit': values[11] if len(values) > 11 else 100,
-                    'Messages Used This Month': values[12] if len(values) > 12 else 0,
-                    'Subscription Status': values[13] if len(values) > 13 else 'trial',
-                    'Stripe Customer ID': values[14] if len(values) > 14 else ''
-                }
-            else:
-                logger.error(f"❌ Not enough values in Airtable format. Got {len(values)}, need 14+")
-                return {"success": False, "error": f"Incomplete data: {len(values)} values"}
-        
-        if not fields:
-            logger.error(f"❌ Unknown format. Keys: {list(data.keys())}")
-            return {"success": False, "error": "Unknown data format", "keys": list(data.keys())}
-        
-        # Extract email
-        email = fields.get('Email') or fields.get('email')
-        
-        if not email or email == '':
-            logger.error(f"❌ No email. Fields: {list(fields.keys())}")
-            return {"success": False, "error": "Email required"}
-        
-        # Clean WhatsApp
-        whatsapp_raw = fields.get('WhatsApp Number') or ''
+        # Extract WhatsApp
+        whatsapp_raw = (
+            data.get('WhatsApp_Number') or 
+            data.get('WhatsApp Number') or 
+            data.get('whatsapp_number') or 
+            ''
+        )
         whatsapp_clean = whatsapp_raw.replace(' ', '').replace('+', '').replace('whatsapp:', '')
         whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
         
-        # Build profile
+        # Build client profile
         client_profile = {
             'email': email,
             'whatsapp_number': whatsapp_formatted,
-            'name': fields.get('Name') or 'Unknown',
-            'company': fields.get('Company') or '',
-            'tier': str(fields.get('Tier') or 'trial').lower(),
+            'name': data.get('Name') or data.get('name') or 'Unknown',
+            'company': data.get('Company') or data.get('company') or '',
+            'tier': str(data.get('Tier') or data.get('tier') or 'trial').lower(),
             'preferences': {
-                'preferred_region': fields.get('Preferred Region') or 'London',
-                'preferred_city': fields.get('Preferred City') or 'London',
-                'competitor_focus': str(fields.get('Competitor Focus') or 'medium').lower(),
-                'report_depth': str(fields.get('Report Depth') or 'detailed').lower(),
-                'update_frequency': str(fields.get('Update Frequency') or 'weekly').lower()
+                'preferred_region': (
+                    data.get('Preferred_Region') or 
+                    data.get('Preferred Region') or 
+                    'London'
+                ),
+                'preferred_city': (
+                    data.get('Preferred_City') or 
+                    data.get('Preferred City') or 
+                    'London'
+                ),
+                'competitor_focus': str(
+                    data.get('Competitor_Focus') or 
+                    data.get('Competitor Focus') or 
+                    'medium'
+                ).lower(),
+                'report_depth': str(
+                    data.get('Report_Depth') or 
+                    data.get('Report Depth') or 
+                    'detailed'
+                ).lower(),
+                'update_frequency': str(
+                    data.get('Update_Frequency') or 
+                    data.get('Update Frequency') or 
+                    'weekly'
+                ).lower()
             },
-            'monthly_message_limit': int(fields.get('Monthly Message Limit') or 100),
-            'messages_used_this_month': int(fields.get('Messages Used This Month') or 0),
-            'subscription_status': str(fields.get('Subscription Status') or 'trial').lower(),
-            'stripe_customer_id': fields.get('Stripe Customer ID') or '',
-            'airtable_record_id': fields.get('record_id') or data.get('id') or 'unknown',
+            'monthly_message_limit': int(
+                data.get('Monthly_Message_Limit') or 
+                data.get('Monthly Message Limit') or 
+                100
+            ),
+            'messages_used_this_month': int(
+                data.get('Messages_Used_This_Month') or 
+                data.get('Messages Used This Month') or 
+                0
+            ),
+            'subscription_status': str(
+                data.get('Subscription_Status') or 
+                data.get('Subscription Status') or 
+                'trial'
+            ).lower(),
+            'stripe_customer_id': (
+                data.get('Stripe_Customer_ID') or 
+                data.get('Stripe Customer ID') or 
+                ''
+            ),
+            'airtable_record_id': data.get('id') or data.get('record_id') or 'unknown',
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
@@ -965,17 +954,18 @@ async def sync_client_from_airtable(request: Request):
         logger.info(f"   Name: {client_profile['name']}")
         logger.info(f"   WhatsApp: {whatsapp_formatted}")
         logger.info(f"   Tier: {client_profile['tier']}")
+        logger.info(f"   Region: {client_profile['preferences']['preferred_region']}")
         
         return {
             "success": True,
             "action": action,
-            "email": email
+            "email": email,
+            "name": client_profile['name']
         }
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
-
 @app.post("/api/airtable/sync-team-member")
 async def sync_team_member_from_airtable(request: Request):
     """
