@@ -426,30 +426,34 @@ Need more queries? Upgrade or contact:
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
-        dataset = load_dataset(area=preferred_region)
-        
-        # Check if data exists (not fallback)
-        metadata = dataset.get('metadata', {})
-        is_fallback = metadata.get('is_fallback', False)
-        
-        if is_fallback:
-            # No real data for this region
-            no_data_msg = f"""⚠️ DATA UNAVAILABLE
+    # Check if data exists (not fallback)
+    metadata = dataset.get('metadata', {})
+    is_fallback = metadata.get('is_fallback', False)
+    property_count = len(dataset.get('properties', []))
 
-We don't currently have market intelligence for {preferred_region}.
+    # Only treat as fallback if BOTH conditions are true
+    if is_fallback and property_count == 0:
+        # No real data for this region
+        no_data_msg = f"""⚠️ DATA UNAVAILABLE
 
-Available regions:
-- Mayfair
-- Knightsbridge
-- Chelsea
-- Belgravia
+    We don't currently have market intelligence for {preferred_region}.
 
-To add {preferred_region} coverage:
-📧 ollys@voxmill.uk"""
-            
-            await send_twilio_message(sender, no_data_msg)
-            logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
-            return
+    Available regions:
+    - Mayfair
+    - Knightsbridge
+    - Chelsea
+    - Belgravia
+
+    To add {preferred_region} coverage:
+    📧 intel@voxmill.uk"""
+    
+    await send_twilio_message(sender, no_data_msg)
+    logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
+    return
+
+# Log if we're using real data
+if property_count > 0:
+    logger.info(f"✅ Using real data for {preferred_region}: {property_count} properties")
         
         # Check data freshness and add warning if stale
         data_timestamp = metadata.get('analysis_timestamp')
