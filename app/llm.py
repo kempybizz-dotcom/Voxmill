@@ -282,35 +282,10 @@ QUERY CONTEXT BELOW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
-    # ============================================================
-    # WAVE 3: Apply confidence-based tone modulation
-    # ============================================================
-        enhanced_system_prompt = AdaptiveLLMController.modulate_tone_for_confidence(
-        system_prompt=SYSTEM_PROMPT,  # Your existing system prompt
-        confidence_level=adaptive_config['confidence_level'],
-        data_quality=adaptive_config['data_quality']
-    )
 
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
-
-        # ============================================================
-        # WAVE 3: Get adaptive LLM configuration
-        # ============================================================
-        adaptive_config = get_adaptive_llm_config(
-        query=message,
-        dataset=dataset,
-        is_followup=False,  # Will be passed from whatsapp.py later
-        category='market_overview'  # Adjust based on your category logic
-    )
-    
-    logger.info(f"Adaptive LLM config: temp={adaptive_config['temperature']}, "
-               f"complexity={adaptive_config['complexity']}, "
-               f"quality={adaptive_config['data_quality']}, "
-               f"confidence={adaptive_config['confidence_level']}")
-
-    
     """
-    Classify message intent and generate response using LLM.
+    Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence.
     
     Args:
         message: User query
@@ -321,6 +296,30 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     Returns: (category, response_text, metadata)
     """
     try:
+        # ============================================================
+        # WAVE 3: Get adaptive LLM configuration
+        # ============================================================
+        adaptive_config = get_adaptive_llm_config(
+            query=message,
+            dataset=dataset,
+            is_followup=False,
+            category='market_overview'
+        )
+        
+        logger.info(f"Adaptive LLM config: temp={adaptive_config['temperature']}, "
+                   f"complexity={adaptive_config['complexity']}, "
+                   f"quality={adaptive_config['data_quality']}, "
+                   f"confidence={adaptive_config['confidence_level']}")
+        
+        # ============================================================
+        # WAVE 3: Apply confidence-based tone modulation
+        # ============================================================
+        enhanced_system_prompt = AdaptiveLLMController.modulate_tone_for_confidence(
+            system_prompt=SYSTEM_PROMPT,
+            confidence_level=adaptive_config['confidence_level'],
+            data_quality=adaptive_config['data_quality']
+        )
+        
         # Extract primary dataset metrics
         metadata = dataset.get('metadata', {})
         metrics = dataset.get('metrics', dataset.get('kpis', {}))
@@ -428,6 +427,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         briefing_keywords = ['briefing', 'weekly summary', 'this week', 'prepare summary']
         analysis_keywords = ['analyse', 'analyze', 'snapshot', 'breakdown', 'deep dive']
         trend_keywords = ['trend', 'pattern', 'unusual', 'changed', 'different', 'movement']
+        timing_keywords = ['when', 'timing', 'should i buy', 'should i sell', 'best time', 'window']
+        clustering_keywords = ['move together', 'similar', 'grouped', 'behavior', 'patterns', 'coordinated']
         
         is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
         is_strategic = any(keyword in message_lower for keyword in strategic_keywords)
@@ -435,6 +436,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         is_briefing = any(keyword in message_lower for keyword in briefing_keywords)
         is_analysis = any(keyword in message_lower for keyword in analysis_keywords)
         is_trend_query = any(keyword in message_lower for keyword in trend_keywords)
+        is_timing_query = any(keyword in message_lower for keyword in timing_keywords)
+        is_clustering_query = any(keyword in message_lower for keyword in clustering_keywords)
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
@@ -462,13 +465,6 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             context_parts.append(f"Cascade probability: {cascade['cascade_probability']*100:.0f}%")
             context_parts.append(f"Expected duration: {cascade['expected_duration_days']} days")
             context_parts.append(f"Market impact: {cascade['market_impact'].upper()}")
-            
-            # Add wave summaries
-            for wave_data in cascade.get('waves', [])[:2]:
-                wave_num = wave_data['wave_number']
-                context_parts.append(f"\nWave {wave_num} ({wave_data['agent_count']} agents):")
-                for agent in wave_data['agents'][:3]:
-                    context_parts.append(f"  • {agent['agent']}: {agent['predicted_magnitude']:+.1f}% in {agent['timing_days']} days ({agent['probability']*100:.0f}%)")
         
         # Add micromarket segmentation if available
         if 'micromarkets' in dataset and dataset['micromarkets']:
@@ -476,7 +472,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             if not micro.get('error'):
                 context_parts.append(f"\nMICROMARKET SEGMENTATION ({micro['total_micromarkets']} zones):")
                 for zone in micro.get('micromarkets', [])[:3]:
-                    context_parts.append(f"  • {zone['name']}: Avg £{zone['avg_price']:,.0f} ({zone['property_count']} properties, {zone['classification']})")
+                    context_parts.append(f"  • {zone['name']}: Avg £{zone['avg_price']:,.0f} ({zone['property_count']} properties)")
         
         # Add liquidity velocity if available
         if 'liquidity_velocity' in dataset and dataset['liquidity_velocity']:
@@ -485,7 +481,44 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 context_parts.append(f"\nLIQUIDITY VELOCITY:")
                 context_parts.append(f"Score: {velocity['velocity_score']}/100 ({velocity['velocity_class']})")
                 context_parts.append(f"Market health: {velocity['market_health']}")
-                context_parts.append(f"Momentum: {velocity['historical_comparison']['momentum']}")
+        
+        # ========================================
+        # WAVE 4: ADD LIQUIDITY WINDOWS
+        # ========================================
+        if 'liquidity_windows' in dataset and dataset['liquidity_windows']:
+            windows = dataset['liquidity_windows']
+            if not windows.get('error'):
+                context_parts.append(f"\nLIQUIDITY WINDOW PREDICTIONS:")
+                context_parts.append(f"Current velocity: {windows['current_velocity']}/100")
+                context_parts.append(f"Momentum: {windows['velocity_momentum']:+.1f}%")
+                context_parts.append(f"Timing score: {windows['timing_score']}/100 ({windows['timing_recommendation']})")
+                
+                for window in windows.get('predicted_windows', [])[:3]:
+                    context_parts.append(f"\n• {window['type'].upper()}: {window['status']}")
+                    context_parts.append(f"  Timing: {window['timing']} | Duration: {window['duration_days']}d")
+                    context_parts.append(f"  Recommendation: {window['recommendation']} | Confidence: {window['confidence']*100:.0f}%")
+                    context_parts.append(f"  Rationale: {window['rationale']}")
+        
+        # ========================================
+        # WAVE 4: ADD BEHAVIORAL CLUSTERING
+        # ========================================
+        if 'behavioral_clusters' in dataset and dataset['behavioral_clusters']:
+            clusters = dataset['behavioral_clusters']
+            if not clusters.get('error'):
+                context_parts.append(f"\nBEHAVIORAL CLUSTERING:")
+                context_parts.append(f"Total clusters: {len(clusters.get('clusters', []))}")
+                
+                for cluster in clusters.get('clusters', [])[:3]:
+                    context_parts.append(f"\n• CLUSTER {cluster['cluster_id']}: {cluster['archetype']}")
+                    context_parts.append(f"  Agents: {', '.join(cluster['agents'])}")
+                    context_parts.append(f"  Cohesion: {cluster['cohesion']*100:.0f}%")
+                    context_parts.append(f"  Description: {cluster['description']}")
+                
+                if clusters.get('leader_follower_pairs'):
+                    context_parts.append("\nLEADER-FOLLOWER RELATIONSHIPS:")
+                    for pair in clusters['leader_follower_pairs'][:3]:
+                        context_parts.append(f"• {pair['leader']} → {pair['follower']}")
+                        context_parts.append(f"  Correlation: {pair['correlation']*100:.0f}% | Lag: {pair['avg_lag_days']}d")
         
         # Add comparison datasets if available
         if comparison_datasets and is_comparison:
@@ -509,19 +542,6 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 'tier': client_profile.get('tier', 'unknown')
             }
             context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
-            
-            # Add recent conversation history for continuity
-            if client_profile.get('query_history'):
-                recent_queries = client_profile['query_history'][-5:]
-                if recent_queries:
-                    context_parts.append("\nRECENT CONVERSATION HISTORY:")
-                    for q in recent_queries:
-                        timestamp = q.get('timestamp')
-                        if isinstance(timestamp, str):
-                            date_str = timestamp[:10]
-                        else:
-                            date_str = timestamp.strftime('%Y-%m-%d') if timestamp else 'Unknown'
-                        context_parts.append(f"- {date_str}: {q.get('query', 'N/A')} (category: {q.get('category', 'N/A')})")
         
         # ========================================
         # DETERMINE ANALYSIS MODE
@@ -533,6 +553,10 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             mode = "RETURNING USER GREETING"
         elif is_small_talk:
             mode = "OFF-TOPIC REDIRECT"
+        elif is_timing_query:
+            mode = "LIQUIDITY TIMING ANALYSIS"
+        elif is_clustering_query:
+            mode = "BEHAVIORAL CLUSTERING ANALYSIS"
         elif is_scenario:
             mode = "SCENARIO MODELLING"
         elif is_strategic:
@@ -557,29 +581,53 @@ Analysis mode: {mode}
 User context:
 - Is greeting: {is_greeting}
 - Is returning user: {is_returning_user}
-- Is small talk: {is_small_talk}
+- Is timing query: {is_timing_query}
+- Is clustering query: {is_clustering_query}
 - Total queries from user: {client_profile.get('total_queries', 0) if client_profile else 0}
 
-Classify this message and generate an executive analyst response with V3 predictive intelligence capabilities.
+Classify this message and generate an executive analyst response with full V3+V4 predictive intelligence.
 
 REMEMBER: 
-- Adapt response length to query complexity (150 chars for greeting, 400-600 for quick query, 1200-1500 for strategic)
+- Adapt response length to query complexity
 - Include confidence levels on predictions
-- Reference conversation history naturally when relevant
-- Highlight detected trends if they relate to the query
-- For greetings: Be warm but professional, introduce capabilities
-- For small talk: Politely redirect to market intelligence focus
-- Use intelligent structure (bullets only when needed, headers for multi-topic responses)"""
-
+- Reference liquidity windows when discussing timing
+- Reference behavioral clusters when discussing agent dynamics
+- Use intelligent structure (bullets only when needed)"""
+        
+        # ============================================================
+        # WAVE 3: Add conversation context if available
+        # ============================================================
+        try:
+            phone_number = client_profile.get('whatsapp_number', 'unknown') if client_profile else 'unknown'
+            session = ConversationSession(phone_number)
+            user_prompt = generate_contextualized_prompt(user_prompt, session)
+            logger.info("Added conversation context to prompt")
+        except Exception as e:
+            logger.debug(f"Session context unavailable: {e}")
+        
+        # ============================================================
+        # CALL GPT-4 WITH ADAPTIVE PARAMETERS (WAVE 3)
+        # ============================================================
         if openai_client:
-            response = await call_gpt4(user_prompt)
+            response = openai_client.chat.completions.create(
+                model="gpt-4-turbo-preview",
+                messages=[
+                    {"role": "system", "content": enhanced_system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=adaptive_config['max_tokens'],
+                temperature=adaptive_config['temperature'],
+                timeout=15.0
+            )
+            
+            response_text = response.choices[0].message.content
         else:
             logger.error("No LLM provider configured")
             return "market_overview", "System configuration error. Please contact support.", {}
         
         # Parse JSON response
         try:
-            parsed = json.loads(response)
+            parsed = json.loads(response_text)
             category = parsed.get("category", "market_overview")
             response_text = parsed.get("response", "")
             response_metadata = {
@@ -589,7 +637,13 @@ REMEMBER:
             }
         except json.JSONDecodeError:
             logger.warning(f"LLM returned non-JSON response, using as-is")
-            if is_scenario:
+            
+            # Determine category from query type
+            if is_timing_query:
+                category = "market_overview"
+            elif is_clustering_query:
+                category = "competitive_landscape"
+            elif is_scenario:
                 category = "scenario_modelling"
             elif is_strategic:
                 category = "strategic_outlook"
@@ -603,9 +657,10 @@ REMEMBER:
                 category = "market_overview"
             else:
                 category = "market_overview"
-            response_text = response
+            
+            response_text = response_text
             response_metadata = {
-                "confidence_level": "medium",
+                "confidence_level": adaptive_config['confidence_level'],
                 "data_filtered": [],
                 "recommendation_urgency": "monitor"
             }
@@ -621,38 +676,3 @@ REMEMBER:
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
         return "market_overview", "Unable to process request. Please try again.", {}
-
-
-async def call_gpt4(user_prompt: str) -> str:
-    """Call OpenAI GPT-4 API with V3 extended context"""
-    try:
-       response = openai_client.chat.completions.create(
-    model="gpt-4-turbo-preview",
-    messages=[
-        {"role": "system", "content": enhanced_system_prompt},  # ← Changed!
-        {"role": "user", "content": user_prompt}
-    ],
-    max_tokens=adaptive_config['max_tokens'],      # ← Dynamic!
-    temperature=adaptive_config['temperature'],     # ← Dynamic!
-    timeout=15.0
-)
-
-
-    # ============================================================
-    # WAVE 3: Add conversation context if available
-    # ============================================================
-    try:
-        # Get phone number from client_profile if available
-        phone_number = client_profile.get('whatsapp_number', 'unknown') if 'client_profile' in locals() else 'unknown'
-        session = ConversationSession(phone_number)
-        user_prompt = generate_contextualized_prompt(user_prompt, session)
-        logger.info("Added conversation context to prompt")
-    except Exception as e:
-        logger.debug(f"Session context unavailable: {e}")
-        # Continue without conversation context
-        
-        return response.choices[0].message.content
-        
-    except Exception as e:
-        logger.error(f"GPT-4 API error: {str(e)}", exc_info=True)
-        raise
