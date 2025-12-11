@@ -2,6 +2,7 @@
 Voxmill WhatsApp Intelligence Service - Main Application
 FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence stack
 """
+import json 
 import os
 import sys
 import logging
@@ -856,12 +857,23 @@ if __name__ == "__main__":
 async def sync_client_from_airtable(request: Request):
     """Webhook: Airtable → MongoDB client sync"""
     try:
-        data = await request.json()
+        # Try to parse JSON, if fails, get raw body
+        try:
+            data = await request.json()
+        except:
+            body = await request.body()
+            logger.error(f"❌ Invalid JSON. Raw body: {body[:500]}")
+            return {"success": False, "error": "Invalid JSON payload"}
         
-        # Log raw data for debugging
-        logger.info(f"📥 Webhook received: {json.dumps(data, indent=2)[:500]}")
+        # Log what we received
+        logger.info(f"📥 Webhook keys: {list(data.keys())}")
         
-        # Zapier sends data in multiple possible formats - try all
+        # Handle empty data
+        if not data or len(data) == 0:
+            logger.error("❌ Empty webhook payload")
+            return {"success": False, "error": "Empty payload"}
+        
+        # Parse different formats
         fields = None
         
         # Format 1: {"fields": {...}}
@@ -872,77 +884,75 @@ async def sync_client_from_airtable(request: Request):
         elif 'Email' in data or 'email' in data:
             fields = data
         
-        # Format 3: Airtable nested format (what you have)
+        # Format 3: Airtable nested format
         elif 'Airtable' in data:
-            # Flatten the Airtable object
             airtable_data = data['Airtable']
-            # The values are in order, keys are Airtable internal IDs
             values = list(airtable_data.values())
             
-            # Map values to fields (based on Zapier field order)
-            # Order from your test: recID, Name, Email, WhatsApp, Company, Tier, Region, City, CompFocus, ReportDepth, UpdateFreq, Limit, Used, Status, StripeID
-            if len(values) >= 15:
+            logger.info(f"📊 Airtable values count: {len(values)}")
+            
+            if len(values) >= 14:  # At minimum need: Name, Email, WhatsApp, etc.
                 fields = {
-                    'record_id': values[0],
-                    'Name': values[1],
-                    'Email': values[2],
-                    'WhatsApp Number': values[3],
-                    'Company': values[4],
-                    'Tier': values[5],
-                    'Preferred Region': values[6],
-                    'Preferred City': values[7],
-                    'Competitor Focus': values[8],
-                    'Report Depth': values[9],
-                    'Update Frequency': values[10],
-                    'Monthly Message Limit': values[11],
-                    'Messages Used This Month': values[12],
-                    'Subscription Status': values[13],
-                    'Stripe Customer ID': values[14]
+                    'record_id': values[0] if len(values) > 0 else '',
+                    'Name': values[1] if len(values) > 1 else '',
+                    'Email': values[2] if len(values) > 2 else '',
+                    'WhatsApp Number': values[3] if len(values) > 3 else '',
+                    'Company': values[4] if len(values) > 4 else '',
+                    'Tier': values[5] if len(values) > 5 else 'trial',
+                    'Preferred Region': values[6] if len(values) > 6 else 'London',
+                    'Preferred City': values[7] if len(values) > 7 else 'London',
+                    'Competitor Focus': values[8] if len(values) > 8 else 'medium',
+                    'Report Depth': values[9] if len(values) > 9 else 'detailed',
+                    'Update Frequency': values[10] if len(values) > 10 else 'weekly',
+                    'Monthly Message Limit': values[11] if len(values) > 11 else 100,
+                    'Messages Used This Month': values[12] if len(values) > 12 else 0,
+                    'Subscription Status': values[13] if len(values) > 13 else 'trial',
+                    'Stripe Customer ID': values[14] if len(values) > 14 else ''
                 }
             else:
-                logger.error(f"❌ Unexpected Airtable format with {len(values)} values")
-                return {"success": False, "error": f"Expected 15 values, got {len(values)}"}
+                logger.error(f"❌ Not enough values in Airtable format. Got {len(values)}, need 14+")
+                return {"success": False, "error": f"Incomplete data: {len(values)} values"}
         
         if not fields:
-            logger.error(f"❌ Could not parse data. Keys: {list(data.keys())}")
-            return {"success": False, "error": "Unknown data format"}
+            logger.error(f"❌ Unknown format. Keys: {list(data.keys())}")
+            return {"success": False, "error": "Unknown data format", "keys": list(data.keys())}
         
         # Extract email
         email = fields.get('Email') or fields.get('email')
         
-        if not email:
-            logger.error(f"❌ No email in fields: {list(fields.keys())}")
-            return {"success": False, "error": "Email required", "fields": list(fields.keys())}
+        if not email or email == '':
+            logger.error(f"❌ No email. Fields: {list(fields.keys())}")
+            return {"success": False, "error": "Email required"}
         
-        # Clean WhatsApp number
-        whatsapp_raw = fields.get('WhatsApp Number') or fields.get('whatsapp_number') or ''
+        # Clean WhatsApp
+        whatsapp_raw = fields.get('WhatsApp Number') or ''
         whatsapp_clean = whatsapp_raw.replace(' ', '').replace('+', '').replace('whatsapp:', '')
         whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
         
-        # Build client profile
+        # Build profile
         client_profile = {
             'email': email,
             'whatsapp_number': whatsapp_formatted,
             'name': fields.get('Name') or 'Unknown',
             'company': fields.get('Company') or '',
-            'tier': (fields.get('Tier') or 'trial').lower(),
+            'tier': str(fields.get('Tier') or 'trial').lower(),
             'preferences': {
                 'preferred_region': fields.get('Preferred Region') or 'London',
                 'preferred_city': fields.get('Preferred City') or 'London',
-                'competitor_focus': (fields.get('Competitor Focus') or 'medium').lower(),
-                'report_depth': (fields.get('Report Depth') or 'detailed').lower(),
-                'update_frequency': (fields.get('Update Frequency') or 'weekly').lower()
+                'competitor_focus': str(fields.get('Competitor Focus') or 'medium').lower(),
+                'report_depth': str(fields.get('Report Depth') or 'detailed').lower(),
+                'update_frequency': str(fields.get('Update Frequency') or 'weekly').lower()
             },
             'monthly_message_limit': int(fields.get('Monthly Message Limit') or 100),
             'messages_used_this_month': int(fields.get('Messages Used This Month') or 0),
-            'subscription_status': (fields.get('Subscription Status') or 'trial').lower(),
+            'subscription_status': str(fields.get('Subscription Status') or 'trial').lower(),
             'stripe_customer_id': fields.get('Stripe Customer ID') or '',
             'airtable_record_id': fields.get('record_id') or data.get('id') or 'unknown',
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
         
-        # Upsert to MongoDB
+        # Save to MongoDB
         result = db['client_profiles'].update_one(
             {'email': email},
             {'$set': client_profile},
@@ -959,8 +969,7 @@ async def sync_client_from_airtable(request: Request):
         return {
             "success": True,
             "action": action,
-            "email": email,
-            "name": client_profile['name']
+            "email": email
         }
         
     except Exception as e:
