@@ -26,12 +26,12 @@ def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
     # ============================================================
     cache_mgr = CacheManager()
     
-    cached_dataset = cache_mgr.get_dataset_cache(region=area)
+    cached_dataset = cache_mgr.get_dataset_cache(area=area)
     
     if cached_dataset:
-        logger.info(f"Dataset cache hit for region: {area}")
-        return cached_dataset
-    
+       logger.info(f"Dataset cache hit for area: {area}")
+       return cached_dataset
+
     logger.info(f"Dataset cache miss, loading from MongoDB: {area}")
     
     try:
@@ -64,8 +64,9 @@ def load_dataset(area: str = "Mayfair", vertical: str = "real_estate") -> dict:
         # ============================================================
         # WAVE 1: Cache the dataset
         # ============================================================
-        cache_mgr.set_dataset_cache(region=area, dataset=dataset)
-        logger.info(f"Dataset cached for region: {area}")
+        cache_mgr.set_dataset_cache(area=area, dataset=dataset)
+        logger.info(f"Dataset cached for area: {area}")
+        
         
         return dataset
         
