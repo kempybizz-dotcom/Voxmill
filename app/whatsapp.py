@@ -343,6 +343,47 @@ Need more queries? Upgrade or contact:
         
         if is_first_time:
             await send_first_time_welcome(sender, client_profile)
+
+
+        # ========================================
+        # FIRST-TIME USER WELCOME
+        # ========================================
+        
+        is_first_time = client_profile.get('total_queries', 0) == 0
+        
+        if is_first_time:
+            await send_first_time_welcome(sender, client_profile)
+        
+        # ========================================
+        # HANDLE SIMPLE GREETINGS (NO DATA NEEDED)
+        # ========================================
+        
+        greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
+                            'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo']
+        
+        is_simple_greeting = message_normalized.lower().strip() in greeting_keywords
+        
+        if is_simple_greeting and not is_first_time:
+            # Returning user greeting - be brief and professional
+            greeting_response = """Good morning.
+
+Standing by for market intelligence queries."""
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            # Update conversation session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=greeting_response,
+                metadata={'category': 'greeting'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "greeting", greeting_response)
+            update_client_history(sender, message_text, "greeting", "None")
+            
+            logger.info(f"✅ Greeting handled for returning user {sender}")
+            return
         
         # ========================================
         # PDF REQUEST DETECTION
