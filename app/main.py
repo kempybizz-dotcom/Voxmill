@@ -61,187 +61,6 @@ db = mongo_client['Voxmill']
 logger.info("✅ MongoDB connected")
 
 
-
-# Background task that runs forever
-async def alert_checker_loop():
-    """Runs every hour in background"""
-    while True:
-        try:
-            # Wait until the top of the next hour
-            now = datetime.now(timezone.utc)
-            next_hour = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
-            wait_seconds = (next_hour - now).total_seconds()
-            
-            logger.info(f"Alert checker sleeping {wait_seconds:.0f}s until {next_hour.strftime('%H:%M UTC')}")
-            await asyncio.sleep(wait_seconds)
-            
-            # Run alert checker
-            logger.info("=" * 70)
-            logger.info("SCHEDULED ALERT CHECKER - Starting")
-            logger.info("=" * 70)
-            
-            await check_and_send_alerts_task()
-            
-            logger.info("SCHEDULED ALERT CHECKER - Complete")
-            
-        except Exception as e:
-            logger.error(f"Alert checker loop error: {e}", exc_info=True)
-            # Wait 5 minutes before retrying on error
-            await asyncio.sleep(300)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Start background alert checker when app starts"""
-    asyncio.create_task(alert_checker_loop())
-    logger.info("✅ Background alert checker started - Runs every hour")
-
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-
-scheduler = AsyncIOScheduler()
-
-@scheduler.scheduled_job(CronTrigger(hour='*', minute=0))
-async def scheduled_alert_checker():
-    logger.info("ALERT CHECKER - Running hourly")
-    try:
-        await check_and_send_alerts_task()
-    except Exception as e:
-        logger.error(f"Alert error: {e}", exc_info=True)
-
-@app.on_event("startup")
-async def startup():
-    scheduler.start()
-    logger.info("✅ Alert scheduler started")
-
-
-# ============================================================================
-# AIRTABLE → MONGODB SYNC ENDPOINTS
-# ============================================================================
-
-@app.post("/api/sync-preferences")
-async def sync_preferences_from_airtable(request: Request):
-    """
-    Sync client preferences from Airtable to MongoDB.
-    Called by Airtable automation when preferences are updated manually.
-    
-    Expected payload:
-    {
-        "email": "client@example.com",
-        "preferences": {
-            "competitor_focus": "high",
-            "report_depth": "executive"
-        }
-    }
-    """
-    try:
-        # Get payload from Airtable
-        data = await request.json()
-        
-        email = data.get('email')
-        preferences = data.get('preferences', {})
-        
-        # Validate required fields
-        if not email:
-            raise HTTPException(status_code=400, detail="Email is required")
-        
-        # Validate preference values
-        valid_competitor_focus = ['low', 'medium', 'high']
-        valid_report_depth = ['executive', 'detailed', 'deep']
-        
-        if 'competitor_focus' in preferences:
-            if preferences['competitor_focus'] not in valid_competitor_focus:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"Invalid competitor_focus. Must be one of: {valid_competitor_focus}"
-                )
-        
-        if 'report_depth' in preferences:
-            if preferences['report_depth'] not in valid_report_depth:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"Invalid report_depth. Must be one of: {valid_report_depth}"
-                )
-        
-        # Update MongoDB
-        result = db.client_profiles.update_one(
-            {"email": email},
-            {
-                "$set": {
-                    "preferences": preferences,
-                    "preferences_updated_at": datetime.utcnow(),
-                    "preferences_updated_by": "Airtable Manual"
-                }
-            },
-            upsert=True  # Create if doesn't exist
-        )
-        
-        logger.info(f"✅ AIRTABLE SYNC: {email} → {preferences}")
-        
-        # Return success response
-        return {
-            "status": "success",
-            "email": email,
-            "preferences": preferences,
-            "matched": result.matched_count,
-            "modified": result.modified_count,
-            "upserted": result.upserted_id is not None
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/preferences/{email}")
-async def get_preferences(email: str):
-    """
-    Get current preferences for a client.
-    Useful for Airtable to fetch current MongoDB state.
-    """
-    try:
-        client = db.client_profiles.find_one({"email": email})
-        
-        if not client:
-            raise HTTPException(status_code=404, detail="Client not found")
-        
-        preferences = client.get('preferences', {})
-        
-        return {
-            "email": email,
-            "preferences": preferences,
-            "updated_at": client.get('preferences_updated_at'),
-            "updated_by": client.get('preferences_updated_by', 'Unknown')
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Get preferences error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "Voxmill Intelligence API",
-        "version": "2.0.0",
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
-
-# ============================================================================
-# YOUR EXISTING WHATSAPP WEBHOOK CODE CONTINUES BELOW...
-# ============================================================================
-
-# ... rest of your existing code ...
-
-
 def normalize_phone_number(phone: str) -> str:
     """
     Normalize phone number format for WhatsApp
@@ -260,6 +79,10 @@ def normalize_phone_number(phone: str) -> str:
     return phone
 
 
+# ============================================================================
+# STARTUP/SHUTDOWN EVENTS
+# ============================================================================
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup"""
@@ -268,11 +91,30 @@ async def startup_event():
     # Start background scheduler for data collection
     try:
         from app.scheduler import daily_intelligence_cycle
-        import asyncio
         asyncio.create_task(daily_intelligence_cycle())
         logger.info("✅ Background scheduler started")
     except Exception as e:
         logger.warning(f"⚠️  Scheduler not started: {e}")
+    
+    # Start alert checker scheduler
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger
+        
+        scheduler = AsyncIOScheduler()
+        
+        @scheduler.scheduled_job(CronTrigger(hour='*', minute=0))
+        async def scheduled_alert_checker():
+            logger.info("ALERT CHECKER - Running hourly")
+            try:
+                await check_and_send_alerts_task()
+            except Exception as e:
+                logger.error(f"Alert error: {e}", exc_info=True)
+        
+        scheduler.start()
+        logger.info("✅ Alert scheduler started")
+    except Exception as e:
+        logger.warning(f"⚠️  Alert scheduler not started: {e}")
     
     logger.info("✅ Voxmill service ready")
 
@@ -283,6 +125,10 @@ async def shutdown_event():
     logger.info("🛑 Shutting down Voxmill service...")
     logger.info("✅ Shutdown complete")
 
+
+# ============================================================================
+# BASIC ENDPOINTS
+# ============================================================================
 
 @app.get("/")
 async def root():
@@ -305,6 +151,17 @@ async def health_check():
     }
 
 
+@app.get("/api/health")
+async def api_health_check():
+    """API health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "Voxmill Intelligence API",
+        "version": "2.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
 @app.get("/health/intelligence")
 async def intelligence_health_check():
     """
@@ -321,15 +178,8 @@ async def intelligence_health_check():
     
     # Test MongoDB connection
     try:
-        from pymongo import MongoClient
-        MONGODB_URI = os.getenv("MONGODB_URI")
-        if MONGODB_URI:
-            client = MongoClient(MONGODB_URI)
-            client.admin.command('ping')
-            health_status["components"]["mongodb"] = {"status": "healthy", "message": "Connection successful"}
-        else:
-            health_status["components"]["mongodb"] = {"status": "not_configured", "message": "MONGODB_URI not set"}
-            overall_healthy = False
+        mongo_client.admin.command('ping')
+        health_status["components"]["mongodb"] = {"status": "healthy", "message": "Connection successful"}
     except Exception as e:
         health_status["components"]["mongodb"] = {"status": "unhealthy", "error": str(e)}
         overall_healthy = False
@@ -389,6 +239,10 @@ async def intelligence_health_check():
     
     return health_status
 
+
+# ============================================================================
+# WHATSAPP WEBHOOK
+# ============================================================================
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
@@ -487,6 +341,109 @@ async def whatsapp_webhook_get(request: Request):
     return PlainTextResponse("Voxmill WhatsApp Webhook Active", status_code=200)
 
 
+# ============================================================================
+# AIRTABLE → MONGODB SYNC ENDPOINTS
+# ============================================================================
+
+@app.post("/api/sync-preferences")
+async def sync_preferences_from_airtable(request: Request):
+    """
+    Sync client preferences from Airtable to MongoDB.
+    Called by Airtable automation when preferences are updated manually.
+    """
+    try:
+        # Get payload from Airtable
+        data = await request.json()
+        
+        email = data.get('email')
+        preferences = data.get('preferences', {})
+        
+        # Validate required fields
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        
+        # Validate preference values
+        valid_competitor_focus = ['low', 'medium', 'high']
+        valid_report_depth = ['executive', 'detailed', 'deep']
+        
+        if 'competitor_focus' in preferences:
+            if preferences['competitor_focus'] not in valid_competitor_focus:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid competitor_focus. Must be one of: {valid_competitor_focus}"
+                )
+        
+        if 'report_depth' in preferences:
+            if preferences['report_depth'] not in valid_report_depth:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid report_depth. Must be one of: {valid_report_depth}"
+                )
+        
+        # Update MongoDB
+        result = db.client_profiles.update_one(
+            {"email": email},
+            {
+                "$set": {
+                    "preferences": preferences,
+                    "preferences_updated_at": datetime.utcnow(),
+                    "preferences_updated_by": "Airtable Manual"
+                }
+            },
+            upsert=True  # Create if doesn't exist
+        )
+        
+        logger.info(f"✅ AIRTABLE SYNC: {email} → {preferences}")
+        
+        # Return success response
+        return {
+            "status": "success",
+            "email": email,
+            "preferences": preferences,
+            "matched": result.matched_count,
+            "modified": result.modified_count,
+            "upserted": result.upserted_id is not None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/preferences/{email}")
+async def get_preferences(email: str):
+    """
+    Get current preferences for a client.
+    Useful for Airtable to fetch current MongoDB state.
+    """
+    try:
+        client = db.client_profiles.find_one({"email": email})
+        
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        preferences = client.get('preferences', {})
+        
+        return {
+            "email": email,
+            "preferences": preferences,
+            "updated_at": client.get('preferences_updated_at'),
+            "updated_by": client.get('preferences_updated_by', 'Unknown')
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Get preferences error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# ADMIN/DEBUG ENDPOINTS
+# ============================================================================
+
 @app.post("/admin/broadcast")
 async def admin_broadcast(request: Request):
     """
@@ -556,14 +513,10 @@ async def serve_pdf(file_id: str):
     Serve PDF from GridFS (fallback if Cloudflare not configured)
     """
     try:
-        from pymongo import MongoClient
         from bson.objectid import ObjectId
         import gridfs
         from fastapi.responses import StreamingResponse
         
-        MONGODB_URI = os.getenv("MONGODB_URI")
-        client = MongoClient(MONGODB_URI)
-        db = client['Voxmill']
         fs = gridfs.GridFS(db)
         
         # Get file
@@ -615,41 +568,13 @@ async def get_client_info(phone: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Import additional routes (optional, won't crash if missing)
-try:
-    from app.routes.onboarding import router as onboarding_router
-    from app.routes.stripe_webhooks import router as stripe_router
-    from app.routes.testing import router as testing_router
-    
-    app.include_router(onboarding_router, prefix="/onboarding", tags=["onboarding"])
-    app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
-    app.include_router(testing_router, prefix="/test", tags=["testing"])
-    
-    logger.info("✅ Additional routes loaded")
-except ImportError as e:
-    logger.warning(f"⚠️  Could not load additional routes: {e}")
-
-
-if __name__ == "__main__":
-    import uvicorn
-    
-    port = int(os.getenv("PORT", 8000))
-    
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=port,
-        reload=False,
-        log_level="info"
-    )
-
-
 @app.post("/api/regenerate")
 async def emergency_regenerate(request: Request):
     """
     Emergency regeneration triggered by operator.
     Only callable with API key for security.
     """
+    import subprocess
     
     # Verify API key
     api_key = request.headers.get('X-API-Key')
@@ -694,8 +619,6 @@ async def emergency_regenerate(request: Request):
 # REAL-TIME ALERTS SYSTEM
 # ============================================================================
 
-from fastapi import BackgroundTasks
-
 @app.get("/internal/run-alert-checker")
 async def run_alert_checker_endpoint(background_tasks: BackgroundTasks, secret: str = None):
     """
@@ -730,16 +653,6 @@ async def check_and_send_alerts_task():
     try:
         from app.intelligence.alert_detector import detect_alerts_for_region, format_alert_message
         from app.whatsapp import send_twilio_message
-        from pymongo import MongoClient
-        
-        # Get MongoDB connection
-        MONGODB_URI = os.getenv("MONGODB_URI")
-        mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
-        db = mongo_client['Voxmill'] if mongo_client else None
-        
-        if db is None:
-            logger.error("MongoDB not connected - cannot run alert checker")
-            return
         
         logger.info("="*70)
         logger.info("ALERT CHECKER - Starting")
@@ -827,10 +740,10 @@ async def check_and_send_alerts_task():
         logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
 
 
+# ============================================================================
+# WAVE 1 & WAVE 3: CACHE AND SESSION ENDPOINTS
+# ============================================================================
 
-# ============================================================
-# WAVE 1: Cache Analytics Endpoint
-# ============================================================
 @app.get("/metrics/cache")
 async def get_cache_metrics():
     """Get cache performance metrics"""
@@ -846,9 +759,6 @@ async def get_cache_metrics():
     }
 
 
-# ============================================================
-# WAVE 3: Session Management Endpoints
-# ============================================================
 @app.get("/session/{phone}/analytics")
 async def get_session_analytics_endpoint(phone: str):
     """Get conversation analytics for a client"""
@@ -897,3 +807,40 @@ async def clear_cache():
             "status": "error",
             "error": str(e)
         }
+
+
+# ============================================================================
+# OPTIONAL ROUTES
+# ============================================================================
+
+# Import additional routes (optional, won't crash if missing)
+try:
+    from app.routes.onboarding import router as onboarding_router
+    from app.routes.stripe_webhooks import router as stripe_router
+    from app.routes.testing import router as testing_router
+    
+    app.include_router(onboarding_router, prefix="/onboarding", tags=["onboarding"])
+    app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
+    app.include_router(testing_router, prefix="/test", tags=["testing"])
+    
+    logger.info("✅ Additional routes loaded")
+except ImportError as e:
+    logger.warning(f"⚠️  Could not load additional routes: {e}")
+
+
+# ============================================================================
+# MAIN ENTRY POINT
+# ============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    port = int(os.getenv("PORT", 8000))
+    
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False,
+        log_level="info"
+    )
