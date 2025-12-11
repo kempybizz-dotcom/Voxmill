@@ -422,38 +422,45 @@ Need more queries? Upgrade or contact:
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
         
-        # ========================================
+       # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
-    # Check if data exists (not fallback)
-    metadata = dataset.get('metadata', {})
-    is_fallback = metadata.get('is_fallback', False)
-    property_count = len(dataset.get('properties', []))
+        dataset = load_dataset(area=preferred_region)
+        
+        # DEBUG: Log what we got
+        logger.info(f"📊 Dataset loaded: area={dataset.get('metadata', {}).get('area')}, "
+                   f"properties={len(dataset.get('properties', []))}, "
+                   f"is_fallback={dataset.get('metadata', {}).get('is_fallback', False)}")
+        
+        # Check if data exists (not fallback)
+        metadata = dataset.get('metadata', {})
+        is_fallback = metadata.get('is_fallback', False)
+        property_count = len(dataset.get('properties', []))
+        
+        # Only treat as fallback if BOTH conditions are true
+        if is_fallback and property_count == 0:
+            # No real data for this region
+            no_data_msg = f"""⚠️ DATA UNAVAILABLE
 
-    # Only treat as fallback if BOTH conditions are true
-    if is_fallback and property_count == 0:
-        # No real data for this region
-        no_data_msg = f"""⚠️ DATA UNAVAILABLE
+We don't currently have market intelligence for {preferred_region}.
 
-    We don't currently have market intelligence for {preferred_region}.
+Available regions:
+- Mayfair
+- Knightsbridge
+- Chelsea
+- Belgravia
 
-    Available regions:
-    - Mayfair
-    - Knightsbridge
-    - Chelsea
-    - Belgravia
-
-    To add {preferred_region} coverage:
-    📧 intel@voxmill.uk"""
-    
-    await send_twilio_message(sender, no_data_msg)
-    logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
-    return
-
-# Log if we're using real data
-if property_count > 0:
-    logger.info(f"✅ Using real data for {preferred_region}: {property_count} properties")
+To add {preferred_region} coverage:
+📧 intel@voxmill.uk"""
+            
+            await send_twilio_message(sender, no_data_msg)
+            logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
+            return
+        
+        # Log if we're using real data
+        if property_count > 0:
+            logger.info(f"✅ Using real data for {preferred_region}: {property_count} properties")
         
         # Check data freshness and add warning if stale
         data_timestamp = metadata.get('analysis_timestamp')
