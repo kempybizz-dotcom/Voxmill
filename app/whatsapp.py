@@ -672,6 +672,51 @@ To add {preferred_region} coverage:
                             logger.info(f"Cascade predicted: {initiating_agent} {magnitude:+.1f}% -> {cascade['total_affected_agents']} agents affected")
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
+
+
+        # ========================================
+        # WAVE 4 INTELLIGENCE LAYERS
+        # ========================================
+        
+        # Layer 6: Liquidity Window Prediction
+        try:
+            from app.intelligence.liquidity_window_predictor import predict_liquidity_windows
+            from app.dataset_loader import load_historical_snapshots
+            
+            # Check if we have liquidity velocity data
+            if 'liquidity_velocity' in dataset and not dataset['liquidity_velocity'].get('error'):
+                # Load historical data for window prediction
+                historical = load_historical_snapshots(area=preferred_region, days=60)
+                
+                if historical and len(historical) >= 10:
+                    windows = predict_liquidity_windows(
+                        area=preferred_region,
+                        current_velocity=dataset['liquidity_velocity'],
+                        historical_data=historical
+                    )
+                    
+                    if not windows.get('error'):
+                        dataset['liquidity_windows'] = windows
+                        logger.info(f"✅ Liquidity windows predicted: {windows['total_windows']} windows detected")
+        except (ImportError, Exception) as e:
+            logger.debug(f"Liquidity window predictor unavailable: {str(e)}")
+        
+        # Layer 7: Behavioral Clustering
+        try:
+            from app.intelligence.behavioral_clustering import cluster_agents_by_behavior
+            
+            # Check if we have agent profiles
+            if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                clusters = cluster_agents_by_behavior(
+                    area=preferred_region,
+                    agent_profiles=dataset['agent_profiles']
+                )
+                
+                if not clusters.get('error'):
+                    dataset['behavioral_clusters'] = clusters
+                    logger.info(f"✅ Behavioral clustering complete: {len(clusters.get('clusters', []))} clusters identified")
+        except (ImportError, Exception) as e:
+            logger.debug(f"Behavioral clustering unavailable: {str(e)}")
         
         # ========================================
         # GPT-4 ANALYSIS
