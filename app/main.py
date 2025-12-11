@@ -854,38 +854,51 @@ if __name__ == "__main__":
 
 @app.post("/api/airtable/sync-client")
 async def sync_client_from_airtable(request: Request):
-    """
-    Webhook endpoint for Airtable → MongoDB client sync
-    
-    Triggered when: New client added or updated in Airtable
-    """
+    """Webhook: Airtable → MongoDB client sync"""
     try:
         data = await request.json()
         
-        # Extract Airtable fields
-        fields = data.get('fields', {})
+        # Zapier can send data in different formats - handle both
+        if 'fields' in data:
+            fields = data['fields']
+            record_id = data.get('id', 'unknown')
+        else:
+            # Zapier might send flat structure
+            fields = data
+            record_id = data.get('recordId', data.get('id', 'unknown'))
         
-        # Build MongoDB client profile
+        # Extract email (critical field)
+        email = fields.get('Email') or fields.get('email')
+        
+        if not email:
+            logger.error(f"❌ No email in webhook data: {fields.keys()}")
+            return {"success": False, "error": "Email required"}
+        
+        # Extract WhatsApp number
+        whatsapp_raw = fields.get('WhatsApp Number') or fields.get('whatsapp_number') or ''
+        whatsapp_clean = whatsapp_raw.replace(' ', '').replace('+', '').replace('whatsapp:', '')
+        whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
+        
+        # Build client profile
         client_profile = {
-            'email': fields.get('Email'),
-            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
-            'name': fields.get('Name'),
-            'company': fields.get('Company', ''),
-            'tier': fields.get('Tier', 'trial').lower(),
+            'email': email,
+            'whatsapp_number': whatsapp_formatted,
+            'name': fields.get('Name') or fields.get('name') or 'Unknown',
+            'company': fields.get('Company') or fields.get('company') or '',
+            'tier': (fields.get('Tier') or fields.get('tier') or 'trial').lower(),
             'preferences': {
-                'preferred_region': fields.get('Preferred Region', 'London'),
-                'preferred_city': fields.get('Preferred City', 'London'),
-                'competitor_focus': fields.get('Competitor Focus', 'medium').lower(),
-                'report_depth': fields.get('Report Depth', 'detailed').lower(),
-                'update_frequency': fields.get('Update Frequency', 'weekly').lower()
+                'preferred_region': fields.get('Preferred Region') or fields.get('preferred_region') or 'London',
+                'preferred_city': fields.get('Preferred City') or fields.get('preferred_city') or 'London',
+                'competitor_focus': (fields.get('Competitor Focus') or fields.get('competitor_focus') or 'medium').lower(),
+                'report_depth': (fields.get('Report Depth') or fields.get('report_depth') or 'detailed').lower(),
+                'update_frequency': (fields.get('Update Frequency') or fields.get('update_frequency') or 'weekly').lower()
             },
-            'monthly_message_limit': int(fields.get('Monthly Message Limit', 100)),
-            'messages_used_this_month': int(fields.get('Messages Used This Month', 0)),
-            'subscription_status': fields.get('Subscription Status', 'trial').lower(),
-            'stripe_customer_id': fields.get('Stripe Customer ID', ''),
-            'airtable_record_id': data.get('id'),  # Store Airtable record ID for reverse sync
-            'created_at': fields.get('Created Date', datetime.now().isoformat()),
-            'updated_at': datetime.now().isoformat()
+            'monthly_message_limit': int(fields.get('Monthly Message Limit') or fields.get('monthly_message_limit') or 100),
+            'messages_used_this_month': int(fields.get('Messages Used This Month') or fields.get('messages_used_this_month') or 0),
+            'subscription_status': (fields.get('Subscription Status') or fields.get('subscription_status') or 'trial').lower(),
+            'stripe_customer_id': fields.get('Stripe Customer ID') or fields.get('stripe_customer_id') or '',
+            'airtable_record_id': record_id,
+            'updated_at': datetime.now(timezone.utc).isoformat()
         }
         
         # Upsert to MongoDB
@@ -896,21 +909,18 @@ async def sync_client_from_airtable(request: Request):
         )
         
         action = "updated" if result.matched_count > 0 else "created"
-        
-        logger.info(f"✅ Client {action}: {client_profile['email']}")
+        logger.info(f"✅ Client {action}: {client_profile['email']} (WhatsApp: {whatsapp_formatted})")
         
         return {
             "success": True,
             "action": action,
-            "client_email": client_profile['email']
+            "email": client_profile['email'],
+            "whatsapp": whatsapp_formatted
         }
         
     except Exception as e:
         logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
 
 
 @app.post("/api/airtable/sync-team-member")
