@@ -371,11 +371,12 @@ Need more queries? Upgrade or contact:
         cached_response = cache_mgr.get_response_cache(
             query=message_normalized,
             region=preferred_region,
-            tier=client_profile.get('tier', 'standard')
+            client_tier=client_profile.get('tier', 'tier_1')
         )
         
         if cached_response:
             logger.info(f"Cache hit for query: {message_normalized[:50]}")
+            cached_text = cached_response.get('response', cached_response)
             await send_twilio_message(sender, cached_response)
             
             # Still update conversation session
@@ -655,8 +656,10 @@ To add {preferred_region} coverage:
         cache_mgr.set_response_cache(
             query=message_normalized,
             region=preferred_region,
-            tier=client_profile.get('tier', 'standard'),
-            response=formatted_response
+            client_tier=client_profile.get('tier', 'tier_1'),
+            category=category,
+            response_text=formatted_response,
+            metadata=response_metadata
         )
         
         # ============================================================
