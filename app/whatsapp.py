@@ -762,13 +762,15 @@ To add {preferred_region} coverage:
        # ============================================================
        # WAVE 1: Validate response output (no prompt leakage)
        # ============================================================
-       from app.security import ResponseValidator
-
-       response_safe, reason = ResponseValidator.validate_response(formatted_response)
-
-       if not response_safe:
-           logger.critical(f"LLM output failed security validation: {reason}")
-           formatted_response = "An error occurred processing your request. Please try again."
+    
+        # Security validation
+        from app.security import ResponseValidator
+        
+        response_safe, reason = ResponseValidator.validate_response(formatted_response)
+        
+        if not response_safe:
+            logger.critical(f"LLM output failed security validation: {reason}")
+            formatted_response = "An error occurred processing your request. Please try again."
         
         # Add data freshness warning if needed
         formatted_response += data_freshness_warning
