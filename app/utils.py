@@ -72,6 +72,55 @@ def format_analyst_response(response_text: str, category: str) -> str:
         return prose_response
 
 
+# utils.py - Update format_analyst_response function
+
+def format_analyst_response(response_text: str, category: str) -> str:
+    """
+    Format analyst response with intelligent header detection.
+    
+    Wave 3: Smart formatting - only add headers if response doesn't already have structure.
+    """
+    
+    # ✅ NEW: Check if response already has section headers
+    has_headers = any(marker in response_text for marker in [
+        '————————',  # Divider lines
+        'INTELLIGENCE',
+        'ANALYSIS',
+        'FORECAST',
+        'COMPETITIVE',
+        'SCENARIO',
+        'OUTLOOK'
+    ])
+    
+    # ✅ NEW: Check if response is conversational (greeting/acknowledgment)
+    is_conversational = len(response_text) < 100 and not any(char in response_text for char in ['•', ':', '—'])
+    
+    # If already structured OR conversational, return as-is
+    if has_headers or is_conversational:
+        return response_text
+    
+    # Otherwise, add category-based header (existing logic)
+    category_headers = {
+        "market_overview": "MARKET INTELLIGENCE",
+        "competitive_landscape": "COMPETITIVE INTELLIGENCE",
+        "opportunities": "ACQUISITION TARGETS",
+        "scenario_modelling": "SCENARIO ANALYSIS",
+        "strategic_outlook": "STRATEGIC FORECAST",
+        "analysis_snapshot": "MARKET SNAPSHOT",
+        "comparative_analysis": "COMPARATIVE INTELLIGENCE",
+        "weekly_briefing": "WEEKLY INTELLIGENCE BRIEF"
+    }
+    
+    header = category_headers.get(category, "INTELLIGENCE BRIEF")
+    
+    formatted = f"""{header}
+————————————————————————————————————————
+
+{response_text}"""
+    
+    return formatted
+
+
 def log_interaction(sender: str, message: str, category: str, response: str):
     """Log interaction for monitoring"""
     log_entry = {
