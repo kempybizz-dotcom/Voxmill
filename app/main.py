@@ -11,6 +11,8 @@ from typing import Optional
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from fastapi.responses import PlainTextResponse
 from pymongo import MongoClient
+from typing import Optional
+import httpx
 
 # Configure logging
 logging.basicConfig(
@@ -844,3 +846,239 @@ if __name__ == "__main__":
         reload=False,
         log_level="info"
     )
+
+
+# ============================================================================
+# AIRTABLE SYNC ENDPOINTS
+# ============================================================================
+
+@app.post("/api/airtable/sync-client")
+async def sync_client_from_airtable(request: Request):
+    """
+    Webhook endpoint for Airtable → MongoDB client sync
+    
+    Triggered when: New client added or updated in Airtable
+    """
+    try:
+        data = await request.json()
+        
+        # Extract Airtable fields
+        fields = data.get('fields', {})
+        
+        # Build MongoDB client profile
+        client_profile = {
+            'email': fields.get('Email'),
+            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
+            'name': fields.get('Name'),
+            'company': fields.get('Company', ''),
+            'tier': fields.get('Tier', 'trial').lower(),
+            'preferences': {
+                'preferred_region': fields.get('Preferred Region', 'London'),
+                'preferred_city': fields.get('Preferred City', 'London'),
+                'competitor_focus': fields.get('Competitor Focus', 'medium').lower(),
+                'report_depth': fields.get('Report Depth', 'detailed').lower(),
+                'update_frequency': fields.get('Update Frequency', 'weekly').lower()
+            },
+            'monthly_message_limit': int(fields.get('Monthly Message Limit', 100)),
+            'messages_used_this_month': int(fields.get('Messages Used This Month', 0)),
+            'subscription_status': fields.get('Subscription Status', 'trial').lower(),
+            'stripe_customer_id': fields.get('Stripe Customer ID', ''),
+            'airtable_record_id': data.get('id'),  # Store Airtable record ID for reverse sync
+            'created_at': fields.get('Created Date', datetime.now().isoformat()),
+            'updated_at': datetime.now().isoformat()
+        }
+        
+        # Upsert to MongoDB
+        result = db['client_profiles'].update_one(
+            {'email': client_profile['email']},
+            {'$set': client_profile},
+            upsert=True
+        )
+        
+        action = "updated" if result.matched_count > 0 else "created"
+        
+        logger.info(f"✅ Client {action}: {client_profile['email']}")
+        
+        return {
+            "success": True,
+            "action": action,
+            "client_email": client_profile['email']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Airtable sync error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@app.post("/api/airtable/sync-team-member")
+async def sync_team_member_from_airtable(request: Request):
+    """
+    Webhook endpoint for Airtable → MongoDB team member sync
+    
+    Triggered when: New team member added in Airtable
+    """
+    try:
+        data = await request.json()
+        fields = data.get('fields', {})
+        
+        # Get client email from linked record
+        client_link = fields.get('Client', [])
+        if not client_link:
+            return {"success": False, "error": "No client linked"}
+        
+        # Fetch client record from Airtable to get email
+        client_airtable_id = client_link[0]
+        
+        # Find MongoDB client by Airtable record ID
+        client = db['client_profiles'].find_one({
+            'airtable_record_id': client_airtable_id
+        })
+        
+        if not client:
+            return {"success": False, "error": "Client not found in MongoDB"}
+        
+        # Build team member object
+        team_member = {
+            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
+            'name': fields.get('Name'),
+            'role': fields.get('Role', 'Team Member'),
+            'access_level': fields.get('Access Level', 'full').lower(),
+            'status': fields.get('Status', 'active').lower(),
+            'added_date': fields.get('Added Date', datetime.now().isoformat())
+        }
+        
+        # Add to client's team_members array (avoid duplicates)
+        result = db['client_profiles'].update_one(
+            {'email': client['email']},
+            {
+                '$addToSet': {'team_members': team_member},
+                '$set': {'updated_at': datetime.now().isoformat()}
+            }
+        )
+        
+        logger.info(f"✅ Team member added: {team_member['name']} → {client['email']}")
+        
+        return {
+            "success": True,
+            "client_email": client['email'],
+            "team_member": team_member['name']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Team member sync error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
+@app.post("/api/airtable/update-usage")
+async def update_usage_in_airtable(
+    client_email: str,
+    messages_used: int
+):
+    """
+    Update message usage counter in Airtable
+    
+    Called by: WhatsApp handler after each message
+    """
+    try:
+        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+            logger.warning("Airtable not configured, skipping usage update")
+            return {"success": False, "error": "Airtable not configured"}
+        
+        # Find client in MongoDB to get Airtable record ID
+        client = db['client_profiles'].find_one({'email': client_email})
+        
+        if not client or 'airtable_record_id' not in client:
+            return {"success": False, "error": "Client not found or no Airtable ID"}
+        
+        airtable_record_id = client['airtable_record_id']
+        
+        # Update Airtable record
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_CLIENTS_TABLE}/{airtable_record_id}"
+        
+        headers = {
+            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "fields": {
+                "Messages Used This Month": messages_used
+            }
+        }
+        
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.patch(url, headers=headers, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            logger.info(f"✅ Airtable usage updated: {client_email} → {messages_used}")
+            return {"success": True}
+        else:
+            logger.error(f"❌ Airtable update failed: {response.status_code}")
+            return {"success": False, "error": f"Status {response.status_code}"}
+        
+    except Exception as e:
+        logger.error(f"❌ Airtable usage update error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/airtable/log-usage")
+async def log_usage_to_airtable(
+    client_email: str,
+    whatsapp_number: str,
+    message_query: str,
+    response_summary: str,
+    category: str,
+    tokens_used: int
+):
+    """
+    Log message interaction to Airtable Usage Log
+    
+    Called by: WhatsApp handler after successful response
+    """
+    try:
+        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+            return {"success": False, "error": "Airtable not configured"}
+        
+        # Find client to get Airtable record ID
+        client = db['client_profiles'].find_one({'email': client_email})
+        
+        if not client or 'airtable_record_id' not in client:
+            return {"success": False, "error": "Client not found"}
+        
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Usage%20Log"
+        
+        headers = {
+            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "fields": {
+                "Client": [client['airtable_record_id']],
+                "WhatsApp Number": whatsapp_number.replace('whatsapp:', ''),
+                "Message Query": message_query[:500],  # Truncate if too long
+                "Response Summary": response_summary[:500],
+                "Category": category.replace('_', ' ').title(),
+                "Tokens Used": tokens_used
+            }
+        }
+        
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(url, headers=headers, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            logger.info(f"✅ Usage logged to Airtable: {client_email}")
+            return {"success": True}
+        else:
+            logger.warning(f"⚠️ Airtable log failed: {response.status_code}")
+            return {"success": False}
+        
+    except Exception as e:
+        logger.error(f"❌ Airtable logging error: {e}")
+        return {"success": False, "error": str(e)}
