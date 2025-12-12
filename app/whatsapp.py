@@ -239,160 +239,157 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # If no cache, default profile, or stale → fetch from Airtable
         # ALWAYS fetch from Airtable on first message OR if stale
 # ========================================
-# LOAD CLIENT PROFILE WITH AIRTABLE API
-# ========================================
-
-# Try MongoDB cache first
-client_profile = get_client_profile(sender)
-
-# Check if cache is stale (older than 1 hour)
-should_refresh = False
-if client_profile:
-    updated_at = client_profile.get('updated_at')
-    if updated_at:
-        # Handle both datetime objects and ISO strings
-        if isinstance(updated_at, str):
-            from dateutil import parser
-            updated_at = parser.parse(updated_at)
+        # LOAD CLIENT PROFILE WITH AIRTABLE API
+        # ========================================
         
-        # Make timezone-aware if needed
-        if updated_at.tzinfo is None:
-            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        # Try MongoDB cache first
+        client_profile = get_client_profile(sender)
         
-        cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
-        
-        # Refresh if older than 60 minutes
-        if cache_age_minutes > 60:
-            should_refresh = True
-            logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
-
-# ALWAYS fetch from Airtable on first message OR if stale
-if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
-    try:
-        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-        AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-        
-        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
-            # Clean WhatsApp number - remove 'whatsapp:' prefix
-            whatsapp_search = sender.replace('whatsapp:', '')
-            whatsapp_clean = whatsapp_search.replace(' ', '')
-            
-            # Search Airtable
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
-            headers = {
-                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                "Content-Type": "application/json"
-            }
-            
-            # Try exact match first
-            params = {
-                "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
-            }
-            
-            response = requests.get(url, headers=headers, params=params, timeout=10)
-            
-            # If no match, try with spaces removed
-            if response.status_code == 200 and not response.json().get('records'):
-                logger.info(f"No exact match, trying space-removed matching")
-                params = {
-                    "filterByFormula": f"SUBSTITUTE({{WhatsApp Number}}, ' ', '')='{whatsapp_clean}'"
-                }
-                response = requests.get(url, headers=headers, params=params, timeout=10)
-            
-            if response.status_code == 200:
-                records = response.json().get('records', [])
+        # Check if cache is stale (older than 1 hour)
+        should_refresh = False
+        if client_profile:
+            updated_at = client_profile.get('updated_at')
+            if updated_at:
+                # Handle both datetime objects and ISO strings
+                if isinstance(updated_at, str):
+                    from dateutil import parser
+                    updated_at = parser.parse(updated_at)
                 
-                if records:
-                    fields = records[0]['fields']
+                # Make timezone-aware if needed
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+                cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+                
+                # Refresh if older than 60 minutes
+                if cache_age_minutes > 60:
+                    should_refresh = True
+                    logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
+        
+        # ALWAYS fetch from Airtable on first message OR if stale
+        if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
+            try:
+                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+                
+                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
+                    # Clean WhatsApp number - remove 'whatsapp:' prefix
+                    whatsapp_search = sender.replace('whatsapp:', '')
+                    whatsapp_clean = whatsapp_search.replace(' ', '')
                     
-                    # Map Subscription Status → Tier
-                    subscription_status = (fields.get('Subscription Status', 'Trial') or 'Trial').lower()
-                    
-                    status_to_tier = {
-                        'trial': 'tier_1',
-                        'active': 'tier_3',
-                        'paused': 'tier_1',
-                        'cancelled': 'tier_1'
+                    # Search Airtable
+                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
+                    headers = {
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json"
                     }
                     
-                    tier = status_to_tier.get(subscription_status, 'tier_3')
-                    
-                    # Preserve query history
-                    old_history = client_profile.get('query_history', []) if client_profile else []
-                    old_total = client_profile.get('total_queries', 0) if client_profile else 0
-                    
-                    client_profile = {
-                        'whatsapp_number': sender,
-                        'email': fields.get('Email', ''),
-                        'name': fields.get('Name', 'Valued Client'),
-                        'company': fields.get('Company', ''),
-                        'tier': tier,
-                        'preferences': {
-                            'preferred_regions': [fields.get('Preferred City', 'London')],
-                            'preferred_city': fields.get('Preferred City', 'London'),
-                            'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
-                            'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
-                            'update_frequency': 'weekly'
-                        },
-                        'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
-                        'messages_used_this_month': fields.get('Messages Used This Month', 0),
-                        'subscription_status': subscription_status,
-                        'stripe_customer_id': '',
-                        'airtable_record_id': records[0]['id'],
-                        'total_queries': old_total,
-                        'query_history': old_history,
-                        'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-                        'updated_at': datetime.now(timezone.utc)
+                    # Try exact match first
+                    params = {
+                        "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
                     }
                     
-                    # Update MongoDB cache
-                    from pymongo import MongoClient
-                    MONGODB_URI = os.getenv('MONGODB_URI')
-                    if MONGODB_URI:
-                        mongo_client = MongoClient(MONGODB_URI)
-                        db = mongo_client['Voxmill']
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
+                    response = requests.get(url, headers=headers, params=params, timeout=10)
                     
-                    logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} (Status: {subscription_status}, Tier: {tier})")
-                else:
-                    logger.info(f"❌ No Airtable record for {whatsapp_search}")
-            elif response.status_code == 404:
-                logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
-            else:
-                logger.warning(f"Airtable API error: {response.status_code}")
+                    # If no match, try with spaces removed
+                    if response.status_code == 200 and not response.json().get('records'):
+                        logger.info(f"No exact match, trying space-removed matching")
+                        params = {
+                            "filterByFormula": f"SUBSTITUTE({{WhatsApp Number}}, ' ', '')='{whatsapp_clean}'"
+                        }
+                        response = requests.get(url, headers=headers, params=params, timeout=10)
                     
-    except Exception as e:
-        logger.error(f"Airtable API error: {e}", exc_info=True)
-
-# ========================================
-# WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
-# ========================================
-
-# If no Airtable record found, block access
-if not client_profile or not client_profile.get('airtable_record_id'):
-    logger.warning(f"🚫 UNAUTHORIZED ACCESS ATTEMPT: {sender}")
-    
-    await send_twilio_message(
-        sender,
-        "This number is not authorized for Voxmill Intelligence.\n\n"
-        "For institutional access, contact:\n"
-        "📧 ollys@voxmill.uk"
-    )
-    return
-
-# ========================================
-# AUTHORIZED - Continue processing
-# ========================================
-logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
-# ========================================
-# AUTHORIZED - Continue processing
-# ========================================
-logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
+                    if response.status_code == 200:
+                        records = response.json().get('records', [])
+                        
+                        if records:
+                            fields = records[0]['fields']
+                            
+                            # Map Subscription Status → Tier
+                            subscription_status = (fields.get('Subscription Status', 'Trial') or 'Trial').lower()
+                            
+                            status_to_tier = {
+                                'trial': 'tier_1',
+                                'active': 'tier_3',
+                                'paused': 'tier_1',
+                                'cancelled': 'tier_1'
+                            }
+                            
+                            tier = status_to_tier.get(subscription_status, 'tier_3')
+                            
+                            # Preserve query history
+                            old_history = client_profile.get('query_history', []) if client_profile else []
+                            old_total = client_profile.get('total_queries', 0) if client_profile else 0
+                            
+                            client_profile = {
+                                'whatsapp_number': sender,
+                                'email': fields.get('Email', ''),
+                                'name': fields.get('Name', 'Valued Client'),
+                                'company': fields.get('Company', ''),
+                                'tier': tier,
+                                'preferences': {
+                                    'preferred_regions': [fields.get('Preferred City', 'London')],
+                                    'preferred_city': fields.get('Preferred City', 'London'),
+                                    'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
+                                    'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
+                                    'update_frequency': 'weekly'
+                                },
+                                'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
+                                'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                                'subscription_status': subscription_status,
+                                'stripe_customer_id': '',
+                                'airtable_record_id': records[0]['id'],
+                                'total_queries': old_total,
+                                'query_history': old_history,
+                                'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
+                                'updated_at': datetime.now(timezone.utc)
+                            }
+                            
+                            # Update MongoDB cache
+                            from pymongo import MongoClient
+                            MONGODB_URI = os.getenv('MONGODB_URI')
+                            if MONGODB_URI:
+                                mongo_client = MongoClient(MONGODB_URI)
+                                db = mongo_client['Voxmill']
+                                db['client_profiles'].update_one(
+                                    {'whatsapp_number': sender},
+                                    {'$set': client_profile},
+                                    upsert=True
+                                )
+                            
+                            logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} (Status: {subscription_status}, Tier: {tier})")
+                        else:
+                            logger.info(f"❌ No Airtable record for {whatsapp_search}")
+                    elif response.status_code == 404:
+                        logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
+                    else:
+                        logger.warning(f"Airtable API error: {response.status_code}")
+                            
+            except Exception as e:
+                logger.error(f"Airtable API error: {e}", exc_info=True)
+        
+        # ========================================
+        # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
+        # ========================================
+        
+        # If no Airtable record found, block access
+        if not client_profile or not client_profile.get('airtable_record_id'):
+            logger.warning(f"🚫 UNAUTHORIZED ACCESS ATTEMPT: {sender}")
+            
+            await send_twilio_message(
+                sender,
+                "This number is not authorized for Voxmill Intelligence.\n\n"
+                "For institutional access, contact:\n"
+                "📧 ollys@voxmill.uk"
+            )
+            return
+        
+        # ========================================
+        # AUTHORIZED - Continue processing
+        # ========================================
+        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
+        
         # ============================================================
         # WAVE 1: Security validation
         # ============================================================
