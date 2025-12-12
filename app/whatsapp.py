@@ -9,6 +9,8 @@ import logging
 import httpx
 import hashlib
 import re
+import requests
+import pytz
 from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
@@ -18,6 +20,7 @@ from app.whatsapp_self_service import handle_whatsapp_preference_message
 from app.conversation_manager import ConversationSession, resolve_reference, generate_contextualized_prompt
 from app.security import SecurityValidator
 from app.cache_manager import CacheManager
+from app.client_manager import get_client_profile, update_client_history
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,9 +37,6 @@ twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_
 
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
     """Generate time-appropriate greeting based on UK time"""
-    from datetime import datetime
-    import pytz
-    
     # Get current time in UK
     uk_tz = pytz.timezone('Europe/London')
     uk_time = datetime.now(uk_tz)
@@ -208,179 +208,162 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-       # ========================================
-# LOAD CLIENT PROFILE WITH AIRTABLE API
-# ========================================
-
-from app.client_manager import get_client_profile, update_client_history
-import requests
-
-# Try MongoDB cache first
-client_profile = get_client_profile(sender)
-
-# Check if cache is stale (older than 1 hour)
-should_refresh = False
-if client_profile:
-    updated_at = client_profile.get('updated_at')
-    if updated_at:
-        # Handle both datetime objects and ISO strings
-        if isinstance(updated_at, str):
-            from dateutil import parser
-            updated_at = parser.parse(updated_at)
+        # ========================================
+        # LOAD CLIENT PROFILE WITH AIRTABLE API
+        # ========================================
         
-        # Make timezone-aware if needed
-        if updated_at.tzinfo is None:
-            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        # Try MongoDB cache first
+        client_profile = get_client_profile(sender)
         
-        cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
-        
-        # Refresh if older than 60 minutes
-        if cache_age_minutes > 60:
-            should_refresh = True
-            logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
-
-# If no cache, default profile, or stale → fetch from Airtable
-if not client_profile or client_profile.get('tier') == 'tier_1' or should_refresh:
-    try:
-        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-        AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-        
-        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
-            # ============================================================
-            # FIX 1: Clean WhatsApp number - remove 'whatsapp:' prefix
-            # ============================================================
-            whatsapp_search = sender.replace('whatsapp:', '')
-            
-            # ============================================================
-            # FIX 2: Remove spaces for matching (your Airtable has spaces)
-            # ============================================================
-            whatsapp_clean = whatsapp_search.replace(' ', '')
-            
-            # Search Airtable
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
-            headers = {
-                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                "Content-Type": "application/json"
-            }
-            
-            # ============================================================
-            # FIX 3: Try exact match first, then space-removed match
-            # ============================================================
-            
-            # Try 1: Exact match
-            params = {
-                "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
-            }
-            
-            response = requests.get(url, headers=headers, params=params, timeout=10)
-            
-            # Try 2: If no match, try with spaces removed from both sides
-            if response.status_code == 200 and not response.json().get('records'):
-                logger.info(f"No exact match, trying space-removed matching")
-                params = {
-                    "filterByFormula": f"SUBSTITUTE({{WhatsApp Number}}, ' ', '')='{whatsapp_clean}'"
-                }
-                response = requests.get(url, headers=headers, params=params, timeout=10)
-            
-            if response.status_code == 200:
-                records = response.json().get('records', [])
+        # Check if cache is stale (older than 1 hour)
+        should_refresh = False
+        if client_profile:
+            updated_at = client_profile.get('updated_at')
+            if updated_at:
+                # Handle both datetime objects and ISO strings
+                if isinstance(updated_at, str):
+                    from dateutil import parser
+                    updated_at = parser.parse(updated_at)
                 
-                if records:
-                    fields = records[0]['fields']
+                # Make timezone-aware if needed
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+                cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+                
+                # Refresh if older than 60 minutes
+                if cache_age_minutes > 60:
+                    should_refresh = True
+                    logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
+        
+        # If no cache, default profile, or stale → fetch from Airtable
+        if not client_profile or client_profile.get('tier') == 'tier_1' or should_refresh:
+            try:
+                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+                
+                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
+                    # Clean WhatsApp number - remove 'whatsapp:' prefix
+                    whatsapp_search = sender.replace('whatsapp:', '')
                     
-                    # Map Airtable → Your system format
-                    tier_mapping = {
-                        'Trial': 'tier_1',
-                        'Basic': 'tier_1',
-                        'Premium': 'tier_2',
-                        'Enterprise': 'tier_3'
+                    # Remove spaces for matching (your Airtable has spaces)
+                    whatsapp_clean = whatsapp_search.replace(' ', '')
+                    
+                    # Search Airtable
+                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
+                    headers = {
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json"
                     }
                     
-                    # Preserve query history from old cache if it exists
-                    old_history = client_profile.get('query_history', []) if client_profile else []
-                    old_total = client_profile.get('total_queries', 0) if client_profile else 0
-                    
-                    # ============================================================
-                    # FIX 4: Use correct field names from your Airtable
-                    # ============================================================
-                    
-                    client_profile = {
-                        'whatsapp_number': sender,
-                        'email': fields.get('Email', ''),
-                        'name': fields.get('Name', 'Valued Client'),
-                        'company': fields.get('Company', ''),
-                        'tier': tier_mapping.get(fields.get('Tier', 'Trial'), 'tier_1'),
-                        'preferences': {
-                            # Use Preferred City (not Region)
-                            'preferred_regions': [fields.get('Preferred City', 'Mayfair')],
-                            'preferred_city': fields.get('Preferred City', 'London'),
-                            'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
-                            'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
-                            'update_frequency': (fields.get('Update Frequency', 'Weekly') or 'Weekly').lower()
-                        },
-                        'monthly_message_limit': fields.get('Monthly Message Limit', 100),
-                        'messages_used_this_month': fields.get('Messages Used This Month', 0),
-                        'subscription_status': (fields.get('Subscription Status', 'Trial') or 'Trial').lower(),
-                        'stripe_customer_id': fields.get('Stripe Customer ID', ''),
-                        'airtable_record_id': records[0]['id'],
-                        'total_queries': old_total,
-                        'query_history': old_history,
-                        'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-                        'updated_at': datetime.now(timezone.utc)
+                    # Try exact match first
+                    params = {
+                        "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
                     }
                     
-                    # Update MongoDB cache
-                    from pymongo import MongoClient
-                    MONGODB_URI = os.getenv('MONGODB_URI')
-                    if MONGODB_URI:
-                        mongo_client = MongoClient(MONGODB_URI)
-                        db = mongo_client['Voxmill']
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
+                    response = requests.get(url, headers=headers, params=params, timeout=10)
                     
-                    logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} ({fields.get('Tier')})")
-                else:
-                    logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
-            elif response.status_code == 404:
-                logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
-            else:
-                logger.warning(f"Airtable API error: {response.status_code}")
-                
-    except Exception as e:
-        logger.error(f"Airtable API error: {e}", exc_info=True)
-        # Fall through to cached/default client_profile
-
-# ============================================================
-# FALLBACK: If still no profile, create default
-# ============================================================
-if not client_profile:
-    logger.info(f"Creating default profile for {sender}")
-    client_profile = {
-        'whatsapp_number': sender,
-        'name': 'New User',
-        'email': '',
-        'company': '',
-        'tier': 'tier_1',
-        'preferences': {
-            'preferred_regions': ['Mayfair'],
-            'preferred_city': 'London',
-            'competitor_focus': 'medium',
-            'report_depth': 'detailed',
-            'update_frequency': 'weekly'
-        },
-        'monthly_message_limit': 20,
-        'messages_used_this_month': 0,
-        'subscription_status': 'trial',
-        'total_queries': 0,
-        'query_history': [],
-        'created_at': datetime.now(timezone.utc),
-        'updated_at': datetime.now(timezone.utc)
-    }
-
+                    # If no match, try with spaces removed from both sides
+                    if response.status_code == 200 and not response.json().get('records'):
+                        logger.info(f"No exact match, trying space-removed matching")
+                        params = {
+                            "filterByFormula": f"SUBSTITUTE({{WhatsApp Number}}, ' ', '')='{whatsapp_clean}'"
+                        }
+                        response = requests.get(url, headers=headers, params=params, timeout=10)
+                    
+                    if response.status_code == 200:
+                        records = response.json().get('records', [])
+                        
+                        if records:
+                            fields = records[0]['fields']
+                            
+                            # Map Airtable → Your system format
+                            tier_mapping = {
+                                'Trial': 'tier_1',
+                                'Basic': 'tier_1',
+                                'Premium': 'tier_2',
+                                'Enterprise': 'tier_3'
+                            }
+                            
+                            # Preserve query history from old cache if it exists
+                            old_history = client_profile.get('query_history', []) if client_profile else []
+                            old_total = client_profile.get('total_queries', 0) if client_profile else 0
+                            
+                            client_profile = {
+                                'whatsapp_number': sender,
+                                'email': fields.get('Email', ''),
+                                'name': fields.get('Name', 'Valued Client'),
+                                'company': fields.get('Company', ''),
+                                'tier': tier_mapping.get(fields.get('Tier', 'Trial'), 'tier_1'),
+                                'preferences': {
+                                    # Use Preferred City (not Region)
+                                    'preferred_regions': [fields.get('Preferred City', 'Mayfair')],
+                                    'preferred_city': fields.get('Preferred City', 'London'),
+                                    'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
+                                    'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
+                                    'update_frequency': (fields.get('Update Frequency', 'Weekly') or 'Weekly').lower()
+                                },
+                                'monthly_message_limit': fields.get('Monthly Message Limit', 100),
+                                'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                                'subscription_status': (fields.get('Subscription Status', 'Trial') or 'Trial').lower(),
+                                'stripe_customer_id': fields.get('Stripe Customer ID', ''),
+                                'airtable_record_id': records[0]['id'],
+                                'total_queries': old_total,
+                                'query_history': old_history,
+                                'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
+                                'updated_at': datetime.now(timezone.utc)
+                            }
+                            
+                            # Update MongoDB cache
+                            from pymongo import MongoClient
+                            MONGODB_URI = os.getenv('MONGODB_URI')
+                            if MONGODB_URI:
+                                mongo_client = MongoClient(MONGODB_URI)
+                                db = mongo_client['Voxmill']
+                                db['client_profiles'].update_one(
+                                    {'whatsapp_number': sender},
+                                    {'$set': client_profile},
+                                    upsert=True
+                                )
+                            
+                            logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} ({fields.get('Tier')})")
+                        else:
+                            logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
+                    elif response.status_code == 404:
+                        logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
+                    else:
+                        logger.warning(f"Airtable API error: {response.status_code}")
+                        
+            except Exception as e:
+                logger.error(f"Airtable API error: {e}", exc_info=True)
+                # Fall through to cached/default client_profile
+        
+        # FALLBACK: If still no profile, create default
+        if not client_profile:
+            logger.info(f"Creating default profile for {sender}")
+            client_profile = {
+                'whatsapp_number': sender,
+                'name': 'New User',
+                'email': '',
+                'company': '',
+                'tier': 'tier_1',
+                'preferences': {
+                    'preferred_regions': ['Mayfair'],
+                    'preferred_city': 'London',
+                    'competitor_focus': 'medium',
+                    'report_depth': 'detailed',
+                    'update_frequency': 'weekly'
+                },
+                'monthly_message_limit': 20,
+                'messages_used_this_month': 0,
+                'subscription_status': 'trial',
+                'total_queries': 0,
+                'query_history': [],
+                'created_at': datetime.now(timezone.utc),
+                'updated_at': datetime.now(timezone.utc)
+            }
+        
         # ============================================================
         # WAVE 1: Security validation
         # ============================================================
@@ -677,11 +660,11 @@ Operating optimally. What market intelligence can I provide today?"""
 I specialize in luxury property market intelligence.
 
 I can help with:
-• Market overviews and trends
-• Competitive landscape analysis  
-• Investment opportunities
-• Strategic forecasting
-• Agent behavioral analysis
+- Market overviews and trends
+- Competitive landscape analysis  
+- Investment opportunities
+- Strategic forecasting
+- Agent behavioral analysis
 
 What would you like to explore?"""
             
@@ -812,11 +795,11 @@ What would you like to explore?"""
 I don't currently have live data for {requested_region}.
 
 However, I can provide comprehensive intelligence for:
-• Mayfair
-• Knightsbridge  
-• Chelsea
-• Belgravia
-• Kensington
+- Mayfair
+- Knightsbridge  
+- Chelsea
+- Belgravia
+- Kensington
 
 For {requested_region}, try: "{suggestion}"
 
