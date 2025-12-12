@@ -616,10 +616,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     Returns: (category, response_text, metadata)
     """
     try:
-        # ============================================================
-        # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION
-        # ============================================================
-       # ============================================================
+    
+# ============================================================
 # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
 # ============================================================
 
@@ -659,6 +657,22 @@ if client_profile:
     except Exception as e:
         logger.error(f"Error extracting client context: {e}")
         # Defaults already set above
+
+# Get UK time for context
+uk_tz = pytz.timezone('Europe/London')
+uk_now = datetime.now(uk_tz)
+current_time_uk = uk_now.strftime('%H:%M GMT')
+current_date = uk_now.strftime('%A, %B %d, %Y')
+
+# Format system prompt with client context
+system_prompt_personalized = SYSTEM_PROMPT.format(
+    current_time_uk=current_time_uk,
+    current_date=current_date,
+    client_name=first_name,
+    client_company=client_company,
+    client_tier=client_tier_display,
+    preferred_region=preferred_region
+)
         
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
