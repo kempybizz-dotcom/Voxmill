@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """
-VOXMILL MASTER ORCHESTRATOR - PRODUCTION VERSION v3.0
+VOXMILL MASTER ORCHESTRATOR - PRODUCTION VERSION v3.1
 ======================================================
-ZERO FILE COLLISIONS - UUID-based workspace isolation
-REDIS QUEUE INTEGRATION - Production-grade job processing
-CLOUDFLARE R2 PDF STORAGE - Permanent, scalable storage
-COMPLETE AUDIT TRAIL - MongoDB execution logging
+✅ AIRTABLE EMAIL INTEGRATION - Pulls actual email addresses for PDF delivery
+✅ ZERO FILE COLLISIONS - UUID-based workspace isolation
+✅ REDIS QUEUE INTEGRATION - Production-grade job processing
+✅ CLOUDFLARE R2 PDF STORAGE - Permanent, scalable storage
+✅ COMPLETE AUDIT TRAIL - MongoDB execution logging
 
-CRITICAL CHANGES FROM v2.0:
-- Unique execution workspace per run (/tmp/voxmill_{exec_id}/)
-- All child processes write to isolated workspace
-- PDFs uploaded to Cloudflare R2 with presigned URLs
-- MongoDB stores both JSON analysis + PDF metadata
-- Redis queue for job coordination (optional, falls back to direct execution)
-- Execution locking prevents duplicate runs
-- Complete error handling with retries
-- CLIENT PREFERENCES INTEGRATION - Reads MongoDB preferences for PDF customization
+CRITICAL CHANGES FROM v3.0:
+- Email field pulled from Airtable (not WhatsApp number)
+- Client preferences read from Airtable (Competitor Focus, Report Depth)
+- Email delivery uses actual email addresses
+- WhatsApp number stored separately for future messaging
 """
 
 import os
@@ -94,7 +91,7 @@ def get_client_preferences(client_identifier: str) -> dict:
             }
             
             params = {
-                'filterByFormula': f"OR({{WhatsApp}}='{normalized}', {{Email}}='{client_identifier}')",
+                'filterByFormula': f"OR({{WhatsApp}}='{normalized}', {{Phone}}='{normalized}', {{Email}}='{client_identifier}')",
                 'maxRecords': 1
             }
             
@@ -171,7 +168,7 @@ class ExecutionWorkspace:
     Prevents file collisions between concurrent runs.
     """
     
-    def __init__(self, area: str, city: str, vertical: str):
+    def __init__(self, area: str, city: str, vertical: str, client_name: str = None, client_email: str = None):
         """
         Create unique workspace for this execution
         
@@ -179,6 +176,8 @@ class ExecutionWorkspace:
             area: Market area (e.g., "Mayfair")
             city: City name (e.g., "London")
             vertical: Vertical type (e.g., "uk-real-estate")
+            client_name: Client name for personalization
+            client_email: Client email for delivery
         """
         # Generate unique execution ID
         timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
@@ -192,17 +191,20 @@ class ExecutionWorkspace:
         # Define file paths within workspace
         self.raw_data_file = self.workspace / "voxmill_raw_data.json"
         self.analysis_file = self.workspace / "voxmill_analysis.json"
-        self.pdf_file = self.workspace / f"Voxmill_{area}_Intelligence_Deck.pdf"
+        self.pdf_file = self.workspace / f"Voxmill_{city}_{area}_Intelligence.pdf"
         
         # Metadata
         self.area = area
         self.city = city
         self.vertical = vertical
+        self.client_name = client_name or "Valued Client"
+        self.client_email = client_email  # ✅ Store email
         self.start_time = datetime.now(timezone.utc)
         
         logger.info(f"📁 Workspace created: {self.workspace}")
         logger.info(f"   Exec ID: {self.exec_id}")
         logger.info(f"   Area: {area}, City: {city}")
+        logger.info(f"   Client: {self.client_name} <{client_email}>")
     
     def cleanup(self, keep_pdf: bool = False):
         """
@@ -311,6 +313,8 @@ class ExecutionLock:
 def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) -> bool:
     """
     Step 1: Use world-class dataset loader from WhatsApp analyst
+    
+    ✅ FIXED: Uses proven dataset_loader.py from WhatsApp system
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 1: DATA COLLECTION")
@@ -322,10 +326,17 @@ def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) ->
         from app.dataset_loader import load_dataset
         
         # Load data using the working stack
+        logger.info(f"   🎯 Collecting data for {workspace.area}, {workspace.city}")
         dataset = load_dataset(
             area=workspace.area,
             max_properties=100
         )
+        
+        property_count = len(dataset.get('properties', []))
+        
+        if property_count == 0:
+            logger.warning(f"   ⚠️  No properties found for {workspace.area}")
+            # Don't fail - let AI analysis handle empty data gracefully
         
         # Save to workspace (convert to expected format)
         raw_data = {
@@ -333,7 +344,8 @@ def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) ->
                 'vertical': vertical_config,
                 'area': workspace.area,
                 'city': workspace.city,
-                'timestamp': datetime.now(timezone.utc).isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'client_name': workspace.client_name  # ✅ Include client name
             },
             'raw_data': dataset
         }
@@ -341,7 +353,7 @@ def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) ->
         with open(workspace.raw_data_file, 'w') as f:
             json.dump(raw_data, f, indent=2)
         
-        logger.info(f"   ✅ Data loaded: {len(dataset.get('properties', []))} properties")
+        logger.info(f"   ✅ Data loaded: {property_count} properties")
         return True
         
     except Exception as e:
@@ -591,16 +603,21 @@ def send_email(area: str, city: str, recipient_email: str, recipient_name: str,
     logger.info("STEP 6: EMAIL DELIVERY")
     logger.info("="*70)
     
-    # Skip if no email provided
-    if not recipient_email or recipient_email == "none" or recipient_email.startswith('whatsapp:'):
-        logger.info("   ⏭️  Email delivery skipped (WhatsApp client or no email)")
+    # ✅ CRITICAL: Validate email address
+    if not recipient_email or '@' not in recipient_email:
+        logger.info(f"   ⏭️  Email delivery skipped - invalid email: {recipient_email}")
+        return True
+    
+    # Skip WhatsApp numbers masquerading as emails
+    if recipient_email.startswith('whatsapp:') or recipient_email.startswith('+'):
+        logger.info(f"   ⏭️  Email delivery skipped - WhatsApp client: {recipient_email}")
         return True
     
     try:
         from email_sender import send_voxmill_email
         
         # Build PDF path from workspace
-        pdf_path = workspace_dir / f"Voxmill_{area}_Intelligence_Deck.pdf"
+        pdf_path = workspace_dir / f"Voxmill_{city}_{area}_Intelligence.pdf"
         logo_path = Path(__file__).parent / "voxmill_logo.png"
         
         # Validate PDF exists
@@ -608,6 +625,7 @@ def send_email(area: str, city: str, recipient_email: str, recipient_name: str,
             raise FileNotFoundError(f"PDF not found in workspace: {pdf_path}")
         
         logger.info(f"   📄 PDF: {pdf_path} ({pdf_path.stat().st_size:,} bytes)")
+        logger.info(f"   📧 Sending to: {recipient_email}")
         
         # Send email with retry logic
         send_voxmill_email(
@@ -653,6 +671,8 @@ def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: l
             'area': workspace.area,
             'city': workspace.city,
             'vertical': workspace.vertical,
+            'client_name': workspace.client_name,
+            'client_email': workspace.client_email,
             'status': status,
             'start_time': workspace.start_time.isoformat(),
             'end_time': end_time.isoformat(),
@@ -689,7 +709,7 @@ def execute_voxmill_pipeline(
         city: City name (e.g., "London")
         vertical: Vertical identifier
         vertical_config: Vertical configuration dict
-        client_email: Client email/WhatsApp for PDF delivery and preferences
+        client_email: Client email for PDF delivery and preferences
         client_name: Client name for personalization
     
     Returns: Dict with execution results
@@ -712,13 +732,19 @@ def execute_voxmill_pipeline(
             'exec_id': None
         }
     
-    # Create workspace
+    # Create workspace with client info
     workspace = None
     steps_completed = []
     pdf_url = None
     
     try:
-        workspace = ExecutionWorkspace(area, city, vertical)
+        workspace = ExecutionWorkspace(
+            area=area,
+            city=city,
+            vertical=vertical,
+            client_name=client_name,
+            client_email=client_email
+        )
         
         logger.info("\n" + "="*70)
         logger.info("🚀 VOXMILL INTELLIGENCE PIPELINE STARTING")
@@ -754,10 +780,12 @@ def execute_voxmill_pipeline(
         if save_to_mongodb(workspace, pdf_url):
             steps_completed.append('mongodb_save')
         
-        # Step 6: Send Email (optional, skip for WhatsApp clients)
-        if client_email and client_email != "none" and not client_email.startswith('whatsapp:'):
+        # Step 6: Send Email (only if valid email provided)
+        if client_email and '@' in client_email:
             if send_email(area, city, client_email, client_name, workspace.workspace, pdf_url, workspace.exec_id):
                 steps_completed.append('email_sent')
+        else:
+            logger.info("   ℹ️  No valid email provided - skipping email delivery")
         
         # Log success
         log_execution(workspace, 'success', steps_completed)
@@ -834,13 +862,13 @@ def queue_job(job_data: dict) -> bool:
 
 def get_all_active_clients_simple():
     """
-    Get all active clients from Airtable/MongoDB
-    Returns list of dicts with: whatsapp_number, name, city, regions, preferences
+    ✅ UPDATED: Get all active clients from Airtable with YOUR EXACT column headers
+    Returns list of dicts with: email, whatsapp_number, name, city, area, preferences
     """
     
     clients = []
     
-    # ✅ FIX: Use global AIRTABLE variables (already defined at top)
+    # ✅ PRIMARY SOURCE: Airtable with YOUR EXACT FIELD NAMES
     if AIRTABLE_API_KEY:
         try:
             import requests
@@ -851,8 +879,9 @@ def get_all_active_clients_simple():
                 'Content-Type': 'application/json'
             }
             
+            # ✅ UPDATED: Filter by "Subscription Status" = "Active"
             params = {
-                'filterByFormula': "{Status}='Active'",
+                'filterByFormula': "{Subscription Status}='Active'",
                 'maxRecords': 100
             }
             
@@ -862,31 +891,52 @@ def get_all_active_clients_simple():
                 data = response.json()
                 records = data.get('records', [])
                 
+                logger.info(f"📋 Found {len(records)} records with Subscription Status='Active'")
+                
                 for record in records:
                     fields = record['fields']
-                    regions_str = fields.get('Regions', '')
+                    
+                    # ✅ UPDATED: Use YOUR exact column names
+                    email = fields.get('Email', '')
+                    whatsapp = fields.get('WhatsApp Number', '')
+                    name = fields.get('Name', 'Valued Client')
+                    city = fields.get('Preferred City', 'London')
+                    
+                    # ✅ Parse regions from "Regions" field (comma-separated)
+                    regions_str = fields.get('Regions', fields.get('Preferred Region', ''))
                     regions = [r.strip() for r in regions_str.split(',') if r.strip()]
                     
+                    # ✅ Use first region as primary area, fallback to Preferred Region
+                    area = regions[0] if regions else fields.get('Preferred Region', city)
+                    
                     client = {
-                        'whatsapp_number': fields.get('WhatsApp', ''),
-                        'name': fields.get('Name', 'Valued Client'),
-                        'city': fields.get('City', 'London'),
-                        'regions': regions,
-                        'area': regions[0] if regions else fields.get('City', 'London'),
-                        'competitor_focus': fields.get('Competitor Focus', 'medium'),
-                        'report_depth': fields.get('Report Depth', 'detailed')
+                        'email': email,  # ✅ Email column
+                        'whatsapp_number': whatsapp,  # ✅ WhatsApp Number column
+                        'name': name,  # ✅ Name column
+                        'city': city,  # ✅ Preferred City column
+                        'area': area,  # ✅ First region from Regions or Preferred Region
+                        'regions': regions,  # ✅ All regions from Regions column
+                        'competitor_focus': fields.get('Competitor Focus', 'medium'),  # ✅ Competitor Focus column
+                        'report_depth': fields.get('Report Depth', 'detailed'),  # ✅ Report Depth column
+                        'company': fields.get('Company', ''),  # ✅ Company column (bonus)
                     }
                     
-                    if client['whatsapp_number']:
+                    # ✅ VALIDATION: Only add clients with valid email OR WhatsApp
+                    if client['email'] or client['whatsapp_number']:
                         clients.append(client)
+                        logger.info(f"   ✅ {name}: {email or whatsapp} → {area}, {city}")
+                    else:
+                        logger.warning(f"   ⚠️  Skipping {name} - no email or WhatsApp")
                 
                 logger.info(f"✅ Loaded {len(clients)} active clients from Airtable")
                 return clients
         
         except Exception as e:
             logger.warning(f"Airtable fetch failed: {e}")
+            import traceback
+            logger.warning(traceback.format_exc())
     
-    # Fallback to MongoDB
+    # Fallback to MongoDB (unchanged)
     if mongo_client:
         try:
             cursor = db['client_profiles'].find({'status': 'active'})
@@ -896,16 +946,17 @@ def get_all_active_clients_simple():
                 regions = prefs.get('preferred_regions', [])
                 
                 client = {
+                    'email': doc.get('email', ''),
                     'whatsapp_number': doc.get('whatsapp_number', ''),
                     'name': doc.get('name', 'Valued Client'),
                     'city': doc.get('city', 'London'),
-                    'regions': regions,
                     'area': regions[0] if regions else doc.get('city', 'London'),
+                    'regions': regions,
                     'competitor_focus': prefs.get('competitor_focus', 'medium'),
                     'report_depth': prefs.get('report_depth', 'detailed')
                 }
                 
-                if client['whatsapp_number']:
+                if client['email'] or client['whatsapp_number']:
                     clients.append(client)
             
             logger.info(f"✅ Loaded {len(clients)} active clients from MongoDB")
@@ -929,7 +980,7 @@ def main():
     sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', buffering=1)
     
     print("="*70, flush=True)
-    print("VOXMILL MASTER STARTING", flush=True)
+    print("VOXMILL MASTER v3.1 - AIRTABLE EMAIL INTEGRATION", flush=True)
     print("="*70, flush=True)
     
     import argparse
@@ -940,7 +991,7 @@ def main():
     parser.add_argument('--area', help='Market area (e.g., Mayfair) - optional if using batch mode')
     parser.add_argument('--city', default='London', help='City name')
     parser.add_argument('--vertical', default='uk-real-estate', help='Vertical identifier')
-    parser.add_argument('--email', default='none', help='Client email or WhatsApp number')
+    parser.add_argument('--email', help='Client email address')
     parser.add_argument('--name', default='Valued Client', help='Client name')
     parser.add_argument('--queue', action='store_true', help='Queue job instead of running directly')
     
@@ -951,7 +1002,7 @@ def main():
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     if not args.area:
         logger.info("\n" + "="*70)
-        logger.info("🔄 BATCH MODE: Processing all active clients")
+        logger.info("🔄 BATCH MODE: Processing all active clients from Airtable")
         logger.info("="*70)
         
         clients = get_all_active_clients_simple()
@@ -967,6 +1018,8 @@ def main():
         for i, client in enumerate(clients, 1):
             logger.info(f"[{i}/{len(clients)}] Processing: {client['name']}")
             logger.info(f"   Area: {client['area']}, City: {client['city']}")
+            logger.info(f"   Email: {client.get('email', 'N/A')}")
+            logger.info(f"   WhatsApp: {client.get('whatsapp_number', 'N/A')}")
             
             vertical_config = {
                 'type': 'real_estate',
@@ -974,13 +1027,16 @@ def main():
                 'vertical': 'uk-real-estate'
             }
             
+            # ✅ CRITICAL: Use email if available, fallback to WhatsApp
+            client_identifier = client.get('email') or client.get('whatsapp_number')
+            
             try:
                 result = execute_voxmill_pipeline(
                     area=client['area'],
                     city=client['city'],
                     vertical='uk-real-estate',
                     vertical_config=vertical_config,
-                    client_email=client['whatsapp_number'],
+                    client_email=client_identifier,  # ✅ Use email for delivery
                     client_name=client['name']
                 )
                 
