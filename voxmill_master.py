@@ -266,74 +266,47 @@ class ExecutionLock:
 # PIPELINE EXECUTION
 # ============================================================================
 
+# In voxmill_master.py, replace run_data_collection():
+
 def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) -> bool:
     """
-    Step 1: Run data_collector.py in isolated workspace
-    
-    Args:
-        workspace: Execution workspace
-        vertical_config: Vertical configuration dict
-    
-    Returns: True if successful
+    Step 1: Use world-class dataset loader from WhatsApp analyst
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 1: DATA COLLECTION")
     logger.info("="*70)
     
     try:
-        # Prepare vertical config as JSON string
-        vertical_config_json = json.dumps(vertical_config)
+        # Import the WhatsApp analyst's world-class data stack
+        sys.path.insert(0, '/opt/render/project/src')
+        from app.dataset_loader import load_dataset
         
-        # Run data collector with workspace environment
-        cmd = [
-            sys.executable,
-            'data_collector.py',
-            workspace.vertical,
-            workspace.area,
-            workspace.city,
-            vertical_config_json
-        ]
-        
-        logger.info(f"   Command: {' '.join(cmd[:4])}...")
-        
-        result = subprocess.run(
-            cmd,
-            env=workspace.get_env_vars(),
-            capture_output=True,
-            text=True,
-            timeout=300  # 5 minute timeout
+        # Load data using the working stack
+        dataset = load_dataset(
+            area=workspace.area,
+            max_properties=100
         )
         
-        if result.returncode != 0:
-            logger.error(f"❌ Data collection failed:")
-            logger.error(f"   STDOUT: {result.stdout[-500:]}")
-            logger.error(f"   STDERR: {result.stderr[-500:]}")
-            return False
+        # Save to workspace (convert to expected format)
+        raw_data = {
+            'metadata': {
+                'vertical': vertical_config,
+                'area': workspace.area,
+                'city': workspace.city,
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            },
+            'raw_data': dataset
+        }
         
-        # Verify output file exists
-        if not workspace.raw_data_file.exists():
-            logger.error(f"❌ Data file not created: {workspace.raw_data_file}")
-            return False
+        with open(workspace.raw_data_file, 'w') as f:
+            json.dump(raw_data, f, indent=2)
         
-        # Check file has content
-        file_size = workspace.raw_data_file.stat().st_size
-        if file_size < 100:
-            logger.error(f"❌ Data file too small ({file_size} bytes)")
-            return False
-        
-        logger.info(f"   ✅ Data collected: {file_size:,} bytes")
-        logger.info(f"   Output: {result.stdout[-200:]}")
-        
+        logger.info(f"   ✅ Data loaded: {len(dataset.get('properties', []))} properties")
         return True
-    
-    except subprocess.TimeoutExpired:
-        logger.error("❌ Data collection timeout (5 minutes)")
-        return False
-    
+        
     except Exception as e:
-        logger.error(f"❌ Data collection error: {e}", exc_info=True)
+        logger.error(f"❌ Data loading error: {e}", exc_info=True)
         return False
-
 
 def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
     """
