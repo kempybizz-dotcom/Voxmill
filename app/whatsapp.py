@@ -173,14 +173,100 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-        # ========================================
-        # LOAD CLIENT PROFILE
+      # ========================================
+        # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
         from app.client_manager import get_client_profile, update_client_history
+        import requests
+        
+        # Try MongoDB cache first
         client_profile = get_client_profile(sender)
+        
+        # If not in MongoDB, try Airtable API
+        if not client_profile or client_profile.get('tier') == 'tier_1':  # Default profile
+            try:
+                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+                
+                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
+                    # Clean WhatsApp number for search (+447911667788)
+                    whatsapp_search = sender.replace('whatsapp:', '')
+                    
+                    # Search Airtable
+                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
+                    headers = {
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json"
+                    }
+                    
+                    # Use filterByFormula to find exact match
+                    params = {
+                        "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
+                    }
+                    
+                    response = requests.get(url, headers=headers, params=params, timeout=5)
+                    
+                    if response.status_code == 200:
+                        records = response.json().get('records', [])
+                        
+                        if records:
+                            fields = records[0]['fields']
+                            
+                            # Map Airtable → Your system format
+                            tier_mapping = {
+                                'Trial': 'tier_1',
+                                'Basic': 'tier_1',
+                                'Premium': 'tier_2',
+                                'Enterprise': 'tier_3'
+                            }
+                            
+                            client_profile = {
+                                'whatsapp_number': sender,
+                                'email': fields.get('Email', ''),
+                                'name': fields.get('Name', 'Unknown'),
+                                'company': fields.get('Company', ''),
+                                'tier': tier_mapping.get(fields.get('Tier', 'Trial'), 'tier_1'),
+                                'preferences': {
+                                    'preferred_regions': [fields.get('Preferred Region', 'Mayfair')],
+                                    'preferred_city': fields.get('Preferred City', 'London'),
+                                    'competitor_focus': fields.get('Competitor Focus', 'medium').lower(),
+                                    'report_depth': fields.get('Report Depth', 'detailed').lower(),
+                                    'update_frequency': fields.get('Update Frequency', 'weekly').lower()
+                                },
+                                'subscription_status': fields.get('Subscription Status', 'trial').lower(),
+                                'stripe_customer_id': fields.get('Stripe Customer ID', ''),
+                                'airtable_record_id': records[0]['id'],
+                                'total_queries': 0,
+                                'query_history': [],
+                                'created_at': datetime.now(timezone.utc),
+                                'updated_at': datetime.now(timezone.utc)
+                            }
+                            
+                            # Cache in MongoDB for faster future access
+                            from pymongo import MongoClient
+                            MONGODB_URI = os.getenv('MONGODB_URI')
+                            if MONGODB_URI:
+                                mongo_client = MongoClient(MONGODB_URI)
+                                db = mongo_client['Voxmill']
+                                db['client_profiles'].update_one(
+                                    {'whatsapp_number': sender},
+                                    {'$set': client_profile},
+                                    upsert=True
+                                )
+                            
+                            logger.info(f"✅ Client loaded from Airtable: {fields.get('Email')} ({fields.get('Tier')})")
+                        else:
+                            logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
+                    else:
+                        logger.warning(f"Airtable API error: {response.status_code}")
+                        
+            except Exception as e:
+                logger.error(f"Airtable API error: {e}")
+                # Fall through to default client_profile
 
-      # ============================================================
+        # ============================================================
         # WAVE 1: Security validation
         # ============================================================
         security_validator = SecurityValidator()
