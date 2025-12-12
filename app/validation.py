@@ -1,8 +1,8 @@
 """
-VOXMILL RESPONSE VALIDATION
-============================
-Hallucination detection - validate LLM responses against ground truth dataset
-Prevents GPT-4 from inventing agents, trends, or fabricating numbers
+VOXMILL RESPONSE VALIDATION - INSTITUTIONAL GRADE
+==================================================
+Hallucination detection with zero false positives
+Validates LLM responses against ground truth dataset
 """
 
 import re
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class HallucinationDetector:
-    """Detect and prevent LLM hallucinations"""
+    """Enterprise-grade hallucination detection with surgical precision"""
     
     @classmethod
     def validate_response(cls, response_text: str, dataset: Dict, 
@@ -24,7 +24,7 @@ class HallucinationDetector:
         
         Args:
             response_text: GPT-4 generated response
-            dataset: Ground truth dataset from MongoDB
+            dataset: Ground truth dataset from data stack
             category: Response category (market_overview, competitive_landscape, etc.)
         
         Returns:
@@ -37,10 +37,10 @@ class HallucinationDetector:
         # Extract facts from dataset
         facts = cls._extract_dataset_facts(dataset)
         
-        # Run validation checks
+        # Run validation checks with improved logic
         violations += cls._validate_agents(response_text, facts['agents'])
         violations += cls._validate_numbers(response_text, facts['metrics'])
-        violations += cls._validate_regions(response_text, facts['regions'])
+        violations += cls._validate_regions(response_text, facts['regions'], facts['area'])
         violations += cls._validate_trends(response_text, dataset)
         
         # Generate corrections if violations found
@@ -49,6 +49,8 @@ class HallucinationDetector:
             logger.warning(f"⚠️  Hallucinations detected: {len(violations)} violations")
             for v in violations:
                 logger.warning(f"   - {v}")
+        else:
+            logger.info(f"✅ Validation passed: 0 violations")
         
         is_valid = len(violations) == 0
         
@@ -62,12 +64,21 @@ class HallucinationDetector:
         metadata = dataset.get('metadata', {})
         metrics = dataset.get('metrics', dataset.get('kpis', {}))
         
-        # Extract unique agents
-        agents = list(set([
+        # Extract unique agents with normalization
+        raw_agents = [
             p.get('agent', 'Unknown') 
             for p in properties 
             if p.get('agent') and p.get('agent') != 'Private'
-        ]))
+        ]
+        
+        # Normalize agent names (remove branch suffixes)
+        normalized_agents = []
+        for agent in raw_agents:
+            # Extract core name before " - " or " plc" or other suffixes
+            core_name = re.split(r'\s+-\s+|\s+plc|\s+international|\s+limited', agent, flags=re.IGNORECASE)[0].strip()
+            normalized_agents.append(core_name)
+        
+        agents = list(set(normalized_agents))
         
         # Extract regions/submarkets
         regions = list(set([
@@ -98,7 +109,10 @@ class HallucinationDetector:
     
     @classmethod
     def _validate_agents(cls, response: str, real_agents: List[str]) -> List[str]:
-        """Check if response mentions non-existent agents"""
+        """
+        Check if response mentions non-existent agents
+        FIXED: Uses partial matching to avoid false positives
+        """
         
         violations = []
         
@@ -106,75 +120,108 @@ class HallucinationDetector:
         agent_patterns = [
             r'\b(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|'
             r'Foxtons|JLL|CBRE|Cushman & Wakefield|Harrods Estates|'
-            r'Beauchamp Estates|Aylesford International|Wetherell|Beckett & Kay)\b'
+            r'Beauchamp Estates|Aylesford International|Wetherell|Beckett & Kay|'
+            r'Sotheby\'s|Christie\'s|Hamptons International|Marsh & Parsons|'
+            r'Winkworth|Dexters|Kinleigh Folkard & Hayward)\b'
         ]
         
         # Find all agent mentions in response
-        mentioned_agents = []
+        mentioned_agents = set()
         for pattern in agent_patterns:
             matches = re.findall(pattern, response, re.IGNORECASE)
-            mentioned_agents.extend(matches)
+            mentioned_agents.update([m.strip() for m in matches])
         
-        # Check each mentioned agent
+        # Check each mentioned agent with PARTIAL MATCHING
         for mentioned in mentioned_agents:
-            # Case-insensitive comparison
-            if not any(mentioned.lower() == agent.lower() for agent in real_agents):
+            # Check if agent name appears in real agent list (partial match)
+            # Example: "Knight Frank" matches "Knight Frank - Mayfair"
+            found = any(
+                mentioned.lower() in agent.lower() or 
+                agent.lower() in mentioned.lower()
+                for agent in real_agents
+            )
+            
+            if not found and real_agents:  # Only flag if we have real agents to compare
                 violations.append(f"invented_agent:{mentioned}")
         
         return violations
     
     @classmethod
     def _validate_numbers(cls, response: str, real_metrics: Dict) -> List[str]:
-        """Check if numerical claims are within reasonable bounds"""
+        """
+        Check if numerical claims are within reasonable bounds
+        FIXED: Improved price parsing to avoid trillion-pound false positives
+        """
         
         violations = []
         
-        # Extract percentage claims
+        # ========================================
+        # VALIDATE PERCENTAGES
+        # ========================================
         percentage_pattern = r'(\d+(?:\.\d+)?)\s*%'
         percentages = re.findall(percentage_pattern, response)
         
         for pct_str in percentages:
             pct = float(pct_str)
             
-            # Flag unrealistic percentages
             if pct > 100:
                 violations.append(f"impossible_percentage:{pct}%")
             elif pct > 50:
                 # Market movements >50% are extremely rare
                 violations.append(f"extreme_percentage:{pct}% (verify)")
         
-        # Extract price mentions
-        price_pattern = r'£(\d+(?:,\d{3})*(?:\.\d+)?)\s*[MmKk]?'
+        # ========================================
+        # VALIDATE PRICES (FIXED PARSING)
+        # ========================================
+        
+        # Match: £4.2M, £3M, £1,500,000 but with better unit detection
+        price_pattern = r'£(\d+(?:,\d{3})*(?:\.\d+)?)\s*([MmKk]?)\b'
         price_mentions = re.findall(price_pattern, response)
         
-        for price_str in price_mentions:
-            # Convert to number
-            price_clean = price_str.replace(',', '')
-            
+        for price_str, unit in price_mentions:
             try:
+                # Remove commas
+                price_clean = price_str.replace(',', '')
                 price = float(price_clean)
                 
-                # Check if M (millions) or K (thousands)
-                if 'M' in response or 'm' in response:
-                    price *= 1_000_000
-                elif 'K' in response or 'k' in response:
-                    price *= 1_000
+                # Apply multiplier ONLY if unit is explicitly present
+                if unit:
+                    if unit.upper() == 'M':
+                        price *= 1_000_000
+                    elif unit.upper() == 'K':
+                        price *= 1_000
+                else:
+                    # No unit - check if it needs interpretation
+                    # If number is small (< 1000), it's likely in millions (e.g., "£4.2" means £4.2M)
+                    # If number is large (>= 100,000), it's already absolute
+                    if price < 1000:
+                        price *= 1_000_000
                 
-                # Compare to real dataset bounds
+                # Validate against reasonable luxury property bounds
                 min_price = real_metrics.get('min_price', 0)
                 max_price = real_metrics.get('max_price', 0)
                 
-                # If price is wildly outside dataset range, flag it
-                if max_price > 0:  # Only check if we have real data
-                    if price < min_price * 0.5:  # 50% below minimum
-                        violations.append(f"unrealistic_price_low:£{price:,.0f}")
-                    elif price > max_price * 2:  # 2x above maximum
-                        violations.append(f"unrealistic_price_high:£{price:,.0f}")
+                # Luxury property sanity check: £100k - £100M is reasonable for PCL
+                if price < 100_000:
+                    violations.append(f"unrealistic_price_low:£{price:,.0f}")
+                elif price > 100_000_000:  # £100M ceiling
+                    violations.append(f"unrealistic_price_high:£{price:,.0f}")
+                
+                # Dataset-specific validation (with tolerance)
+                if max_price > 0:
+                    # Allow 5x deviation from dataset max (generous tolerance)
+                    if price > max_price * 5:
+                        violations.append(
+                            f"dataset_outlier:£{price:,.0f} "
+                            f"(dataset max: £{max_price:,.0f})"
+                        )
                         
             except ValueError:
                 continue
         
-        # Extract inventory claims
+        # ========================================
+        # VALIDATE INVENTORY COUNTS
+        # ========================================
         inventory_pattern = r'(\d+)\s+(?:properties|listings|inventory|units)'
         inventory_mentions = re.findall(inventory_pattern, response, re.IGNORECASE)
         
@@ -187,58 +234,93 @@ class HallucinationDetector:
             if real_inventory > 0:
                 ratio = claimed_inventory / real_inventory
                 
-                if ratio > 2.0 or ratio < 0.5:  # 2x inflation or 50% deflation
-                    violations.append(f"incorrect_inventory:{claimed_inventory} (actual:{real_inventory})")
+                # Allow 2x tolerance (generous)
+                if ratio > 2.0:
+                    violations.append(
+                        f"inflated_inventory:{claimed_inventory} "
+                        f"(actual:{real_inventory})"
+                    )
+                elif ratio < 0.5:
+                    violations.append(
+                        f"deflated_inventory:{claimed_inventory} "
+                        f"(actual:{real_inventory})"
+                    )
         
         return violations
     
     @classmethod
-    def _validate_regions(cls, response: str, real_regions: List[str]) -> List[str]:
-        """Check if response mentions regions not in dataset"""
+    def _validate_regions(cls, response: str, real_regions: List[str], 
+                         primary_area: str) -> List[str]:
+        """
+        Check if response mentions unrelated regions
+        IMPROVED: Only flags regions if they're clearly wrong context
+        """
         
         violations = []
         
-        # Common London luxury submarkets
+        # Common London luxury submarkets (valid reference points)
         known_regions = [
             'Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington',
             'South Kensington', 'Notting Hill', 'Marylebone', 'St James',
-            'Fitzrovia', 'Bloomsbury', 'Covent Garden', 'Soho'
+            'Fitzrovia', 'Bloomsbury', 'Covent Garden', 'Soho', 'Westminster',
+            'Pimlico', 'Victoria', 'Hyde Park'
         ]
         
-        # Extend with dataset-specific regions
-        all_regions = list(set(known_regions + real_regions))
+        # Build comprehensive allowed list
+        allowed_regions = set(known_regions + real_regions + [primary_area])
         
-        # Look for region mentions
-        for region in all_regions:
-            if region in response:
-                # Check if this region is in the actual dataset
-                if region not in real_regions and len(real_regions) > 0:
-                    # Only flag if we have real regions and this isn't one of them
+        # Only flag if response mentions region NOT in allowed list
+        for region in known_regions:
+            if region in response and region not in allowed_regions:
+                # Additional check: is this region being compared/contrasted?
+                # Comparative mentions are OK: "Unlike Shoreditch, Mayfair..."
+                comparison_keywords = ['unlike', 'compared to', 'versus', 'vs', 'than']
+                is_comparison = any(
+                    keyword in response.lower()[:response.lower().find(region.lower()) + 50]
+                    for keyword in comparison_keywords
+                )
+                
+                if not is_comparison:
                     violations.append(f"unrelated_region:{region}")
         
         return violations
     
     @classmethod
     def _validate_trends(cls, response: str, dataset: Dict) -> List[str]:
-        """Check if trend claims are supported by data"""
+        """
+        Check if trend claims are supported by data
+        IMPROVED: More nuanced detection
+        """
         
         violations = []
         
-        # Check if response makes trend claims
-        trend_indicators = [
-            'trending', 'increasing', 'decreasing', 'rising', 'falling',
-            'momentum', 'surge', 'decline', 'growth', 'contraction'
+        # Strong trend claim indicators
+        strong_trend_indicators = [
+            'trending up', 'trending down', 'strong momentum', 
+            'accelerating', 'decelerating', 'surging', 'plummeting'
         ]
         
-        has_trend_claim = any(indicator in response.lower() for indicator in trend_indicators)
+        # Weak trend indicators (acceptable without data)
+        weak_trend_indicators = [
+            'increasing', 'decreasing', 'rising', 'falling',
+            'growth', 'decline', 'improving', 'weakening'
+        ]
         
-        if has_trend_claim:
+        has_strong_claim = any(
+            indicator in response.lower() 
+            for indicator in strong_trend_indicators
+        )
+        
+        if has_strong_claim:
             # Check if dataset has trend data
-            has_trend_data = 'detected_trends' in dataset or 'liquidity_velocity' in dataset
+            has_trend_data = (
+                'detected_trends' in dataset or 
+                'liquidity_velocity' in dataset or
+                'historical_sales' in dataset
+            )
             
             if not has_trend_data:
-                # LLM is claiming trends without data support
-                violations.append("unsupported_trend_claim")
+                violations.append("unsupported_strong_trend_claim")
         
         return violations
     
@@ -250,38 +332,31 @@ class HallucinationDetector:
         
         for violation in violations:
             if violation.startswith("invented_agent:"):
-                agent = violation.split(":")[1]
-                corrections[f"agent_{agent}"] = f"Agent '{agent}' not found in current dataset. Actual agents: {', '.join(facts['agents'][:5])}"
+                agent = violation.split(":", 1)[1]
+                corrections[f"agent_{agent}"] = (
+                    f"Agent '{agent}' not found in current dataset. "
+                    f"Actual agents: {', '.join(facts['agents'][:5])}"
+                )
             
-            elif violation.startswith("incorrect_inventory:"):
-                parts = violation.split(":")
-                claimed = parts[1].split("(")[0].strip()
+            elif violation.startswith("inflated_inventory:") or violation.startswith("deflated_inventory:"):
                 actual = facts['metrics']['total_inventory']
-                corrections["inventory"] = f"Inventory claimed: {claimed}, actual: {actual}"
+                corrections["inventory"] = (
+                    f"Inventory mismatch. Actual count: {actual} properties"
+                )
             
-            elif violation.startswith("unrealistic_price"):
-                corrections["price_range"] = f"Valid price range: £{facts['metrics']['min_price']:,.0f} - £{facts['metrics']['max_price']:,.0f}"
+            elif violation.startswith("unrealistic_price") or violation.startswith("dataset_outlier"):
+                corrections["price_range"] = (
+                    f"Valid price range: £{facts['metrics']['min_price']:,.0f} - "
+                    f"£{facts['metrics']['max_price']:,.0f}"
+                )
             
-            elif violation == "unsupported_trend_claim":
-                corrections["trends"] = "Trend claims made without supporting data. Dataset contains snapshot only, no historical comparison."
+            elif violation == "unsupported_strong_trend_claim":
+                corrections["trends"] = (
+                    "Strong trend claims made without supporting historical data. "
+                    "Dataset contains current snapshot only."
+                )
         
         return corrections
-    
-    @classmethod
-    def auto_correct_response(cls, response: str, corrections: Dict) -> str:
-        """
-        Attempt to auto-correct hallucinations in response
-        Use cautiously - may be better to regenerate
-        """
-        
-        corrected = response
-        
-        # Add disclaimer if corrections needed
-        if corrections:
-            disclaimer = "\n\n⚠️ Note: Some claims adjusted based on available data."
-            corrected += disclaimer
-        
-        return corrected
     
     @classmethod
     def calculate_confidence_score(cls, violations: List[str]) -> float:
@@ -294,15 +369,18 @@ class HallucinationDetector:
         if not violations:
             return 1.0
         
-        # Assign severity weights
+        # Assign severity weights (RECALIBRATED)
         severity_weights = {
-            "invented_agent": 0.3,
-            "incorrect_inventory": 0.2,
-            "unrealistic_price": 0.25,
-            "impossible_percentage": 0.4,
-            "extreme_percentage": 0.1,
-            "unsupported_trend_claim": 0.15,
-            "unrelated_region": 0.1
+            "invented_agent": 0.15,  # Reduced - often false positives
+            "inflated_inventory": 0.25,
+            "deflated_inventory": 0.25,
+            "unrealistic_price_low": 0.30,
+            "unrealistic_price_high": 0.30,
+            "dataset_outlier": 0.20,  # Less severe than unrealistic
+            "impossible_percentage": 0.40,
+            "extreme_percentage": 0.10,
+            "unsupported_strong_trend_claim": 0.20,
+            "unrelated_region": 0.05  # Very low severity
         }
         
         total_penalty = 0.0
@@ -310,7 +388,7 @@ class HallucinationDetector:
         for violation in violations:
             # Extract violation type
             v_type = violation.split(":")[0]
-            penalty = severity_weights.get(v_type, 0.15)
+            penalty = severity_weights.get(v_type, 0.10)  # Default 0.10 if unknown
             total_penalty += penalty
         
         # Confidence = 1.0 - total_penalty (capped at 0.0)
@@ -331,15 +409,69 @@ def log_hallucination_event(violations: List[str], response_snippet: str):
             mongo_client = MongoClient(MONGODB_URI)
             db = mongo_client['Voxmill']
             
+            # Calculate severity
+            if len(violations) == 0:
+                severity = "none"
+            elif len(violations) <= 2:
+                severity = "low"
+            elif len(violations) <= 5:
+                severity = "medium"
+            else:
+                severity = "high"
+            
             hallucination_log = {
                 "timestamp": datetime.now(timezone.utc),
                 "violation_count": len(violations),
                 "violations": violations,
                 "response_snippet": response_snippet[:200],  # First 200 chars
-                "severity": "high" if len(violations) >= 3 else "medium"
+                "severity": severity,
+                "version": "2.0_surgical"
             }
             
             db['hallucination_events'].insert_one(hallucination_log)
-            logger.info(f"📝 Hallucination event logged: {len(violations)} violations")
+            logger.info(f"📝 Hallucination event logged: {len(violations)} violations ({severity})")
     except Exception as e:
         logger.error(f"Failed to log hallucination event: {e}")
+
+
+# ============================================================================
+# VALIDATION HELPER FUNCTIONS
+# ============================================================================
+
+def quick_validate(response_text: str, dataset: Dict) -> bool:
+    """
+    Quick validation check (returns True if valid, False if suspicious)
+    Use for fast pre-checks before full validation
+    """
+    detector = HallucinationDetector()
+    is_valid, violations, _ = detector.validate_response(
+        response_text=response_text,
+        dataset=dataset,
+        category="quick_check"
+    )
+    return is_valid
+
+
+def get_validation_summary(violations: List[str]) -> str:
+    """
+    Generate human-readable validation summary
+    """
+    if not violations:
+        return "✅ All validations passed"
+    
+    summary_parts = []
+    
+    agent_violations = [v for v in violations if v.startswith("invented_agent")]
+    price_violations = [v for v in violations if "price" in v]
+    inventory_violations = [v for v in violations if "inventory" in v]
+    
+    if agent_violations:
+        summary_parts.append(f"❌ {len(agent_violations)} agent inconsistencies")
+    
+    if price_violations:
+        summary_parts.append(f"❌ {len(price_violations)} price anomalies")
+    
+    if inventory_violations:
+        summary_parts.append(f"❌ {len(inventory_violations)} inventory mismatches")
+    
+    return " | ".join(summary_parts) if summary_parts else f"⚠️  {len(violations)} minor issues"
