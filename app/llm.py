@@ -619,27 +619,46 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # ============================================================
         # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION
         # ============================================================
-        client_name = "there"
-        client_company = ""
-        client_tier_display = "institutional"
-        preferred_region = "Mayfair"
+       # ============================================================
+# EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
+# ============================================================
+
+# Set defaults first (always defined)
+client_name = "there"
+first_name = "there"
+client_company = ""
+client_tier_display = "institutional"
+preferred_region = "Mayfair"
+
+# Override with real data if available
+if client_profile:
+    try:
+        # Get first name only
+        full_name = client_profile.get('name', 'there')
+        if full_name and full_name != 'there':
+            client_name = full_name
+            first_name = full_name.split()[0]
         
-        if client_profile:
-            # Get first name only
-            full_name = client_profile.get('name', 'there')
-            client_name = full_name.split()[0] if full_name != 'there' else 'there'
-            client_company = client_profile.get('company', '')
-            
-            # Map tier to display name
-            tier = client_profile.get('tier', 'tier_1')
-            tier_map = {
-                'tier_1': 'Basic',
-                'tier_2': 'Premium',
-                'tier_3': 'Enterprise'
-            }
-            client_tier_display = tier_map.get(tier, 'institutional')
-            
-            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        # Company
+        client_company = client_profile.get('company', '')
+        
+        # Map tier to display name
+        tier = client_profile.get('tier', 'tier_1')
+        tier_map = {
+            'tier_1': 'Basic',
+            'tier_2': 'Premium',
+            'tier_3': 'Enterprise'
+        }
+        client_tier_display = tier_map.get(tier, 'institutional')
+        
+        # Preferred region
+        prefs = client_profile.get('preferences', {})
+        pref_regions = prefs.get('preferred_regions', ['Mayfair'])
+        if pref_regions and len(pref_regions) > 0:
+            preferred_region = pref_regions[0]
+    except Exception as e:
+        logger.error(f"Error extracting client context: {e}")
+        # Defaults already set above
         
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
