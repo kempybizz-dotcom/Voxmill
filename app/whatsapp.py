@@ -551,6 +551,51 @@ What can I analyze for you today?"""
                 
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
+
+
+# ========================================
+# META-QUESTIONS ABOUT CLIENT PROFILE
+# ========================================
+
+meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 
+                 'my details', 'know about me', 'aware of my']
+
+is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
+
+if is_meta_question:
+    client_name = client_profile.get('name', 'Unknown')
+    client_email = client_profile.get('email', 'Not on file')
+    client_company = client_profile.get('company', 'Not specified')
+    tier = client_profile.get('tier', 'tier_1')
+    preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+    
+    tier_display = {
+        'tier_1': 'Basic',
+        'tier_2': 'Premium', 
+        'tier_3': 'Enterprise'
+    }[tier]
+    
+    profile_response = f"""CLIENT PROFILE
+————————————————————————————————————————
+
+Name: {client_name}
+Company: {client_company if client_company else 'Individual Client'}
+Service Tier: {tier_display}
+Preferred Region: {preferred_region}
+Contact: {client_email}
+
+Your intelligence is personalized to your preferences and tier.
+
+What market intelligence can I provide?"""
+    
+    await send_twilio_message(sender, profile_response)
+    
+    # Log interaction
+    log_interaction(sender, message_text, "profile_query", profile_response)
+    update_client_history(sender, message_text, "profile_query", "None")
+    
+    logger.info(f"✅ Profile info provided to {client_name}")
+    return
         
        # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
