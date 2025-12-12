@@ -1334,7 +1334,7 @@ class VoxmillPDFGenerator:
         
         return chart_data
     
-   def _generate_weekly_trend(self, properties: List[Dict], metrics: Dict) -> List[Dict]:
+  def _generate_weekly_trend(self, properties: List[Dict], metrics: Dict) -> List[Dict]:
         """
         Generate weekly trend data dynamically.
         
