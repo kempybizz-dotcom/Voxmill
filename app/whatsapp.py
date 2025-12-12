@@ -236,9 +236,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
-        # If no cache, default profile, or stale → fetch from Airtable
-        # ALWAYS fetch from Airtable on first message OR if stale
-# ========================================
+      # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -290,7 +288,13 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
                     }
                     
+                    logger.info(f"🔍 DEBUG: Searching Airtable for {whatsapp_search}")
+                    logger.info(f"🔍 DEBUG: URL: {url}")
+                    logger.info(f"🔍 DEBUG: Formula: {params.get('filterByFormula')}")
+                    
                     response = requests.get(url, headers=headers, params=params, timeout=10)
+                    
+                    logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
                     
                     # If no match, try with spaces removed
                     if response.status_code == 200 and not response.json().get('records'):
@@ -302,9 +306,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     
                     if response.status_code == 200:
                         records = response.json().get('records', [])
+                        logger.info(f"🔍 DEBUG: Found {len(records)} records")
                         
                         if records:
                             fields = records[0]['fields']
+                            logger.info(f"🔍 DEBUG: Name={fields.get('Name')}, Email={fields.get('Email')}")
                             
                             # Map Subscription Status → Tier
                             subscription_status = (fields.get('Subscription Status', 'Trial') or 'Trial').lower()
@@ -365,26 +371,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
                     else:
                         logger.warning(f"Airtable API error: {response.status_code}")
+                        logger.error(f"🔍 DEBUG: Error response: {response.text}")
                             
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
-
-
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-
-# ADD THESE DEBUG LINES:
-logger.info(f"🔍 DEBUG: Searching for {whatsapp_search}")
-logger.info(f"🔍 DEBUG: Airtable URL: {url}")
-logger.info(f"🔍 DEBUG: Filter formula: {params.get('filterByFormula')}")
-logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
-if response.status_code == 200:
-    records = response.json().get('records', [])
-    logger.info(f"🔍 DEBUG: Found {len(records)} records")
-    if records:
-        logger.info(f"🔍 DEBUG: First record Name: {records[0]['fields'].get('Name')}")
-else:
-    logger.error(f"🔍 DEBUG: Airtable error: {response.text}")
-
         
         # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
@@ -398,7 +388,7 @@ else:
                 sender,
                 "This number is not authorized for Voxmill Intelligence.\n\n"
                 "For institutional access, contact:\n"
-                "📧 intel@voxmill.uk"
+                "📧 ollys@voxmill.uk"
             )
             return
         
