@@ -1334,7 +1334,7 @@ class VoxmillPDFGenerator:
         
         return chart_data
     
-  def _generate_weekly_trend(self, properties: List[Dict], metrics: Dict) -> List[Dict]:
+    def _generate_weekly_trend(self, properties: List[Dict], metrics: Dict) -> List[Dict]:
         """
         Generate weekly trend data dynamically.
         
@@ -1393,6 +1393,10 @@ class VoxmillPDFGenerator:
             {'label': 'Week 3', 'value': 160, 'count': 0},
             {'label': 'Week 4', 'value': 150, 'count': 0}
         ]
+    
+    # ========================================================================
+    # OPPORTUNITIES SCORING (REAL VARIANCE 55-95)
+    # ========================================================================
     
     def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -1497,6 +1501,7 @@ class VoxmillPDFGenerator:
             })
         
         return opportunities
+    
     # ========================================================================
     # ADDITIONAL INTELLIGENCE FUNCTIONS
     # ========================================================================
