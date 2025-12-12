@@ -1398,110 +1398,109 @@ class VoxmillPDFGenerator:
     # OPPORTUNITIES SCORING (REAL VARIANCE 55-95)
     # ========================================================================
     
-   def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    Prepare opportunities with REAL varied scoring (55-95 range).
-    
-    ✅ FIXED: No more all-95 scores — proper variance
-    ✅ FIXED: Null-safe price_per_sqft handling throughout
-    """
-    opportunities = []
-    opportunities_raw = data.get('top_opportunities', data.get('properties', []))
-    
-    if not opportunities_raw:
-        return opportunities
-    
-    # ✅ CRITICAL FIX: Normalize None values to 0 for all properties
-    for opp in opportunities_raw:
-        if opp.get('price_per_sqft') is None:
-            opp['price_per_sqft'] = 0
-        if opp.get('price') is None:
-            opp['price'] = 0
-        if opp.get('days_listed') is None and opp.get('days_on_market') is None:
-            opp['days_on_market'] = 42
-    
-    kpis = data.get('kpis', data.get('metrics', {}))
-    market_avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
-    market_avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
-    
-    vertical_config = self.get_vertical_tokens(data)
-    vertical_type = vertical_config.get('type', 'real_estate')
-    
-    # Score ALL properties first
-    scored_properties = []
-    
-    for idx, opp in enumerate(opportunities_raw[:20]):
-        score = 55  # Base score
+  def prepare_opportunities(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Prepare opportunities with REAL varied scoring (55-95 range).
         
-        # PRICE EFFICIENCY (0-25 points)
-        price_per_sqft = opp.get('price_per_sqft', 0)  # Already normalized above
-        if price_per_sqft > 0 and market_avg_price_per_sqft > 0:
-            ratio = price_per_sqft / market_avg_price_per_sqft
-            if ratio < 0.75:
-                score += 25
-            elif ratio < 0.85:
+        ✅ FIXED: No more all-95 scores — proper variance
+        ✅ FIXED: Null-safe price_per_sqft handling throughout
+        """
+        opportunities = []
+        opportunities_raw = data.get('top_opportunities', data.get('properties', []))
+        
+        if not opportunities_raw:
+            return opportunities
+        
+        # ✅ CRITICAL FIX: Normalize None values to 0 for all properties
+        for opp in opportunities_raw:
+            if opp.get('price_per_sqft') is None:
+                opp['price_per_sqft'] = 0
+            if opp.get('price') is None:
+                opp['price'] = 0
+            if opp.get('days_listed') is None and opp.get('days_on_market') is None:
+                opp['days_on_market'] = 42
+        
+        kpis = data.get('kpis', data.get('metrics', {}))
+        market_avg_price_per_sqft = kpis.get('avg_price_per_sqft', 2000)
+        market_avg_days = kpis.get('days_on_market', kpis.get('avg_days_on_market', 42))
+        
+        vertical_config = self.get_vertical_tokens(data)
+        vertical_type = vertical_config.get('type', 'real_estate')
+        
+        # Score ALL properties first
+        scored_properties = []
+        
+        for idx, opp in enumerate(opportunities_raw[:20]):
+            score = 55  # Base score
+            
+            # PRICE EFFICIENCY (0-25 points)
+            price_per_sqft = opp.get('price_per_sqft', 0)  # Already normalized above
+            if price_per_sqft > 0 and market_avg_price_per_sqft > 0:
+                ratio = price_per_sqft / market_avg_price_per_sqft
+                if ratio < 0.75:
+                    score += 25
+                elif ratio < 0.85:
+                    score += 20
+                elif ratio < 0.92:
+                    score += 15
+                elif ratio < 1.05:
+                    score += 10
+                elif ratio < 1.15:
+                    score += 5
+            
+            # VELOCITY (0-20 points)
+            days = opp.get('days_listed', opp.get('days_on_market', 42))
+            velocity_score = VoxmillScoringEngine.absorption_rate_score(days, vertical_type)
+            
+            if velocity_score >= 85:
                 score += 20
-            elif ratio < 0.92:
-                score += 15
-            elif ratio < 1.05:
-                score += 10
-            elif ratio < 1.15:
-                score += 5
+            elif velocity_score >= 70:
+                score += 16
+            elif velocity_score >= 60:
+                score += 12
+            else:
+                score += 8
+            
+            # RANKING BONUS (0-10 points)
+            score += max(0, 10 - idx)
+            
+            # Clamp to 55-95
+            final_score = max(55, min(95, score))
+            
+            scored_properties.append({
+                'data': opp,
+                'score': final_score,
+                'idx': idx
+            })
         
-        # VELOCITY (0-20 points)
-        days = opp.get('days_listed', opp.get('days_on_market', 42))
-        velocity_score = VoxmillScoringEngine.absorption_rate_score(days, vertical_type)
+        # Sort by score
+        scored_properties.sort(key=lambda x: x['score'], reverse=True)
         
-        if velocity_score >= 85:
-            score += 20
-        elif velocity_score >= 70:
-            score += 16
-        elif velocity_score >= 60:
-            score += 12
-        else:
-            score += 8
+        # Build final output
+        for item in scored_properties[:15]:  # ✅ NO HARDCODED LIMIT in template
+            opp = item['data']
+            score = item['score']
+            
+            # Score class
+            if score >= 80:
+                score_class = 'high'
+            elif score >= 65:
+                score_class = 'medium'
+            else:
+                score_class = 'low'
+            
+            opportunities.append({
+                'address': opp.get('address', 'N/A'),
+                'property_type': opp.get('type', opp.get('property_type', 'N/A')),
+                'size': opp.get('size', opp.get('sqft', 0)),
+                'price': opp.get('price', 0),
+                'price_per_sqft': opp.get('price_per_sqft', 0),
+                'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
+                'score': score,
+                'score_class': score_class
+            })
         
-        # RANKING BONUS (0-10 points)
-        score += max(0, 10 - idx)
-        
-        # Clamp to 55-95
-        final_score = max(55, min(95, score))
-        
-        scored_properties.append({
-            'data': opp,
-            'score': final_score,
-            'idx': idx
-        })
-    
-    # Sort by score
-    scored_properties.sort(key=lambda x: x['score'], reverse=True)
-    
-    # Build final output
-    for item in scored_properties[:15]:  # ✅ NO HARDCODED LIMIT in template
-        opp = item['data']
-        score = item['score']
-        
-        # Score class
-        if score >= 80:
-            score_class = 'high'
-        elif score >= 65:
-            score_class = 'medium'
-        else:
-            score_class = 'low'
-        
-        opportunities.append({
-            'address': opp.get('address', 'N/A'),
-            'property_type': opp.get('type', opp.get('property_type', 'N/A')),
-            'size': opp.get('size', opp.get('sqft', 0)),
-            'price': opp.get('price', 0),
-            'price_per_sqft': opp.get('price_per_sqft', 0),
-            'days_listed': opp.get('days_listed', opp.get('days_on_market', 0)),
-            'score': score,
-            'score_class': score_class
-        })
-    
-    return opportunities
-    
+        return opportunities
     # ========================================================================
     # ADDITIONAL INTELLIGENCE FUNCTIONS
     # ========================================================================
