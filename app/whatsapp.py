@@ -247,8 +247,6 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
         if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
             # Clean WhatsApp number - remove 'whatsapp:' prefix
             whatsapp_search = sender.replace('whatsapp:', '')
-            
-            # Remove spaces for matching
             whatsapp_clean = whatsapp_search.replace(' ', '')
             
             # Search Airtable
@@ -265,7 +263,7 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
             
             response = requests.get(url, headers=headers, params=params, timeout=10)
             
-            # If no match, try with spaces removed from both sides
+            # If no match, try with spaces removed
             if response.status_code == 200 and not response.json().get('records'):
                 logger.info(f"No exact match, trying space-removed matching")
                 params = {
@@ -279,28 +277,22 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
                 if records:
                     fields = records[0]['fields']
                     
-                    # ============================================================
-                    # Map Subscription Status → Tier (you don't have Tier field)
-                    # ============================================================
+                    # Map Subscription Status → Tier
                     subscription_status = (fields.get('Subscription Status', 'Trial') or 'Trial').lower()
                     
-                    # Map subscription status to tier
                     status_to_tier = {
                         'trial': 'tier_1',
-                        'active': 'tier_3',      # Active = Enterprise (tier 3)
+                        'active': 'tier_3',
                         'paused': 'tier_1',
                         'cancelled': 'tier_1'
                     }
                     
-                    tier = status_to_tier.get(subscription_status, 'tier_3')  # Default to Enterprise
+                    tier = status_to_tier.get(subscription_status, 'tier_3')
                     
-                    # Preserve query history from old cache if it exists
+                    # Preserve query history
                     old_history = client_profile.get('query_history', []) if client_profile else []
                     old_total = client_profile.get('total_queries', 0) if client_profile else 0
                     
-                    # ============================================================
-                    # Build profile using YOUR actual Airtable fields
-                    # ============================================================
                     client_profile = {
                         'whatsapp_number': sender,
                         'email': fields.get('Email', ''),
@@ -308,17 +300,16 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
                         'company': fields.get('Company', ''),
                         'tier': tier,
                         'preferences': {
-                            # Use Preferred City for region analysis
                             'preferred_regions': [fields.get('Preferred City', 'London')],
                             'preferred_city': fields.get('Preferred City', 'London'),
                             'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
                             'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
-                            'update_frequency': 'weekly'  # Not in Airtable, use default
+                            'update_frequency': 'weekly'
                         },
                         'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
                         'messages_used_this_month': fields.get('Messages Used This Month', 0),
                         'subscription_status': subscription_status,
-                        'stripe_customer_id': '',  # Not in your Airtable
+                        'stripe_customer_id': '',
                         'airtable_record_id': records[0]['id'],
                         'total_queries': old_total,
                         'query_history': old_history,
@@ -340,7 +331,7 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
                     
                     logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} (Status: {subscription_status}, Tier: {tier})")
                 else:
-                    logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
+                    logger.info(f"❌ No Airtable record for {whatsapp_search}")
             elif response.status_code == 404:
                 logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
             else:
@@ -348,32 +339,27 @@ if not client_profile or should_refresh or client_profile.get('total_queries', 0
                     
     except Exception as e:
         logger.error(f"Airtable API error: {e}", exc_info=True)
-        # Fall through to cached/default client_profile
 
-# FALLBACK: If still no profile, create default
-if not client_profile:
-    logger.info(f"Creating default profile for {sender}")
-    client_profile = {
-        'whatsapp_number': sender,
-        'name': 'New User',
-        'email': '',
-        'company': '',
-        'tier': 'tier_1',
-        'preferences': {
-            'preferred_regions': ['London'],
-            'preferred_city': 'London',
-            'competitor_focus': 'medium',
-            'report_depth': 'detailed',
-            'update_frequency': 'weekly'
-        },
-        'monthly_message_limit': 20,
-        'messages_used_this_month': 0,
-        'subscription_status': 'trial',
-        'total_queries': 0,
-        'query_history': [],
-        'created_at': datetime.now(timezone.utc),
-        'updated_at': datetime.now(timezone.utc)
-    }
+# ========================================
+# WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
+# ========================================
+
+# If no Airtable record found, block access
+if not client_profile or not client_profile.get('airtable_record_id'):
+    logger.warning(f"🚫 UNAUTHORIZED ACCESS ATTEMPT: {sender}")
+    
+    await send_twilio_message(
+        sender,
+        "This number is not authorized for Voxmill Intelligence.\n\n"
+        "For institutional access, contact:\n"
+        "📧 ollys@voxmill.uk"
+    )
+    return
+
+# ========================================
+# AUTHORIZED - Continue processing
+# ========================================
+logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
         # ============================================================
         # WAVE 1: Security validation
         # ============================================================
