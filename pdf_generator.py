@@ -1685,6 +1685,10 @@ class VoxmillPDFGenerator:
     # TEMPLATE RENDERING
     # ========================================================================
     
+   # ========================================================================
+    # TEMPLATE RENDERING
+    # ========================================================================
+    
     def render_template(self, data: Dict[str, Any]) -> str:
         """
         Render HTML template with all dynamic data.
@@ -1761,6 +1765,11 @@ class VoxmillPDFGenerator:
             metrics = data.get('metrics', data.get('kpis', {}))
             properties = data.get('properties', data.get('top_opportunities', []))
             
+            # ✅ CRITICAL: Normalize None values in properties before passing to other methods
+            for prop in properties:
+                if prop.get('price_per_sqft') is None:
+                    prop['price_per_sqft'] = 0
+            
             kpis = {
                 'total_properties': metrics.get('total_properties', len(properties)),
                 'property_change': metrics.get('property_change', 0),
@@ -1826,20 +1835,16 @@ class VoxmillPDFGenerator:
             logger.info(f"   Luxury Goods: {cross_vertical_data['luxury_goods']['signal_label']}")
             logger.info(f"   PE Signal: {cross_vertical_data['private_equity']['signal_label']}")
             
-            # ✅ FIX: Build KPI items for template (4-tuple format: label, key, value, change)
+            # Build KPI items for template (4-tuple format: label, key, value, change)
             kpi_items = [
                 ('Total Properties', 'total_properties', kpis['total_properties'], kpis['property_change']),
                 ('Avg Price', 'avg_price', format_price(kpis['avg_price']), kpis['price_change']),
                 ('Avg Price/Sqft', 'avg_price_per_sqft', format_price(kpis['avg_price_per_sqft']), kpis['sqft_change']),
                 ('Days on Market', 'days_on_market', kpis['days_on_market'], kpis['velocity_change'])
             ]
-
-            # DEBUG: Print kpi_items to see what we're actually sending
-            logger.info(f"🔍 DEBUG kpi_items: {kpi_items}")
-            logger.info(f"🔍 DEBUG kpi_items[0] length: {len(kpi_items[0])}")
             
             template_data = {
-                'include': include_slides,  # ← ADD THIS LINE FIRST
+                'include': include_slides,
                 'location': full_location,
                 'report_date': datetime.now().strftime('%B %Y'),
                 'client_name': data.get('client_name', 'Strategic Market Participants'),
@@ -1912,7 +1917,7 @@ class VoxmillPDFGenerator:
         html_content: str,
         output_filename: str = "Voxmill_Executive_Intelligence_Deck.pdf"
     ) -> Path:
-        """Generate PDF from HTML content (unchanged)"""
+        """Generate PDF from HTML content"""
         output_path = self.output_dir / output_filename
         
         logger.info(f"Generating PDF: {output_path}")
@@ -1993,7 +1998,7 @@ class VoxmillPDFGenerator:
 # ============================================================================
 
 if __name__ == "__main__":
-    import argparse  # ✅ OR ADD IT HERE IF NOT AT TOP
+    import argparse
     
     parser = argparse.ArgumentParser(
         description='Voxmill PDF Generator V3.1 - Production Edition'
@@ -2002,7 +2007,6 @@ if __name__ == "__main__":
     parser.add_argument('--workspace', type=str, required=True)
     parser.add_argument('--output', type=str, required=True)
     
-    # ✅ THESE MUST EXIST
     parser.add_argument(
         '--competitor-focus',
         choices=['low', 'medium', 'high'],
@@ -2031,7 +2035,7 @@ if __name__ == "__main__":
         data_path=str(data_path)
     )
     
-    # ✅ SET PREFERENCES FROM ARGS
+    # Set preferences from args
     generator.competitor_focus = args.competitor_focus
     generator.report_depth = args.report_depth
     
