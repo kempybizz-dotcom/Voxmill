@@ -833,6 +833,94 @@ def queue_job(job_data: dict) -> bool:
         return False
 
 
+def get_all_active_clients_simple():
+    """
+    Get all active clients from Airtable/MongoDB
+    Returns list of dicts with: whatsapp_number, name, city, regions, preferences
+    """
+    
+    clients = []
+    
+    # Try Airtable first
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
+    AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+    
+    if AIRTABLE_API_KEY:
+        try:
+            import requests
+            
+            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+            headers = {
+                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
+                'Content-Type': 'application/json'
+            }
+            
+            params = {
+                'filterByFormula': "{Status}='Active'",
+                'maxRecords': 100
+            }
+            
+            response = requests.get(url, headers=headers, params=params, timeout=15)
+            
+            if response.status_code == 200:
+                data = response.json()
+                records = data.get('records', [])
+                
+                for record in records:
+                    fields = record['fields']
+                    regions_str = fields.get('Regions', '')
+                    regions = [r.strip() for r in regions_str.split(',') if r.strip()]
+                    
+                    client = {
+                        'whatsapp_number': fields.get('WhatsApp', ''),
+                        'name': fields.get('Name', 'Valued Client'),
+                        'city': fields.get('City', 'London'),
+                        'regions': regions,
+                        'area': regions[0] if regions else fields.get('City', 'London'),
+                        'competitor_focus': fields.get('Competitor Focus', 'medium'),
+                        'report_depth': fields.get('Report Depth', 'detailed')
+                    }
+                    
+                    if client['whatsapp_number']:
+                        clients.append(client)
+                
+                logger.info(f"✅ Loaded {len(clients)} active clients from Airtable")
+                return clients
+        
+        except Exception as e:
+            logger.warning(f"Airtable fetch failed: {e}")
+    
+    # Fallback to MongoDB
+    if mongo_client:
+        try:
+            cursor = db['client_profiles'].find({'status': 'active'})
+            
+            for doc in cursor:
+                prefs = doc.get('preferences', {})
+                regions = prefs.get('preferred_regions', [])
+                
+                client = {
+                    'whatsapp_number': doc.get('whatsapp_number', ''),
+                    'name': doc.get('name', 'Valued Client'),
+                    'city': doc.get('city', 'London'),
+                    'regions': regions,
+                    'area': regions[0] if regions else doc.get('city', 'London'),
+                    'competitor_focus': prefs.get('competitor_focus', 'medium'),
+                    'report_depth': prefs.get('report_depth', 'detailed')
+                }
+                
+                if client['whatsapp_number']:
+                    clients.append(client)
+            
+            logger.info(f"✅ Loaded {len(clients)} active clients from MongoDB")
+            return clients
+        
+        except Exception as e:
+            logger.warning(f"MongoDB fetch failed: {e}")
+    
+    return clients
+
 # ============================================================================
 # CLI INTERFACE
 # ============================================================================
@@ -843,7 +931,9 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Voxmill Intelligence Pipeline')
-    parser.add_argument('--area', required=True, help='Market area (e.g., Mayfair)')
+    
+    # Optional parameters - if none provided, runs batch mode
+    parser.add_argument('--area', help='Market area (e.g., Mayfair) - optional if using batch mode')
     parser.add_argument('--city', default='London', help='City name')
     parser.add_argument('--vertical', default='uk-real-estate', help='Vertical identifier')
     parser.add_argument('--email', default='none', help='Client email or WhatsApp number')
@@ -851,6 +941,69 @@ def main():
     parser.add_argument('--queue', action='store_true', help='Queue job instead of running directly')
     
     args = parser.parse_args()
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # BATCH MODE: No --area provided = process all active clients
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    if not args.area:
+        logger.info("\n" + "="*70)
+        logger.info("🔄 BATCH MODE: Processing all active clients")
+        logger.info("="*70)
+        
+        clients = get_all_active_clients_simple()
+        
+        if not clients:
+            logger.warning("⚠️  No active clients found in Airtable or MongoDB")
+            sys.exit(0)
+        
+        logger.info(f"📋 Found {len(clients)} active client(s)\n")
+        
+        stats = {'success': 0, 'failed': 0}
+        
+        for i, client in enumerate(clients, 1):
+            logger.info(f"[{i}/{len(clients)}] Processing: {client['name']}")
+            logger.info(f"   Area: {client['area']}, City: {client['city']}")
+            
+            vertical_config = {
+                'type': 'real_estate',
+                'name': 'Real Estate',
+                'vertical': 'uk-real-estate'
+            }
+            
+            try:
+                result = execute_voxmill_pipeline(
+                    area=client['area'],
+                    city=client['city'],
+                    vertical='uk-real-estate',
+                    vertical_config=vertical_config,
+                    client_email=client['whatsapp_number'],
+                    client_name=client['name']
+                )
+                
+                if result['success']:
+                    stats['success'] += 1
+                    logger.info(f"   ✅ Complete\n")
+                else:
+                    stats['failed'] += 1
+                    logger.error(f"   ❌ Failed: {result.get('error')}\n")
+            
+            except Exception as e:
+                stats['failed'] += 1
+                logger.error(f"   ❌ Exception: {e}\n")
+        
+        logger.info("="*70)
+        logger.info("BATCH PROCESSING COMPLETE")
+        logger.info("="*70)
+        logger.info(f"   Success: {stats['success']}")
+        logger.info(f"   Failed: {stats['failed']}")
+        logger.info(f"   Total: {len(clients)}")
+        logger.info("="*70)
+        
+        sys.exit(0 if stats['failed'] == 0 else 1)
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # SINGLE CLIENT MODE: --area provided = manual execution
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     
     # Prepare vertical config
     vertical_config = {
@@ -896,6 +1049,3 @@ def main():
         print(f"\n❌ FAILED: {result.get('error', 'Unknown error')}")
         sys.exit(1)
 
-
-if __name__ == "__main__":
-    main()
