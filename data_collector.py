@@ -14,6 +14,21 @@ from datetime import datetime
 import time
 from functools import wraps
 
+# Rightmove Location Mapping
+RIGHTMOVE_LOCATIONS = {
+    "West End": "STATION^11749",
+    "Mayfair": "STATION^9493",
+    "Knightsbridge": "STATION^5933",
+    "Chelsea": "STATION^5270",
+    "Kensington": "STATION^5960",
+    "Manchester": "REGION^1313",  # Greater Manchester
+    "Manchester City Centre": "STATION^5929",
+    "Edinburgh": "REGION^91319",
+    "West End Edinburgh": "STATION^11749",
+    "Birmingham": "REGION^61265",
+    "Bristol": "REGION^1551",
+}
+
 def retry_with_backoff(max_retries=3, base_delay=1.0):
     """
     Decorator for exponential backoff retry logic
