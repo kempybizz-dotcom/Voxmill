@@ -585,25 +585,6 @@ You are world-class. Act like it.
 """
 
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
-
-    from datetime import datetime
-    import pytz
-
-    uk_tz = pytz.timezone('Europe/London')
-    uk_now = datetime.now(uk_tz)
-    current_time_uk = uk_now.strftime('%H:%M GMT')
-    current_date = uk_now.strftime('%A, %B %d, %Y')
-
-    # Format system prompt with time + client context
-    system_prompt_personalized = SYSTEM_PROMPT.format(
-    current_time_uk=current_time_uk,
-    current_date=current_date,
-    client_name=client_name,
-    client_company=client_company if client_company else "your organization",
-    client_tier=client_tier_display,
-    preferred_region=preferred_region
-)
-    
     """
     Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence.
     
@@ -616,63 +597,65 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     Returns: (category, response_text, metadata)
     """
     try:
-    
-# ============================================================
-# EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
-# ============================================================
-
-# Set defaults first (always defined)
-client_name = "there"
-first_name = "there"
-client_company = ""
-client_tier_display = "institutional"
-preferred_region = "Mayfair"
-
-# Override with real data if available
-if client_profile:
-    try:
-        # Get first name only
-        full_name = client_profile.get('name', 'there')
-        if full_name and full_name != 'there':
-            client_name = full_name
-            first_name = full_name.split()[0]
+        from datetime import datetime
+        import pytz
         
-        # Company
-        client_company = client_profile.get('company', '')
+        # ============================================================
+        # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
+        # ============================================================
         
-        # Map tier to display name
-        tier = client_profile.get('tier', 'tier_1')
-        tier_map = {
-            'tier_1': 'Basic',
-            'tier_2': 'Premium',
-            'tier_3': 'Enterprise'
-        }
-        client_tier_display = tier_map.get(tier, 'institutional')
+        # Set defaults first (always defined)
+        client_name = "there"
+        first_name = "there"
+        client_company = ""
+        client_tier_display = "institutional"
+        preferred_region = "Mayfair"
         
-        # Preferred region
-        prefs = client_profile.get('preferences', {})
-        pref_regions = prefs.get('preferred_regions', ['Mayfair'])
-        if pref_regions and len(pref_regions) > 0:
-            preferred_region = pref_regions[0]
-    except Exception as e:
-        logger.error(f"Error extracting client context: {e}")
-        # Defaults already set above
-
-# Get UK time for context
-uk_tz = pytz.timezone('Europe/London')
-uk_now = datetime.now(uk_tz)
-current_time_uk = uk_now.strftime('%H:%M GMT')
-current_date = uk_now.strftime('%A, %B %d, %Y')
-
-# Format system prompt with client context
-system_prompt_personalized = SYSTEM_PROMPT.format(
-    current_time_uk=current_time_uk,
-    current_date=current_date,
-    client_name=first_name,
-    client_company=client_company,
-    client_tier=client_tier_display,
-    preferred_region=preferred_region
-)
+        # Override with real data if available
+        if client_profile:
+            try:
+                # Get first name only
+                full_name = client_profile.get('name', 'there')
+                if full_name and full_name != 'there':
+                    client_name = full_name
+                    first_name = full_name.split()[0]
+                
+                # Company
+                client_company = client_profile.get('company', '')
+                
+                # Map tier to display name
+                tier = client_profile.get('tier', 'tier_1')
+                tier_map = {
+                    'tier_1': 'Basic',
+                    'tier_2': 'Premium',
+                    'tier_3': 'Enterprise'
+                }
+                client_tier_display = tier_map.get(tier, 'institutional')
+                
+                # Preferred region
+                prefs = client_profile.get('preferences', {})
+                pref_regions = prefs.get('preferred_regions', ['Mayfair'])
+                if pref_regions and len(pref_regions) > 0:
+                    preferred_region = pref_regions[0]
+            except Exception as e:
+                logger.error(f"Error extracting client context: {e}")
+                # Defaults already set above
+        
+        # Get UK time for context
+        uk_tz = pytz.timezone('Europe/London')
+        uk_now = datetime.now(uk_tz)
+        current_time_uk = uk_now.strftime('%H:%M GMT')
+        current_date = uk_now.strftime('%A, %B %d, %Y')
+        
+        # Format system prompt with client context
+        system_prompt_personalized = SYSTEM_PROMPT.format(
+            current_time_uk=current_time_uk,
+            current_date=current_date,
+            client_name=first_name,
+            client_company=client_company if client_company else "your organization",
+            client_tier=client_tier_display,
+            preferred_region=preferred_region
+        )
         
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
@@ -692,14 +675,6 @@ system_prompt_personalized = SYSTEM_PROMPT.format(
         # ============================================================
         # WAVE 3: Apply confidence-based tone modulation
         # ============================================================
-        
-        # Format system prompt with client context
-        system_prompt_personalized = SYSTEM_PROMPT.format(
-            client_name=client_name,
-            client_company=client_company if client_company else "your organization",
-            client_tier=client_tier_display,
-            preferred_region=preferred_region
-        )
         
         enhanced_system_prompt = AdaptiveLLMController.modulate_tone_for_confidence(
             system_prompt=system_prompt_personalized,
@@ -788,12 +763,6 @@ system_prompt_personalized = SYSTEM_PROMPT.format(
                 agent: round((count / total_listings) * 100, 1)
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
-        
-        # [REST OF YOUR EXISTING FUNCTION CONTINUES HERE...]
-        # Include all the V3 intelligence layers, comparative analysis, etc.
-        
-        # Just make sure to use 'enhanced_system_prompt' instead of 'SYSTEM_PROMPT' 
-        # in your OpenAI API call
         
         # ========================================
         # CONVERSATIONAL INTELLIGENCE DETECTION
