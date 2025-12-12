@@ -173,13 +173,28 @@ Analyze this message and determine if it's a preference change request."""
 
 
 def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
-    """Apply preference changes to MongoDB using WhatsApp number"""
+    """
+    Apply preference changes to BOTH MongoDB AND Airtable
+    
+    Flow:
+    1. Find client in MongoDB
+    2. Update Airtable (source of truth) 
+    3. Update MongoDB (backup/cache)
+    4. Return success
+    
+    Args:
+        whatsapp_number: Client's WhatsApp number (with or without 'whatsapp:' prefix)
+        changes: Dict with keys like 'competitor_focus', 'report_depth', 'regions'
+    
+    Returns:
+        True if successful
+    """
     
     if db is None:
         logger.error("MongoDB not connected")
         return False
     
-    # ✅ FIX: Normalize phone number and find client
+    # ✅ STEP 1: Find client in MongoDB
     normalized_number = whatsapp_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     client = db['client_profiles'].find_one({
@@ -195,21 +210,96 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     
     logger.info(f"Found client: {client.get('_id')}, applying changes: {changes}")
     
+    # ✅ STEP 2: Update Airtable (source of truth)
+    airtable_success = False
+    
+    try:
+        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
+        AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+        
+        if AIRTABLE_API_KEY:
+            import requests
+            
+            # Find Airtable record
+            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+            headers = {
+                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
+                'Content-Type': 'application/json'
+            }
+            
+            params = {
+                'filterByFormula': f"{{WhatsApp}}='{normalized_number}'",
+                'maxRecords': 1
+            }
+            
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                records = data.get('records', [])
+                
+                if records:
+                    record_id = records[0]['id']
+                    
+                    # Build update payload
+                    airtable_updates = {}
+                    
+                    if 'competitor_focus' in changes:
+                        # Map to Airtable values
+                        airtable_updates['Competitor Focus'] = changes['competitor_focus']
+                    
+                    if 'report_depth' in changes:
+                        # Map to Airtable values
+                        airtable_updates['Report Depth'] = changes['report_depth']
+                    
+                    if 'regions' in changes:
+                        # Get current regions from Airtable
+                        current_regions_str = records[0]['fields'].get('Regions', '')
+                        current_regions = [r.strip() for r in current_regions_str.split(',') if r.strip()]
+                        
+                        # Merge with new regions (avoid duplicates)
+                        new_regions = list(set(current_regions + changes['regions']))
+                        airtable_updates['Regions'] = ', '.join(new_regions)
+                    
+                    # Update Airtable record
+                    if airtable_updates:
+                        update_url = f"{url}/{record_id}"
+                        update_payload = {"fields": airtable_updates}
+                        
+                        update_response = requests.patch(
+                            update_url,
+                            headers=headers,
+                            json=update_payload,
+                            timeout=10
+                        )
+                        
+                        if update_response.status_code == 200:
+                            logger.info(f"✅ Updated Airtable: {airtable_updates}")
+                            airtable_success = True
+                        else:
+                            logger.warning(f"Airtable update failed: {update_response.status_code} - {update_response.text}")
+                else:
+                    logger.warning(f"No Airtable record found for {normalized_number}")
+            else:
+                logger.warning(f"Airtable query failed: {response.status_code}")
+        else:
+            logger.warning("AIRTABLE_API_KEY not configured")
+    
+    except Exception as e:
+        logger.error(f"Airtable update error: {e}", exc_info=True)
+    
+    # ✅ STEP 3: Update MongoDB (backup/cache)
     update_data = {}
     
-    # Handle region changes
     if 'regions' in changes:
         current_regions = client.get('preferences', {}).get('preferred_regions', [])
-        
-        # Add new regions (avoid duplicates)
         new_regions = list(set(current_regions + changes['regions']))
         update_data['preferences.preferred_regions'] = new_regions
     
-    # Handle report depth
     if 'report_depth' in changes:
         update_data['preferences.report_depth'] = changes['report_depth']
     
-    # Handle competitor focus
     if 'competitor_focus' in changes:
         update_data['preferences.competitor_focus'] = changes['competitor_focus']
     
@@ -222,7 +312,8 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
         if key not in ['regions', 'report_depth', 'competitor_focus', 'delivery_time']:
             update_data[f'preferences.{key}'] = value
     
-    # Update MongoDB using _id (most reliable)
+    mongodb_success = False
+    
     if update_data:
         update_data['updated_at'] = datetime.now(timezone.utc)
         
@@ -231,10 +322,11 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
             {"$set": update_data}
         )
         
-        logger.info(f"MongoDB update: matched={result.matched_count}, modified={result.modified_count}")
-        return result.modified_count > 0
+        logger.info(f"✅ Updated MongoDB: matched={result.matched_count}, modified={result.modified_count}")
+        mongodb_success = result.modified_count > 0
     
-    return False
+    # ✅ STEP 4: Return success (either Airtable OR MongoDB succeeded)
+    return airtable_success or mongodb_success
 
 
 def handle_whatsapp_preference_message(from_number: str, message: str) -> Optional[str]:
