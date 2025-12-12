@@ -1052,10 +1052,10 @@ What would be most useful?"""
         # WAVE 1: Validate response for hallucinations
         # ============================================================
         from app.validation import HallucinationDetector
-        
+
         hallucination_detector = HallucinationDetector()
         is_valid, confidence_score, violations = hallucination_detector.validate_response(
-            response=formatted_response,
+            text=formatted_response,  # ✅ CORRECT
             dataset=dataset
         )
         
