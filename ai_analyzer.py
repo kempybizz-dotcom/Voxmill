@@ -3,6 +3,7 @@ VOXMILL AI ANALYZER - PRODUCTION VERSION
 =========================================
 GPT-4o powered market intelligence generation
 Uses direct HTTP requests - bypasses OpenAI library proxy issues
+FIXED: Null-safe price_per_sqft filtering throughout
 """
 
 import os
@@ -244,15 +245,19 @@ def generate_fallback_intelligence(metrics, area, city):
 
 
 def calculate_deal_scores(properties):
-    """Calculate deal scores (1-10) for properties."""
+    """
+    Calculate deal scores (1-10) for properties.
+    FIXED: Null-safe price_per_sqft filtering
+    """
     
     print(f"\n📊 CALCULATING DEAL SCORES")
     
     if not properties or len(properties) == 0:
         return []
     
-    # Get price/sqft for all properties
-    prices_per_sqft = [p['price_per_sqft'] for p in properties if p.get('price_per_sqft', 0) > 0]
+    # FIXED: Null-safe price/sqft extraction
+    prices_per_sqft = [p['price_per_sqft'] for p in properties 
+                       if p.get('price_per_sqft') is not None and p['price_per_sqft'] > 0]
     
     if not prices_per_sqft:
         # No price/sqft data - use price only
@@ -276,9 +281,10 @@ def calculate_deal_scores(properties):
     
     scored = []
     for prop in properties:
-        ppf = prop.get('price_per_sqft', 0)
+        ppf = prop.get('price_per_sqft')
         
-        if ppf == 0:
+        # FIXED: Explicit None check
+        if ppf is None or ppf == 0:
             score = 5
             reason = "No price/sqft data"
         else:
@@ -319,7 +325,10 @@ def calculate_deal_scores(properties):
 
 
 def calculate_metrics(properties):
-    """Calculate market metrics from property data."""
+    """
+    Calculate market metrics from property data.
+    FIXED: Null-safe price_per_sqft filtering
+    """
     
     print(f"\n📈 CALCULATING MARKET METRICS")
     
@@ -333,8 +342,10 @@ def calculate_metrics(properties):
         # Don't raise, but warn user
     
     prices = [p['price'] for p in properties if p.get('price', 0) > 0]
+    
+    # FIXED: Null-safe price_per_sqft extraction
     prices_per_sqft = [p['price_per_sqft'] for p in properties 
-                   if p.get('price_per_sqft') is not None and p['price_per_sqft'] > 0]
+                       if p.get('price_per_sqft') is not None and p['price_per_sqft'] > 0]
     
     property_types = [p['property_type'] for p in properties if p.get('property_type')]
     
