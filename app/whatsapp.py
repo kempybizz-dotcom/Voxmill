@@ -1049,47 +1049,47 @@ What would be most useful?"""
         formatted_response = format_analyst_response(response_text, category)
         
         # ============================================================
-# WAVE 1: Validate response for hallucinations
-# ============================================================
-from app.validation import HallucinationDetector
-
-hallucination_detector = HallucinationDetector()
-
-# Validate response (correct signature)
-is_valid, violations, corrections = hallucination_detector.validate_response(
-    response_text=formatted_response,
-    dataset=dataset,
-    category=category
-)
-
-# Calculate confidence score
-confidence_score = HallucinationDetector.calculate_confidence_score(violations)
-
-# Add warning if low confidence
-if not is_valid and confidence_score < 0.5:
-    logger.error(f"Hallucination detected (confidence: {confidence_score}): {violations}")
-    formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
-    
-    # Log the hallucination event
-    from app.validation import log_hallucination_event
-    log_hallucination_event(violations, formatted_response)
-
-# ============================================================
-# WAVE 1: Cache the response
-# ============================================================
-cache_mgr.set_response_cache(
-    query=message_normalized,
-    region=preferred_region,
-    client_tier=client_profile.get('tier', 'tier_1'),
-    category=category,
-    response_text=formatted_response,
-    metadata=response_metadata
-)
+        # WAVE 1: Validate response for hallucinations
+        # ============================================================
+        from app.validation import HallucinationDetector
+        
+        hallucination_detector = HallucinationDetector()
+        
+        # Validate response (correct signature)
+        is_valid, violations, corrections = hallucination_detector.validate_response(
+            response_text=formatted_response,
+            dataset=dataset,
+            category=category
+        )
+        
+        # Calculate confidence score
+        confidence_score = HallucinationDetector.calculate_confidence_score(violations)
+        
+        # Add warning if low confidence
+        if not is_valid and confidence_score < 0.5:
+            logger.error(f"Hallucination detected (confidence: {confidence_score}): {violations}")
+            formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
+            
+            # Log the hallucination event
+            from app.validation import log_hallucination_event
+            log_hallucination_event(violations, formatted_response)
+        
+        # ============================================================
+        # WAVE 1: Cache the response
+        # ============================================================
+        cache_mgr.set_response_cache(
+            query=message_normalized,
+            region=preferred_region,
+            client_tier=client_profile.get('tier', 'tier_1'),
+            category=category,
+            response_text=formatted_response,
+            metadata=response_metadata
+        )
         
         # ============================================================
         # WAVE 1: Validate response output (no prompt leakage)
         # ============================================================
-    
+        
         # Security validation
         from app.security import ResponseValidator
         
