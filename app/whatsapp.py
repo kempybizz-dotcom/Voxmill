@@ -368,6 +368,23 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                             
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
+
+
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+
+# ADD THESE DEBUG LINES:
+logger.info(f"🔍 DEBUG: Searching for {whatsapp_search}")
+logger.info(f"🔍 DEBUG: Airtable URL: {url}")
+logger.info(f"🔍 DEBUG: Filter formula: {params.get('filterByFormula')}")
+logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
+if response.status_code == 200:
+    records = response.json().get('records', [])
+    logger.info(f"🔍 DEBUG: Found {len(records)} records")
+    if records:
+        logger.info(f"🔍 DEBUG: First record Name: {records[0]['fields'].get('Name')}")
+else:
+    logger.error(f"🔍 DEBUG: Airtable error: {response.text}")
+
         
         # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
@@ -381,7 +398,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 sender,
                 "This number is not authorized for Voxmill Intelligence.\n\n"
                 "For institutional access, contact:\n"
-                "📧 ollys@voxmill.uk"
+                "📧 intel@voxmill.uk"
             )
             return
         
