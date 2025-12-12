@@ -1,7 +1,7 @@
 """
 VOXMILL WHATSAPP HANDLER
 ========================
-Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages
+Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages + Airtable API integration
 """
 
 import os
@@ -32,6 +32,32 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
 
+def get_time_appropriate_greeting(client_name: str = "there") -> str:
+    """Generate time-appropriate greeting based on UK time"""
+    from datetime import datetime
+    import pytz
+    
+    # Get current time in UK
+    uk_tz = pytz.timezone('Europe/London')
+    uk_time = datetime.now(uk_tz)
+    hour = uk_time.hour
+    
+    # Extract first name
+    first_name = client_name.split()[0] if client_name != "there" else ""
+    
+    # Time-based greetings
+    if 5 <= hour < 12:
+        greeting = f"Good morning{', ' + first_name if first_name else ''}."
+    elif 12 <= hour < 17:
+        greeting = f"Good afternoon{', ' + first_name if first_name else ''}."
+    elif 17 <= hour < 22:
+        greeting = f"Good evening{', ' + first_name if first_name else ''}."
+    else:
+        greeting = f"Evening{', ' + first_name if first_name else ''}."
+    
+    return greeting
+
+
 async def send_first_time_welcome(sender: str, client_profile: dict):
     """Send welcome message to first-time users"""
     try:
@@ -41,9 +67,14 @@ async def send_first_time_welcome(sender: str, client_profile: dict):
         # Split name to get first name only
         first_name = name.split()[0] if name != 'there' else 'there'
         
+        # Get time-appropriate greeting
+        greeting = get_time_appropriate_greeting(first_name)
+        
         # Tier-specific welcome messages
         welcome_messages = {
-            "tier_1": f"""Welcome to Voxmill Intelligence, {first_name}.
+            "tier_1": f"""{greeting}
+
+Welcome to Voxmill Intelligence.
 
 Your Tier 1 access is now active.
 
@@ -60,7 +91,9 @@ Ask me anything about luxury markets. Try:
 
 Available 24/7 at this number.""",
 
-            "tier_2": f"""Welcome to Voxmill Intelligence, {first_name}.
+            "tier_2": f"""{greeting}
+
+Welcome to Voxmill Intelligence.
 
 Your Tier 2 Analyst Desk is now active.
 
@@ -70,7 +103,7 @@ You have full access to:
 - Trend detection (14-day windows)
 - Strategic recommendations
 - Liquidity velocity tracking
-- Up to 10 analyses per day
+- Up to 50 analyses per hour
 
 Your intelligence is personalized to your preferences and will learn from our conversations.
 
@@ -81,7 +114,9 @@ Ask me anything. Try:
 
 Available 24/7.""",
 
-            "tier_3": f"""Welcome to Voxmill Intelligence, {first_name}.
+            "tier_3": f"""{greeting}
+
+Welcome to Voxmill Intelligence.
 
 Your Tier 3 Strategic Partner access is now active.
 
@@ -130,7 +165,7 @@ Your dedicated intelligence partner, available 24/7."""
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + 
-    PDF delivery + welcome messages + rate limiting + spam protection
+    PDF delivery + welcome messages + rate limiting + spam protection + Airtable API integration
     """
     
     try:
@@ -173,123 +208,123 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
-      # ========================================
-# LOAD CLIENT PROFILE WITH AIRTABLE API
-# ========================================
-
-from app.client_manager import get_client_profile, update_client_history
-import requests
-
-# Try MongoDB cache first
-client_profile = get_client_profile(sender)
-
-# Check if cache is stale (older than 1 hour)
-should_refresh = False
-if client_profile:
-    updated_at = client_profile.get('updated_at')
-    if updated_at:
-        # Handle both datetime objects and ISO strings
-        if isinstance(updated_at, str):
-            from dateutil import parser
-            updated_at = parser.parse(updated_at)
+        # ========================================
+        # LOAD CLIENT PROFILE WITH AIRTABLE API
+        # ========================================
         
-        # Make timezone-aware if needed
-        if updated_at.tzinfo is None:
-            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        from app.client_manager import get_client_profile, update_client_history
+        import requests
         
-        cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+        # Try MongoDB cache first
+        client_profile = get_client_profile(sender)
         
-        # Refresh if older than 60 minutes
-        if cache_age_minutes > 60:
-            should_refresh = True
-            logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
-
-# If no cache, default profile, or stale → fetch from Airtable
-if not client_profile or client_profile.get('tier') == 'tier_1' or should_refresh:
-    try:
-        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-        AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-        
-        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
-            # Clean WhatsApp number for search (+447911667788)
-            whatsapp_search = sender.replace('whatsapp:', '')
-            
-            # Search Airtable
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
-            headers = {
-                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                "Content-Type": "application/json"
-            }
-            
-            # Use filterByFormula to find exact match
-            params = {
-                "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
-            }
-            
-            response = requests.get(url, headers=headers, params=params, timeout=5)
-            
-            if response.status_code == 200:
-                records = response.json().get('records', [])
+        # Check if cache is stale (older than 1 hour)
+        should_refresh = False
+        if client_profile:
+            updated_at = client_profile.get('updated_at')
+            if updated_at:
+                # Handle both datetime objects and ISO strings
+                if isinstance(updated_at, str):
+                    from dateutil import parser
+                    updated_at = parser.parse(updated_at)
                 
-                if records:
-                    fields = records[0]['fields']
+                # Make timezone-aware if needed
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+                cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+                
+                # Refresh if older than 60 minutes
+                if cache_age_minutes > 60:
+                    should_refresh = True
+                    logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
+        
+        # If no cache, default profile, or stale → fetch from Airtable
+        if not client_profile or client_profile.get('tier') == 'tier_1' or should_refresh:
+            try:
+                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+                
+                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
+                    # Clean WhatsApp number for search (+447911667788)
+                    whatsapp_search = sender.replace('whatsapp:', '')
                     
-                    # Map Airtable → Your system format
-                    tier_mapping = {
-                        'Trial': 'tier_1',
-                        'Basic': 'tier_1',
-                        'Premium': 'tier_2',
-                        'Enterprise': 'tier_3'
+                    # Search Airtable
+                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
+                    headers = {
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json"
                     }
                     
-                    # Preserve query history from old cache if it exists
-                    old_history = client_profile.get('query_history', []) if client_profile else []
-                    old_total = client_profile.get('total_queries', 0) if client_profile else 0
-                    
-                    client_profile = {
-                        'whatsapp_number': sender,
-                        'email': fields.get('Email', ''),
-                        'name': fields.get('Name', 'Unknown'),
-                        'company': fields.get('Company', ''),
-                        'tier': tier_mapping.get(fields.get('Tier', 'Trial'), 'tier_1'),
-                        'preferences': {
-                            'preferred_regions': [fields.get('Preferred Region', 'Mayfair')],
-                            'preferred_city': fields.get('Preferred City', 'London'),
-                            'competitor_focus': fields.get('Competitor Focus', 'medium').lower(),
-                            'report_depth': fields.get('Report Depth', 'detailed').lower(),
-                            'update_frequency': fields.get('Update Frequency', 'weekly').lower()
-                        },
-                        'subscription_status': fields.get('Subscription Status', 'trial').lower(),
-                        'stripe_customer_id': fields.get('Stripe Customer ID', ''),
-                        'airtable_record_id': records[0]['id'],
-                        'total_queries': old_total,  # Preserve
-                        'query_history': old_history,  # Preserve
-                        'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-                        'updated_at': datetime.now(timezone.utc)  # Fresh timestamp
+                    # Use filterByFormula to find exact match
+                    params = {
+                        "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
                     }
                     
-                    # Update MongoDB cache
-                    from pymongo import MongoClient
-                    MONGODB_URI = os.getenv('MONGODB_URI')
-                    if MONGODB_URI:
-                        mongo_client = MongoClient(MONGODB_URI)
-                        db = mongo_client['Voxmill']
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
+                    response = requests.get(url, headers=headers, params=params, timeout=5)
                     
-                    logger.info(f"✅ Client refreshed from Airtable: {fields.get('Email')} ({fields.get('Tier')})")
-                else:
-                    logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
-            else:
-                logger.warning(f"Airtable API error: {response.status_code}")
-                
-    except Exception as e:
-        logger.error(f"Airtable API error: {e}")
-        # Fall through to cached/default client_profile
+                    if response.status_code == 200:
+                        records = response.json().get('records', [])
+                        
+                        if records:
+                            fields = records[0]['fields']
+                            
+                            # Map Airtable → Your system format
+                            tier_mapping = {
+                                'Trial': 'tier_1',
+                                'Basic': 'tier_1',
+                                'Premium': 'tier_2',
+                                'Enterprise': 'tier_3'
+                            }
+                            
+                            # Preserve query history from old cache if it exists
+                            old_history = client_profile.get('query_history', []) if client_profile else []
+                            old_total = client_profile.get('total_queries', 0) if client_profile else 0
+                            
+                            client_profile = {
+                                'whatsapp_number': sender,
+                                'email': fields.get('Email', ''),
+                                'name': fields.get('Name', 'Unknown'),
+                                'company': fields.get('Company', ''),
+                                'tier': tier_mapping.get(fields.get('Tier', 'Trial'), 'tier_1'),
+                                'preferences': {
+                                    'preferred_regions': [fields.get('Preferred Region', 'Mayfair')],
+                                    'preferred_city': fields.get('Preferred City', 'London'),
+                                    'competitor_focus': fields.get('Competitor Focus', 'medium').lower(),
+                                    'report_depth': fields.get('Report Depth', 'detailed').lower(),
+                                    'update_frequency': fields.get('Update Frequency', 'weekly').lower()
+                                },
+                                'subscription_status': fields.get('Subscription Status', 'trial').lower(),
+                                'stripe_customer_id': fields.get('Stripe Customer ID', ''),
+                                'airtable_record_id': records[0]['id'],
+                                'total_queries': old_total,  # Preserve
+                                'query_history': old_history,  # Preserve
+                                'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
+                                'updated_at': datetime.now(timezone.utc)  # Fresh timestamp
+                            }
+                            
+                            # Update MongoDB cache
+                            from pymongo import MongoClient
+                            MONGODB_URI = os.getenv('MONGODB_URI')
+                            if MONGODB_URI:
+                                mongo_client = MongoClient(MONGODB_URI)
+                                db = mongo_client['Voxmill']
+                                db['client_profiles'].update_one(
+                                    {'whatsapp_number': sender},
+                                    {'$set': client_profile},
+                                    upsert=True
+                                )
+                            
+                            logger.info(f"✅ Client refreshed from Airtable: {fields.get('Email')} ({fields.get('Tier')})")
+                        else:
+                            logger.info(f"No Airtable record found for {whatsapp_search}, using default profile")
+                    else:
+                        logger.warning(f"Airtable API error: {response.status_code}")
+                        
+            except Exception as e:
+                logger.error(f"Airtable API error: {e}")
+                # Fall through to cached/default client_profile
 
         # ============================================================
         # WAVE 1: Security validation
@@ -454,16 +489,6 @@ Need more queries? Upgrade or contact:
         
         if is_first_time:
             await send_first_time_welcome(sender, client_profile)
-
-
-        # ========================================
-        # FIRST-TIME USER WELCOME
-        # ========================================
-        
-        is_first_time = client_profile.get('total_queries', 0) == 0
-        
-        if is_first_time:
-            await send_first_time_welcome(sender, client_profile)
         
         # ========================================
         # HANDLE SIMPLE GREETINGS (NO DATA NEEDED)
@@ -475,30 +500,145 @@ Need more queries? Upgrade or contact:
         is_simple_greeting = message_normalized.lower().strip() in greeting_keywords
         
         if is_simple_greeting and not is_first_time:
-    # Get client name
-    client_name = client_profile.get('name', 'there')
-    first_name = client_name.split()[0] if client_name != 'there' else 'there'
-    
-    # Personalized returning user greeting
-    greeting_response = f"""Good morning, {first_name}.
+            # Get client name
+            client_name = client_profile.get('name', 'there')
+            first_name = client_name.split()[0] if client_name != 'there' else 'there'
+            
+            # Time-appropriate personalized greeting
+            greeting = get_time_appropriate_greeting(first_name)
+            
+            greeting_response = f"""{greeting}
 
 What can I analyze for you today?"""
-    
-    await send_twilio_message(sender, greeting_response)
-    
-    # Update conversation session
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response=greeting_response,
-        metadata={'category': 'greeting'}
-    )
-    
-    # Log interaction
-    log_interaction(sender, message_text, "greeting", greeting_response)
-    update_client_history(sender, message_text, "greeting", "None")
-    
-    logger.info(f"✅ Personalized greeting sent to {first_name}")
-    return
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            # Update conversation session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=greeting_response,
+                metadata={'category': 'greeting'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "greeting", greeting_response)
+            update_client_history(sender, message_text, "greeting", "None")
+            
+            logger.info(f"✅ Personalized greeting sent to {first_name}")
+            return
+        
+        # ========================================
+        # META-QUESTIONS ABOUT CLIENT PROFILE
+        # ========================================
+        
+        meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 
+                         'my details', 'know about me', 'aware of my', 'what do you know']
+        
+        is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
+        
+        if is_meta_question:
+            client_name = client_profile.get('name', 'Unknown')
+            client_email = client_profile.get('email', 'Not on file')
+            client_company = client_profile.get('company', 'Not specified')
+            tier = client_profile.get('tier', 'tier_1')
+            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+            
+            tier_display = {
+                'tier_1': 'Basic',
+                'tier_2': 'Premium', 
+                'tier_3': 'Enterprise'
+            }[tier]
+            
+            greeting = get_time_appropriate_greeting(client_name)
+            
+            profile_response = f"""{greeting}
+
+CLIENT PROFILE
+————————————————————————————————————————
+
+Name: {client_name}
+Company: {client_company if client_company else 'Individual Client'}
+Service Tier: {tier_display}
+Preferred Region: {preferred_region}
+Contact: {client_email}
+
+Your intelligence is personalized to your preferences and tier.
+
+What market intelligence can I provide?"""
+            
+            await send_twilio_message(sender, profile_response)
+            
+            # Log interaction
+            log_interaction(sender, message_text, "profile_query", profile_response)
+            update_client_history(sender, message_text, "profile_query", "None")
+            
+            logger.info(f"✅ Profile info provided to {client_name}")
+            return
+        
+        # ========================================
+        # HANDLE NON-MARKET QUERIES INTELLIGENTLY
+        # ========================================
+        
+        # Detect casual conversation, off-topic questions
+        casual_keywords = [
+            'how are you', 'how\'s it going', 'whats up', 'sup',
+            'thanks', 'thank you', 'cheers', 'appreciate',
+            'weather', 'joke', 'funny', 'music', 'movie',
+            'food', 'restaurant', 'coffee', 'lunch', 'dinner',
+            'sports', 'football', 'cricket', 'tennis',
+            'news', 'politics'
+        ]
+        
+        is_casual = any(kw in message_normalized.lower() for kw in casual_keywords)
+        
+        # Check if it's genuinely off-topic (no market/property keywords)
+        market_keywords = [
+            'property', 'properties', 'market', 'price', 'pricing',
+            'mayfair', 'knightsbridge', 'chelsea', 'belgravia',
+            'investment', 'buy', 'sell', 'rent', 'lease',
+            'luxury', 'estate', 'agent', 'competitive', 'analysis'
+        ]
+        
+        has_market_context = any(kw in message_normalized.lower() for kw in market_keywords)
+        
+        if is_casual and not has_market_context:
+            greeting = get_time_appropriate_greeting(client_profile.get('name', 'there'))
+            first_name = client_profile.get('name', 'there').split()[0]
+            
+            # Friendly but professional redirect
+            if 'thanks' in message_normalized.lower() or 'thank you' in message_normalized.lower():
+                casual_response = f"""{greeting}
+
+Happy to help. Let me know if you need further intelligence."""
+            
+            elif 'how are you' in message_normalized.lower():
+                casual_response = f"""{greeting}
+
+Operating optimally. What market intelligence can I provide today?"""
+            
+            else:
+                casual_response = f"""{greeting}
+
+I specialize in luxury property market intelligence.
+
+I can help with:
+• Market overviews and trends
+• Competitive landscape analysis  
+• Investment opportunities
+• Strategic forecasting
+• Agent behavioral analysis
+
+What would you like to explore?"""
+            
+            await send_twilio_message(sender, casual_response)
+            
+            # Log as conversational rather than error
+            log_interaction(sender, message_text, "conversational", casual_response)
+            update_client_history(sender, message_text, "conversational", "None")
+            
+            logger.info(f"Handled casual query for {first_name} professionally")
+            return
+        
         # ========================================
         # PDF REQUEST DETECTION
         # ========================================
@@ -576,53 +716,8 @@ What can I analyze for you today?"""
                 
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
-
-
-# ========================================
-# META-QUESTIONS ABOUT CLIENT PROFILE
-# ========================================
-
-meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 
-                 'my details', 'know about me', 'aware of my']
-
-is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
-
-if is_meta_question:
-    client_name = client_profile.get('name', 'Unknown')
-    client_email = client_profile.get('email', 'Not on file')
-    client_company = client_profile.get('company', 'Not specified')
-    tier = client_profile.get('tier', 'tier_1')
-    preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-    
-    tier_display = {
-        'tier_1': 'Basic',
-        'tier_2': 'Premium', 
-        'tier_3': 'Enterprise'
-    }[tier]
-    
-    profile_response = f"""CLIENT PROFILE
-————————————————————————————————————————
-
-Name: {client_name}
-Company: {client_company if client_company else 'Individual Client'}
-Service Tier: {tier_display}
-Preferred Region: {preferred_region}
-Contact: {client_email}
-
-Your intelligence is personalized to your preferences and tier.
-
-What market intelligence can I provide?"""
-    
-    await send_twilio_message(sender, profile_response)
-    
-    # Log interaction
-    log_interaction(sender, message_text, "profile_query", profile_response)
-    update_client_history(sender, message_text, "profile_query", "None")
-    
-    logger.info(f"✅ Profile info provided to {client_name}")
-    return
         
-       # ========================================
+        # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
@@ -630,40 +725,62 @@ What market intelligence can I provide?"""
         
         # DEBUG: Log what we got
         logger.info(f"📊 Dataset loaded: area={dataset.get('metadata', {}).get('area')}, "
-                   f"properties={len(dataset.get('properties', []))}, "
-                   f"is_fallback={dataset.get('metadata', {}).get('is_fallback', False)}")
+                   f"properties={len(dataset.get('properties', []))}")
         
-        # Check if data exists (not fallback)
         # Check if data exists
         property_count = len(dataset.get('properties', []))
-
-        # Only show unavailable message if NO properties AND region is not in core list
-        core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
-        if property_count == 0 and preferred_region not in core_regions:
-           no_data_msg = f"""⚠️ DATA UNAVAILABLE
-
-We don't currently have market intelligence for {preferred_region}.
-
-Available regions:
-- Mayfair
-- Knightsbridge
-- Chelsea
-- Belgravia
-- Kensington
-
-To add {preferred_region} coverage:
-📧 intel@voxmill.uk"""
-    
-    await send_twilio_message(sender, no_data_msg)
-    logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
-    return
-
-# Log property count for debugging
-logger.info(f"✅ Dataset loaded for {preferred_region}: {property_count} properties")
+        metadata = dataset.get('metadata', {})
+        requested_region = preferred_region
         
-        # Log if we're using real data
+        # Core regions we have data for
+        core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+        
+        # If no data AND region not in core list → offer alternatives gracefully
+        if property_count == 0 and requested_region not in core_regions:
+            greeting = get_time_appropriate_greeting(client_profile.get('name', 'there'))
+            
+            # Intelligent alternative suggestions
+            similar_regions = {
+                'Westminster': 'Mayfair or Belgravia',
+                'South Ken': 'Kensington or Chelsea',
+                'South Kensington': 'Kensington or Chelsea',
+                'Notting Hill': 'Kensington',
+                'Marylebone': 'Mayfair',
+                'Paddington': 'Mayfair or Kensington',
+                'Fitzrovia': 'Marylebone or Mayfair'
+            }
+            
+            suggestion = similar_regions.get(requested_region, 'Mayfair, Knightsbridge, or Chelsea')
+            
+            no_data_msg = f"""{greeting}
+
+I don't currently have live data for {requested_region}.
+
+However, I can provide comprehensive intelligence for:
+• Mayfair
+• Knightsbridge  
+• Chelsea
+• Belgravia
+• Kensington
+
+For {requested_region}, try: "{suggestion}"
+
+Or I'm happy to discuss market dynamics, strategy, or answer questions about luxury property investment in general.
+
+What would be most useful?"""
+            
+            await send_twilio_message(sender, no_data_msg)
+            
+            # Log as guidance rather than error
+            log_interaction(sender, message_text, "guidance", no_data_msg)
+            update_client_history(sender, message_text, "guidance", requested_region)
+            
+            logger.info(f"Guided {sender} from unavailable region {requested_region} to alternatives")
+            return
+        
+        # If we have data, log and continue normally
         if property_count > 0:
-            logger.info(f"✅ Using real data for {preferred_region}: {property_count} properties")
+            logger.info(f"✅ Dataset loaded for {requested_region}: {property_count} properties")
         
         # Check data freshness and add warning if stale
         data_timestamp = metadata.get('analysis_timestamp')
@@ -835,7 +952,6 @@ logger.info(f"✅ Dataset loaded for {preferred_region}: {property_count} proper
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
 
-
         # ========================================
         # WAVE 4 INTELLIGENCE LAYERS
         # ========================================
@@ -921,9 +1037,9 @@ logger.info(f"✅ Dataset loaded for {preferred_region}: {property_count} proper
             metadata=response_metadata
         )
         
-       # ============================================================
-       # WAVE 1: Validate response output (no prompt leakage)
-       # ============================================================
+        # ============================================================
+        # WAVE 1: Validate response output (no prompt leakage)
+        # ============================================================
     
         # Security validation
         from app.security import ResponseValidator
