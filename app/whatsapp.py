@@ -561,14 +561,13 @@ Standing by for market intelligence queries."""
                    f"is_fallback={dataset.get('metadata', {}).get('is_fallback', False)}")
         
         # Check if data exists (not fallback)
-        metadata = dataset.get('metadata', {})
-        is_fallback = metadata.get('is_fallback', False)
+        # Check if data exists
         property_count = len(dataset.get('properties', []))
-        
-        # Only treat as fallback if BOTH conditions are true
-        if is_fallback and property_count == 0:
-            # No real data for this region
-            no_data_msg = f"""⚠️ DATA UNAVAILABLE
+
+        # Only show unavailable message if NO properties AND region is not in core list
+        core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+        if property_count == 0 and preferred_region not in core_regions:
+           no_data_msg = f"""⚠️ DATA UNAVAILABLE
 
 We don't currently have market intelligence for {preferred_region}.
 
@@ -577,13 +576,17 @@ Available regions:
 - Knightsbridge
 - Chelsea
 - Belgravia
+- Kensington
 
 To add {preferred_region} coverage:
 📧 intel@voxmill.uk"""
-            
-            await send_twilio_message(sender, no_data_msg)
-            logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
-            return
+    
+    await send_twilio_message(sender, no_data_msg)
+    logger.warning(f"Client {sender} requested unavailable region: {preferred_region}")
+    return
+
+# Log property count for debugging
+logger.info(f"✅ Dataset loaded for {preferred_region}: {property_count} properties")
         
         # Log if we're using real data
         if property_count > 0:
