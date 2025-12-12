@@ -144,14 +144,18 @@ def extract_price_from_text(text):
 
 @retry_with_backoff(max_retries=3, base_delay=2.0)
 def collect_rightmove_data(area, max_properties=40):
-    """
-    Primary data source: UK Real Estate Rightmove API via RapidAPI
-    Includes exponential backoff retry for rate limits
-    """
+    """Primary data source: UK Real Estate Rightmove API via RapidAPI"""
     print(f"\n   🎯 PRIMARY SOURCE: UK Real Estate Rightmove API")
     
     if not RAPIDAPI_KEY:
         print(f"   ⚠️  RAPIDAPI_KEY not configured - skipping Rightmove")
+        return None
+    
+    # Get location identifier for this area
+    location_id = RIGHTMOVE_LOCATIONS.get(area)
+    
+    if not location_id:
+        print(f"   ⚠️  No Rightmove location mapping for {area}")
         return None
     
     try:
@@ -162,32 +166,25 @@ def collect_rightmove_data(area, max_properties=40):
             "X-RapidAPI-Host": "uk-real-estate-rightmove.p.rapidapi.com"
         }
         
-        # Try multiple search strategies
+        # Use mapped location
         search_configs = [
             {  
-                "locationIdentifier": "REGION^87523",
+                "locationIdentifier": location_id,  # ✅ Use mapped location
                 "radius": "0.0",
                 "sort_by": "highest_price",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "locationIdentifier": "REGION^87523",
-                "city": "London",
+                "locationIdentifier": location_id,  # ✅ Use mapped location
                 "radius": "1.0",
                 "sort_by": "highest_price",
                 "min_price": "500000",
                 "max_results": str(min(max_properties, 100))
             },
-            {
-                "locationIdentifier": "REGION^87523", 
-                "city": "London",
-                "radius": "5.0",
-                "sort_by": "highest_price",
-                "min_price": "1000000",
-                "max_results": str(min(max_properties, 100))
-            }
         ]
+        
+        # ... rest of function stays the same
         
         for i, params in enumerate(search_configs, 1):
             print(f"   → Attempt {i}/3: Querying Rightmove API...")
