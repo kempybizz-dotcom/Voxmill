@@ -238,6 +238,35 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # If no cache, default profile, or stale → fetch from Airtable
         # ALWAYS fetch from Airtable on first message OR if stale
+# ========================================
+# LOAD CLIENT PROFILE WITH AIRTABLE API
+# ========================================
+
+# Try MongoDB cache first
+client_profile = get_client_profile(sender)
+
+# Check if cache is stale (older than 1 hour)
+should_refresh = False
+if client_profile:
+    updated_at = client_profile.get('updated_at')
+    if updated_at:
+        # Handle both datetime objects and ISO strings
+        if isinstance(updated_at, str):
+            from dateutil import parser
+            updated_at = parser.parse(updated_at)
+        
+        # Make timezone-aware if needed
+        if updated_at.tzinfo is None:
+            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        
+        cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+        
+        # Refresh if older than 60 minutes
+        if cache_age_minutes > 60:
+            should_refresh = True
+            logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
+
+# ALWAYS fetch from Airtable on first message OR if stale
 if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
     try:
         AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -356,6 +385,10 @@ if not client_profile or not client_profile.get('airtable_record_id'):
     )
     return
 
+# ========================================
+# AUTHORIZED - Continue processing
+# ========================================
+logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
 # ========================================
 # AUTHORIZED - Continue processing
 # ========================================
