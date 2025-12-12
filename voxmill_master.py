@@ -70,54 +70,95 @@ if REDIS_AVAILABLE and REDIS_URL:
 
 def get_client_preferences(client_identifier: str) -> dict:
     """
-    Query MongoDB for client preferences.
-    Returns dict with competitor_focus and report_depth.
-    Falls back to defaults if not found.
+    Query Airtable then MongoDB for client preferences
+    Falls back to defaults if not found
     
-    Args:
-        client_identifier: WhatsApp number or email
-    
-    Returns:
-        Dict with 'competitor_focus' and 'report_depth'
+    Returns dict with:
+    - competitor_focus: 'low' | 'medium' | 'high'
+    - report_depth: 'executive' | 'detailed' | 'deep'
+    - preferred_regions: ['Area1', 'Area2']
     """
+    
+    # Try Airtable first (source of truth)
     try:
-        if not mongo_client:
-            logger.warning("MONGODB_URI not set, using default preferences")
-            return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
-        
-        db = mongo_client['Voxmill']
-        
-        # Normalize phone number if it's a WhatsApp number
-        normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
-        
-        # Query client profile (try email, whatsapp, or normalized)
-        profile = db['client_profiles'].find_one({
-            "$or": [
-                {"email": client_identifier},
-                {"whatsapp_number": client_identifier},
-                {"whatsapp_number": normalized}
-            ]
-        })
-        
-        if profile and 'preferences' in profile:
-            prefs = profile['preferences']
-            competitor_focus = prefs.get('competitor_focus', 'medium')
-            report_depth = prefs.get('report_depth', 'detailed')
+        if AIRTABLE_API_KEY:
+            import requests
             
-            logger.info(f"   📋 Loaded preferences: competitor_focus={competitor_focus}, report_depth={report_depth}")
+            normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
             
-            return {
-                'competitor_focus': competitor_focus,
-                'report_depth': report_depth
+            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+            headers = {
+                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
+                'Content-Type': 'application/json'
             }
-        else:
-            logger.info(f"   📋 No preferences found for {client_identifier}, using defaults")
-            return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
             
+            params = {
+                'filterByFormula': f"OR({{WhatsApp}}='{normalized}', {{Email}}='{client_identifier}')",
+                'maxRecords': 1
+            }
+            
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                records = data.get('records', [])
+                
+                if records:
+                    record = records[0]['fields']
+                    
+                    preferences = {
+                        'competitor_focus': record.get('Competitor Focus', 'medium'),
+                        'report_depth': record.get('Report Depth', 'detailed'),
+                        'preferred_regions': [r.strip() for r in record.get('Regions', '').split(',') if r.strip()],
+                        'name': record.get('Name', 'Valued Client'),
+                        'tier': record.get('Tier', 'tier_1')
+                    }
+                    
+                    logger.info(f"✅ Loaded Airtable preferences: {preferences['competitor_focus']}, {preferences['report_depth']}")
+                    return preferences
+    
     except Exception as e:
-        logger.warning(f"   ⚠️  Could not load preferences: {e}")
-        return {'competitor_focus': 'medium', 'report_depth': 'detailed'}
-
+        logger.warning(f"Airtable preferences fetch failed: {e}")
+    
+    # Fallback to MongoDB
+    try:
+        if mongo_client:
+            normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
+            
+            client = db['client_profiles'].find_one({
+                "$or": [
+                    {"email": client_identifier},
+                    {"whatsapp_number": client_identifier},
+                    {"whatsapp_number": normalized}
+                ]
+            })
+            
+            if client:
+                prefs = client.get('preferences', {})
+                
+                preferences = {
+                    'competitor_focus': prefs.get('competitor_focus', 'medium'),
+                    'report_depth': prefs.get('report_depth', 'detailed'),
+                    'preferred_regions': prefs.get('preferred_regions', []),
+                    'name': client.get('name', 'Valued Client'),
+                    'tier': client.get('tier', 'tier_1')
+                }
+                
+                logger.info(f"✅ Loaded MongoDB preferences: {preferences['competitor_focus']}, {preferences['report_depth']}")
+                return preferences
+    
+    except Exception as e:
+        logger.warning(f"MongoDB preferences fetch failed: {e}")
+    
+    # Ultimate fallback
+    logger.info(f"📋 Using default preferences for {client_identifier}")
+    return {
+        'competitor_focus': 'medium',
+        'report_depth': 'detailed',
+        'preferred_regions': [],
+        'name': 'Valued Client',
+        'tier': 'tier_1'
+    }
 
 # ============================================================================
 # WORKSPACE MANAGEMENT
@@ -360,47 +401,37 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
 def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) -> bool:
     """
     Step 3: Run pdf_generator.py with client preferences
-    
-    Args:
-        workspace: Execution workspace
-        client_identifier: Email or WhatsApp number for preference lookup
-    
-    Returns: True if successful
     """
     logger.info("\n" + "="*70)
-    logger.info("STEP 3: PDF GENERATION")
+    logger.info("STEP 3: PDF GENERATION WITH CLIENT PREFERENCES")
     logger.info("="*70)
     
     try:
-        # ✅ NEW: Load client preferences from MongoDB
+        # ✅ NEW: Load client preferences
         preferences = get_client_preferences(client_identifier)
         
-        # Build base command
+        logger.info(f"   🎯 Client: {preferences.get('name', 'Unknown')}")
+        logger.info(f"   📊 Competitor Focus: {preferences['competitor_focus']}")
+        logger.info(f"   📋 Report Depth: {preferences['report_depth']}")
+        
+        # Build command with preference flags
         pdf_cmd = [
             sys.executable, 'pdf_generator.py',
             '--workspace', str(workspace.workspace),
-            '--output', workspace.pdf_file.name
+            '--output', workspace.pdf_file.name,
+            '--competitor-focus', preferences['competitor_focus'],
+            '--report-depth', preferences['report_depth']
         ]
         
-        # ✅ NEW: Add preference flags if they exist
-        if preferences.get('competitor_focus'):
-            pdf_cmd.extend(['--competitor-focus', preferences['competitor_focus']])
-            logger.info(f"   🎯 Competitor Focus: {preferences['competitor_focus']}")
-            
-        if preferences.get('report_depth'):
-            pdf_cmd.extend(['--report-depth', preferences['report_depth']])
-            logger.info(f"   📊 Report Depth: {preferences['report_depth']}")
-        
-        # Log the full command
         logger.info(f"   Command: {' '.join(pdf_cmd)}")
         
-        # Execute PDF generation
+        # Execute
         result = subprocess.run(
             pdf_cmd,
             env=workspace.get_env_vars(),
             capture_output=True,
             text=True,
-            timeout=120  # 2 minute timeout
+            timeout=120
         )
         
         if result.returncode != 0:
@@ -416,11 +447,12 @@ def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) ->
         
         file_size = workspace.pdf_file.stat().st_size
         
-        if file_size < 10000:  # PDF should be at least 10KB
-            logger.error(f"❌ PDF too small ({file_size} bytes) - likely corrupt")
+        if file_size < 10000:
+            logger.error(f"❌ PDF too small ({file_size} bytes)")
             return False
         
         logger.info(f"   ✅ PDF generated: {file_size:,} bytes")
+        logger.info(f"   ✅ Preferences applied: {preferences['competitor_focus']}, {preferences['report_depth']}")
         
         return True
     
