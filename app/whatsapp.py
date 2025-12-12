@@ -1054,14 +1054,25 @@ What would be most useful?"""
         from app.validation import HallucinationDetector
 
         hallucination_detector = HallucinationDetector()
-        is_valid, confidence_score, violations = hallucination_detector.validate_response(
-            text=formatted_response,  # ✅ CORRECT
-            dataset=dataset
+
+        # Validate response (correct signature)
+        is_valid, violations, corrections = hallucination_detector.validate_response(
+            response_text=formatted_response,
+            dataset=dataset,
+            category=category
         )
-        
+
+        # Calculate confidence score
+        confidence_score = HallucinationDetector.calculate_confidence_score(violations)
+
+        # Add warning if low confidence
         if not is_valid and confidence_score < 0.5:
-            logger.error(f"Hallucination detected (confidence: {confidence_score}): {violations}")
-            formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
+        logger.error(f"Hallucination detected (confidence: {confidence_score}): {violations}")
+        formatted_response = f"{formatted_response}\n\n⚠️ Note: Response generated with limited data coverage. Please verify critical details."
+    
+        # Log the hallucination event
+        from app.validation import log_hallucination_event
+        log_hallucination_event(violations, formatted_response)
         
         # ============================================================
         # WAVE 1: Cache the response
