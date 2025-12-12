@@ -333,7 +333,9 @@ def calculate_metrics(properties):
         # Don't raise, but warn user
     
     prices = [p['price'] for p in properties if p.get('price', 0) > 0]
-    prices_per_sqft = [p['price_per_sqft'] for p in properties if p.get('price_per_sqft', 0) > 0]
+    prices_per_sqft = [p['price_per_sqft'] for p in properties 
+                   if p.get('price_per_sqft') is not None and p['price_per_sqft'] > 0]
+    
     property_types = [p['property_type'] for p in properties if p.get('property_type')]
     
     if not prices:
