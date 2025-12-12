@@ -450,27 +450,30 @@ Need more queries? Upgrade or contact:
         is_simple_greeting = message_normalized.lower().strip() in greeting_keywords
         
         if is_simple_greeting and not is_first_time:
-            # Returning user greeting - be brief and professional
-            greeting_response = """Good morning.
+    # Get client name
+    client_name = client_profile.get('name', 'there')
+    first_name = client_name.split()[0] if client_name != 'there' else 'there'
+    
+    # Personalized returning user greeting
+    greeting_response = f"""Good morning, {first_name}.
 
-Standing by for market intelligence queries."""
-            
-            await send_twilio_message(sender, greeting_response)
-            
-            # Update conversation session
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=greeting_response,
-                metadata={'category': 'greeting'}
-            )
-            
-            # Log interaction
-            log_interaction(sender, message_text, "greeting", greeting_response)
-            update_client_history(sender, message_text, "greeting", "None")
-            
-            logger.info(f"✅ Greeting handled for returning user {sender}")
-            return
-        
+What can I analyze for you today?"""
+    
+    await send_twilio_message(sender, greeting_response)
+    
+    # Update conversation session
+    conversation.update_session(
+        user_message=message_text,
+        assistant_response=greeting_response,
+        metadata={'category': 'greeting'}
+    )
+    
+    # Log interaction
+    log_interaction(sender, message_text, "greeting", greeting_response)
+    update_client_history(sender, message_text, "greeting", "None")
+    
+    logger.info(f"✅ Personalized greeting sent to {first_name}")
+    return
         # ========================================
         # PDF REQUEST DETECTION
         # ========================================
