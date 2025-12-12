@@ -30,10 +30,6 @@ import shutil
 import time
 from pymongo import MongoClient
 
-# MongoDB
-from pymongo import MongoClient
-import gridfs
-
 # Optional: Redis for job queue
 try:
     import redis
