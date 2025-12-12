@@ -29,6 +29,7 @@ from uuid import uuid4
 import shutil
 import time
 from pymongo import MongoClient
+import gridfs
 
 # Optional: Redis for job queue
 try:
@@ -45,9 +46,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Environment variables
+# ✅ FIX: Define all environment variables as globals
 MONGODB_URI = os.getenv('MONGODB_URI')
 REDIS_URL = os.getenv('REDIS_URL')
+AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
+AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
 
 # MongoDB connection
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
@@ -303,8 +307,6 @@ class ExecutionLock:
 # ============================================================================
 # PIPELINE EXECUTION
 # ============================================================================
-
-# In voxmill_master.py, replace run_data_collection():
 
 def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) -> bool:
     """
@@ -838,11 +840,7 @@ def get_all_active_clients_simple():
     
     clients = []
     
-    # Try Airtable first
-    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
-    AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-    
+    # ✅ FIX: Use global AIRTABLE variables (already defined at top)
     if AIRTABLE_API_KEY:
         try:
             import requests
@@ -925,6 +923,15 @@ def get_all_active_clients_simple():
 def main():
     """Main CLI entry point"""
     
+    # ✅ FIX: Force unbuffered output for Render cron visibility
+    import sys
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', buffering=1)
+    
+    print("="*70, flush=True)
+    print("VOXMILL MASTER STARTING", flush=True)
+    print("="*70, flush=True)
+    
     import argparse
     
     parser = argparse.ArgumentParser(description='Voxmill Intelligence Pipeline')
@@ -986,7 +993,7 @@ def main():
             
             except Exception as e:
                 stats['failed'] += 1
-                logger.error(f"   ❌ Exception: {e}\n")
+                logger.error(f"   ❌ Exception: {e}\n", exc_info=True)
         
         logger.info("="*70)
         logger.info("BATCH PROCESSING COMPLETE")
@@ -1046,3 +1053,6 @@ def main():
         print(f"\n❌ FAILED: {result.get('error', 'Unknown error')}")
         sys.exit(1)
 
+
+if __name__ == "__main__":
+    main()
