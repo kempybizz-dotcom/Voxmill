@@ -595,6 +595,31 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     """
     try:
         # ============================================================
+        # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION
+        # ============================================================
+        client_name = "there"
+        client_company = ""
+        client_tier_display = "institutional"
+        preferred_region = "Mayfair"
+        
+        if client_profile:
+            # Get first name only
+            full_name = client_profile.get('name', 'there')
+            client_name = full_name.split()[0] if full_name != 'there' else 'there'
+            client_company = client_profile.get('company', '')
+            
+            # Map tier to display name
+            tier = client_profile.get('tier', 'tier_1')
+            tier_map = {
+                'tier_1': 'Basic',
+                'tier_2': 'Premium',
+                'tier_3': 'Enterprise'
+            }
+            client_tier_display = tier_map.get(tier, 'institutional')
+            
+            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        
+        # ============================================================
         # WAVE 3: Get adaptive LLM configuration
         # ============================================================
         adaptive_config = get_adaptive_llm_config(
@@ -612,8 +637,17 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # ============================================================
         # WAVE 3: Apply confidence-based tone modulation
         # ============================================================
+        
+        # Format system prompt with client context
+        system_prompt_personalized = SYSTEM_PROMPT.format(
+            client_name=client_name,
+            client_company=client_company if client_company else "your organization",
+            client_tier=client_tier_display,
+            preferred_region=preferred_region
+        )
+        
         enhanced_system_prompt = AdaptiveLLMController.modulate_tone_for_confidence(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=system_prompt_personalized,
             confidence_level=adaptive_config['confidence_level'],
             data_quality=adaptive_config['data_quality']
         )
@@ -699,6 +733,12 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 agent: round((count / total_listings) * 100, 1)
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
+        
+        # [REST OF YOUR EXISTING FUNCTION CONTINUES HERE...]
+        # Include all the V3 intelligence layers, comparative analysis, etc.
+        
+        # Just make sure to use 'enhanced_system_prompt' instead of 'SYSTEM_PROMPT' 
+        # in your OpenAI API call
         
         # ========================================
         # CONVERSATIONAL INTELLIGENCE DETECTION
