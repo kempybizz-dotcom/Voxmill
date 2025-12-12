@@ -32,6 +32,9 @@ SYSTEM_PROMPT = """
 VOXMILL INTELLIGENCE ANALYST — INSTITUTIONAL PROTOCOL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+CURRENT TIME: {current_time_uk}
+CURRENT DATE: {current_date}
+
 IDENTITY:
 You are an institutional-grade market intelligence analyst serving clients 
 paying £5,000-8,000/month for Goldman Sachs-level insights via WhatsApp.
@@ -582,6 +585,25 @@ You are world-class. Act like it.
 """
 
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
+
+    from datetime import datetime
+    import pytz
+
+    uk_tz = pytz.timezone('Europe/London')
+    uk_now = datetime.now(uk_tz)
+    current_time_uk = uk_now.strftime('%H:%M GMT')
+    current_date = uk_now.strftime('%A, %B %d, %Y')
+
+    # Format system prompt with time + client context
+    system_prompt_personalized = SYSTEM_PROMPT.format(
+    current_time_uk=current_time_uk,
+    current_date=current_date,
+    client_name=client_name,
+    client_company=client_company if client_company else "your organization",
+    client_tier=client_tier_display,
+    preferred_region=preferred_region
+)
+    
     """
     Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence.
     
