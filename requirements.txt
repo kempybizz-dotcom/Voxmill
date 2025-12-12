@@ -39,6 +39,7 @@ apscheduler==3.10.4
 # Utilities
 pydantic==2.9.2
 pydantic-settings==2.5.2
+httpx==0.27.2
 
 boto3>=1.26.0
 feedparser==6.0.10
