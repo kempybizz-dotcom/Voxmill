@@ -942,7 +942,9 @@ class VoxmillPDFGenerator:
                 continue
             
             avg_price = int(sum(stats['prices']) / len(stats['prices']))
-            avg_price_per_sqft = int(sum(stats['price_per_sqft']) / len(stats['price_per_sqft'])) if stats['price_per_sqft'] else 0
+            # ✅ FIXED: Filter out None values before summing
+            valid_price_per_sqft = [x for x in stats['price_per_sqft'] if x is not None]
+            avg_price_per_sqft = int(sum(valid_price_per_sqft) / len(valid_price_per_sqft)) if valid_price_per_sqft else 0
             avg_days = int(sum(stats['days']) / len(stats['days'])) if stats['days'] else 42
             
             # Determine tier
