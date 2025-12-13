@@ -214,35 +214,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
+        
         # ========================================
-        # LOAD CLIENT PROFILE WITH AIRTABLE API
-        # ========================================
-        
-        # Try MongoDB cache first
-        client_profile = get_client_profile(sender)
-        
-        # Check if cache is stale (older than 1 hour)
-        should_refresh = False
-        if client_profile:
-            updated_at = client_profile.get('updated_at')
-            if updated_at:
-                # Handle both datetime objects and ISO strings
-                if isinstance(updated_at, str):
-                    from dateutil import parser
-                    updated_at = parser.parse(updated_at)
-                
-                # Make timezone-aware if needed
-                if updated_at.tzinfo is None:
-                    updated_at = updated_at.replace(tzinfo=timezone.utc)
-                
-                cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
-                
-                # Refresh if older than 60 minutes
-                if cache_age_minutes > 60:
-                    should_refresh = True
-                    logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
-        
-    # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -562,20 +535,8 @@ What can I analyze for you?"""
         # ========================================
         # AUTHORIZED - Continue processing
         # ========================================
-        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
+        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
 
-        # ========================================
-# SILENT MONITORING COMMANDS
-# ========================================
-
-monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me']
-is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
-
-if is_monitor_request:
-    from app.monitoring import handle_monitor_request
-    response = await handle_monitor_request(sender, message_text, client_profile)
-    await send_twilio_message(sender, response)
-    return
         
         # ============================================================
         # WAVE 1: Security validation
