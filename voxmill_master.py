@@ -391,6 +391,7 @@ def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
                     'name': 'Real Estate',
                     'vertical': 'uk-real-estate'
                 },
+                'area': workspace.regions[0],  # ✅ FIX: First region for ai_analyzer
                 'regions': workspace.regions,  # ✅ ALL regions
                 'city': workspace.city,
                 'timestamp': datetime.now(timezone.utc).isoformat(),
