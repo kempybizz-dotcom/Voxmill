@@ -83,7 +83,7 @@ class PINAuthenticator:
             pin_hash = PINAuthenticator.hash_pin(pin)
             
             # Update database
-            if db:
+            if db is not None:
                 db['client_profiles'].update_one(
                     {'whatsapp_number': whatsapp_number},
                     {
