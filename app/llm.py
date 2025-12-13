@@ -1125,7 +1125,8 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
         else:
             mode = "QUICK RESPONSE"
         
-                user_prompt = f"""{chr(10).join(context_parts)}
+        # Build user prompt
+        user_prompt = f"""{chr(10).join(context_parts)}
 
 {counterfactual_context if is_decision_mode else ""}
 
@@ -1134,11 +1135,6 @@ User message: "{message}"
 Analysis mode: {mode}
 
 {"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol. ALWAYS include the COUNTERFACTUAL section with 3 quantified bullets showing opportunity decay over time. Frame as LOSS not missed gain." if is_decision_mode else ""}
-User message: "{message}"
-
-Analysis mode: {mode}
-
-{"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol." if is_decision_mode else ""}
 
 User context:
 - Is greeting: {is_greeting}
@@ -1245,15 +1241,3 @@ REMEMBER:
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
         return "market_overview", "Unable to process request. Please try again.", {}
-```
-
----
-
-## 🚀 DEPLOY AND TEST
-
-**Test queries:**
-```
-1. "Mayfair outlook. Decision mode."
-2. "I have £10M. What should I do?"
-3. "Knight Frank dropped 8%. Recommend action."
-4. "Tell me what to do in Knightsbridge."
