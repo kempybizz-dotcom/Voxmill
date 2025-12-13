@@ -545,9 +545,37 @@ What can I analyze for you?"""
                 return
         
         # ========================================
+        # SILENT MONITORING COMMANDS
+        # ========================================
+        
+        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me', 
+                           'show monitor', 'stop monitor', 'resume monitor', 'extend monitor',
+                           'confirm']
+        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+        
+        if is_monitor_request:
+            from app.monitoring import handle_monitor_request
+            response = await handle_monitor_request(sender, message_text, client_profile)
+            await send_twilio_message(sender, response)
+            return
+        
+        # ========================================
         # AUTHORIZED - Continue processing
         # ========================================
         logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})")
+
+        # ========================================
+# SILENT MONITORING COMMANDS
+# ========================================
+
+monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me']
+is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+
+if is_monitor_request:
+    from app.monitoring import handle_monitor_request
+    response = await handle_monitor_request(sender, message_text, client_profile)
+    await send_twilio_message(sender, response)
+    return
         
         # ============================================================
         # WAVE 1: Security validation
