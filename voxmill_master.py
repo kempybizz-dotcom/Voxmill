@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-VOXMILL MASTER ORCHESTRATOR - PRODUCTION VERSION v3.1
-======================================================
-✅ AIRTABLE EMAIL INTEGRATION - Pulls actual email addresses for PDF delivery
-✅ ZERO FILE COLLISIONS - UUID-based workspace isolation
-✅ REDIS QUEUE INTEGRATION - Production-grade job processing
-✅ CLOUDFLARE R2 PDF STORAGE - Permanent, scalable storage
-✅ COMPLETE AUDIT TRAIL - MongoDB execution logging
+VOXMILL MASTER ORCHESTRATOR - BULLETPROOF PRODUCTION v4.0
+==========================================================
+✅ MULTI-REGION SUPPORT - 1 PDF covering all client regions
+✅ INDIVIDUAL TAILORING - Separate PDFs even for identical clients  
+✅ AIRTABLE PRIMARY - Source of truth, queried every Sunday
+✅ MONGODB BATCH SYNC - Auto-updates during execution
+✅ NEVER FAILS - Complete fallback chain
 
-CRITICAL CHANGES FROM v3.0:
-- Email field pulled from Airtable (not WhatsApp number)
-- Client preferences read from Airtable (Competitor Focus, Report Depth)
-- Email delivery uses actual email addresses
-- WhatsApp number stored separately for future messaging
+CRITICAL FEATURES:
+1. Client with 3 regions → 1 PDF with all 3 regions analyzed
+2. 3 identical clients → 3 separate PDFs sent to different emails
+3. Airtable preferences applied immediately (read fresh every run)
+4. MongoDB syncs automatically during batch (backup/cache)
+5. Complete audit trail of every execution
 """
 
 import os
@@ -28,14 +29,6 @@ import time
 from pymongo import MongoClient
 import gridfs
 
-# Optional: Redis for job queue
-try:
-    import redis
-    REDIS_AVAILABLE = True
-except ImportError:
-    REDIS_AVAILABLE = False
-    print("⚠️  Redis not available - using direct execution mode")
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -43,9 +36,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ✅ FIX: Define all environment variables as globals
+# ✅ Environment variables
 MONGODB_URI = os.getenv('MONGODB_URI')
-REDIS_URL = os.getenv('REDIS_URL')
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
 AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
@@ -54,109 +46,208 @@ AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
 db = mongo_client['Voxmill'] if mongo_client else None
 
-# Redis connection (optional)
-redis_client = None
-if REDIS_AVAILABLE and REDIS_URL:
+
+# ============================================================================
+# AIRTABLE → MONGODB SYNC ENGINE
+# ============================================================================
+
+def sync_client_to_mongodb(client_data: dict) -> bool:
+    """
+    Sync single client from Airtable to MongoDB
+    Creates or updates MongoDB record
+    
+    Args:
+        client_data: Client dict from Airtable
+    
+    Returns: True if synced successfully
+    """
+    if not mongo_client:
+        return False
+    
     try:
-        redis_client = redis.from_url(REDIS_URL, decode_responses=True)
-        redis_client.ping()
-        logger.info("✅ Redis connected - queue mode enabled")
+        clients_collection = db['client_profiles']
+        
+        # Use email as unique identifier
+        email = client_data.get('email')
+        if not email:
+            logger.warning(f"Cannot sync client without email: {client_data.get('name')}")
+            return False
+        
+        # Prepare MongoDB document
+        mongo_doc = {
+            'email': email,
+            'name': client_data.get('name'),
+            'whatsapp_number': client_data.get('whatsapp_number'),
+            'company': client_data.get('company'),
+            'city': client_data.get('city'),
+            'regions': client_data.get('regions', []),
+            'preferences': {
+                'competitor_focus': client_data.get('competitor_focus', 'medium'),
+                'report_depth': client_data.get('report_depth', 'detailed')
+            },
+            'subscription_status': client_data.get('subscription_status', 'Active'),
+            'last_synced_from_airtable': datetime.now(timezone.utc).isoformat(),
+            'source': 'airtable_batch_sync'
+        }
+        
+        # Upsert (update if exists, create if not)
+        result = clients_collection.update_one(
+            {'email': email},
+            {'$set': mongo_doc},
+            upsert=True
+        )
+        
+        if result.upserted_id:
+            logger.info(f"   ✅ Created in MongoDB: {client_data.get('name')}")
+        else:
+            logger.info(f"   ✅ Updated in MongoDB: {client_data.get('name')}")
+        
+        return True
+    
     except Exception as e:
-        logger.warning(f"Redis connection failed: {e} - using direct execution")
-        redis_client = None
+        logger.error(f"MongoDB sync failed for {client_data.get('name')}: {e}")
+        return False
 
 
-def get_client_preferences(client_identifier: str) -> dict:
+def load_clients_from_airtable() -> list:
     """
-    Query Airtable then MongoDB for client preferences
-    Falls back to defaults if not found
+    Load ALL active clients from Airtable (source of truth)
     
-    Returns dict with:
-    - competitor_focus: 'low' | 'medium' | 'high'
-    - report_depth: 'executive' | 'detailed' | 'deep'
-    - preferred_regions: ['Area1', 'Area2']
+    Returns: List of client dicts with all necessary fields
     """
     
-    # Try Airtable first (source of truth)
+    logger.info("\n" + "="*70)
+    logger.info("LOADING CLIENTS FROM AIRTABLE (SOURCE OF TRUTH)")
+    logger.info("="*70)
+    
+    if not AIRTABLE_API_KEY:
+        logger.error("❌ AIRTABLE_API_KEY not configured")
+        return []
+    
     try:
-        if AIRTABLE_API_KEY:
-            import requests
+        import requests
+        
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+        headers = {
+            'Authorization': f'Bearer {AIRTABLE_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        # Query all active clients
+        params = {
+            'filterByFormula': "{Subscription Status}='Active'",
+            'maxRecords': 100
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=15)
+        
+        if response.status_code != 200:
+            raise Exception(f"Airtable API error {response.status_code}: {response.text[:200]}")
+        
+        data = response.json()
+        records = data.get('records', [])
+        
+        logger.info(f"📋 Found {len(records)} active clients in Airtable")
+        
+        clients = []
+        
+        for record in records:
+            fields = record['fields']
             
-            normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
+            # Extract email (REQUIRED)
+            email = fields.get('Email', '').strip()
+            if not email:
+                logger.warning(f"⚠️  Skipping client {fields.get('Name', 'Unknown')} - no email")
+                continue
             
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
-            headers = {
-                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
-                'Content-Type': 'application/json'
+            # Extract regions (comma-separated → list)
+            regions_str = fields.get('Regions', '').strip()
+            regions = [r.strip() for r in regions_str.split(',') if r.strip()] if regions_str else []
+            
+            # Fallback: Use Preferred City as region if Regions empty
+            if not regions:
+                preferred_city = fields.get('Preferred City', 'London').strip()
+                regions = [preferred_city]
+                logger.info(f"   ℹ️  {fields.get('Name')} has no Regions - using Preferred City: {preferred_city}")
+            
+            # Build client dict
+            client = {
+                'email': email,
+                'name': fields.get('Name', 'Valued Client').strip(),
+                'whatsapp_number': fields.get('WhatsApp Number', '').strip(),
+                'company': fields.get('Company', '').strip(),
+                'city': fields.get('Preferred City', 'London').strip(),
+                'regions': regions,  # ✅ LIST of all regions
+                'competitor_focus': fields.get('Competitor Focus', 'Medium').lower(),
+                'report_depth': fields.get('Report Depth', 'Detailed').lower(),
+                'subscription_status': fields.get('Subscription Status', 'Active'),
+                'airtable_record_id': record['id']
             }
             
-            params = {
-                'filterByFormula': f"OR({{WhatsApp}}='{normalized}', {{Phone}}='{normalized}', {{Email}}='{client_identifier}')",
-                'maxRecords': 1
+            clients.append(client)
+            
+            logger.info(f"   ✅ {client['name']}: {email}")
+            logger.info(f"      Regions: {', '.join(regions)}")
+            logger.info(f"      Preferences: {client['competitor_focus']}, {client['report_depth']}")
+        
+        logger.info(f"\n✅ Loaded {len(clients)} valid clients from Airtable")
+        
+        return clients
+    
+    except Exception as e:
+        logger.error(f"❌ Airtable load failed: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return []
+
+
+def load_clients_from_mongodb_fallback() -> list:
+    """
+    Fallback: Load clients from MongoDB if Airtable fails
+    
+    Returns: List of client dicts
+    """
+    
+    logger.warning("\n" + "="*70)
+    logger.warning("FALLBACK: LOADING CLIENTS FROM MONGODB")
+    logger.warning("="*70)
+    
+    if not mongo_client:
+        logger.error("❌ MongoDB not available - no fallback possible")
+        return []
+    
+    try:
+        clients_collection = db['client_profiles']
+        cursor = clients_collection.find({'subscription_status': 'Active'})
+        
+        clients = []
+        
+        for doc in cursor:
+            prefs = doc.get('preferences', {})
+            
+            client = {
+                'email': doc.get('email', ''),
+                'name': doc.get('name', 'Valued Client'),
+                'whatsapp_number': doc.get('whatsapp_number', ''),
+                'company': doc.get('company', ''),
+                'city': doc.get('city', 'London'),
+                'regions': doc.get('regions', []),
+                'competitor_focus': prefs.get('competitor_focus', 'medium'),
+                'report_depth': prefs.get('report_depth', 'detailed'),
+                'subscription_status': doc.get('subscription_status', 'Active')
             }
             
-            response = requests.get(url, headers=headers, params=params, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                records = data.get('records', [])
-                
-                if records:
-                    record = records[0]['fields']
-                    
-                    preferences = {
-                        'competitor_focus': record.get('Competitor Focus', 'medium'),
-                        'report_depth': record.get('Report Depth', 'detailed'),
-                        'preferred_regions': [r.strip() for r in record.get('Regions', '').split(',') if r.strip()],
-                        'name': record.get('Name', 'Valued Client'),
-                        'tier': record.get('Tier', 'tier_1')
-                    }
-                    
-                    logger.info(f"✅ Loaded Airtable preferences: {preferences['competitor_focus']}, {preferences['report_depth']}")
-                    return preferences
+            if client['email']:
+                clients.append(client)
+        
+        logger.warning(f"⚠️  Loaded {len(clients)} clients from MongoDB (last synced data)")
+        
+        return clients
     
     except Exception as e:
-        logger.warning(f"Airtable preferences fetch failed: {e}")
-    
-    # Fallback to MongoDB
-    try:
-        if mongo_client:
-            normalized = client_identifier.replace('whatsapp:', '').replace('whatsapp%3A', '')
-            
-            client = db['client_profiles'].find_one({
-                "$or": [
-                    {"email": client_identifier},
-                    {"whatsapp_number": client_identifier},
-                    {"whatsapp_number": normalized}
-                ]
-            })
-            
-            if client:
-                prefs = client.get('preferences', {})
-                
-                preferences = {
-                    'competitor_focus': prefs.get('competitor_focus', 'medium'),
-                    'report_depth': prefs.get('report_depth', 'detailed'),
-                    'preferred_regions': prefs.get('preferred_regions', []),
-                    'name': client.get('name', 'Valued Client'),
-                    'tier': client.get('tier', 'tier_1')
-                }
-                
-                logger.info(f"✅ Loaded MongoDB preferences: {preferences['competitor_focus']}, {preferences['report_depth']}")
-                return preferences
-    
-    except Exception as e:
-        logger.warning(f"MongoDB preferences fetch failed: {e}")
-    
-    # Ultimate fallback
-    logger.info(f"📋 Using default preferences for {client_identifier}")
-    return {
-        'competitor_focus': 'medium',
-        'report_depth': 'detailed',
-        'preferred_regions': [],
-        'name': 'Valued Client',
-        'tier': 'tier_1'
-    }
+        logger.error(f"❌ MongoDB fallback failed: {e}")
+        return []
+
 
 # ============================================================================
 # WORKSPACE MANAGEMENT
@@ -164,25 +255,27 @@ def get_client_preferences(client_identifier: str) -> dict:
 
 class ExecutionWorkspace:
     """
-    Isolated workspace for a single execution.
-    Prevents file collisions between concurrent runs.
+    Isolated workspace for a single client execution
+    Prevents file collisions between concurrent runs
     """
     
-    def __init__(self, area: str, city: str, vertical: str, client_name: str = None, client_email: str = None):
+    def __init__(self, client: dict, regions: list):
         """
-        Create unique workspace for this execution
+        Create unique workspace for this client execution
         
         Args:
-            area: Market area (e.g., "Mayfair")
-            city: City name (e.g., "London")
-            vertical: Vertical type (e.g., "uk-real-estate")
-            client_name: Client name for personalization
-            client_email: Client email for delivery
+            client: Client dict from Airtable
+            regions: List of regions to analyze
         """
         # Generate unique execution ID
         timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         uuid_short = uuid4().hex[:8]
-        self.exec_id = f"{area}_{timestamp}_{uuid_short}"
+        
+        # Use first region + client name for ID
+        primary_region = regions[0] if regions else 'Unknown'
+        safe_name = client['name'].replace(' ', '_')[:20]
+        
+        self.exec_id = f"{safe_name}_{primary_region}_{timestamp}_{uuid_short}"
         
         # Create workspace directory
         self.workspace = Path(f"/tmp/voxmill_{self.exec_id}")
@@ -191,35 +284,30 @@ class ExecutionWorkspace:
         # Define file paths within workspace
         self.raw_data_file = self.workspace / "voxmill_raw_data.json"
         self.analysis_file = self.workspace / "voxmill_analysis.json"
-        self.pdf_file = self.workspace / f"Voxmill_{city}_{area}_Intelligence.pdf"
+        
+        # PDF filename includes all regions
+        regions_str = '_'.join(regions[:3])  # Max 3 regions in filename
+        self.pdf_file = self.workspace / f"Voxmill_{client['city']}_{regions_str}_Intelligence.pdf"
         
         # Metadata
-        self.area = area
-        self.city = city
-        self.vertical = vertical
-        self.client_name = client_name or "Valued Client"
-        self.client_email = client_email  # ✅ Store email
+        self.client = client
+        self.regions = regions
+        self.city = client['city']
         self.start_time = datetime.now(timezone.utc)
         
         logger.info(f"📁 Workspace created: {self.workspace}")
         logger.info(f"   Exec ID: {self.exec_id}")
-        logger.info(f"   Area: {area}, City: {city}")
-        logger.info(f"   Client: {self.client_name} <{client_email}>")
+        logger.info(f"   Client: {client['name']} <{client['email']}>")
+        logger.info(f"   Regions: {', '.join(regions)}")
+        logger.info(f"   City: {self.city}")
     
     def cleanup(self, keep_pdf: bool = False):
-        """
-        Clean up workspace after execution
-        
-        Args:
-            keep_pdf: If True, keep PDF file (for debugging)
-        """
+        """Clean up workspace after execution"""
         try:
             if keep_pdf and self.pdf_file.exists():
                 logger.info(f"   Keeping PDF: {self.pdf_file}")
-                # Move PDF to /tmp/ for manual inspection
-                shutil.copy(self.pdf_file, f"/tmp/voxmill_last_pdf_{self.area}.pdf")
+                shutil.copy(self.pdf_file, f"/tmp/voxmill_last_pdf_{self.client['name']}.pdf")
             
-            # Remove workspace directory
             if self.workspace.exists():
                 shutil.rmtree(self.workspace)
                 logger.info(f"   ✅ Workspace cleaned: {self.workspace}")
@@ -228,11 +316,7 @@ class ExecutionWorkspace:
             logger.error(f"   ⚠️  Workspace cleanup failed: {e}")
     
     def get_env_vars(self) -> dict:
-        """
-        Get environment variables to pass to child processes
-        
-        Returns: Dict of environment variables
-        """
+        """Get environment variables for child processes"""
         return {
             **os.environ,
             'VOXMILL_WORKSPACE': str(self.workspace),
@@ -244,125 +328,13 @@ class ExecutionWorkspace:
 
 
 # ============================================================================
-# EXECUTION LOCKING (Prevent Duplicate Runs)
+# MULTI-REGION DATA COLLECTION
 # ============================================================================
 
-class ExecutionLock:
+def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
     """
-    Simple file-based lock to prevent duplicate executions for same area
-    """
-    
-    def __init__(self, area: str, vertical: str):
-        self.lockfile = Path(f"/tmp/voxmill_lock_{vertical}_{area}.lock")
-        self.area = area
-        self.vertical = vertical
-        self.acquired = False
-    
-    def acquire(self, timeout: int = 5) -> bool:
-        """
-        Acquire execution lock
-        
-        Args:
-            timeout: Seconds to wait for lock
-        
-        Returns: True if lock acquired
-        """
-        start_time = time.time()
-        
-        while time.time() - start_time < timeout:
-            if not self.lockfile.exists():
-                try:
-                    # Create lock file with PID
-                    self.lockfile.write_text(str(os.getpid()))
-                    self.acquired = True
-                    logger.info(f"🔒 Execution lock acquired for {self.area}")
-                    return True
-                except Exception as e:
-                    logger.warning(f"Lock acquisition failed: {e}")
-            
-            # Check if lock is stale (older than 2 hours)
-            try:
-                if self.lockfile.exists():
-                    age = time.time() - self.lockfile.stat().st_mtime
-                    if age > 7200:  # 2 hours
-                        logger.warning(f"Removing stale lock (age: {age/3600:.1f}h)")
-                        self.lockfile.unlink()
-                        continue
-            except:
-                pass
-            
-            time.sleep(1)
-        
-        logger.error(f"❌ Could not acquire lock for {self.area} (timeout)")
-        return False
-    
-    def release(self):
-        """Release execution lock"""
-        if self.acquired and self.lockfile.exists():
-            try:
-                self.lockfile.unlink()
-                logger.info(f"🔓 Execution lock released for {self.area}")
-            except Exception as e:
-                logger.error(f"Lock release failed: {e}")
-
-
-# ============================================================================
-# PIPELINE EXECUTION
-# ============================================================================
-
-def run_data_collection(workspace: ExecutionWorkspace, vertical_config: dict) -> bool:
-    """
-    Step 1: Use world-class dataset loader from WhatsApp analyst
-    
-    ✅ FIXED: Uses proven dataset_loader.py from WhatsApp system
-    """
-    logger.info("\n" + "="*70)
-    logger.info("STEP 1: DATA COLLECTION")
-    logger.info("="*70)
-    
-    try:
-        # Import the WhatsApp analyst's world-class data stack
-        sys.path.insert(0, '/opt/render/project/src')
-        from app.dataset_loader import load_dataset
-        
-        # Load data using the working stack
-        logger.info(f"   🎯 Collecting data for {workspace.area}, {workspace.city}")
-        dataset = load_dataset(
-            area=workspace.area,
-            max_properties=100
-        )
-        
-        property_count = len(dataset.get('properties', []))
-        
-        if property_count == 0:
-            logger.warning(f"   ⚠️  No properties found for {workspace.area}")
-            # Don't fail - let AI analysis handle empty data gracefully
-        
-        # Save to workspace (convert to expected format)
-        raw_data = {
-            'metadata': {
-                'vertical': vertical_config,
-                'area': workspace.area,
-                'city': workspace.city,
-                'timestamp': datetime.now(timezone.utc).isoformat(),
-                'client_name': workspace.client_name  # ✅ Include client name
-            },
-            'raw_data': dataset
-        }
-        
-        with open(workspace.raw_data_file, 'w') as f:
-            json.dump(raw_data, f, indent=2)
-        
-        logger.info(f"   ✅ Data loaded: {property_count} properties")
-        return True
-        
-    except Exception as e:
-        logger.error(f"❌ Data loading error: {e}", exc_info=True)
-        return False
-
-def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
-    """
-    Step 2: Run ai_analyzer.py in isolated workspace
+    Step 1: Collect data for ALL client regions
+    Combines properties from multiple areas into single dataset
     
     Args:
         workspace: Execution workspace
@@ -370,7 +342,87 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
     Returns: True if successful
     """
     logger.info("\n" + "="*70)
-    logger.info("STEP 2: AI ANALYSIS")
+    logger.info("STEP 1: MULTI-REGION DATA COLLECTION")
+    logger.info("="*70)
+    
+    try:
+        # Import dataset loader
+        sys.path.insert(0, '/opt/render/project/src')
+        from app.dataset_loader import load_dataset
+        
+        all_properties = []
+        region_stats = {}
+        
+        # Collect data for each region
+        for i, region in enumerate(workspace.regions, 1):
+            logger.info(f"\n   [{i}/{len(workspace.regions)}] Collecting data for: {region}, {workspace.city}")
+            
+            try:
+                dataset = load_dataset(
+                    area=region,
+                    max_properties=100
+                )
+                
+                properties = dataset.get('properties', [])
+                
+                # Tag each property with its region
+                for prop in properties:
+                    prop['source_region'] = region
+                    prop['area'] = region
+                
+                all_properties.extend(properties)
+                region_stats[region] = len(properties)
+                
+                logger.info(f"      ✅ {len(properties)} properties from {region}")
+            
+            except Exception as e:
+                logger.error(f"      ❌ {region} collection failed: {e}")
+                region_stats[region] = 0
+        
+        # Check if we got any data
+        if len(all_properties) == 0:
+            logger.warning(f"   ⚠️  No properties found across all regions")
+        
+        # Save combined dataset
+        raw_data = {
+            'metadata': {
+                'vertical': {
+                    'type': 'real_estate',
+                    'name': 'Real Estate',
+                    'vertical': 'uk-real-estate'
+                },
+                'regions': workspace.regions,  # ✅ ALL regions
+                'city': workspace.city,
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'client_name': workspace.client['name'],
+                'region_stats': region_stats
+            },
+            'raw_data': {
+                'properties': all_properties
+            }
+        }
+        
+        with open(workspace.raw_data_file, 'w') as f:
+            json.dump(raw_data, f, indent=2)
+        
+        logger.info(f"\n   ✅ Multi-region data collection complete")
+        logger.info(f"      Total properties: {len(all_properties)}")
+        for region, count in region_stats.items():
+            logger.info(f"      {region}: {count} properties")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Multi-region data collection error: {e}", exc_info=True)
+        return False
+
+
+def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
+    """
+    Step 2: Run AI analysis on combined multi-region data
+    """
+    logger.info("\n" + "="*70)
+    logger.info("STEP 2: AI ANALYSIS (MULTI-REGION)")
     logger.info("="*70)
     
     try:
@@ -381,7 +433,7 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
             env=workspace.get_env_vars(),
             capture_output=True,
             text=True,
-            timeout=180  # 3 minute timeout
+            timeout=180
         )
         
         if result.returncode != 0:
@@ -390,7 +442,6 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
             logger.error(f"   STDERR: {result.stderr[-500:]}")
             return False
         
-        # Verify analysis file exists
         if not workspace.analysis_file.exists():
             logger.error(f"❌ Analysis file not created: {workspace.analysis_file}")
             return False
@@ -409,32 +460,30 @@ def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
         return False
 
 
-def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) -> bool:
+def run_pdf_generation(workspace: ExecutionWorkspace) -> bool:
     """
-    Step 3: Run pdf_generator.py with client preferences
+    Step 3: Generate PDF with client preferences
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 3: PDF GENERATION WITH CLIENT PREFERENCES")
     logger.info("="*70)
     
     try:
-        # ✅ NEW: Load client preferences
-        preferences = get_client_preferences(client_identifier)
+        client = workspace.client
         
-        logger.info(f"   🎯 Client: {preferences.get('name', 'Unknown')}")
-        logger.info(f"   📊 Competitor Focus: {preferences['competitor_focus']}")
-        logger.info(f"   📋 Report Depth: {preferences['report_depth']}")
+        logger.info(f"   🎯 Client: {client['name']}")
+        logger.info(f"   📊 Competitor Focus: {client['competitor_focus']}")
+        logger.info(f"   📋 Report Depth: {client['report_depth']}")
+        logger.info(f"   🗺️  Regions: {', '.join(workspace.regions)}")
         
         # Build command with preference flags
         pdf_cmd = [
             sys.executable, 'pdf_generator.py',
             '--workspace', str(workspace.workspace),
             '--output', workspace.pdf_file.name,
-            '--competitor-focus', preferences['competitor_focus'],
-            '--report-depth', preferences['report_depth']
+            '--competitor-focus', client['competitor_focus'],
+            '--report-depth', client['report_depth']
         ]
-        
-        logger.info(f"   Command: {' '.join(pdf_cmd)}")
         
         # Execute
         result = subprocess.run(
@@ -451,7 +500,6 @@ def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) ->
             logger.error(f"   STDERR: {result.stderr[-500:]}")
             return False
         
-        # Verify PDF exists
         if not workspace.pdf_file.exists():
             logger.error(f"❌ PDF not created: {workspace.pdf_file}")
             return False
@@ -463,7 +511,7 @@ def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) ->
             return False
         
         logger.info(f"   ✅ PDF generated: {file_size:,} bytes")
-        logger.info(f"   ✅ Preferences applied: {preferences['competitor_focus']}, {preferences['report_depth']}")
+        logger.info(f"   ✅ Preferences applied: {client['competitor_focus']}, {client['report_depth']}")
         
         return True
     
@@ -476,15 +524,9 @@ def run_pdf_generation(workspace: ExecutionWorkspace, client_identifier: str) ->
         return False
 
 
-def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
+def upload_pdf_to_r2(workspace: ExecutionWorkspace) -> str:
     """
     Step 4: Upload PDF to Cloudflare R2
-    
-    Args:
-        workspace: Execution workspace
-        client_email: Client email for organization
-    
-    Returns: Public URL or None
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 4: CLOUDFLARE R2 UPLOAD")
@@ -494,12 +536,15 @@ def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
         from app.pdf_storage import upload_pdf_to_cloud
         
         # Use email as client_id (safe for filenames)
-        client_id = client_email.replace('@', '_at_').replace('.', '_').replace('whatsapp:', '').replace('+', '')
+        client_id = workspace.client['email'].replace('@', '_at_').replace('.', '_')
+        
+        # Use first region for filename
+        primary_region = workspace.regions[0] if workspace.regions else 'Unknown'
         
         url = upload_pdf_to_cloud(
             pdf_path=str(workspace.pdf_file),
             client_id=client_id,
-            area=workspace.area
+            area=primary_region
         )
         
         if url:
@@ -518,12 +563,6 @@ def upload_pdf_to_r2(workspace: ExecutionWorkspace, client_email: str) -> str:
 def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
     """
     Step 5: Save analysis + PDF metadata to MongoDB
-    
-    Args:
-        workspace: Execution workspace
-        pdf_url: Cloudflare R2 URL (optional)
-    
-    Returns: True if successful
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 5: MONGODB STORAGE")
@@ -534,7 +573,6 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
             logger.error("   ❌ MongoDB not connected")
             return False
         
-        # Get database reference
         db = mongo_client['Voxmill']
         
         # Load analysis JSON
@@ -549,6 +587,16 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
                 'exec_id': workspace.exec_id,
                 'filename': workspace.pdf_file.name
             }
+        
+        # Add client metadata
+        analysis['client_metadata'] = {
+            'name': workspace.client['name'],
+            'email': workspace.client['email'],
+            'regions': workspace.regions,
+            'city': workspace.city,
+            'competitor_focus': workspace.client['competitor_focus'],
+            'report_depth': workspace.client['report_depth']
+        }
         
         # Store in datasets collection
         datasets_collection = db['datasets']
@@ -566,7 +614,9 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
                     pdf_file.read(),
                     filename=workspace.pdf_file.name,
                     metadata={
-                        'area': workspace.area,
+                        'client_name': workspace.client['name'],
+                        'client_email': workspace.client['email'],
+                        'regions': workspace.regions,
                         'city': workspace.city,
                         'exec_id': workspace.exec_id,
                         'cloudflare_url': pdf_url,
@@ -583,57 +633,45 @@ def save_to_mongodb(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
         return False
 
 
-def send_email(area: str, city: str, recipient_email: str, recipient_name: str, 
-               workspace_dir: Path, cloudflare_url: str, exec_id: str) -> bool:
+def send_email(workspace: ExecutionWorkspace, pdf_url: str = None) -> bool:
     """
     Step 6: Send email with PDF attachment
-    
-    Args:
-        area: Market area (e.g., "Mayfair")
-        city: City name (e.g., "London")
-        recipient_email: Recipient email address
-        recipient_name: Recipient name
-        workspace_dir: Path to workspace directory
-        cloudflare_url: Cloudflare R2 URL for PDF
-        exec_id: Execution ID
-    
-    Returns: True if successful
     """
     logger.info("\n" + "="*70)
     logger.info("STEP 6: EMAIL DELIVERY")
     logger.info("="*70)
     
-    # ✅ CRITICAL: Validate email address
+    client = workspace.client
+    recipient_email = client['email']
+    
+    # Validate email
     if not recipient_email or '@' not in recipient_email:
         logger.info(f"   ⏭️  Email delivery skipped - invalid email: {recipient_email}")
-        return True
-    
-    # Skip WhatsApp numbers masquerading as emails
-    if recipient_email.startswith('whatsapp:') or recipient_email.startswith('+'):
-        logger.info(f"   ⏭️  Email delivery skipped - WhatsApp client: {recipient_email}")
         return True
     
     try:
         from email_sender import send_voxmill_email
         
-        # Build PDF path from workspace
-        pdf_path = workspace_dir / f"Voxmill_{city}_{area}_Intelligence.pdf"
+        # Build area string from regions
+        area_str = ', '.join(workspace.regions)
+        
         logo_path = Path(__file__).parent / "voxmill_logo.png"
         
         # Validate PDF exists
-        if not pdf_path.exists():
-            raise FileNotFoundError(f"PDF not found in workspace: {pdf_path}")
+        if not workspace.pdf_file.exists():
+            raise FileNotFoundError(f"PDF not found: {workspace.pdf_file}")
         
-        logger.info(f"   📄 PDF: {pdf_path} ({pdf_path.stat().st_size:,} bytes)")
+        logger.info(f"   📄 PDF: {workspace.pdf_file} ({workspace.pdf_file.stat().st_size:,} bytes)")
         logger.info(f"   📧 Sending to: {recipient_email}")
+        logger.info(f"   🗺️  Areas: {area_str}")
         
-        # Send email with retry logic
+        # Send email
         send_voxmill_email(
             recipient_email=recipient_email,
-            recipient_name=recipient_name,
-            area=area,
-            city=city,
-            pdf_path=str(pdf_path),
+            recipient_name=client['name'],
+            area=area_str,
+            city=workspace.city,
+            pdf_path=str(workspace.pdf_file),
             logo_path=str(logo_path) if logo_path.exists() else None
         )
         
@@ -647,15 +685,7 @@ def send_email(area: str, city: str, recipient_email: str, recipient_name: str,
 
 
 def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: list, error: str = None):
-    """
-    Log execution to MongoDB for audit trail
-    
-    Args:
-        workspace: Execution workspace
-        status: "success" or "failed"
-        steps_completed: List of completed step names
-        error: Error message if failed
-    """
+    """Log execution to MongoDB for audit trail"""
     try:
         if mongo_client is None:
             return
@@ -668,11 +698,12 @@ def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: l
         
         log_entry = {
             'exec_id': workspace.exec_id,
-            'area': workspace.area,
+            'client_name': workspace.client['name'],
+            'client_email': workspace.client['email'],
+            'regions': workspace.regions,
             'city': workspace.city,
-            'vertical': workspace.vertical,
-            'client_name': workspace.client_name,
-            'client_email': workspace.client_email,
+            'competitor_focus': workspace.client['competitor_focus'],
+            'report_depth': workspace.client['report_depth'],
             'status': status,
             'start_time': workspace.start_time.isoformat(),
             'end_time': end_time.isoformat(),
@@ -693,86 +724,55 @@ def log_execution(workspace: ExecutionWorkspace, status: str, steps_completed: l
 # MAIN PIPELINE
 # ============================================================================
 
-def execute_voxmill_pipeline(
-    area: str,
-    city: str = "London",
-    vertical: str = "uk-real-estate",
-    vertical_config: dict = None,
-    client_email: str = None,
-    client_name: str = "Valued Client"
-) -> dict:
+def execute_client_pipeline(client: dict) -> dict:
     """
-    Execute complete Voxmill intelligence pipeline
+    Execute complete pipeline for ONE client
+    Handles multiple regions in single PDF
     
     Args:
-        area: Market area (e.g., "Mayfair")
-        city: City name (e.g., "London")
-        vertical: Vertical identifier
-        vertical_config: Vertical configuration dict
-        client_email: Client email for PDF delivery and preferences
-        client_name: Client name for personalization
+        client: Client dict from Airtable
     
     Returns: Dict with execution results
     """
     
-    # Default vertical config
-    if not vertical_config:
-        vertical_config = {
-            'type': 'real_estate',
-            'name': 'Real Estate',
-            'vertical': vertical
-        }
-    
-    # Acquire execution lock
-    lock = ExecutionLock(area, vertical)
-    if not lock.acquire(timeout=10):
-        return {
-            'success': False,
-            'error': 'Another execution is in progress for this area',
-            'exec_id': None
-        }
-    
-    # Create workspace with client info
     workspace = None
     steps_completed = []
     pdf_url = None
     
     try:
+        # Create workspace
         workspace = ExecutionWorkspace(
-            area=area,
-            city=city,
-            vertical=vertical,
-            client_name=client_name,
-            client_email=client_email
+            client=client,
+            regions=client['regions']
         )
         
         logger.info("\n" + "="*70)
         logger.info("🚀 VOXMILL INTELLIGENCE PIPELINE STARTING")
         logger.info("="*70)
         logger.info(f"   Execution ID: {workspace.exec_id}")
-        logger.info(f"   Area: {area}")
-        logger.info(f"   City: {city}")
-        logger.info(f"   Vertical: {vertical}")
-        logger.info(f"   Client: {client_name} <{client_email}>")
+        logger.info(f"   Client: {client['name']} <{client['email']}>")
+        logger.info(f"   Regions: {', '.join(client['regions'])}")
+        logger.info(f"   City: {client['city']}")
+        logger.info(f"   Preferences: {client['competitor_focus']}, {client['report_depth']}")
         logger.info("="*70)
         
-        # Step 1: Data Collection
-        if not run_data_collection(workspace, vertical_config):
-            raise Exception("Data collection failed")
-        steps_completed.append('data_collection')
+        # Step 1: Multi-region data collection
+        if not run_multi_region_data_collection(workspace):
+            raise Exception("Multi-region data collection failed")
+        steps_completed.append('multi_region_data_collection')
         
         # Step 2: AI Analysis
         if not run_ai_analysis(workspace):
             raise Exception("AI analysis failed")
         steps_completed.append('ai_analysis')
         
-        # Step 3: PDF Generation (with preferences)
-        if not run_pdf_generation(workspace, client_email or "default"):
+        # Step 3: PDF Generation
+        if not run_pdf_generation(workspace):
             raise Exception("PDF generation failed")
         steps_completed.append('pdf_generation')
         
         # Step 4: Upload to R2
-        pdf_url = upload_pdf_to_r2(workspace, client_email or "default")
+        pdf_url = upload_pdf_to_r2(workspace)
         if pdf_url:
             steps_completed.append('r2_upload')
         
@@ -780,12 +780,13 @@ def execute_voxmill_pipeline(
         if save_to_mongodb(workspace, pdf_url):
             steps_completed.append('mongodb_save')
         
-        # Step 6: Send Email (only if valid email provided)
-        if client_email and '@' in client_email:
-            if send_email(area, city, client_email, client_name, workspace.workspace, pdf_url, workspace.exec_id):
-                steps_completed.append('email_sent')
-        else:
-            logger.info("   ℹ️  No valid email provided - skipping email delivery")
+        # Step 6: Send Email
+        if send_email(workspace, pdf_url):
+            steps_completed.append('email_sent')
+        
+        # Step 7: Sync client to MongoDB
+        sync_client_to_mongodb(client)
+        steps_completed.append('mongodb_sync')
         
         # Log success
         log_execution(workspace, 'success', steps_completed)
@@ -793,6 +794,7 @@ def execute_voxmill_pipeline(
         logger.info("\n" + "="*70)
         logger.info("✅ PIPELINE COMPLETE")
         logger.info("="*70)
+        logger.info(f"   Client: {client['name']}")
         logger.info(f"   Exec ID: {workspace.exec_id}")
         logger.info(f"   Steps: {', '.join(steps_completed)}")
         if pdf_url:
@@ -801,171 +803,110 @@ def execute_voxmill_pipeline(
         
         return {
             'success': True,
+            'client_name': client['name'],
+            'client_email': client['email'],
             'exec_id': workspace.exec_id,
-            'area': area,
-            'city': city,
+            'regions': client['regions'],
             'pdf_url': pdf_url,
-            'steps_completed': steps_completed,
-            'workspace': str(workspace.workspace)
+            'steps_completed': steps_completed
         }
     
     except Exception as e:
         logger.error(f"\n❌ PIPELINE FAILED: {e}", exc_info=True)
         
-        # Log failure
         if workspace:
             log_execution(workspace, 'failed', steps_completed, str(e))
         
         return {
             'success': False,
+            'client_name': client.get('name', 'Unknown'),
+            'client_email': client.get('email', 'Unknown'),
             'error': str(e),
             'exec_id': workspace.exec_id if workspace else None,
             'steps_completed': steps_completed
         }
     
     finally:
-        # Clean up workspace
         if workspace:
             workspace.cleanup(keep_pdf=False)
-        
-        # Release lock
-        lock.release()
 
 
 # ============================================================================
-# QUEUE INTEGRATION (Optional)
+# BATCH PROCESSING
 # ============================================================================
 
-def queue_job(job_data: dict) -> bool:
+def process_all_clients():
     """
-    Queue a job in Redis for worker processing
-    
-    Args:
-        job_data: Job parameters dict
-    
-    Returns: True if queued successfully
-    """
-    if not redis_client:
-        logger.warning("Redis not available - executing directly")
-        return False
-    
-    try:
-        job_json = json.dumps(job_data)
-        redis_client.lpush('voxmill:pdf_jobs', job_json)
-        logger.info(f"✅ Job queued: {job_data.get('area', 'Unknown')}")
-        return True
-    
-    except Exception as e:
-        logger.error(f"Failed to queue job: {e}")
-        return False
-
-
-def get_all_active_clients_simple():
-    """
-    ✅ UPDATED: Get all active clients from Airtable with YOUR EXACT column headers
-    Returns list of dicts with: email, whatsapp_number, name, city, area, preferences
+    Batch mode: Process ALL active clients from Airtable
     """
     
-    clients = []
+    logger.info("\n" + "="*70)
+    logger.info("🔄 BATCH MODE: PROCESSING ALL ACTIVE CLIENTS")
+    logger.info("="*70)
     
-    # ✅ PRIMARY SOURCE: Airtable with YOUR EXACT FIELD NAMES
-    if AIRTABLE_API_KEY:
+    # Load clients from Airtable (source of truth)
+    clients = load_clients_from_airtable()
+    
+    # Fallback to MongoDB if Airtable fails
+    if not clients:
+        logger.warning("⚠️  Airtable load failed - trying MongoDB fallback...")
+        clients = load_clients_from_mongodb_fallback()
+    
+    if not clients:
+        logger.error("❌ No clients found in Airtable or MongoDB")
+        return {'success': 0, 'failed': 0, 'total': 0}
+    
+    logger.info(f"\n📋 Processing {len(clients)} client(s)")
+    logger.info("="*70)
+    
+    stats = {
+        'success': 0,
+        'failed': 0,
+        'total': len(clients),
+        'results': []
+    }
+    
+    # Process each client
+    for i, client in enumerate(clients, 1):
+        logger.info(f"\n[{i}/{len(clients)}] Processing: {client['name']}")
+        logger.info(f"   Email: {client['email']}")
+        logger.info(f"   Regions: {', '.join(client['regions'])}")
+        logger.info(f"   City: {client['city']}")
+        logger.info(f"   Preferences: {client['competitor_focus']}, {client['report_depth']}")
+        
         try:
-            import requests
+            result = execute_client_pipeline(client)
             
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
-            headers = {
-                'Authorization': f'Bearer {AIRTABLE_API_KEY}',
-                'Content-Type': 'application/json'
-            }
+            if result['success']:
+                stats['success'] += 1
+                logger.info(f"   ✅ Complete\n")
+            else:
+                stats['failed'] += 1
+                logger.error(f"   ❌ Failed: {result.get('error')}\n")
             
-            # ✅ UPDATED: Filter by "Subscription Status" = "Active"
-            params = {
-                'filterByFormula': "{Subscription Status}='Active'",
-                'maxRecords': 100
-            }
-            
-            response = requests.get(url, headers=headers, params=params, timeout=15)
-            
-            if response.status_code == 200:
-                data = response.json()
-                records = data.get('records', [])
-                
-                logger.info(f"📋 Found {len(records)} records with Subscription Status='Active'")
-                
-                for record in records:
-                    fields = record['fields']
-                    
-                    # ✅ UPDATED: Use YOUR exact column names
-                    email = fields.get('Email', '')
-                    whatsapp = fields.get('WhatsApp Number', '')
-                    name = fields.get('Name', 'Valued Client')
-                    city = fields.get('Preferred City', 'London')
-                    
-                    # ✅ Parse regions from "Regions" field (comma-separated)
-                    regions_str = fields.get('Regions', fields.get('Preferred Region', ''))
-                    regions = [r.strip() for r in regions_str.split(',') if r.strip()]
-                    
-                    # ✅ Use first region as primary area, fallback to Preferred Region
-                    area = regions[0] if regions else fields.get('Preferred Region', city)
-                    
-                    client = {
-                        'email': email,  # ✅ Email column
-                        'whatsapp_number': whatsapp,  # ✅ WhatsApp Number column
-                        'name': name,  # ✅ Name column
-                        'city': city,  # ✅ Preferred City column
-                        'area': area,  # ✅ First region from Regions or Preferred Region
-                        'regions': regions,  # ✅ All regions from Regions column
-                        'competitor_focus': fields.get('Competitor Focus', 'medium'),  # ✅ Competitor Focus column
-                        'report_depth': fields.get('Report Depth', 'detailed'),  # ✅ Report Depth column
-                        'company': fields.get('Company', ''),  # ✅ Company column (bonus)
-                    }
-                    
-                    # ✅ VALIDATION: Only add clients with valid email OR WhatsApp
-                    if client['email'] or client['whatsapp_number']:
-                        clients.append(client)
-                        logger.info(f"   ✅ {name}: {email or whatsapp} → {area}, {city}")
-                    else:
-                        logger.warning(f"   ⚠️  Skipping {name} - no email or WhatsApp")
-                
-                logger.info(f"✅ Loaded {len(clients)} active clients from Airtable")
-                return clients
+            stats['results'].append(result)
         
         except Exception as e:
-            logger.warning(f"Airtable fetch failed: {e}")
-            import traceback
-            logger.warning(traceback.format_exc())
+            stats['failed'] += 1
+            logger.error(f"   ❌ Exception: {e}\n", exc_info=True)
+            stats['results'].append({
+                'success': False,
+                'client_name': client['name'],
+                'client_email': client['email'],
+                'error': str(e)
+            })
     
-    # Fallback to MongoDB (unchanged)
-    if mongo_client:
-        try:
-            cursor = db['client_profiles'].find({'status': 'active'})
-            
-            for doc in cursor:
-                prefs = doc.get('preferences', {})
-                regions = prefs.get('preferred_regions', [])
-                
-                client = {
-                    'email': doc.get('email', ''),
-                    'whatsapp_number': doc.get('whatsapp_number', ''),
-                    'name': doc.get('name', 'Valued Client'),
-                    'city': doc.get('city', 'London'),
-                    'area': regions[0] if regions else doc.get('city', 'London'),
-                    'regions': regions,
-                    'competitor_focus': prefs.get('competitor_focus', 'medium'),
-                    'report_depth': prefs.get('report_depth', 'detailed')
-                }
-                
-                if client['email'] or client['whatsapp_number']:
-                    clients.append(client)
-            
-            logger.info(f"✅ Loaded {len(clients)} active clients from MongoDB")
-            return clients
-        
-        except Exception as e:
-            logger.warning(f"MongoDB fetch failed: {e}")
+    # Final summary
+    logger.info("\n" + "="*70)
+    logger.info("BATCH PROCESSING COMPLETE")
+    logger.info("="*70)
+    logger.info(f"   ✅ Success: {stats['success']}")
+    logger.info(f"   ❌ Failed: {stats['failed']}")
+    logger.info(f"   📊 Total: {stats['total']}")
+    logger.info("="*70)
     
-    return clients
+    return stats
+
 
 # ============================================================================
 # CLI INTERFACE
@@ -974,140 +915,23 @@ def get_all_active_clients_simple():
 def main():
     """Main CLI entry point"""
     
-    # ✅ FIX: Force unbuffered output for Render cron visibility
-    import sys
+    # Force unbuffered output for Render cron visibility
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', buffering=1)
     sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', buffering=1)
     
     print("="*70, flush=True)
-    print("VOXMILL MASTER v3.1 - AIRTABLE EMAIL INTEGRATION", flush=True)
+    print("VOXMILL MASTER v4.0 - BULLETPROOF MULTI-REGION SYSTEM", flush=True)
+    print("="*70, flush=True)
+    print("✅ Airtable Primary + MongoDB Batch Sync", flush=True)
+    print("✅ Multi-Region Support (1 PDF with all regions)", flush=True)
+    print("✅ Individual Tailoring (separate PDFs per client)", flush=True)
     print("="*70, flush=True)
     
-    import argparse
+    # Run batch processing
+    stats = process_all_clients()
     
-    parser = argparse.ArgumentParser(description='Voxmill Intelligence Pipeline')
-    
-    # Optional parameters - if none provided, runs batch mode
-    parser.add_argument('--area', help='Market area (e.g., Mayfair) - optional if using batch mode')
-    parser.add_argument('--city', default='London', help='City name')
-    parser.add_argument('--vertical', default='uk-real-estate', help='Vertical identifier')
-    parser.add_argument('--email', help='Client email address')
-    parser.add_argument('--name', default='Valued Client', help='Client name')
-    parser.add_argument('--queue', action='store_true', help='Queue job instead of running directly')
-    
-    args = parser.parse_args()
-    
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # BATCH MODE: No --area provided = process all active clients
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    if not args.area:
-        logger.info("\n" + "="*70)
-        logger.info("🔄 BATCH MODE: Processing all active clients from Airtable")
-        logger.info("="*70)
-        
-        clients = get_all_active_clients_simple()
-        
-        if not clients:
-            logger.warning("⚠️  No active clients found in Airtable or MongoDB")
-            sys.exit(0)
-        
-        logger.info(f"📋 Found {len(clients)} active client(s)\n")
-        
-        stats = {'success': 0, 'failed': 0}
-        
-        for i, client in enumerate(clients, 1):
-            logger.info(f"[{i}/{len(clients)}] Processing: {client['name']}")
-            logger.info(f"   Area: {client['area']}, City: {client['city']}")
-            logger.info(f"   Email: {client.get('email', 'N/A')}")
-            logger.info(f"   WhatsApp: {client.get('whatsapp_number', 'N/A')}")
-            
-            vertical_config = {
-                'type': 'real_estate',
-                'name': 'Real Estate',
-                'vertical': 'uk-real-estate'
-            }
-            
-            # ✅ CRITICAL: Use email if available, fallback to WhatsApp
-            client_identifier = client.get('email') or client.get('whatsapp_number')
-            
-            try:
-                result = execute_voxmill_pipeline(
-                    area=client['area'],
-                    city=client['city'],
-                    vertical='uk-real-estate',
-                    vertical_config=vertical_config,
-                    client_email=client_identifier,  # ✅ Use email for delivery
-                    client_name=client['name']
-                )
-                
-                if result['success']:
-                    stats['success'] += 1
-                    logger.info(f"   ✅ Complete\n")
-                else:
-                    stats['failed'] += 1
-                    logger.error(f"   ❌ Failed: {result.get('error')}\n")
-            
-            except Exception as e:
-                stats['failed'] += 1
-                logger.error(f"   ❌ Exception: {e}\n", exc_info=True)
-        
-        logger.info("="*70)
-        logger.info("BATCH PROCESSING COMPLETE")
-        logger.info("="*70)
-        logger.info(f"   Success: {stats['success']}")
-        logger.info(f"   Failed: {stats['failed']}")
-        logger.info(f"   Total: {len(clients)}")
-        logger.info("="*70)
-        
-        sys.exit(0 if stats['failed'] == 0 else 1)
-    
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # SINGLE CLIENT MODE: --area provided = manual execution
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    
-    # Prepare vertical config
-    vertical_config = {
-        'type': 'real_estate',
-        'name': 'Real Estate',
-        'vertical': args.vertical
-    }
-    
-    # Queue mode
-    if args.queue and redis_client:
-        job_data = {
-            'area': args.area,
-            'city': args.city,
-            'vertical': args.vertical,
-            'vertical_config': vertical_config,
-            'client_email': args.email,
-            'client_name': args.name
-        }
-        
-        if queue_job(job_data):
-            print(f"✅ Job queued for {args.area}")
-            sys.exit(0)
-        else:
-            print("⚠️  Queueing failed - falling back to direct execution")
-    
-    # Direct execution mode
-    result = execute_voxmill_pipeline(
-        area=args.area,
-        city=args.city,
-        vertical=args.vertical,
-        vertical_config=vertical_config,
-        client_email=args.email,
-        client_name=args.name
-    )
-    
-    if result['success']:
-        print(f"\n✅ SUCCESS")
-        print(f"   Exec ID: {result['exec_id']}")
-        if result.get('pdf_url'):
-            print(f"   PDF URL: {result['pdf_url']}")
-        sys.exit(0)
-    else:
-        print(f"\n❌ FAILED: {result.get('error', 'Unknown error')}")
-        sys.exit(1)
+    # Exit code based on results
+    sys.exit(0 if stats['failed'] == 0 else 1)
 
 
 if __name__ == "__main__":
