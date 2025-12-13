@@ -1127,7 +1127,9 @@
     </div>
 </div>
 {% endif %}
-<!-- SLIDE 12: SEGMENT PERFORMANCE BREAKDOWN -->
+<!-- ============================================================================
+   SLIDE 12: SEGMENT PERFORMANCE BREAKDOWN - BULLETPROOF v5.7.1
+   ============================================================================ -->
 {% if include.price_trends %}
 <div class="slide segment-performance-slide">
     <div class="slide-header">
@@ -1143,8 +1145,9 @@
         {% set submarket_count = submarkets|length if submarkets else 0 %}
 
         {% if submarket_count > 0 %}
-        <div class="district-performance-grid district-grid-{{ 'triple' if submarket_count >= 3 else 'double' if submarket_count == 2 else 'single' }}">
-            {% for submarket in submarkets %}
+        <!-- ✅ BULLETPROOF ADAPTIVE GRID: 1-2 = single, 3-4 = double, 5-6 = triple -->
+        <div class="district-performance-grid district-grid-{{ 'single' if submarket_count <= 2 else 'double' if submarket_count <= 4 else 'triple' }}">
+            {% for submarket in submarkets[:6] %}
             <div class="district-card-premium">
                 <div class="district-card-header">
                     <div class="district-header-content">
@@ -1188,25 +1191,25 @@
             {% endfor %}
         </div>
         
-        <!-- NEW: Market Snapshot Panel (fills the gap) -->
+        <!-- Market Snapshot Panel -->
         <div class="segment-market-snapshot">
             <h4 class="segment-snapshot-title">📊 Cross-District Market Snapshot</h4>
             <div class="segment-snapshot-grid">
                 <div class="segment-snapshot-metric">
                     <div class="segment-snapshot-label">Total Inventory</div>
-                    <div class="segment-snapshot-value">{{ submarkets|sum(attribute='count') if submarkets else kpis.total_properties }}</div>
+                    <div class="segment-snapshot-value">{{ submarkets[:6]|sum(attribute='count') if submarkets else kpis.total_properties }}</div>
                 </div>
                 <div class="segment-snapshot-metric">
                     <div class="segment-snapshot-label">Market Average</div>
-                    <div class="segment-snapshot-value">£{{ "{:,.1f}".format((submarkets|sum(attribute='avg_price') / submarkets|length / 1000000) if submarkets and submarkets|length > 0 else (kpis.avg_price / 1000000)) }}M</div>
+                    <div class="segment-snapshot-value">£{{ "{:,.1f}".format((submarkets[:6]|sum(attribute='avg_price') / (submarkets[:6]|length) / 1000000) if submarkets and submarkets|length > 0 else (kpis.avg_price / 1000000)) }}M</div>
                 </div>
                 <div class="segment-snapshot-metric">
                     <div class="segment-snapshot-label">Fastest Velocity</div>
-                    <div class="segment-snapshot-value">{{ (submarkets|sort(attribute='days_on_market')|first).days_on_market if submarkets else kpis.days_on_market }}d</div>
+                    <div class="segment-snapshot-value">{{ (submarkets[:6]|sort(attribute='days_on_market')|first).days_on_market if submarkets else kpis.days_on_market }}d</div>
                 </div>
                 <div class="segment-snapshot-metric">
                     <div class="segment-snapshot-label">Districts Tracked</div>
-                    <div class="segment-snapshot-value">{{ submarkets|length if submarkets else 1 }}</div>
+                    <div class="segment-snapshot-value">{{ submarkets[:6]|length if submarkets else 1 }}</div>
                 </div>
             </div>
         </div>
@@ -1217,10 +1220,11 @@
         </div>
         {% endif %}
         
-        <div class="momentum-streets-panel">
+        <!-- ✅ COMPACT MOMENTUM STREETS PANEL -->
+        <div class="momentum-streets-panel momentum-compact">
             <h4 class="momentum-streets-title">🔥 High-Momentum Streets (90-Day Trend)</h4>
             <ul class="momentum-list">
-                {% for street in momentum_streets %}
+                {% for street in momentum_streets[:4] %}
                 <li>
                     <span class="street-icon">★</span>
                     <strong>{{ street.street }}</strong> — 
@@ -1244,7 +1248,7 @@
             <h4 class="summary-band-title">📊 Sub-Market Strategic Summary</h4>
             <p class="summary-band-text">
                 {% if submarkets and submarkets|length >= 3 %}
-                <strong>{{ submarkets[0].name }}</strong> maintains {{ submarkets[0].tier|lower }} leadership with strongest pricing power. <strong>{{ submarkets[1].name }}</strong> demonstrates {{ "international" if submarkets[1].tier == "Prime" else "institutional" }} capital magnetism with robust transaction volume. <strong>{{ submarkets[2].name }}</strong> offers {{ submarkets[2].tier|lower }} asset positioning with measured appreciation trajectory. Recommend diversified exposure across all three districts for optimal risk-adjusted returns.
+                <strong>{{ submarkets[0].name }}</strong> maintains {{ submarkets[0].tier|lower }} leadership with strongest pricing power. <strong>{{ submarkets[1].name }}</strong> demonstrates {{ "international" if submarkets[1].tier == "Prime" else "institutional" }} capital magnetism with robust transaction volume. <strong>{{ submarkets[2].name }}</strong> offers {{ submarkets[2].tier|lower }} asset positioning with measured appreciation trajectory. Recommend diversified exposure across districts for optimal risk-adjusted returns.
                 {% else %}
                 Market segmentation analysis based on available data. Additional submarkets may emerge as data collection expands across {{ location }} region.
                 {% endif %}
@@ -1253,7 +1257,10 @@
     </div>
 </div>
 {% endif %}
-                                <!-- SLIDE 13: AI-IDENTIFIED OPPORTUNITIES -->
+
+<!-- ============================================================================
+   SLIDE 13: AI-IDENTIFIED OPPORTUNITIES - BULLETPROOF v5.7.1
+   ============================================================================ -->
 {% if include.recommendations %}
 <div class="slide ai-identified-opportunities">
     <div class="slide-header">
@@ -1261,21 +1268,24 @@
         <div class="slide-meta">{{ location }}<br>{{ report_date }}</div>
     </div>
     <div class="slide-content">
-        <p class="chart-context" style="margin-bottom: 30px;">Algorithm-flagged assets showing {{ market_signal_label }} — Underpricing or extended listing periods</p>
+        <p class="chart-context" style="margin-bottom: 24px;">Algorithm-flagged assets showing {{ market_signal_label }} — Underpricing or extended listing periods</p>
         
         <div class="acquisition-flagging-header">
             Flagging Logic: Underpricing | Time-on-Market | Momentum Shift
         </div>
         
         {% if acquisition_signals and acquisition_signals|length > 0 %}
-        <div class="signal-board-v2">
-            {% for signal in acquisition_signals %}
-            <div class="signal-card-v2">
+        {% set signal_count = acquisition_signals|length %}
+        
+        <!-- ✅ BULLETPROOF ADAPTIVE GRID: 1-4 = single, 5-8 = double, 9-12 = triple -->
+        <div class="signal-board-v2 signal-grid-{{ 'single' if signal_count <= 4 else 'double' if signal_count <= 8 else 'triple' }}">
+            {% for signal in acquisition_signals[:12] %}
+            <div class="signal-card-v2 signal-card-adaptive">
                 <div class="signal-content-v2">
-                    <div class="signal-property-title">{{ signal.address or "Address not available" }}</div>
+                    <div class="signal-property-title">{{ (signal.address or "Address not available")[:50] }}{{ "..." if (signal.address or "")|length > 50 else "" }}</div>
                     <div class="signal-property-metrics">£{{ "{:,.0f}".format(signal.price or 0) }} | £{{ "{:,}".format(signal.price_per_sqft or 0) }}/{{ unit_metric }}</div>
                     <div class="ai-flag-reason">
-                        <strong>AI Flag:</strong> {{ signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — provider flexibility indicated" }}
+                        <strong>AI Flag:</strong> {{ (signal.reasoning if signal.reasoning else "Extended DOM + pricing below area median — provider flexibility indicated")[:120] }}{{ "..." if (signal.reasoning or "")|length > 120 else "" }}
                     </div>
                 </div>
                 <div class="signal-badges-v2">
@@ -1292,7 +1302,8 @@
         </div>
         {% endif %}
         
-        <div class="acquisition-strategy-ribbon">
+        <!-- ✅ COMPACT ACQUISITION STRATEGY RIBBON -->
+        <div class="acquisition-strategy-ribbon acquisition-compact">
             <div class="acquisition-strategy-text">
                 <strong>{{ acquisition_label }} Strategy:</strong> 
                 Flagged assets demonstrate {{ "significant value potential" if (acquisition_signals and acquisition_signals|length >= 3) else "limited value signals" }}. 
@@ -1301,19 +1312,17 @@
             </div>
         </div>
         
-        <div class="context-panel">
+        <!-- ✅ COMPACT CONTEXT PANEL -->
+        <div class="context-panel context-compact">
             <h4>Provider Acceptance Probability (VAP) Indicators</h4>
             <div>
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Stale {{ inventory_label }}:</strong> 60–90 days → High acceptance likelihood.</div>
-                <div style="margin-bottom: 8px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
+                <div style="margin-bottom: 6px;">• <strong style="color: #C8AA6E;">Stale {{ inventory_label }}:</strong> 60–90 days → High acceptance likelihood.</div>
+                <div style="margin-bottom: 6px;">• <strong style="color: #C8AA6E;">Multiple Reductions:</strong> Flagged providers = negotiation leverage.</div>
                 <div>• <strong style="color: #C8AA6E;">Vacant Assets:</strong> Fastest acceptance due to carrying cost pressure.</div>
             </div>
         </div>
         
-        <p class="chart-source" style="margin-top: 20px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
+        <p class="chart-source" style="margin-top: 14px;">Source: Voxmill Opportunity Algorithm — Updated {{ report_date }}</p>
     </div>
 </div>
 {% endif %}
-
-</body>
-</html>
