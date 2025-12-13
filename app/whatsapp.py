@@ -21,6 +21,12 @@ from app.conversation_manager import ConversationSession, resolve_reference, gen
 from app.security import SecurityValidator
 from app.cache_manager import CacheManager
 from app.client_manager import get_client_profile, update_client_history
+from app.pin_auth import (
+    PINAuthenticator,
+    get_pin_status_message,
+    get_pin_response_message
+)
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -236,7 +242,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
-      # ========================================
+    # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -324,6 +330,14 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                             
                             tier = status_to_tier.get(subscription_status, 'tier_3')
                             
+                            # Trigger PIN re-verification on subscription change
+                            old_status = client_profile.get('subscription_status', 'trial') if client_profile else 'trial'
+                            
+                            if old_status in ['paused', 'cancelled'] and subscription_status == 'active':
+                                # Subscription reactivated - trigger PIN re-verification
+                                PINAuthenticator.trigger_reverification_on_subscription_change(sender)
+                                logger.info(f"🔄 PIN re-verification triggered for {sender} (subscription reactivated)")
+                            
                             # Preserve query history
                             old_history = client_profile.get('query_history', []) if client_profile else []
                             old_total = client_profile.get('total_queries', 0) if client_profile else 0
@@ -391,6 +405,119 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 "📧 ollys@voxmill.uk"
             )
             return
+        
+        # ========================================
+        # PIN AUTHENTICATION - SECURITY LAYER
+        # ========================================
+        
+        # Check if user needs PIN verification
+        needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
+        
+        client_name = client_profile.get('name', 'there')
+        
+        if needs_verification:
+            # User needs to set or enter PIN
+            
+            if reason == "not_set":
+                # First time - needs to set PIN
+                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # User is sending their new PIN
+                    success, message = PINAuthenticator.set_pin(sender, message_text.strip())
+                    response = get_pin_response_message(success, message, client_name)
+                    await send_twilio_message(sender, response)
+                    
+                    if not success:
+                        return  # Wait for valid PIN
+                    
+                    # PIN set successfully - continue to normal processing below
+                    # Fall through to regular message handling
+                    
+                else:
+                    # Ask for PIN setup
+                    response = get_pin_status_message(reason, client_name)
+                    await send_twilio_message(sender, response)
+                    return
+            
+            elif reason == "locked":
+                # Account locked - send locked message
+                response = get_pin_status_message("locked", client_name)
+                await send_twilio_message(sender, response)
+                return
+            
+            else:
+                # Re-verification needed (inactivity or subscription change)
+                
+                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # User is entering PIN
+                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
+                    response = get_pin_response_message(success, message, client_name)
+                    await send_twilio_message(sender, response)
+                    
+                    if not success:
+                        return  # Wait for correct PIN
+                    
+                    # PIN verified successfully - continue to normal processing below
+                    # Fall through to regular message handling
+                    
+                else:
+                    # Ask for PIN
+                    response = get_pin_status_message(reason, client_name)
+                    await send_twilio_message(sender, response)
+                    return
+        
+        # ========================================
+        # PIN COMMANDS - MANUAL LOCK/RESET
+        # ========================================
+        
+        message_lower = message_text.lower().strip()
+        
+        # Lock command
+        if message_lower in ['lock intelligence', 'lock', 'lock access']:
+            success, message = PINAuthenticator.manual_lock(sender)
+            
+            if success:
+                response = """🔒 INTELLIGENCE LINE LOCKED
+
+Your access has been secured.
+
+Enter your 4-digit code to unlock."""
+            else:
+                response = "❌ Unable to lock. Please try again."
+            
+            await send_twilio_message(sender, response)
+            return
+        
+        # Reset PIN command
+        if message_lower in ['reset pin', 'change pin', 'reset code']:
+            response = """🔄 PIN RESET
+
+To reset your access code, reply with:
+
+OLD_PIN NEW_PIN
+
+Example: 1234 5678"""
+            
+            await send_twilio_message(sender, response)
+            return
+        
+        # Handle PIN reset (format: "1234 5678")
+        if len(message_text.strip()) == 9 and ' ' in message_text:
+            parts = message_text.strip().split()
+            if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
+                old_pin, new_pin = parts
+                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                if success:
+                    response = """✅ PIN RESET SUCCESSFUL
+
+Your new access code is active.
+
+What can I analyze for you?"""
+                else:
+                    response = f"❌ {message}"
+                
+                await send_twilio_message(sender, response)
+                return
         
         # ========================================
         # AUTHORIZED - Continue processing
