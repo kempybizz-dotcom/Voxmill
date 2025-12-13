@@ -737,7 +737,7 @@ def collect_market_data(vertical, area, city, vertical_config_json='{}'):
     data = {
         'metadata': {
             'vertical': vertical_config,
-            'area': area,  # Original string (may contain commas)
+            'area': regions[0] if regions else area,  # ✅ FIX: First region for backwards compatibility
             'regions': regions,  # ✅ NEW: List of regions
             'city': city,
             'timestamp': datetime.now().isoformat(),
