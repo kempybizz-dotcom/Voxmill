@@ -119,6 +119,12 @@ PRIMARY RISK:
 SECONDARY RISK:
 [Second concern. 15 words max.]
 
+COUNTERFACTUAL (If you don't act):
+[Quantified opportunity decay. 3 time-based bullets. Show £ loss.]
+- Day X: [Specific consequence + £ impact]
+- Day Y: [Specific consequence + £ impact]
+- Day Z: [Specific consequence + £ impact]
+
 ACTION:
 [One specific step. 10 words max.]
 
@@ -139,6 +145,11 @@ Liquidity tightening Q1 2026 reduces exit options.
 
 SECONDARY RISK:
 Competitive response from Savills within 21 days.
+
+COUNTERFACTUAL (If you don't act):
+- Day 14: Liquidity window closes, entry cost +£210k per property
+- Day 30: Knight Frank reprices +8%, arbitrage opportunity lost
+- Day 90: Market normalizes, total opportunity cost -£630k
 
 ACTION:
 Contact Knight Frank today. Secure exclusivity.
@@ -972,7 +983,117 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 'tier': client_profile.get('tier', 'unknown')
             }
             context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
+
+
+        # ========================================
+        # BUILD COUNTERFACTUAL CONTEXT FOR DECISION MODE
+        # ========================================
         
+        counterfactual_context = ""
+        
+        if is_decision_mode:
+            # Calculate opportunity decay based on liquidity windows
+            if 'liquidity_windows' in dataset and dataset['liquidity_windows']:
+                windows = dataset['liquidity_windows']
+                velocity = windows.get('current_velocity', 0)
+                momentum = windows.get('velocity_momentum', 0)
+                
+                # Estimate price impact of delayed entry
+                if velocity > 70 and momentum > 0:
+                    # High liquidity + improving = window closing soon
+                    counterfactual_context = f"""
+COUNTERFACTUAL CALCULATION DATA (For "If you don't act" section):
+- Current liquidity: {velocity}/100 (HIGH - window closing)
+- Momentum: {momentum:+.1f}% (improving, then will reverse)
+- Estimated velocity drop: -12 to -18 points over next 14 days
+- Expected price impact if delayed 14 days: +2.5% to +4.0%
+- Opportunity cost per £1M deployed: £25k-£40k per 14-day delay
+- Window closes: Days 14-21 (high probability)
+- Recommendation timing: IMMEDIATE ACTION (window open now, closing soon)
+
+Calculate specific £ losses based on property prices in dataset.
+Use format: "Day X: [Event], entry cost +£Y" or "Day X: [Event], opportunity cost -£Z"
+"""
+                
+                elif velocity > 70 and momentum < 0:
+                    # High liquidity but declining = optimal window NOW
+                    counterfactual_context = f"""
+COUNTERFACTUAL CALCULATION DATA (For "If you don't act" section):
+- Current liquidity: {velocity}/100 (HIGH but declining)
+- Momentum: {momentum:+.1f}% (declining rapidly)
+- Estimated velocity drop: -20 to -30 points over next 14 days
+- Expected price impact if delayed 14 days: +3.5% to +5.5%
+- Opportunity cost per £1M deployed: £35k-£55k per 14-day delay
+- Window status: PEAK NOW, closes in 7-10 days
+- Recommendation timing: URGENT ACTION (optimal window is RIGHT NOW)
+
+Calculate specific £ losses. Emphasize URGENCY - window closing FAST.
+"""
+                
+                elif velocity < 50:
+                    # Low liquidity = bad time to enter, WAIT is better
+                    counterfactual_context = f"""
+COUNTERFACTUAL CALCULATION DATA (For "If you don't act" section):
+- Current liquidity: {velocity}/100 (LOW - unfavorable entry)
+- Momentum: {momentum:+.1f}%
+- Estimated recovery time: 14-28 days until liquidity improves
+- Cost of premature entry: 10-15 day velocity penalty (slower exit if needed)
+- Better entry window: Days 14-28 (when liquidity recovers to 60+)
+- Recommendation timing: WAIT (entering now = suboptimal, patient capital wins)
+
+Calculate costs of ACTING NOW vs waiting. Show waiting SAVES money.
+Format: "Day X: If you act now, locked into illiquid position, -£Y opportunity cost"
+"""
+                
+                else:
+                    # Moderate liquidity
+                    counterfactual_context = f"""
+COUNTERFACTUAL CALCULATION DATA (For "If you don't act" section):
+- Current liquidity: {velocity}/100 (MODERATE - acceptable entry)
+- Momentum: {momentum:+.1f}%
+- Window stability: Next 14-21 days
+- Cost of delay: Minimal near-term (-£5k to -£15k per £1M over 14 days)
+- Recommendation timing: STANDARD (no urgency, but monitor for changes)
+"""
+            
+            # Add cascade prediction data if available
+            if 'cascade_prediction' in dataset and dataset['cascade_prediction']:
+                cascade = dataset['cascade_prediction']
+                
+                counterfactual_context += f"""
+
+CASCADE IMPACT DATA (Factor into counterfactual):
+- Initiating event: {cascade['initiating_agent']} {cascade['initial_magnitude']:+.1f}%
+- Follow-on moves: {cascade['total_affected_agents']} agents over {cascade['expected_duration_days']} days
+- Net market impact: {cascade['market_impact'].upper()}
+- Timing consideration: If you wait, you catch mid-cascade (SUBOPTIMAL entry)
+- Optimal timing: BEFORE cascade (now) or AFTER completion (day {cascade['expected_duration_days']}+)
+- Cost of waiting through cascade: Volatile pricing, reduced negotiation leverage
+
+Include cascade timing in counterfactual bullets if relevant.
+"""
+            
+            # Add agent behavioral data
+            if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                aggressive_agents = [
+                    p for p in dataset['agent_profiles'][:5] 
+                    if 'aggressive' in p.get('archetype', '').lower()
+                ]
+                
+                if aggressive_agents:
+                    agent_names = ', '.join([a['agent'] for a in aggressive_agents[:2]])
+                    counterfactual_context += f"""
+
+AGENT BEHAVIOR DATA (Factor into counterfactual):
+- Aggressive pricers active: {agent_names}
+- Typical reduction window: Days 14-20 post-listing
+- If you wait for reductions: Risk competitive bidding when they reduce
+- Optimal strategy: Early entry (negotiate now) OR late entry (day 20+, post-reduction)
+- Cost of mid-window entry (days 7-14): Highest competition, worst leverage
+
+Mention agent behavior in counterfactual if user is waiting for "better" pricing.
+"""
+
         # ========================================
         # DETERMINE ANALYSIS MODE
         # ========================================
@@ -1004,8 +1125,15 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         else:
             mode = "QUICK RESPONSE"
         
-        user_prompt = f"""{chr(10).join(context_parts)}
+                user_prompt = f"""{chr(10).join(context_parts)}
 
+{counterfactual_context if is_decision_mode else ""}
+
+User message: "{message}"
+
+Analysis mode: {mode}
+
+{"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol. ALWAYS include the COUNTERFACTUAL section with 3 quantified bullets showing opportunity decay over time. Frame as LOSS not missed gain." if is_decision_mode else ""}
 User message: "{message}"
 
 Analysis mode: {mode}
