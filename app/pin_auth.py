@@ -451,6 +451,17 @@ What can I analyze for you?"""
         if attempts_remaining == 1:
             return f"""❌ INCORRECT CODE
 
+⚠️ FINAL ATTEMPT REMAINING
+
+Your intelligence line will lock after one more incorrect attempt."""
+        else:
+            return f"""❌ INCORRECT CODE ({attempts_remaining} attempts remaining)"""
+    
+    else:
+        # Other errors
+        return f"❌ {message}"
+
+
 # ============================================================
 # AIRTABLE SYNC FOR PIN STATUS
 # ============================================================
@@ -459,7 +470,7 @@ async def sync_pin_status_to_airtable(whatsapp_number: str, status: str, reason:
     """
     Sync PIN status back to Airtable for dashboard visibility
     
-    Status values: 'Not Set', 'Active', 'Locked', 'Requires Re-verification'
+    Status values: Not Set, Active, Locked, Requires Re-verification
     """
     try:
         import httpx
@@ -530,14 +541,3 @@ async def sync_pin_status_to_airtable(whatsapp_number: str, status: str, reason:
             
     except Exception as e:
         logger.error(f"Airtable PIN sync error: {e}")
-
-
-⚠️ FINAL ATTEMPT REMAINING
-
-Your intelligence line will lock after one more incorrect attempt."""
-        else:
-            return f"""❌ INCORRECT CODE ({attempts_remaining} attempts remaining)"""
-    
-    else:
-        # Other errors
-        return f"❌ {message}"
