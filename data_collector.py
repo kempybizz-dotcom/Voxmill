@@ -1,10 +1,16 @@
 """
-VOXMILL ELITE DATA COLLECTOR - PRODUCTION VERSION
-==================================================
-Multi-source data collection with intelligent fallbacks
-NEVER FAILS - Always returns usable data
-FULLY UNIVERSAL - Supports all verticals with dynamic terminology
-GLOBAL DEMO DATA - Works for any city worldwide
+VOXMILL ELITE DATA COLLECTOR - MULTI-REGION PRODUCTION VERSION
+================================================================
+✅ MULTI-REGION SUPPORT: Collects data for ALL client regions in one pass
+✅ REGION TAGGING: Each property tagged with source_region for analysis
+✅ BACKWARDS COMPATIBLE: Works with single region or multiple regions
+✅ NEVER FAILS: Always returns usable data with intelligent fallbacks
+
+CRITICAL NEW FEATURE:
+- Accepts regions as LIST: ["Mayfair", "Chelsea", "Knightsbridge"]
+- Collects 100 properties per region
+- Tags each property with source_region
+- Returns combined dataset with regional metadata
 """
 
 import os
@@ -21,7 +27,7 @@ RIGHTMOVE_LOCATIONS = {
     "Knightsbridge": "STATION^5933",
     "Chelsea": "STATION^5270",
     "Kensington": "STATION^5960",
-    "Manchester": "REGION^1313",  # Greater Manchester
+    "Manchester": "REGION^1313",
     "Manchester City Centre": "STATION^5929",
     "Edinburgh": "REGION^91319",
     "West End Edinburgh": "STATION^11749",
@@ -30,9 +36,7 @@ RIGHTMOVE_LOCATIONS = {
 }
 
 def retry_with_backoff(max_retries=3, base_delay=1.0):
-    """
-    Decorator for exponential backoff retry logic
-    """
+    """Decorator for exponential backoff retry logic"""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -43,9 +47,8 @@ def retry_with_backoff(max_retries=3, base_delay=1.0):
                     if attempt == max_retries - 1:
                         raise
                     
-                    # Check if it's a rate limit error
                     if hasattr(e, 'response') and e.response and e.response.status_code == 429:
-                        delay = base_delay * (2 ** attempt)  # Exponential backoff
+                        delay = base_delay * (2 ** attempt)
                         print(f"   ⚠️  Rate limit hit, retrying in {delay}s (attempt {attempt + 1}/{max_retries})")
                         time.sleep(delay)
                     else:
@@ -70,28 +73,26 @@ OUTPUT_FILE = os.path.join(WORKSPACE, "voxmill_raw_data.json")
 def calculate_days_on_market(listed_date_str):
     """Calculate days on market from listing date string"""
     if not listed_date_str:
-        return 42  # Default
+        return 42
     
     try:
         from datetime import datetime
         if isinstance(listed_date_str, str):
-            # Try multiple date formats
             for fmt in ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%d/%m/%Y']:
                 try:
                     listed_date = datetime.strptime(listed_date_str.split('T')[0], fmt)
                     days = (datetime.now() - listed_date).days
-                    return max(0, min(days, 365))  # Cap at 1 year
+                    return max(0, min(days, 365))
                 except:
                     continue
     except:
         pass
     
-    return 42  # Default fallback
+    return 42
 
 
 def extract_agent_name(name, description):
     """Extract estate agency name from Outscraper results"""
-    # Look for known agency patterns
     known_agencies = ['Knight Frank', 'Savills', 'Strutt & Parker', 
                      'Hamptons', 'Chestertons', 'Foxtons', 'Marsh & Parsons',
                      'Douglas & Gordon', 'Harrods Estates', 'Beauchamp Estates']
@@ -102,7 +103,6 @@ def extract_agent_name(name, description):
         if agency.lower() in combined_text:
             return agency
     
-    # If name contains estate/property/realty, use it
     if any(word in name.lower() for word in ['estate', 'property', 'realty', 'homes']):
         return name
     
@@ -110,17 +110,16 @@ def extract_agent_name(name, description):
 
 
 def extract_price_from_text(text):
-    """Extract price from text description."""
+    """Extract price from text description"""
     import re
     
     if not text:
-        return 2500000  # Default luxury price
+        return 2500000
     
-    # Look for UK price patterns
     patterns = [
-        r'£([\d,]+(?:\.\d{1,2})?)\s*(?:million|m)',  # £2.5 million
-        r'£([\d,]+)',  # £2,500,000
-        r'(\d+(?:\.\d{1,2})?)\s*(?:million|m)',  # 2.5 million
+        r'£([\d,]+(?:\.\d{1,2})?)\s*(?:million|m)',
+        r'£([\d,]+)',
+        r'(\d+(?:\.\d{1,2})?)\s*(?:million|m)',
     ]
     
     for pattern in patterns:
@@ -135,23 +134,25 @@ def extract_price_from_text(text):
             except:
                 continue
     
-    return 2500000  # Default
+    return 2500000
 
 
 # ============================================================================
-# UK REAL ESTATE - PRIMARY: RIGHTMOVE API
+# UK REAL ESTATE - PRIMARY: RIGHTMOVE API (SINGLE REGION)
 # ============================================================================
 
 @retry_with_backoff(max_retries=3, base_delay=2.0)
 def collect_rightmove_data(area, max_properties=40):
-    """Primary data source: UK Real Estate Rightmove API via RapidAPI"""
+    """
+    Primary data source: UK Real Estate Rightmove API via RapidAPI
+    Collects data for ONE region only
+    """
     print(f"\n   🎯 PRIMARY SOURCE: UK Real Estate Rightmove API")
     
     if not RAPIDAPI_KEY:
         print(f"   ⚠️  RAPIDAPI_KEY not configured - skipping Rightmove")
         return None
     
-    # Get location identifier for this area
     location_id = RIGHTMOVE_LOCATIONS.get(area)
     
     if not location_id:
@@ -166,17 +167,16 @@ def collect_rightmove_data(area, max_properties=40):
             "X-RapidAPI-Host": "uk-real-estate-rightmove.p.rapidapi.com"
         }
         
-        # Use mapped location
         search_configs = [
             {  
-                "locationIdentifier": location_id,  # ✅ Use mapped location
+                "locationIdentifier": location_id,
                 "radius": "0.0",
                 "sort_by": "highest_price",
                 "min_price": "1000000",
                 "max_results": str(min(max_properties, 100))
             },
             {
-                "locationIdentifier": location_id,  # ✅ Use mapped location
+                "locationIdentifier": location_id,
                 "radius": "1.0",
                 "sort_by": "highest_price",
                 "min_price": "500000",
@@ -184,10 +184,8 @@ def collect_rightmove_data(area, max_properties=40):
             },
         ]
         
-        # ... rest of function stays the same
-        
         for i, params in enumerate(search_configs, 1):
-            print(f"   → Attempt {i}/3: Querying Rightmove API...")
+            print(f"   → Attempt {i}/2: Querying Rightmove API...")
             print(f"      Search: {params['locationIdentifier']}, Radius: {params['radius']}, Min: £{params['min_price']}")
             
             try:
@@ -215,7 +213,6 @@ def collect_rightmove_data(area, max_properties=40):
                 
                 data = response.json()
                 
-                # Parse response - try multiple keys
                 raw_properties = (
                     data.get('data') or 
                     data.get('properties') or 
@@ -229,38 +226,32 @@ def collect_rightmove_data(area, max_properties=40):
                 
                 print(f"   ✅ SUCCESS: Found {len(raw_properties)} properties from Rightmove")
                 
-                # Parse properties
                 properties = []
                 for prop in raw_properties[:max_properties]:
                     try:
-                        # Price extraction
                         price = prop.get('price', prop.get('asking_price', 0))
                         if isinstance(price, str):
                             price = int(''.join(filter(str.isdigit, price)) or 0)
                         
-                        # Address and submarket extraction
                         address_parts = []
-                        submarket = area  # Default to search area
+                        submarket = area
                         
                         if prop.get('address'):
                             if isinstance(prop['address'], dict):
                                 display_addr = prop['address'].get('displayAddress', '')
                                 address_parts.append(display_addr)
                                 
-                                # Extract submarket from address components
                                 if 'area' in prop['address']:
                                     submarket = prop['address']['area']
                                 elif 'district' in prop['address']:
                                     submarket = prop['address']['district']
                                 elif 'locality' in prop['address']:
                                     submarket = prop['address']['locality']
-                                
                             else:
                                 address_parts.append(str(prop['address']))
                         
                         address = ', '.join(filter(None, address_parts)) or f"{area}, London"
                         
-                        # Property details
                         bedrooms = prop.get('bedrooms', prop.get('bedroom', prop.get('beds', 3)))
                         bathrooms = prop.get('bathrooms', prop.get('bathroom', prop.get('baths', 2)))
                         
@@ -287,7 +278,6 @@ def collect_rightmove_data(area, max_properties=40):
                         elif prop.get('branch'):
                             agent = prop['branch'].get('name', 'Private')
                         
-                        # Calculate days on market
                         listed_date = prop.get('addedOn', prop.get('listingDate', datetime.now().strftime('%Y-%m-%d')))
                         days_listed = calculate_days_on_market(listed_date)
                         
@@ -334,13 +324,13 @@ def collect_rightmove_data(area, max_properties=40):
 
 
 # ============================================================================
-# UK REAL ESTATE - FALLBACK: OUTSCRAPER
+# UK REAL ESTATE - FALLBACK: OUTSCRAPER (SINGLE REGION)
 # ============================================================================
 
 def collect_outscraper_data(area, city="London", max_properties=40):
     """
     Fallback data source: Outscraper Google Maps scraping
-    NOW SUPPORTS ANY CITY GLOBALLY
+    Collects data for ONE region only
     """
     print(f"\n   🔄 FALLBACK SOURCE: Outscraper Google Maps")
     
@@ -352,7 +342,6 @@ def collect_outscraper_data(area, city="London", max_properties=40):
         from outscraper import ApiClient
         client = ApiClient(api_key=OUTSCRAPER_API_KEY)
         
-        # Multiple search queries for better coverage - CITY-AWARE
         search_queries = [
             f"luxury properties for sale {area} {city}",
             f"luxury homes {area} {city}",
@@ -373,17 +362,14 @@ def collect_outscraper_data(area, city="London", max_properties=40):
                     region='uk'
                 )
                 
-                # CRITICAL: Handle None returns
                 if results is None:
                     print(f"      ⚠️  No results returned (None)")
                     continue
                 
-                # Handle empty lists
                 if len(results) == 0:
                     print(f"      ⚠️  Empty results list")
                     continue
                 
-                # Outscraper returns list of lists
                 items = results[0] if isinstance(results, list) and len(results) > 0 else results
                 
                 if items is None or len(items) == 0:
@@ -392,18 +378,15 @@ def collect_outscraper_data(area, city="London", max_properties=40):
                 
                 print(f"      ✅ Found {len(items)} results")
                 
-                # Process results
                 for item in items:
                     if item is None:
                         continue
                     
-                    # Extract price from description/name
                     price = extract_price_from_text(
                         str(item.get('name', '')) + ' ' + 
                         str(item.get('description', ''))
                     )
                     
-                    # Extract agent name
                     agent = extract_agent_name(
                         item.get('name', ''),
                         item.get('description', '')
@@ -418,7 +401,7 @@ def collect_outscraper_data(area, city="London", max_properties=40):
                         'submarket': area,
                         'district': area,
                         'price': price,
-                        'beds': 3,  # Default - Outscraper doesn't provide this
+                        'beds': 3,
                         'baths': 2,
                         'sqft': 2500,
                         'price_per_sqft': round(price / 2500, 2) if price > 0 else 0,
@@ -451,18 +434,13 @@ def collect_outscraper_data(area, city="London", max_properties=40):
 
 
 # ============================================================================
-# DEMO DATA GENERATOR (Last Resort) - GLOBAL VERSION
+# DEMO DATA GENERATOR (SINGLE REGION)
 # ============================================================================
 
 def generate_demo_properties(area, count=25, city="London"):
-    """
-    Generate realistic demo properties for ANY global region.
-    Adapts price ranges and property types based on location.
-    This ensures the system NEVER crashes - works for any city worldwide.
-    """
+    """Generate realistic demo properties for ONE region"""
     import random
     
-    # ENSURE MINIMUM COUNT
     if count < 5:
         print(f"      ⚠️  Demo property count too low ({count}), using minimum of 25")
         count = 25
@@ -472,136 +450,29 @@ def generate_demo_properties(area, count=25, city="London"):
     print(f"      City: {city}")
     print(f"      Count: {count}")
     
-    # GLOBAL PRICE RANGES - Adapt to city/region
+    # Global price ranges
     price_ranges = {
-        # UK Cities
         'London': (800000, 15000000),
         'Edinburgh': (300000, 3000000),
         'Manchester': (200000, 1500000),
         'Birmingham': (180000, 1200000),
         'Bristol': (250000, 2000000),
-        'Glasgow': (150000, 1000000),
-        'Leeds': (180000, 1000000),
-        'Oxford': (400000, 3500000),
-        'Cambridge': (350000, 3000000),
-        'Bath': (300000, 2500000),
-        'Liverpool': (150000, 800000),
-        'Newcastle': (140000, 700000),
-        'Cardiff': (200000, 1000000),
-        'Belfast': (150000, 800000),
-        
-        # US Cities
         'New York': (1000000, 50000000),
         'Miami': (400000, 20000000),
         'Los Angeles': (800000, 30000000),
         'San Francisco': (1200000, 25000000),
-        'Boston': (600000, 15000000),
-        'Chicago': (300000, 10000000),
-        'Seattle': (500000, 12000000),
-        'Austin': (400000, 8000000),
-        'Denver': (400000, 7000000),
-        'Nashville': (350000, 5000000),
-        'Dallas': (350000, 8000000),
-        'Houston': (300000, 7000000),
-        'Phoenix': (300000, 6000000),
-        'Atlanta': (300000, 5000000),
-        'Washington': (500000, 12000000),
-        'Philadelphia': (400000, 8000000),
-        'San Diego': (600000, 15000000),
-        'Portland': (400000, 8000000),
-        'Las Vegas': (300000, 7000000),
-        
-        # European Cities
         'Paris': (500000, 20000000),
-        'Monaco': (5000000, 100000000),
-        'Geneva': (1000000, 30000000),
-        'Zurich': (800000, 25000000),
-        'Amsterdam': (400000, 10000000),
-        'Berlin': (300000, 8000000),
-        'Madrid': (300000, 10000000),
-        'Barcelona': (350000, 12000000),
-        'Rome': (400000, 15000000),
-        'Vienna': (350000, 8000000),
-        'Milan': (450000, 15000000),
-        'Brussels': (300000, 8000000),
-        'Lisbon': (300000, 7000000),
-        'Copenhagen': (400000, 10000000),
-        'Stockholm': (400000, 10000000),
-        'Oslo': (400000, 10000000),
-        'Helsinki': (300000, 7000000),
-        'Dublin': (400000, 8000000),
-        'Prague': (250000, 5000000),
-        'Budapest': (200000, 4000000),
-        'Warsaw': (200000, 4000000),
-        
-        # Middle East
         'Dubai': (500000, 50000000),
-        'Abu Dhabi': (400000, 30000000),
-        'Riyadh': (300000, 20000000),
-        'Doha': (400000, 25000000),
-        'Kuwait City': (350000, 20000000),
-        'Muscat': (250000, 10000000),
-        'Beirut': (300000, 8000000),
-        'Tel Aviv': (500000, 15000000),
-        
-        # Asia Pacific
         'Singapore': (1000000, 40000000),
         'Hong Kong': (1200000, 80000000),
         'Tokyo': (500000, 30000000),
         'Sydney': (800000, 25000000),
-        'Melbourne': (600000, 15000000),
-        'Brisbane': (500000, 10000000),
-        'Auckland': (600000, 12000000),
-        'Wellington': (500000, 8000000),
-        'Bangkok': (200000, 10000000),
-        'Kuala Lumpur': (200000, 8000000),
-        'Jakarta': (150000, 5000000),
-        'Manila': (150000, 5000000),
-        'Mumbai': (300000, 20000000),
-        'Delhi': (200000, 15000000),
-        'Bangalore': (200000, 10000000),
-        'Shanghai': (400000, 30000000),
-        'Beijing': (400000, 25000000),
-        'Shenzhen': (350000, 20000000),
-        'Seoul': (500000, 20000000),
-        
-        # Latin America
-        'São Paulo': (200000, 10000000),
-        'Rio de Janeiro': (200000, 8000000),
-        'Buenos Aires': (150000, 5000000),
-        'Santiago': (200000, 7000000),
-        'Mexico City': (200000, 8000000),
-        'Lima': (150000, 5000000),
-        'Bogotá': (150000, 5000000),
-        
-        # Africa
-        'Cape Town': (200000, 8000000),
-        'Johannesburg': (150000, 6000000),
-        'Nairobi': (100000, 3000000),
-        'Lagos': (100000, 3000000),
-        'Cairo': (100000, 3000000),
-        'Casablanca': (150000, 4000000),
-        
-        # Canada
-        'Toronto': (500000, 15000000),
-        'Vancouver': (600000, 20000000),
-        'Montreal': (350000, 8000000),
-        'Calgary': (350000, 7000000),
-        'Ottawa': (400000, 8000000),
-        
-        # Australia (additional)
-        'Perth': (450000, 10000000),
-        'Adelaide': (400000, 8000000),
-        'Gold Coast': (500000, 12000000),
-        
-        # Default (if city not found)
         'DEFAULT': (200000, 5000000)
     }
     
-    # Get price range for this city (fallback to DEFAULT)
     min_price, max_price = price_ranges.get(city, price_ranges['DEFAULT'])
     
-    # Adjust prices for area premiums within cities
+    # Adjust for premium areas
     area_lower = area.lower()
     premium_keywords = ['west end', 'mayfair', 'knightsbridge', 'chelsea', 'kensington', 
                         'tribeca', 'soho', 'upper', 'downtown', 'centrum', 'centre', 
@@ -610,70 +481,31 @@ def generate_demo_properties(area, count=25, city="London"):
     is_premium_area = any(keyword in area_lower for keyword in premium_keywords)
     
     if is_premium_area:
-        # Premium areas: increase prices by 30-50%
         min_price = int(min_price * 1.3)
         max_price = int(max_price * 1.5)
     
-    # UK-specific property types vs Global
-    uk_cities = ['London', 'Edinburgh', 'Manchester', 'Birmingham', 'Bristol', 'Glasgow', 
-                 'Leeds', 'Oxford', 'Cambridge', 'Bath', 'Liverpool', 'Newcastle', 
-                 'Cardiff', 'Belfast']
+    # Property types
+    uk_cities = ['London', 'Edinburgh', 'Manchester', 'Birmingham', 'Bristol', 'Glasgow']
     
     if city in uk_cities:
         property_types = ['Flat', 'Terraced House', 'Semi-Detached House', 'Detached House', 'Penthouse', 'Mews']
         type_weights = [35, 20, 15, 15, 10, 5]
+        street_suffixes = ['Street', 'Road', 'Avenue', 'Square', 'Gardens', 'Place', 'Lane', 'Mews', 'Terrace', 'Close']
+        street_prefixes = ['King', 'Queen', 'Victoria', 'Albert', 'George', 'Elizabeth', 'Park', 'High', 'Station']
+        agencies = ['Knight Frank', 'Savills', 'Hamptons', 'Strutt & Parker', 'Chestertons', 'Foxtons', 'Private']
     else:
-        # Global property types
         property_types = ['Apartment', 'Condo', 'Villa', 'Penthouse', 'Townhouse', 'Estate']
         type_weights = [35, 20, 15, 15, 10, 5]
-    
-    # Generate street names appropriate to region
-    if city in uk_cities:
-        street_suffixes = ['Street', 'Road', 'Avenue', 'Square', 'Gardens', 'Place', 'Lane', 'Mews', 'Terrace', 'Close']
-        street_prefixes = ['King', 'Queen', 'Victoria', 'Albert', 'George', 'Elizabeth', 'Park', 'High', 'Station', 
-                          'Church', 'Castle', 'Royal', 'Prince', 'Duke', 'Market', 'Bridge', 'Hill', 'Grove']
-    elif city in ['New York', 'Los Angeles', 'Chicago', 'Boston', 'Miami', 'San Francisco', 'Seattle', 
-                  'Austin', 'Denver', 'Nashville', 'Dallas', 'Houston', 'Phoenix', 'Atlanta']:
-        # US style
-        street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Way', 'Court', 'Place', 'Lane', 'Road', 'Circle']
-        street_prefixes = ['Main', 'Park', 'Ocean', 'Lake', 'Hill', 'Valley', 'Forest', 'River', 'Sunset', 
-                          'Harbor', 'Maple', 'Oak', 'Pine', 'Cedar', 'Washington', 'Madison', 'Lincoln']
-    elif city in ['Paris', 'Monaco', 'Geneva', 'Zurich', 'Amsterdam', 'Berlin', 'Madrid', 'Barcelona', 
-                  'Rome', 'Vienna', 'Milan', 'Brussels', 'Lisbon']:
-        # European style
-        street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Place', 'Square', 'Way', 'Road', 'Alley']
-        street_prefixes = ['Grand', 'Royal', 'Central', 'Republic', 'Liberty', 'Victory', 'Peace', 'Unity',
-                          'Triumph', 'Cathedral', 'Palace', 'Museum', 'Opera', 'Theatre', 'Garden']
-    else:
-        # Generic international
         street_suffixes = ['Street', 'Avenue', 'Boulevard', 'Drive', 'Way', 'Road', 'Place']
-        street_prefixes = ['Main', 'Central', 'Park', 'Lake', 'Ocean', 'Harbor', 'Bay', 'Hill', 
-                          'Valley', 'River', 'Garden', 'Market', 'Palace', 'Royal']
-    
-    # Agency names (mix of global and local)
-    if city in uk_cities:
-        agencies = ['Knight Frank', 'Savills', 'Hamptons', 'Strutt & Parker', 'Chestertons', 
-                   'Foxtons', 'Marsh & Parsons', 'John D Wood & Co', 'Douglas & Gordon', 
-                   'Winkworth', 'Private']
-    elif city in ['New York', 'Los Angeles', 'Miami', 'Chicago', 'San Francisco']:
-        agencies = ['Sotheby\'s International Realty', 'Douglas Elliman', 'Compass', 
-                   'Corcoran', 'Coldwell Banker', 'Keller Williams', 'RE/MAX', 
-                   'The Agency', 'Engel & Völkers', 'Private']
-    else:
-        agencies = ['Sotheby\'s International Realty', 'Christie\'s Real Estate', 
-                   'Engel & Völkers', 'Knight Frank', 'Savills', 'CBRE', 
-                   'Cushman & Wakefield', 'JLL', 'Colliers', 'Private']
+        street_prefixes = ['Main', 'Central', 'Park', 'Lake', 'Ocean', 'Harbor', 'Bay', 'Hill']
+        agencies = ['Sotheby\'s International Realty', 'Douglas Elliman', 'Compass', 'Christie\'s Real Estate', 'Private']
     
     properties = []
-    
-    # Generate varied submarkets for testing
     submarkets = [area] * 10 + [f"{area} North", f"{area} South", f"{area} East"] * 5
     
     for i in range(count):
-        # Random but realistic data
         prop_type = random.choices(property_types, weights=type_weights)[0]
         
-        # Sqft varies by property type
         if prop_type in ['Flat', 'Apartment', 'Condo']:
             sqft = random.randint(500, 2500)
         elif prop_type in ['Penthouse']:
@@ -685,7 +517,6 @@ def generate_demo_properties(area, count=25, city="London"):
         
         price = random.randint(min_price, max_price)
         
-        # Bedrooms based on sqft
         if sqft < 800:
             bedrooms = random.randint(1, 2)
         elif sqft < 1500:
@@ -698,7 +529,6 @@ def generate_demo_properties(area, count=25, city="London"):
         bathrooms = random.randint(1, bedrooms)
         days_listed = random.randint(14, 90)
         
-        # Generate address
         street_prefix = random.choice(street_prefixes)
         street_suffix = random.choice(street_suffixes)
         street_number = random.randint(1, 500)
@@ -726,33 +556,111 @@ def generate_demo_properties(area, count=25, city="London"):
             'days_listed': days_listed,
             'days_on_market': days_listed,
             'coordinates': {
-                'lat': 51.5074 + random.uniform(-0.5, 0.5),  # Approximate
+                'lat': 51.5074 + random.uniform(-0.5, 0.5),
                 'lng': -0.1278 + random.uniform(-0.5, 0.5)
             }
         })
     
     print(f"      ✅ Generated {len(properties)} demo properties")
     print(f"      Price range: £{min_price:,} - £{max_price:,}")
-    print(f"      Property types: {', '.join(property_types)}")
-    print(f"      Agencies: {', '.join(agencies[:3])} (+{len(agencies)-3} more)")
     
     return properties
 
 
 # ============================================================================
-# UK REAL ESTATE - MASTER COLLECTOR
+# 🔥 NEW: MULTI-REGION MASTER COLLECTOR
+# ============================================================================
+
+def collect_uk_real_estate_multi_region(regions, city="London", max_per_region=100):
+    """
+    ✅ NEW: Collect data for MULTIPLE regions in one pass
+    
+    Args:
+        regions: List of region names ["Mayfair", "Chelsea", "Knightsbridge"]
+        city: City name (default "London")
+        max_per_region: Max properties per region (default 100)
+    
+    Returns:
+        List of properties with source_region tag
+    """
+    
+    print(f"\n🏠 MULTI-REGION DATA COLLECTION")
+    print(f"   Target Regions: {', '.join(regions)}")
+    print(f"   Target City: {city}")
+    print(f"   Properties per Region: {max_per_region}")
+    print(f"   Strategy: Multi-source with fallbacks")
+    
+    all_properties = []
+    region_stats = {}
+    
+    for i, region in enumerate(regions, 1):
+        print(f"\n{'='*70}")
+        print(f"[{i}/{len(regions)}] COLLECTING: {region}")
+        print(f"{'='*70}")
+        
+        # Try primary source (Rightmove)
+        if city == "London" or city in ["Edinburgh", "Manchester", "Birmingham", "Bristol"]:
+            properties = collect_rightmove_data(region, max_per_region)
+            
+            if properties and len(properties) >= 5:
+                print(f"\n   ✅ PRIMARY SOURCE SUCCESS: {len(properties)} properties from Rightmove")
+                
+                # ✅ TAG each property with source_region
+                for prop in properties:
+                    prop['source_region'] = region
+                
+                all_properties.extend(properties)
+                region_stats[region] = len(properties)
+                continue
+        
+        # Try fallback source (Outscraper)
+        print(f"\n   ⚠️  Primary source insufficient, trying fallback...")
+        properties = collect_outscraper_data(region, city, max_per_region)
+        
+        if properties and len(properties) >= 5:
+            print(f"\n   ✅ FALLBACK SUCCESS: {len(properties)} properties from Outscraper")
+            
+            # ✅ TAG each property with source_region
+            for prop in properties:
+                prop['source_region'] = region
+            
+            all_properties.extend(properties)
+            region_stats[region] = len(properties)
+            continue
+        
+        # Last resort: demo data
+        print(f"\n   ⚠️  All API sources failed or returned insufficient data")
+        properties = generate_demo_properties(region, max_per_region, city)
+        
+        # ✅ TAG each property with source_region
+        for prop in properties:
+            prop['source_region'] = region
+        
+        all_properties.extend(properties)
+        region_stats[region] = len(properties)
+        
+        print(f"\n   ✅ DEMO DATA READY: {len(properties)} properties generated")
+    
+    # Summary
+    print(f"\n{'='*70}")
+    print(f"MULTI-REGION COLLECTION COMPLETE")
+    print(f"{'='*70}")
+    print(f"Total Properties: {len(all_properties)}")
+    for region, count in region_stats.items():
+        print(f"   {region}: {count} properties")
+    print(f"{'='*70}")
+    
+    return all_properties
+
+
+# ============================================================================
+# UK REAL ESTATE - SINGLE REGION (BACKWARDS COMPATIBLE)
 # ============================================================================
 
 def collect_uk_real_estate(area, city="London", max_properties=40):
     """
     Master UK real estate collector with intelligent fallbacks.
-    NEVER FAILS - Always returns usable data.
-    NOW SUPPORTS ANY CITY GLOBALLY
-    
-    Strategy:
-    1. Try Rightmove API (best data quality)
-    2. Fallback to Outscraper (good coverage)
-    3. Generate demo data (ensures system never crashes)
+    BACKWARDS COMPATIBLE: Single region support
     """
     
     print(f"\n🏠 COLLECTING REAL ESTATE DATA")
@@ -761,7 +669,7 @@ def collect_uk_real_estate(area, city="London", max_properties=40):
     print(f"   Target Count: {max_properties} properties")
     print(f"   Strategy: Multi-source with fallbacks")
     
-    # Try primary source (only for London/UK for now)
+    # Try primary source (only for London/UK)
     if city == "London" or city in ["Edinburgh", "Manchester", "Birmingham", "Bristol"]:
         properties = collect_rightmove_data(area, max_properties)
         
@@ -777,7 +685,7 @@ def collect_uk_real_estate(area, city="London", max_properties=40):
         print(f"\n   ✅ FALLBACK SUCCESS: {len(properties)} properties from Outscraper")
         return properties
     
-    # Last resort: demo data - CITY-AWARE
+    # Last resort: demo data
     print(f"\n   ⚠️  All API sources failed or returned insufficient data")
     properties = generate_demo_properties(area, max_properties, city)
     
@@ -786,11 +694,119 @@ def collect_uk_real_estate(area, city="London", max_properties=40):
 
 
 # ============================================================================
-# MIAMI REAL ESTATE
+# MAIN ORCHESTRATOR (UPDATED FOR MULTI-REGION)
+# ============================================================================
+
+def collect_market_data(vertical, area, city, vertical_config_json='{}'):
+    """
+    Main data collection orchestrator.
+    
+    ✅ NOW SUPPORTS MULTI-REGION:
+    - If area is comma-separated: "Mayfair, Chelsea, Knightsbridge"
+    - Splits into list and calls multi-region collector
+    """
+    
+    print("\n" + "="*70)
+    print("VOXMILL DATA COLLECTION ENGINE (MULTI-REGION)")
+    print("="*70)
+    print(f"Vertical: {vertical}")
+    print(f"Area: {area}")
+    print(f"City: {city}")
+    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("="*70)
+    
+    # Parse vertical config
+    import json as json_lib
+    try:
+        vertical_config = json_lib.loads(vertical_config_json)
+        print(f"✅ Vertical Config: {vertical_config.get('name', 'Unknown')}")
+    except:
+        vertical_config = {'type': 'real_estate', 'name': 'Real Estate'}
+        print(f"⚠️  Using default vertical config")
+    
+    # ✅ DETECT MULTI-REGION: Check if area contains commas
+    if ',' in area:
+        regions = [r.strip() for r in area.split(',') if r.strip()]
+        print(f"\n🔍 MULTI-REGION DETECTED: {len(regions)} regions")
+        for i, region in enumerate(regions, 1):
+            print(f"   {i}. {region}")
+    else:
+        regions = [area]
+        print(f"\n🔍 SINGLE REGION MODE: {area}")
+    
+    data = {
+        'metadata': {
+            'vertical': vertical_config,
+            'area': area,  # Original string (may contain commas)
+            'regions': regions,  # ✅ NEW: List of regions
+            'city': city,
+            'timestamp': datetime.now().isoformat(),
+            'data_source': 'Multi-source with intelligent fallbacks'
+        },
+        'raw_data': {}
+    }
+    
+    try:
+        if vertical == 'uk-real-estate':
+            # ✅ USE MULTI-REGION COLLECTOR if multiple regions detected
+            if len(regions) > 1:
+                properties = collect_uk_real_estate_multi_region(regions, city)
+            else:
+                properties = collect_uk_real_estate(regions[0], city)
+            
+            data['raw_data']['properties'] = properties
+            data['metadata']['property_count'] = len(properties)
+            
+            # ✅ ADD REGION STATS
+            region_stats = {}
+            for region in regions:
+                count = sum(1 for p in properties if p.get('source_region') == region or p.get('area') == region)
+                region_stats[region] = count
+            data['metadata']['region_stats'] = region_stats
+            
+        elif vertical == 'miami-real-estate':
+            # Miami doesn't support multi-region yet (single region only)
+            properties = collect_miami_real_estate(regions[0], city)
+            data['raw_data']['properties'] = properties
+            data['metadata']['property_count'] = len(properties)
+            
+        else:
+            raise Exception(f"Vertical '{vertical}' not supported")
+        
+        # Save to file
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        record_count = len(data['raw_data'].get('properties', []))
+        
+        print(f"\n" + "="*70)
+        print("✅ DATA COLLECTION COMPLETE")
+        print("="*70)
+        print(f"Output File: {OUTPUT_FILE}")
+        print(f"Records Collected: {record_count} properties")
+        if len(regions) > 1:
+            print(f"Regions Covered: {', '.join(regions)}")
+            for region, count in region_stats.items():
+                print(f"   {region}: {count} properties")
+        print(f"Data Source: {properties[0]['source'] if properties else 'None'}")
+        print(f"Vertical: {vertical_config.get('name', 'Unknown')}")
+        print("="*70)
+        
+        return OUTPUT_FILE
+        
+    except Exception as e:
+        print(f"\n❌ CRITICAL ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
+
+
+# ============================================================================
+# MIAMI REAL ESTATE (UNCHANGED)
 # ============================================================================
 
 def collect_miami_real_estate(area, city="Miami", max_properties=40):
-    """Collect Miami luxury real estate data"""
+    """Collect Miami luxury real estate data (unchanged)"""
     
     print(f"\n🏠 COLLECTING MIAMI REAL ESTATE DATA")
     print(f"   Area: {area}")
@@ -863,84 +879,6 @@ def collect_miami_real_estate(area, city="Miami", max_properties=40):
 
 
 # ============================================================================
-# MAIN ORCHESTRATOR
-# ============================================================================
-
-def collect_market_data(vertical, area, city, vertical_config_json='{}'):
-    """
-    Main data collection orchestrator.
-    NEVER FAILS - Always returns usable data.
-    SUPPORTS ANY CITY GLOBALLY
-    """
-    
-    print("\n" + "="*70)
-    print("VOXMILL DATA COLLECTION ENGINE")
-    print("="*70)
-    print(f"Vertical: {vertical}")
-    print(f"Area: {area}")
-    print(f"City: {city}")
-    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("="*70)
-    
-    # Parse vertical config
-    import json as json_lib
-    try:
-        vertical_config = json_lib.loads(vertical_config_json)
-        print(f"✅ Vertical Config: {vertical_config.get('name', 'Unknown')}")
-    except:
-        vertical_config = {'type': 'real_estate', 'name': 'Real Estate'}
-        print(f"⚠️  Using default vertical config")
-    
-    data = {
-        'metadata': {
-            'vertical': vertical_config,  # Store full config object
-            'area': area,
-            'city': city,
-            'timestamp': datetime.now().isoformat(),
-            'data_source': 'Multi-source with intelligent fallbacks'
-        },
-        'raw_data': {}
-    }
-    
-    try:
-        if vertical == 'uk-real-estate':
-            properties = collect_uk_real_estate(area, city)
-            data['raw_data']['properties'] = properties
-            data['metadata']['property_count'] = len(properties)
-            
-        elif vertical == 'miami-real-estate':
-            properties = collect_miami_real_estate(area, city)
-            data['raw_data']['properties'] = properties
-            data['metadata']['property_count'] = len(properties)
-            
-        else:
-            raise Exception(f"Vertical '{vertical}' not supported")
-        
-        # Save to file
-        with open(OUTPUT_FILE, 'w') as f:
-            json.dump(data, f, indent=2)
-        
-        record_count = len(data['raw_data'].get('properties', []))
-        
-        print(f"\n" + "="*70)
-        print("✅ DATA COLLECTION COMPLETE")
-        print("="*70)
-        print(f"Output File: {OUTPUT_FILE}")
-        print(f"Records Collected: {record_count} properties")
-        print(f"Data Source: {properties[0]['source'] if properties else 'None'}")
-        print(f"Vertical: {vertical_config.get('name', 'Unknown')}")
-        print("="*70)
-        
-        return OUTPUT_FILE
-        
-    except Exception as e:
-        print(f"\n❌ CRITICAL ERROR: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise
-
-
-# ============================================================================
 # MAIN
 # ============================================================================
 
@@ -952,7 +890,7 @@ def main():
     if len(sys.argv) < 4:
         print("Usage: python data_collector.py <vertical> <area> <city> [vertical_config_json]")
         print("Example: python data_collector.py uk-real-estate Mayfair London")
-        print("Example: python data_collector.py uk-real-estate \"West End\" Edinburgh")
+        print("Example: python data_collector.py uk-real-estate \"Mayfair, Chelsea, Knightsbridge\" London")
         sys.exit(1)
     
     vertical = sys.argv[1]
