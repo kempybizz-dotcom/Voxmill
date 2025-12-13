@@ -337,6 +337,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                                 # Subscription reactivated - trigger PIN re-verification
                                 PINAuthenticator.trigger_reverification_on_subscription_change(sender)
                                 logger.info(f"🔄 PIN re-verification triggered for {sender} (subscription reactivated)")
+                                
+                                # Sync to Airtable
+                                from app.pin_auth import sync_pin_status_to_airtable
+                                import asyncio
+                                asyncio.create_task(sync_pin_status_to_airtable(sender, "Requires Re-verification", "Subscription reactivated"))
                             
                             # Preserve query history
                             old_history = client_profile.get('query_history', []) if client_profile else []
@@ -429,6 +434,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     if not success:
                         return  # Wait for valid PIN
                     
+                    # Sync to Airtable
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                    
                     # PIN set successfully - continue to normal processing below
                     # Fall through to regular message handling
                     
@@ -454,7 +463,15 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     await send_twilio_message(sender, response)
                     
                     if not success:
+                        # Sync failed attempt or locked status
+                        from app.pin_auth import sync_pin_status_to_airtable
+                        if message == "locked":
+                            await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
                         return  # Wait for correct PIN
+                    
+                    # Sync successful verification
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
                     
                     # PIN verified successfully - continue to normal processing below
                     # Fall through to regular message handling
@@ -481,6 +498,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
 Your access has been secured.
 
 Enter your 4-digit code to unlock."""
+                
+                # Sync to Airtable
+                from app.pin_auth import sync_pin_status_to_airtable
+                await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
             else:
                 response = "❌ Unable to lock. Please try again."
             
@@ -513,6 +534,10 @@ Example: 1234 5678"""
 Your new access code is active.
 
 What can I analyze for you?"""
+                    
+                    # Sync to Airtable
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
                 else:
                     response = f"❌ {message}"
                 
