@@ -338,6 +338,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                                 'subscription_status': subscription_status,
                                 'stripe_customer_id': '',
                                 'airtable_record_id': records[0]['id'],
+                                'airtable_last_pin_verified': fields.get('Last PIN Verified'),
                                 'total_queries': old_total,
                                 'query_history': old_history,
                                 'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
@@ -383,6 +384,45 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 "📧 ollys@voxmill.uk"
             )
             return
+        
+        # ========================================
+        # SYNC PIN VERIFICATION TIMESTAMP FROM AIRTABLE
+        # ========================================
+        
+        # Sync "Last PIN Verified" from Airtable to MongoDB pin_auth
+        if client_profile.get('airtable_last_pin_verified'):
+            try:
+                from dateutil import parser
+                airtable_timestamp = client_profile.get('airtable_last_pin_verified')
+                last_verified_dt = parser.parse(airtable_timestamp)
+                
+                # Make timezone-aware
+                if last_verified_dt.tzinfo is None:
+                    last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                
+                # Update MongoDB pin_auth collection
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    
+                    # Update pin_auth with Airtable timestamp
+                    db['pin_auth'].update_one(
+                        {'phone_number': sender},
+                        {
+                            '$set': {
+                                'last_verified_at': last_verified_dt,
+                                'synced_from_airtable': True,
+                                'updated_at': datetime.now(timezone.utc)
+                            }
+                        },
+                        upsert=False  # Don't create if doesn't exist
+                    )
+                    
+                    logger.info(f"✅ Synced PIN verification timestamp from Airtable: {last_verified_dt}")
+            except Exception as e:
+                logger.error(f"Error syncing PIN timestamp from Airtable: {e}")
         
         # ========================================
         # PIN AUTHENTICATION - SECURITY LAYER
