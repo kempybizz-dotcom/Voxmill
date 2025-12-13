@@ -24,7 +24,8 @@ CATEGORIES = [
     "scenario_modelling",
     "strategic_outlook",
     "weekly_briefing",
-    "send_pdf"
+    "send_pdf",
+    "decision_mode"
 ]
 
 SYSTEM_PROMPT = """
@@ -87,6 +88,60 @@ MANDATORY CHARACTERISTICS
 ✘ NEVER sound uncertain
 ✘ NEVER thank the user
 ✘ NEVER explain basic financial terms
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DECISION MODE - EXECUTIVE DIRECTIVE PROTOCOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When user says: "decision mode", "what should I do", "recommend action", "make the call"
+
+SWITCH TO DECISION MODE:
+
+STRICT RULES:
+✓ ONE recommendation only (30 words max)
+✓ PRIMARY risk (15 words max)
+✓ SECONDARY risk (15 words max)
+✓ ONE action (10 words max)
+✓ NO explanations
+✓ NO hedging ("might", "could", "possibly")
+✓ NO options ("you could also...")
+✓ Be DEFINITIVE
+
+FORMAT (mandatory):
+🎯 DECISION MODE
+
+RECOMMENDATION:
+[One clear directive. 30 words max. No hedging. Definitive.]
+
+PRIMARY RISK:
+[Biggest threat. 15 words max.]
+
+SECONDARY RISK:
+[Second concern. 15 words max.]
+
+ACTION:
+[One specific step. 10 words max.]
+
+WRONG (standard analysis):
+"There are several opportunities in Mayfair. Knight Frank has 12 listings averaging £4.2M. 
+You could consider the £3-5M corridor, or alternatively look at trophy assets. It depends 
+on your risk appetite and timeline. Let me know if you'd like more details."
+
+CORRECT (decision mode):
+🎯 DECISION MODE
+
+RECOMMENDATION:
+Acquire 3 Grosvenor Square properties within 14 days. Knight Frank's -5% pricing creates 
+18-month arbitrage window.
+
+PRIMARY RISK:
+Liquidity tightening Q1 2026 reduces exit options.
+
+SECONDARY RISK:
+Competitive response from Savills within 21 days.
+
+ACTION:
+Contact Knight Frank today. Secure exclusivity.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INDUSTRY TERMINOLOGY MASTERY
@@ -189,6 +244,7 @@ QUERY FORMATS SUPPORTED:
 - Comp stack requests ("3-bed flats, Knightsbridge, <£3M")
 - Strategic outlook ("90-day forecast?")
 - Agent behavior ("Who's aggressive on pricing?")
+- **DECISION MODE** ("What should I do?")
 
 This isn't sentiment analysis—it's quantitative institutional intelligence.
 
@@ -532,6 +588,9 @@ COMPLEX QUERY ("Scenario modeling"):
 CAPABILITY INQUIRY ("What can you do?"):
 Full showcase, 7-layer stack, impressive but concise
 
+DECISION MODE ("What should I do?"):
+STRICT FORMAT - 4 sections max, ultra-concise, definitive
+
 PRINCIPLE: Match sophistication to query complexity, never over-explain.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -565,13 +624,15 @@ CORRECT (executive):
 "PCL cap rates: 40bps compression YoY. Trophy sub-3%."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CRITICAL REMINDERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. These clients pay £5,000-8,000/month—assume institutional sophistication
 2. Never explain cap rates, IRR, DOM, or other basic terms
 3. Translate terminology fluidly (IRR → unlevered return in real estate context)
-4. When asked "what can you do"—showcase 7-layer intelligence stack impressively
+4. When in DECISION MODE - be ruthlessly concise and definitive
 5. Match response length to query complexity (3 sentences for simple, 20 for complex)
 6. Always end with qualifying question to advance conversation
 7. Speak like Bridgewater analyst, not ChatGPT
@@ -586,7 +647,7 @@ You are world-class. Act like it.
 
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
     """
-    Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence.
+    Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE.
     
     Args:
         message: User query
@@ -792,6 +853,13 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         timing_keywords = ['when', 'timing', 'should i buy', 'should i sell', 'best time', 'window']
         clustering_keywords = ['move together', 'similar', 'grouped', 'behavior', 'patterns', 'coordinated']
         
+        # DECISION MODE KEYWORDS
+        decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
+                             'tell me what to do', 'executive decision', 'make the call',
+                             'your recommendation', 'what would you do', 'bottom line',
+                             'just tell me', 'give me the answer', 'stop hedging']
+        
+        is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
         is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
         is_strategic = any(keyword in message_lower for keyword in strategic_keywords)
         is_comparison = any(keyword in message_lower for keyword in comparison_keywords)
@@ -909,7 +977,9 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # DETERMINE ANALYSIS MODE
         # ========================================
         
-        if is_greeting and not is_returning_user:
+        if is_decision_mode:
+            mode = "DECISION MODE - EXECUTIVE DIRECTIVE"
+        elif is_greeting and not is_returning_user:
             mode = "FIRST CONTACT GREETING"
         elif is_greeting and is_returning_user:
             mode = "RETURNING USER GREETING"
@@ -940,14 +1010,17 @@ User message: "{message}"
 
 Analysis mode: {mode}
 
+{"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol." if is_decision_mode else ""}
+
 User context:
 - Is greeting: {is_greeting}
 - Is returning user: {is_returning_user}
+- Is decision mode: {is_decision_mode}
 - Is timing query: {is_timing_query}
 - Is clustering query: {is_clustering_query}
 - Total queries from user: {client_profile.get('total_queries', 0) if client_profile else 0}
 
-Classify this message and generate an executive analyst response with full V3+V4 predictive intelligence.
+Classify this message and generate {"an executive directive response in DECISION MODE format" if is_decision_mode else "an executive analyst response"} with full V3+V4 predictive intelligence.
 
 REMEMBER: 
 - Adapt response length to query complexity
@@ -968,8 +1041,12 @@ REMEMBER:
             logger.debug(f"Session context unavailable: {e}")
         
         # ============================================================
-        # CALL GPT-4 WITH ADAPTIVE PARAMETERS (WAVE 3)
+        # CALL GPT-4 WITH ADAPTIVE PARAMETERS (WAVE 3) + DECISION MODE
         # ============================================================
+        
+        # Use lower temperature for decision mode (more definitive)
+        decision_temperature = 0.3 if is_decision_mode else adaptive_config['temperature']
+        
         if openai_client:
             response = openai_client.chat.completions.create(
                 model="gpt-4-turbo-preview",
@@ -978,7 +1055,7 @@ REMEMBER:
                     {"role": "user", "content": user_prompt}
                 ],
                 max_tokens=adaptive_config['max_tokens'],
-                temperature=adaptive_config['temperature'],
+                temperature=decision_temperature,
                 timeout=15.0
             )
             
@@ -990,7 +1067,7 @@ REMEMBER:
         # Parse JSON response
         try:
             parsed = json.loads(response_text)
-            category = parsed.get("category", "market_overview")
+            category = parsed.get("category", "decision_mode" if is_decision_mode else "market_overview")
             response_text = parsed.get("response", "")
             response_metadata = {
                 "confidence_level": parsed.get("confidence_level", "medium"),
@@ -1001,7 +1078,9 @@ REMEMBER:
             logger.warning(f"LLM returned non-JSON response, using as-is")
             
             # Determine category from query type
-            if is_timing_query:
+            if is_decision_mode:
+                category = "decision_mode"
+            elif is_timing_query:
                 category = "market_overview"
             elif is_clustering_query:
                 category = "competitive_landscape"
@@ -1030,7 +1109,7 @@ REMEMBER:
         # Validate category
         if category not in CATEGORIES:
             logger.warning(f"Invalid category returned: {category}, defaulting")
-            category = "market_overview"
+            category = "decision_mode" if is_decision_mode else "market_overview"
         
         logger.info(f"Classification: {category} (mode: {mode}, confidence: {response_metadata.get('confidence_level')})")
         return category, response_text, response_metadata
@@ -1038,3 +1117,15 @@ REMEMBER:
     except Exception as e:
         logger.error(f"Error in classify_and_respond: {str(e)}", exc_info=True)
         return "market_overview", "Unable to process request. Please try again.", {}
+```
+
+---
+
+## 🚀 DEPLOY AND TEST
+
+**Test queries:**
+```
+1. "Mayfair outlook. Decision mode."
+2. "I have £10M. What should I do?"
+3. "Knight Frank dropped 8%. Recommend action."
+4. "Tell me what to do in Knightsbridge."
