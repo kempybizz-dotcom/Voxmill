@@ -117,7 +117,7 @@ class PINAuthenticator:
         Returns: (success, message)
         """
         try:
-            if not db:
+            if db is None:
                 return False, "System error"
             
             # Get user profile
@@ -188,7 +188,7 @@ class PINAuthenticator:
         Reasons: 'not_set', 'inactivity', 'subscription_change', 'manual_lock', 'none'
         """
         try:
-            if not db:
+            if db is None:
                 return False, "none"
             
             profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
@@ -239,7 +239,7 @@ class PINAuthenticator:
         Returns: (success, message)
         """
         try:
-            if not db:
+            if db is None:
                 return False, "System error"
             
             db['client_profiles'].update_one(
@@ -266,7 +266,7 @@ class PINAuthenticator:
         Returns: (success, message)
         """
         try:
-            if not db:
+            if db is None:
                 return False, "System error"
             
             # Get profile
@@ -304,7 +304,7 @@ class PINAuthenticator:
         Returns: (success, message)
         """
         try:
-            if not db:
+            if db is None:
                 return False, "System error"
             
             db['client_profiles'].update_one(
@@ -332,7 +332,7 @@ class PINAuthenticator:
         (Called when subscription goes: paused → active, cancelled → active, etc.)
         """
         try:
-            if not db:
+            if db is None:
                 return
             
             db['client_profiles'].update_one(
