@@ -369,7 +369,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
         
-        # ========================================
+       # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
         # ========================================
         
@@ -390,93 +390,53 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # ========================================
         
         # Always check Airtable for PIN verification status (lightweight call)
-        if client_profile and client_profile.get('airtable_record_id'):
-            try:
-                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+        try:
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+            
+            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                # Fetch only the PIN field from Airtable (lightweight)
+                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+                headers = {
+                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                }
                 
-                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
-                    # Fetch only the PIN field from Airtable
-                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
-                    headers = {
-                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                    }
+                response = requests.get(url, headers=headers, timeout=5)
+                
+                if response.status_code == 200:
+                    fields = response.json().get('fields', {})
+                    airtable_last_pin = fields.get('Last PIN Verified')
                     
-                    response = requests.get(url, headers=headers, timeout=5)
-                    
-                    if response.status_code == 200:
-                        fields = response.json().get('fields', {})
-                        airtable_last_pin = fields.get('Last PIN Verified')
+                    if airtable_last_pin:
+                        # Sync to MongoDB pin_auth
+                        from dateutil import parser
+                        last_verified_dt = parser.parse(airtable_last_pin)
                         
-                        if airtable_last_pin:
-                            # Sync to MongoDB pin_auth
-                            from dateutil import parser
-                            last_verified_dt = parser.parse(airtable_last_pin)
+                        if last_verified_dt.tzinfo is None:
+                            last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                        
+                        from pymongo import MongoClient
+                        MONGODB_URI = os.getenv('MONGODB_URI')
+                        if MONGODB_URI:
+                            mongo_client = MongoClient(MONGODB_URI)
+                            db = mongo_client['Voxmill']
                             
-                            if last_verified_dt.tzinfo is None:
-                                last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                            db['pin_auth'].update_one(
+                                {'phone_number': sender},
+                                {
+                                    '$set': {
+                                        'last_verified_at': last_verified_dt,
+                                        'synced_from_airtable': True,
+                                        'updated_at': datetime.now(timezone.utc)
+                                    }
+                                },
+                                upsert=False
+                            )
                             
-                            from pymongo import MongoClient
-                            MONGODB_URI = os.getenv('MONGODB_URI')
-                            if MONGODB_URI:
-                                mongo_client = MongoClient(MONGODB_URI)
-                                db = mongo_client['Voxmill']
-                                
-                                db['pin_auth'].update_one(
-                                    {'phone_number': sender},
-                                    {
-                                        '$set': {
-                                            'last_verified_at': last_verified_dt,
-                                            'synced_from_airtable': True,
-                                            'updated_at': datetime.now(timezone.utc)
-                                        }
-                                    },
-                                    upsert=False
-                                )
-                                
-                                logger.info(f"✅ PIN timestamp synced from Airtable: {last_verified_dt}")
-            except Exception as e:
-                logger.debug(f"PIN sync skipped: {e}")
-        
-        # ========================================
-        # SYNC PIN VERIFICATION TIMESTAMP FROM AIRTABLE
-        # ========================================
-        
-        # Sync "Last PIN Verified" from Airtable to MongoDB pin_auth
-        if client_profile.get('airtable_last_pin_verified'):
-            try:
-                from dateutil import parser
-                airtable_timestamp = client_profile.get('airtable_last_pin_verified')
-                last_verified_dt = parser.parse(airtable_timestamp)
-                
-                # Make timezone-aware
-                if last_verified_dt.tzinfo is None:
-                    last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
-                
-                # Update MongoDB pin_auth collection
-                from pymongo import MongoClient
-                MONGODB_URI = os.getenv('MONGODB_URI')
-                if MONGODB_URI:
-                    mongo_client = MongoClient(MONGODB_URI)
-                    db = mongo_client['Voxmill']
-                    
-                    # Update pin_auth with Airtable timestamp
-                    db['pin_auth'].update_one(
-                        {'phone_number': sender},
-                        {
-                            '$set': {
-                                'last_verified_at': last_verified_dt,
-                                'synced_from_airtable': True,
-                                'updated_at': datetime.now(timezone.utc)
-                            }
-                        },
-                        upsert=False  # Don't create if doesn't exist
-                    )
-                    
-                    logger.info(f"✅ Synced PIN verification timestamp from Airtable: {last_verified_dt}")
-            except Exception as e:
-                logger.error(f"Error syncing PIN timestamp from Airtable: {e}")
+                            logger.info(f"✅ PIN timestamp synced from Airtable: {last_verified_dt}")
+        except Exception as e:
+            logger.debug(f"PIN sync skipped: {e}")
         
         # ========================================
         # PIN AUTHENTICATION - SECURITY LAYER
