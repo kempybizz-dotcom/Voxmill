@@ -1304,6 +1304,180 @@ PERFORMANCE ANALYSIS
     margin-top: 40px;
 }
 
+/* Override right panel to use adaptive grid instead of fixed column */
+.competitive-institutional-ranking {
+    width: 100%;
+}
+
+/* Adaptive grid container for competitor cards */
+.institutional-ranking-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+    max-height: 720px;
+    overflow: hidden;
+}
+
+/* 1-6 competitors: Single column, comfortable spacing */
+.institutional-ranking-grid.institutional-grid-single {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* 7-10 competitors: Two columns, compact */
+.institutional-ranking-grid.institutional-grid-double {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* 11+ competitors: Three columns, ultra-compact */
+.institutional-ranking-grid.institutional-grid-triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+}
+
+/* Competitor card adaptive sizing */
+.competitor-card-adaptive {
+    background: linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(12, 12, 12, 0.98) 100%);
+    border: 1.5px solid rgba(197, 164, 109, 0.35);
+    border-radius: 8px;
+    padding: 16px 18px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Double column: Compact cards */
+.institutional-grid-double .competitor-card-adaptive {
+    padding: 12px 14px;
+    min-height: 68px;
+}
+
+/* Triple column: Ultra-compact cards */
+.institutional-grid-triple .competitor-card-adaptive {
+    padding: 10px 12px;
+    min-height: 64px;
+}
+
+/* Card header (rank + name) */
+.competitor-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.institutional-grid-double .competitor-card-header,
+.institutional-grid-triple .competitor-card-header {
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+/* Rank badge adjustments for compact layouts */
+.institutional-grid-double .competitor-rank,
+.institutional-grid-triple .competitor-rank {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+}
+
+/* Competitor info container */
+.competitor-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Competitor name - adaptive font sizes */
+.competitor-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #EAEAEA;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.institutional-grid-double .competitor-name {
+    font-size: 12px;
+}
+
+.institutional-grid-triple .competitor-name {
+    font-size: 11px;
+}
+
+/* Competitor count - adaptive font sizes */
+.competitor-count {
+    font-size: 11px;
+    color: rgba(234, 234, 234, 0.65);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.institutional-grid-double .competitor-count,
+.institutional-grid-triple .competitor-count {
+    font-size: 10px;
+}
+
+/* Card footer (share + badge) */
+.competitor-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 8px;
+}
+
+.institutional-grid-double .competitor-card-footer,
+.institutional-grid-triple .competitor-card-footer {
+    margin-top: 6px;
+}
+
+/* Competitor share metrics */
+.competitor-share {
+    display: flex;
+    flex-direction: column;
+}
+
+.competitor-share .metric-label {
+    font-size: 10px;
+    color: rgba(200, 170, 110, 0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.competitor-share .metric-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #C5A46D;
+    font-family: 'Inter', sans-serif;
+}
+
+.institutional-grid-double .competitor-share .metric-value,
+.institutional-grid-triple .competitor-share .metric-value {
+    font-size: 16px;
+}
+
+/* Compact badges for multi-column layouts */
+.vx-badge.vx-compact {
+    padding: 4px 10px;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.institutional-grid-triple .vx-badge.vx-compact {
+    padding: 3px 8px;
+    font-size: 9px;
+}
+
+
 /* ============================================
    CROSS-VERTICAL INTELLIGENCE — REBUILD
    ============================================ */
@@ -3665,6 +3839,105 @@ TOP MARKET OPPORTUNITIES
     font-weight: 600;
 }
 
+/* Override auto-fit grid with explicit column counts */
+.district-performance-grid {
+    display: grid;
+    gap: 32px;
+    margin-top: 0;
+    margin-bottom: 40px;
+    align-items: stretch;
+}
+
+/* Force exact column counts based on data */
+.district-grid-single {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.district-grid-double {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.district-grid-triple {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Adaptive card sizing for different grid layouts */
+.district-grid-single .district-card-premium {
+    min-height: 280px;
+}
+
+.district-grid-double .district-card-premium {
+    min-height: 240px;
+}
+
+.district-grid-triple .district-card-premium {
+    min-height: 220px;
+}
+
+/* Font size adjustments for triple column layout */
+.district-grid-triple .district-name {
+    font-size: 16px !important;
+}
+
+.district-grid-triple .district-metric-value {
+    font-size: 18px !important;
+}
+
+.district-grid-triple .district-metric-value-large {
+    font-size: 28px !important;
+}
+
+.district-grid-triple .district-tier-badge {
+    font-size: 9px !important;
+    padding: 3px 8px !important;
+}
+
+.district-grid-triple .district-metric-label {
+    font-size: 9px !important;
+}
+
+.district-grid-triple .district-metric-note {
+    font-size: 10px !important;
+}
+
+.district-grid-triple .district-summary-insight .insight-text {
+    font-size: 11px !important;
+}
+
+.district-grid-triple .inventory-count {
+    font-size: 24px !important;
+}
+
+.district-grid-triple .inventory-label {
+    font-size: 10px !important;
+}
+
+/* Compact momentum streets panel */
+.momentum-streets-panel.momentum-compact {
+    margin-top: 16px;
+    padding: 14px 18px;
+}
+
+.momentum-streets-panel.momentum-compact .momentum-streets-title {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.momentum-streets-panel.momentum-compact .momentum-list {
+    max-height: 140px;
+    overflow: hidden;
+}
+
+.momentum-streets-panel.momentum-compact .momentum-list li {
+    font-size: 11px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+
 /* Section separation enforcement */
 .momentum-streets-panel + .strategic-summary-band {
     margin-top: 40px;
@@ -3850,6 +4123,122 @@ AI OPPORTUNITIES
 .acquisition-strategy-ribbon + div strong {
     color: #C8AA6E;
     font-weight: 600;
+}
+
+/* Adaptive grid system for signal cards */
+.signal-board-v2 {
+    margin-top: 24px;
+    margin-bottom: 0;
+    max-height: 640px;
+    overflow: hidden;
+}
+
+/* 1-4 signals: Single column, comfortable spacing */
+.signal-board-v2.signal-grid-single {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* 5-8 signals: Two columns, compact */
+.signal-board-v2.signal-grid-double {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* 9-12 signals: Three columns, ultra-compact */
+.signal-board-v2.signal-grid-triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+}
+
+/* Signal card adaptive sizing */
+.signal-card-adaptive {
+    /* Inherits base .signal-card-v2 styles */
+}
+
+/* Single column: Full-width, tall cards */
+.signal-grid-single .signal-card-adaptive {
+    min-height: 130px;
+    padding: 18px 20px;
+}
+
+/* Double column: Medium cards */
+.signal-grid-double .signal-card-adaptive {
+    min-height: 110px;
+    padding: 14px 16px;
+}
+
+/* Triple column: Compact cards */
+.signal-grid-triple .signal-card-adaptive {
+    min-height: 100px;
+    padding: 12px 14px;
+}
+
+/* Font size adjustments for compact layouts */
+.signal-grid-double .signal-property-title {
+    font-size: 13px !important;
+}
+
+.signal-grid-triple .signal-property-title {
+    font-size: 12px !important;
+}
+
+.signal-grid-double .signal-property-metrics {
+    font-size: 11px !important;
+}
+
+.signal-grid-triple .signal-property-metrics {
+    font-size: 10px !important;
+}
+
+.signal-grid-double .ai-flag-reason {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+}
+
+.signal-grid-triple .ai-flag-reason {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
+
+.signal-grid-double .signal-badge-v2 {
+    font-size: 9px !important;
+    padding: 4px 8px !important;
+}
+
+.signal-grid-triple .signal-badge-v2 {
+    font-size: 8px !important;
+    padding: 3px 6px !important;
+}
+
+/* Compact acquisition strategy ribbon */
+.acquisition-strategy-ribbon.acquisition-compact {
+    padding: 14px 18px;
+    margin-top: 16px;
+}
+
+.acquisition-strategy-ribbon.acquisition-compact .acquisition-strategy-text {
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Compact context panel */
+.context-panel.context-compact {
+    padding: 14px 18px;
+    margin-top: 14px;
+}
+
+.context-panel.context-compact h4 {
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.context-panel.context-compact div div {
+    font-size: 11px;
+    line-height: 1.4;
 }
 
 /* ============================================
