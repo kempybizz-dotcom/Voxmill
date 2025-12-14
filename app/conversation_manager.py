@@ -31,6 +31,14 @@ class ConversationSession:
     def __init__(self, client_id: str):
         self.client_id = client_id
         self.session_key = f"voxmill:session:{client_id}"
+        self.data_limitation_mentioned = False
+
+    def has_mentioned_data_limitation(self):
+        return self.data_limitation_mentioned
+
+    def mark_data_limitation_mentioned(self):
+        self.data_limitation_mentioned = True
+        
     
     def get_session(self) -> Dict:
         """Get current session state"""
