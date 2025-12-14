@@ -516,7 +516,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         message_lower = message_text.lower().strip()
         
         # Lock command (flexible matching)
-        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account']
+        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
+                         'lock it', 'lock this', 'lock down', 'secure account']
         if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
             success, message = PINAuthenticator.manual_lock(sender)
             
