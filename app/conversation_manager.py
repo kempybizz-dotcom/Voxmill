@@ -95,123 +95,137 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error updating session: {e}")
     
-    def get_conversation_context(self) -> str:
-        """
-        Generate conversation context string for LLM
-        
-        Returns formatted string of recent conversation history
-        """
-        
-        session = self.get_session()
-        
-        if not session['messages']:
-            return ""
-        
-        context_parts = ["CONVERSATION HISTORY (Last 5 exchanges):"]
-        
-        for i, msg in enumerate(session['messages'][-5:], 1):
-            context_parts.append(f"\n[{i}] User: {msg['user'][:200]}")
-            context_parts.append(f"    Assistant: {msg['assistant'][:200]}")
-        
-        # Add contextual entities
-        if session['context_entities']:
-            context_parts.append("\nREFERENCED ENTITIES:")
-            
-            if session['context_entities'].get('regions'):
-                regions = ', '.join(session['context_entities']['regions'])
-                context_parts.append(f"• Regions: {regions}")
-            
-            if session['context_entities'].get('agents'):
-                agents = ', '.join(session['context_entities']['agents'])
-                context_parts.append(f"• Agents: {agents}")
-            
-            if session['context_entities'].get('topics'):
-                topics = ', '.join(session['context_entities']['topics'])
-                context_parts.append(f"• Topics: {topics}")
-        
-        return "\n".join(context_parts)
+ def get_conversation_context(self) -> str:
+    """
+    Generate conversation context string for LLM
     
-    def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
-        """
-        Detect if current query is a follow-up to previous conversation
-        
-        Returns: (is_followup, context_hints)
-        """
-        
-        session = self.get_session()
-        
-        if not session['messages']:
-            return False, {}
-        
-        # Follow-up indicators
-        followup_patterns = [
-            'what about', 'how about', 'compare', 'vs', 'versus',
-            'that', 'those', 'them', 'it', 'same', 'similar',
-            'more', 'also', 'and', 'but', 'however',
-            'last time', 'before', 'previously', 'earlier'
-        ]
-        
-        query_lower = current_query.lower()
-        
-        is_followup = any(pattern in query_lower for pattern in followup_patterns)
-        
-        if not is_followup:
-            return False, {}
-        
-        # Extract context hints
-        context_hints = {
-            'last_region': session['context_entities'].get('regions', [None])[-1],
-            'last_agent': session['context_entities'].get('agents', [None])[-1],
-            'last_topic': session['context_entities'].get('topics', [None])[-1],
-            'last_query': session['messages'][-1]['user'] if session['messages'] else None
-        }
-        
-        logger.info(f"Follow-up query detected for {self.client_id}: {context_hints}")
-        
-        return True, context_hints
+    Returns formatted string of recent conversation history
+    """
     
-    def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
-        """Extract and track entities mentioned in conversation"""
+    session = self.get_session()
+    
+    if not session['messages']:
+        return ""
+    
+    context_parts = ["CONVERSATION HISTORY (Last 5 exchanges):"]
+    
+    for i, msg in enumerate(session['messages'][-5:], 1):
+        context_parts.append(f"\n[{i}] User: {msg['user'][:200]}")
+        context_parts.append(f"    Assistant: {msg['assistant'][:200]}")
+    
+    # Add contextual entities
+    if session['context_entities']:
+        context_parts.append("\nREFERENCED ENTITIES:")
         
-        entities = session['context_entities']
+        if session['context_entities'].get('regions'):
+            regions = ', '.join(session['context_entities']['regions'])
+            context_parts.append(f"• Regions: {regions}")
         
-        # Extract regions
-        regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington', 
-                  'South Kensington', 'Notting Hill', 'Marylebone']
+        if session['context_entities'].get('agents'):
+            agents = ', '.join(session['context_entities']['agents'])
+            context_parts.append(f"• Agents: {agents}")
         
-        for region in regions:
-            if region.lower() in message.lower():
-                if region not in entities['regions']:
-                    entities['regions'].append(region)
-        
-        # Keep only last 3 of each entity type
-        for key in entities:
-            if len(entities[key]) > 3:
-                entities[key] = entities[key][-3:]
-        
-        # Extract agents
-        agents = ['Knight Frank', 'Savills', 'Hamptons', 'Chestertons', 
-                 'Foxtons', 'JLL', 'CBRE', 'Strutt & Parker']
-        
-        for agent in agents:
-            if agent.lower() in message.lower():
-                if agent not in entities['agents']:
-                    entities['agents'].append(agent)
-        
-        # Extract topics
-        topics = ['price', 'inventory', 'cascade', 'opportunity', 'competitive', 
-                 'trend', 'velocity', 'liquidity', 'forecast']
-        
-        for topic in topics:
-            if topic in message.lower():
-                if topic not in entities['topics']:
-                    entities['topics'].append(topic)
-        
-        # Extract from metadata
-        if metadata:
-            if metadata.get('category'):
-                if metadata['category'] not in entities['topics']:
-                    entities['topics'].append(metadata['category'])
+        if session['context_entities'].get('topics'):
+            topics = ', '.join(session['context_entities']['topics'])
+            context_parts.append(f"• Topics: {topics}")
+    
+    return "\n".join(context_parts)
+
+def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
+    """
+    Detect if current query is a follow-up to previous conversation
+    
+    Returns: (is_followup, context_hints)
+    """
+    
+    session = self.get_session()
+    
+    if not session['messages']:
+        return False, {}
+    
+    # Follow-up indicators
+    followup_patterns = [
+        'what about', 'how about', 'compare', 'vs', 'versus',
+        'that', 'those', 'them', 'it', 'same', 'similar',
+        'more', 'also', 'and', 'but', 'however',
+        'last time', 'before', 'previously', 'earlier'
+    ]
+    
+    query_lower = current_query.lower()
+    
+    is_followup = any(pattern in query_lower for pattern in followup_patterns)
+    
+    if not is_followup:
+        return False, {}
+    
+    # Extract context hints
+    context_hints = {
+        'last_region': session['context_entities'].get('regions', [None])[-1],
+        'last_agent': session['context_entities'].get('agents', [None])[-1],
+        'last_topic': session['context_entities'].get('topics', [None])[-1],
+        'last_query': session['messages'][-1]['user'] if session['messages'] else None
+    }
+    
+    logger.info(f"Follow-up query detected for {self.client_id}: {context_hints}")
+    
+    return True, context_hints
+
+def get_last_metadata(self) -> dict:
+    """
+    Get metadata from the last message in the conversation
+    
+    Returns: metadata dict or empty dict if no messages
+    """
+    session = self.get_session()
+    
+    if not session.get('messages'):
+        return {}
+    
+    last_message = session['messages'][-1]
+    return last_message.get('metadata', {})
+
+def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
+    """Extract and track entities mentioned in conversation"""
+    
+    entities = session['context_entities']
+    
+    # Extract regions
+    regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington', 
+              'South Kensington', 'Notting Hill', 'Marylebone']
+    
+    for region in regions:
+        if region.lower() in message.lower():
+            if region not in entities['regions']:
+                entities['regions'].append(region)
+    
+    # Keep only last 3 of each entity type
+    for key in entities:
+        if len(entities[key]) > 3:
+            entities[key] = entities[key][-3:]
+    
+    # Extract agents
+    agents = ['Knight Frank', 'Savills', 'Hamptons', 'Chestertons', 
+             'Foxtons', 'JLL', 'CBRE', 'Strutt & Parker']
+    
+    for agent in agents:
+        if agent.lower() in message.lower():
+            if agent not in entities['agents']:
+                entities['agents'].append(agent)
+    
+    # Extract topics
+    topics = ['price', 'inventory', 'cascade', 'opportunity', 'competitive', 
+             'trend', 'velocity', 'liquidity', 'forecast']
+    
+    for topic in topics:
+        if topic in message.lower():
+            if topic not in entities['topics']:
+                entities['topics'].append(topic)
+    
+    # Extract from metadata
+    if metadata:
+        if metadata.get('category'):
+            if metadata['category'] not in entities['topics']:
+                entities['topics'].append(metadata['category'])
     
     def clear_session(self):
         """Clear conversation session (start fresh)"""
