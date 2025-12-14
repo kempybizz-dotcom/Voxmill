@@ -627,19 +627,20 @@ Example: 1234 5678"""
                 success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
                 
                 if success:
-                    response = """PIN RESET SUCCESSFUL
-
-Your new access code is active.
-
-What can I analyze for you?"""
-                    
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
-                else:
-                    response = f"{message}"
-                
-                await send_twilio_message(sender, response)
-                return
+
+                unlock_response = "Access verified. Standing by."
+                await send_twilio_message(sender, unlock_response)
+
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=unlock_response,
+                    metadata={'category': 'pin_unlock'}
+                )
+
+                 return
         
         # ========================================
         # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
