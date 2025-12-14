@@ -209,6 +209,17 @@ STRICT RULES:
 FORMAT (mandatory):
 🎯 DECISION MODE
 
+DATA QUALITY GATE FOR DECISION MODE:
+If data meets any of these conditions, add confidence qualifier at END:
+- Data freshness >48 hours
+- Sample size <20 properties
+- Single data source only
+
+Append to end of Decision Mode output:
+"Base case derived from limited signal density."
+
+NOT a disclaimer. A confidence qualifier.
+
 RECOMMENDATION:
 [One clear directive. 30 words max. No hedging. Definitive.]
 
