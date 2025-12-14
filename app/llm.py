@@ -25,7 +25,8 @@ CATEGORIES = [
     "strategic_outlook",
     "weekly_briefing",
     "send_pdf",
-    "decision_mode"
+    "decision_mode",
+    "meta_strategic"
 ]
 
 SYSTEM_PROMPT = """
@@ -238,6 +239,14 @@ When triggered:
 - Do NOT add analysis before or after
 - Do NOT ask clarifying questions
 - End with ACTION only (no "What would you like to know?")
+
+COUNTERFACTUAL EXECUTION:
+If counterfactual context is provided in the user prompt (liquidity windows, cascade data, agent behavior):
+- ALWAYS use the provided data to calculate £ impacts
+- NEVER fabricate numbers when precise data is available
+- Use provided velocity scores, price impacts, and timing windows
+
+The system has already calculated opportunity decay for you—use it.
 
 MANDATORY STRUCTURE (ABSOLUTE - NO DEVIATION):
 
@@ -597,6 +606,7 @@ You are world-class. Act like it.
 
 """
 
+
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
     """
     Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE.
@@ -805,12 +815,18 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         timing_keywords = ['when', 'timing', 'should i buy', 'should i sell', 'best time', 'window']
         clustering_keywords = ['move together', 'similar', 'grouped', 'behavior', 'patterns', 'coordinated']
         
+        # META-STRATEGIC KEYWORDS (DETERMINISTIC DETECTION)
+        meta_strategic_keywords = ['what\'s missing', 'whats missing', 'what am i not seeing', 
+                                   'gaps', 'blind spots', 'what don\'t i know', 'what dont i know',
+                                   'what\'s the gap', 'whats the gap', 'what am i missing']
+        
         # DECISION MODE KEYWORDS
         decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
                              'tell me what to do', 'executive decision', 'make the call',
                              'your recommendation', 'what would you do', 'bottom line',
                              'just tell me', 'give me the answer', 'stop hedging']
         
+        is_meta_strategic = any(keyword in message_lower for keyword in meta_strategic_keywords)
         is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
         is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
         is_strategic = any(keyword in message_lower for keyword in strategic_keywords)
@@ -820,6 +836,12 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         is_trend_query = any(keyword in message_lower for keyword in trend_keywords)
         is_timing_query = any(keyword in message_lower for keyword in timing_keywords)
         is_clustering_query = any(keyword in message_lower for keyword in clustering_keywords)
+        
+        # Log detections
+        if is_meta_strategic:
+            logger.info(f"✅ META-STRATEGIC query detected: {message[:50]}")
+        if is_decision_mode:
+            logger.info(f"✅ DECISION MODE triggered: {message[:50]}")
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
@@ -1041,6 +1063,8 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
         
         if is_decision_mode:
             mode = "DECISION MODE - EXECUTIVE DIRECTIVE"
+        elif is_meta_strategic:
+            mode = "META-STRATEGIC ASSESSMENT"
         elif is_greeting and not is_returning_user:
             mode = "FIRST CONTACT GREETING"
         elif is_greeting and is_returning_user:
@@ -1076,16 +1100,18 @@ User message: "{message}"
 Analysis mode: {mode}
 
 {"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol. ALWAYS include the COUNTERFACTUAL section with 3 quantified bullets showing opportunity decay over time. Frame as LOSS not missed gain." if is_decision_mode else ""}
+{"CRITICAL: This is META-STRATEGIC. Follow the META-STRATEGIC QUESTIONS PROTOCOL EXACTLY. Maximum 4 bullets, 6 words per bullet, NO numbers, NO datasets, NO agents." if is_meta_strategic else ""}
 
 User context:
 - Is greeting: {is_greeting}
 - Is returning user: {is_returning_user}
 - Is decision mode: {is_decision_mode}
+- Is meta-strategic: {is_meta_strategic}
 - Is timing query: {is_timing_query}
 - Is clustering query: {is_clustering_query}
 - Total queries from user: {client_profile.get('total_queries', 0) if client_profile else 0}
 
-Classify this message and generate {"an executive directive response in DECISION MODE format" if is_decision_mode else "an executive analyst response"} with full V3+V4 predictive intelligence.
+Classify this message and generate {"an executive directive response in DECISION MODE format" if is_decision_mode else "a strategic gap assessment in META-STRATEGIC format" if is_meta_strategic else "an executive analyst response"} with full V3+V4 predictive intelligence.
 
 REMEMBER: 
 - Adapt response length to query complexity
@@ -1132,7 +1158,7 @@ REMEMBER:
         # Parse JSON response
         try:
             parsed = json.loads(response_text)
-            category = parsed.get("category", "decision_mode" if is_decision_mode else "market_overview")
+            category = parsed.get("category", "decision_mode" if is_decision_mode else "meta_strategic" if is_meta_strategic else "market_overview")
             response_text = parsed.get("response", "")
             response_metadata = {
                 "confidence_level": parsed.get("confidence_level", "medium"),
@@ -1145,6 +1171,8 @@ REMEMBER:
             # Determine category from query type
             if is_decision_mode:
                 category = "decision_mode"
+            elif is_meta_strategic:
+                category = "meta_strategic"
             elif is_timing_query:
                 category = "market_overview"
             elif is_clustering_query:
@@ -1174,7 +1202,7 @@ REMEMBER:
         # Validate category
         if category not in CATEGORIES:
             logger.warning(f"Invalid category returned: {category}, defaulting")
-            category = "decision_mode" if is_decision_mode else "market_overview"
+            category = "decision_mode" if is_decision_mode else "meta_strategic" if is_meta_strategic else "market_overview"
         
         logger.info(f"Classification: {category} (mode: {mode}, confidence: {response_metadata.get('confidence_level')})")
         return category, response_text, response_metadata
