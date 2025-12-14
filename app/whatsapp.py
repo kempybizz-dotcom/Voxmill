@@ -509,18 +509,19 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     await send_twilio_message(sender, response)
                     return
         
-        # ========================================
+       # ========================================
         # PIN COMMANDS - MANUAL LOCK/RESET
         # ========================================
         
         message_lower = message_text.lower().strip()
         
-        # Lock command
-        if message_lower in ['lock intelligence', 'lock', 'lock access']:
+        # Lock command (flexible matching)
+        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account']
+        if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
             success, message = PINAuthenticator.manual_lock(sender)
             
             if success:
-                response = """🔒 INTELLIGENCE LINE LOCKED
+                response = """INTELLIGENCE LINE LOCKED
 
 Your access has been secured.
 
@@ -530,14 +531,26 @@ Enter your 4-digit code to unlock."""
                 from app.pin_auth import sync_pin_status_to_airtable
                 await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
             else:
-                response = "❌ Unable to lock. Please try again."
+                response = "Unable to lock. Please try again."
             
             await send_twilio_message(sender, response)
             return
         
-        # Reset PIN command
-        if message_lower in ['reset pin', 'change pin', 'reset code']:
-            response = """🔄 PIN RESET
+        # PIN verification request (NEW - handles "verify my pin", "re-verify", etc.)
+        verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
+        if any(kw in message_lower for kw in verify_keywords):
+            response = """PIN VERIFICATION
+
+Enter your 4-digit access code to verify your account."""
+            
+            await send_twilio_message(sender, response)
+            return
+        
+        # Reset PIN command (more flexible)
+        reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
+                         'reset access code', 'new pin', 'update pin']
+        if any(kw in message_lower for kw in reset_keywords):
+            response = """PIN RESET
 
 To reset your access code, reply with:
 
@@ -556,7 +569,7 @@ Example: 1234 5678"""
                 success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
                 
                 if success:
-                    response = """✅ PIN RESET SUCCESSFUL
+                    response = """PIN RESET SUCCESSFUL
 
 Your new access code is active.
 
