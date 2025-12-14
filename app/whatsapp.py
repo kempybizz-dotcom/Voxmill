@@ -590,7 +590,6 @@ What can I analyze for you?"""
         # AUTHORIZED - Continue processing
         # ========================================
         logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
-
         
         # ============================================================
         # WAVE 1: Security validation
@@ -612,6 +611,55 @@ What can I analyze for you?"""
         if threats:
             logger.info(f"Input sanitized: {threats}")
             message_text = sanitized_input
+        
+        # Normalize query EARLY
+        message_normalized = normalize_query(message_text)
+        
+        # ========================================
+        # HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
+        # ========================================
+        
+        greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
+                            'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo',
+                            'helo', 'hola', 'heya', 'howdy', 'greetings']
+        
+        # Check if message is ONLY a greeting
+        message_clean = message_normalized.lower().strip()
+        is_simple_greeting = (
+            message_clean in greeting_keywords or 
+            len(message_clean) <= 10 and any(kw in message_clean for kw in greeting_keywords)
+        )
+        
+        is_first_time = client_profile.get('total_queries', 0) == 0
+        
+        if is_simple_greeting and not is_first_time:
+            # Get client name
+            client_name = client_profile.get('name', 'there')
+            first_name = client_name.split()[0] if client_name != 'there' else 'there'
+            
+            # Time-appropriate personalized greeting
+            greeting = get_time_appropriate_greeting(first_name)
+            
+            greeting_response = f"""{greeting}
+
+What can I analyze for you today?"""
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=greeting_response,
+                metadata={'category': 'greeting'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "greeting", greeting_response)
+            update_client_history(sender, message_text, "greeting", "None")
+            
+            logger.info(f"✅ Personalized greeting sent to {first_name}")
+            return
         
         # Check for webhook duplication
         cache_mgr = CacheManager()
