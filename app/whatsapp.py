@@ -626,21 +626,28 @@ Example: 1234 5678"""
                 old_pin, new_pin = parts
                 success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
                 
-                if success:
-                    from app.pin_auth import sync_pin_status_to_airtable
-                    await sync_pin_status_to_airtable(sender, "Active")
-
-                unlock_response = "Access verified. Standing by."
-                await send_twilio_message(sender, unlock_response)
-
+                # CLEAR STATE
                 conversation = ConversationSession(sender)
                 conversation.update_session(
                     user_message=message_text,
-                    assistant_response=unlock_response,
-                    metadata={'category': 'pin_unlock'}
+                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                    metadata={'pin_flow_state': None}
                 )
+                
+                if success:
+                    response = """PIN RESET SUCCESSFUL
 
-                 return
+Your new access code is active.
+
+What can I analyze for you?"""
+                    
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                else:
+                    response = f"{message}"
+                
+                await send_twilio_message(sender, response)
+                return
         
         # ========================================
         # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
@@ -715,7 +722,6 @@ Standing by."""
             response = await handle_monitor_request(sender, message_text, client_profile)
             await send_twilio_message(sender, response)
             return
-
         # ========================================
         # AUTHORIZED - Continue processing
         # ========================================
