@@ -617,6 +617,36 @@ def extract_monitoring_target(message: str) -> str:
     
     return None
 
+def extract_duration(message: str) -> Optional[int]:
+    """Extract duration in days from confirmation message"""
+    message_lower = message.lower()
+    
+    # Indefinite
+    if 'indefinite' in message_lower or 'until i say' in message_lower:
+        return -1
+    
+    # Extract number + unit
+    import re
+    
+    # Hours
+    hours_match = re.search(r'(\d+)\s*hour', message_lower)
+    if hours_match:
+        hours = int(hours_match.group(1))
+        return max(1, hours // 24)  # Convert to days, minimum 1
+    
+    # Days
+    days_match = re.search(r'(\d+)\s*day', message_lower)
+    if days_match:
+        return int(days_match.group(1))
+    
+    # Weeks
+    weeks_match = re.search(r'(\d+)\s*week', message_lower)
+    if weeks_match:
+        return int(weeks_match.group(1)) * 7
+    
+    # Default to None (require explicit duration)
+    return None
+
 async def show_monitors(whatsapp_number: str) -> str:
     """Show all active monitors"""
     
