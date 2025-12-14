@@ -831,15 +831,6 @@ Contact: {client_email}
 Your intelligence is personalized to your preferences and tier.
 
 What market intelligence can I provide?"""
-            
-            await send_twilio_message(sender, profile_response)
-            
-            # Log interaction
-            log_interaction(sender, message_text, "profile_query", profile_response)
-            update_client_history(sender, message_text, "profile_query", "None")
-            
-            logger.info(f"✅ Profile info provided to {client_name}")
-            return
         
         # ========================================
         # LET LLM HANDLE INTENT INFERENCE
@@ -979,29 +970,6 @@ What market intelligence can I provide?"""
             
             # DO NOT return here - continue to LLM for intelligent handling
 
-I don't currently have live data for {requested_region}.
-
-However, I can provide comprehensive intelligence for:
-- Mayfair
-- Knightsbridge  
-- Chelsea
-- Belgravia
-- Kensington
-
-For {requested_region}, try: "{suggestion}"
-
-Or I'm happy to discuss market dynamics, strategy, or answer questions about luxury property investment in general.
-
-What would be most useful?"""
-            
-            await send_twilio_message(sender, no_data_msg)
-            
-            # Log as guidance rather than error
-            log_interaction(sender, message_text, "guidance", no_data_msg)
-            update_client_history(sender, message_text, "guidance", requested_region)
-            
-            logger.info(f"Guided {sender} from unavailable region {requested_region} to alternatives")
-            return
         
         # If we have data, log and continue normally
         if property_count > 0:
@@ -1220,6 +1188,17 @@ What would be most useful?"""
                     logger.info(f"✅ Behavioral clustering complete: {len(clusters.get('clusters', []))} clusters identified")
         except (ImportError, Exception) as e:
             logger.debug(f"Behavioral clustering unavailable: {str(e)}")
+
+
+         # ========================================
+        # MANUAL MODE OVERRIDE - ADD THIS NEW SECTION
+        # ========================================
+        
+        # Check for manual mode kill-switch
+        if 'manual only' in message_normalized.lower() or 'no inference' in message_normalized.lower():
+            # Flag for LLM to disable all inference
+            dataset['metadata']['manual_mode'] = True
+            logger.info(f"Manual mode activated for {sender} - disabling inference")
         
         # ========================================
         # GPT-4 ANALYSIS
