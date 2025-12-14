@@ -641,39 +641,40 @@ What can I analyze for you?"""
                 await send_twilio_message(sender, response)
                 return
         
-      # ========================================
-# MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
-# ========================================
-
-# Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
-status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
-                   'my monitor', 'active monitor', 'current monitor', 'monitoring']
-
-if any(kw in message_lower for kw in status_keywords):
-    try:
-        from app.monitoring import show_monitors
-        response = await show_monitors(sender)
-        await send_twilio_message(sender, response)
+        # ========================================
+        # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
+        # ========================================
         
-        # Update conversation session
-        conversation = ConversationSession(sender)
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=response,
-            metadata={'category': 'monitoring_status'}
-        )
+        # Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
+        status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
+                           'my monitor', 'active monitor', 'current monitor', 'monitoring']
         
-        # Log interaction
-        log_interaction(sender, message_text, "monitoring_status", response)
-        update_client_history(sender, message_text, "monitoring_status", preferred_region)
-        logger.info(f"✅ Monitoring status query handled successfully")
-        return
-        
-    except Exception as e:
-        # GUARANTEED FALLBACK - NEVER ERROR
-        logger.error(f"Monitoring query failed: {e}")
-        
-        fallback_response = """MONITORING STATUS
+        if any(kw in message_lower for kw in status_keywords):
+            try:
+                from app.monitoring import show_monitors
+                response = await show_monitors(sender)
+                await send_twilio_message(sender, response)
+                
+                # Update conversation session
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'monitoring_status'}
+                )
+                
+                # Log interaction
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                log_interaction(sender, message_text, "monitoring_status", response)
+                update_client_history(sender, message_text, "monitoring_status", preferred_region)
+                logger.info(f"✅ Monitoring status query handled successfully")
+                return
+                
+            except Exception as e:
+                # GUARANTEED FALLBACK - NEVER ERROR
+                logger.error(f"Monitoring query failed: {e}")
+                
+                fallback_response = """MONITORING STATUS
 
 Signal cache synchronizing. Your active monitoring directives will display momentarily.
 
@@ -683,35 +684,36 @@ To create a new monitor:
 Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"
 
 Standing by."""
+                
+                await send_twilio_message(sender, fallback_response)
+                
+                # Update conversation session
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=fallback_response,
+                    metadata={'category': 'monitoring_status_fallback'}
+                )
+                
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
+                logger.info(f"✅ Monitoring status fallback sent")
+                return
         
-        await send_twilio_message(sender, fallback_response)
+        # ========================================
+        # SILENT MONITORING COMMANDS
+        # ========================================
         
-        # Update conversation session
-        conversation = ConversationSession(sender)
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=fallback_response,
-            metadata={'category': 'monitoring_status_fallback'}
-        )
+        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me', 
+                           'stop monitor', 'resume monitor', 'extend monitor',
+                           'confirm']
+        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
         
-        update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
-        logger.info(f"✅ Monitoring status fallback sent")
-        return
-
-# ========================================
-# SILENT MONITORING COMMANDS
-# ========================================
-
-monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me', 
-                   'stop monitor', 'resume monitor', 'extend monitor',
-                   'confirm']
-is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
-
-if is_monitor_request:
-    from app.monitoring import handle_monitor_request
-    response = await handle_monitor_request(sender, message_text, client_profile)
-    await send_twilio_message(sender, response)
-    return
+        if is_monitor_request:
+            from app.monitoring import handle_monitor_request
+            response = await handle_monitor_request(sender, message_text, client_profile)
+            await send_twilio_message(sender, response)
+            return
 
 # ========================================
 # AUTHORIZED - Continue processing
