@@ -550,6 +550,14 @@ Enter your 4-digit access code to verify your account."""
         reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
                          'reset access code', 'new pin', 'update pin']
         if any(kw in message_lower for kw in reset_keywords):
+            # SET STATE FLAG - user is in PIN reset flow
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response="PIN_RESET_INITIATED",
+                metadata={'pin_flow_state': 'awaiting_reset'}
+            )
+            
             response = """PIN RESET
 
 To reset your access code, reply with:
@@ -561,7 +569,57 @@ Example: 1234 5678"""
             await send_twilio_message(sender, response)
             return
         
-        # Handle PIN reset (format: "1234 5678")
+        # CHECK IF USER IS IN PIN RESET FLOW
+        conversation = ConversationSession(sender)
+        last_metadata = conversation.get_last_metadata()
+        
+        if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
+            # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
+            digits_only = ''.join(c for c in message_text if c.isdigit())
+            
+            if len(digits_only) == 8:
+                # Format: OLD_PIN NEW_PIN without space
+                old_pin = digits_only[:4]
+                new_pin = digits_only[4:]
+                
+                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                # CLEAR STATE
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                    metadata={'pin_flow_state': None}
+                )
+                
+                if success:
+                    response = """PIN RESET SUCCESSFUL
+
+Your new access code is active.
+
+What can I analyze for you?"""
+                    
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                else:
+                    response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
+                
+                await send_twilio_message(sender, response)
+                return
+            
+            elif len(digits_only) == 4:
+                # User sent only new PIN - remind them of format
+                response = """PIN RESET
+
+Please send both OLD and NEW PIN:
+
+OLD_PIN NEW_PIN
+
+Example: 1234 5678"""
+                
+                await send_twilio_message(sender, response)
+                return
+        
+        # Handle PIN reset (format: "1234 5678" with space)
         if len(message_text.strip()) == 9 and ' ' in message_text:
             parts = message_text.strip().split()
             if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
@@ -575,11 +633,10 @@ Your new access code is active.
 
 What can I analyze for you?"""
                     
-                    # Sync to Airtable
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
                 else:
-                    response = f"❌ {message}"
+                    response = f"{message}"
                 
                 await send_twilio_message(sender, response)
                 return
