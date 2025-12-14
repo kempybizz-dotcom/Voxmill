@@ -713,9 +713,10 @@ Standing by."""
         # SILENT MONITORING COMMANDS
         # ========================================
         
-        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me', 
-                           'stop monitor', 'resume monitor', 'extend monitor',
-                           'confirm']
+        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
+                           'keep an eye', 'keep watch', 'keep monitoring',
+                           'flag if', 'let me know if', 'tell me if',
+                           'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
         is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
         
         if is_monitor_request:
@@ -802,35 +803,37 @@ What can I analyze for you today?"""
         # GRATITUDE / CLOSING LANGUAGE DETECTION
         # ========================================
         
-        gratitude_keywords = ['thanks', 'thank you', 'cheers', 'appreciate it', 
-                             'much appreciated', 'perfect', 'great', 'brilliant',
-                             'thx', 'ty', 'tysm']
+        acknowledgment_keywords = ['thanks', 'thank you', 'cheers', 'appreciate it',
+                                  'much appreciated', 'perfect', 'great', 'brilliant',
+                                  'thx', 'ty', 'tysm',
+                                  'yep', 'yeah', 'ok', 'okay', 'alright', 'got it',
+                                  'understood', 'fine', 'cool', 'sure', 'right', 'noted']
         
         # Check if message is ONLY gratitude (very short, 1-3 words)
-        is_gratitude_only = (
-            any(kw == message_clean for kw in gratitude_keywords) or
-            (len(message_clean.split()) <= 3 and any(kw in message_clean for kw in gratitude_keywords))
+        is_acknowledgment_only = (
+            any(kw == message_clean for kw in acknowledgment_keywords) or
+            (len(message_clean.split()) <= 3 and any(kw in message_clean for kw in acknowledgment_keywords))
         )
         
-        if is_gratitude_only:
+         if is_acknowledgment_only:
             # Brief professional acknowledgment
-            gratitude_response = "Standing by."
+            acknowledgment_response = "Standing by."
             
-            await send_twilio_message(sender, gratitude_response)
+             await send_twilio_message(sender, acknowledgment_response)
             
             # Update conversation session
             conversation = ConversationSession(sender)
             conversation.update_session(
                 user_message=message_text,
-                assistant_response=gratitude_response,
-                metadata={'category': 'gratitude'}
+                assistant_response=acknowledgment_response,
+                metadata={'category': 'acknowledgment'}
             )
             
             # Log interaction
-            log_interaction(sender, message_text, "gratitude", gratitude_response)
-            update_client_history(sender, message_text, "gratitude", "None")
+            log_interaction(sender, message_text, "acknowledgment", acknowledgment_response)
+            update_client_history(sender, message_text, "acknowledgment", "None")
             
-            logger.info(f"✅ Gratitude acknowledged")
+            logger.info(f"✅ Acknowledgment handled")
             return
         
         # Check for webhook duplication
