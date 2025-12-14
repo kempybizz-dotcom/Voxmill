@@ -153,7 +153,7 @@ class MonitorManager:
     
     @staticmethod
     @staticmethod
-    async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
+  async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
         """
         Create monitor in pending state, awaiting confirmation
         
@@ -248,7 +248,7 @@ Stop an existing monitor or upgrade tier."""
             if applied_parts:
                 execution_receipt = f"\n\nDefault parameters applied: {' · '.join(applied_parts)}"
         
-        return f"""MONITORING REQUEST RECEIVED
+        return f"""MONITOR REQUEST
 ————————————————————————————————————————
 
 Target: {agent_str}{config['region']}
@@ -257,6 +257,8 @@ Target: {agent_str}{config['region']}
 Duration: {duration_str}
 Check frequency: Every 6 hours
 Action on breach: Alert once, then pause
+
+Status: Pending confirmation
 
 Reply "CONFIRM" to activate.
 
