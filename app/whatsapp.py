@@ -465,8 +465,20 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
                     
-                    # PIN set successfully - continue to normal processing below
-                    # Fall through to regular message handling
+                    # PIN set successfully - RESPOND AND STOP
+                    unlock_response = "Access verified. Standing by."
+                    await send_twilio_message(sender, unlock_response)
+                    
+                    # Update session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=unlock_response,
+                        metadata={'category': 'pin_setup'}
+                    )
+                    
+                    logger.info(f"✅ PIN setup complete - silenced")
+                    return  # ← CRITICAL: Stop here, don't process as query
                     
                 else:
                     # Ask for PIN setup
@@ -500,8 +512,20 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
                     
-                    # PIN verified successfully - continue to normal processing below
-                    # Fall through to regular message handling
+                    # PIN verified successfully - RESPOND AND STOP
+                    unlock_response = "Access verified. Standing by."
+                    await send_twilio_message(sender, unlock_response)
+                    
+                    # Update session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=unlock_response,
+                        metadata={'category': 'pin_unlock'}
+                    )
+                    
+                    logger.info(f"✅ PIN verified - silenced")
+                    return  # ← CRITICAL: Stop here, don't process as query
                     
                 else:
                     # Ask for PIN
@@ -517,7 +541,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         # Lock command (flexible matching)
         lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
-                         'lock it', 'lock this', 'lock down', 'secure account']
+                        'lock it', 'lock this', 'lock down', 'secure account']
         if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
             success, message = PINAuthenticator.manual_lock(sender)
             
