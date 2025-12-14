@@ -801,8 +801,14 @@ Standing by."""
             
             # Time-appropriate personalized greeting
             greeting = get_time_appropriate_greeting(first_name)
+
+            if client_profile.get('total_queries', 0) == 1:
             
             greeting_response = f"""{greeting}
+
+Voxmill Intelligence standing by."""
+            else:
+                greeting_response = f"""{greeting}
 
 What can I analyze for you today?"""
             
@@ -833,17 +839,17 @@ What can I analyze for you today?"""
                                   'yep', 'yeah', 'ok', 'okay', 'alright', 'got it',
                                   'understood', 'fine', 'cool', 'sure', 'right', 'noted']
         
-        # Check if message is ONLY gratitude (very short, 1-3 words)
+        # Check if message is ONLY acknowledgment (very short, 1-3 words)
         is_acknowledgment_only = (
             any(kw == message_clean for kw in acknowledgment_keywords) or
             (len(message_clean.split()) <= 3 and any(kw in message_clean for kw in acknowledgment_keywords))
         )
         
-         if is_acknowledgment_only:
+        if is_acknowledgment_only:
             # Brief professional acknowledgment
             acknowledgment_response = "Standing by."
             
-             await send_twilio_message(sender, acknowledgment_response)
+            await send_twilio_message(sender, acknowledgment_response)
             
             # Update conversation session
             conversation = ConversationSession(sender)
@@ -859,6 +865,22 @@ What can I analyze for you today?"""
             
             logger.info(f"✅ Acknowledgment handled")
             return
+        
+        # ========================================
+        # META-STRATEGIC QUESTIONS DETECTION
+        # ========================================
+        
+        meta_strategic_keywords = ['what\'s missing', 'whats missing', 'what am i not seeing', 
+                                   'gaps', 'blind spots', 'what don\'t i know', 'what dont i know',
+                                   'what\'s the gap', 'whats the gap', 'what am i missing']
+        
+        is_meta_strategic = any(kw in message_lower for kw in meta_strategic_keywords)
+        
+        if is_meta_strategic:
+            # Flag for LLM to use Meta-Strategic Protocol
+            logger.info(f"✅ Meta-strategic question detected: {message_text[:50]}")
+            # Continue to LLM with deterministic routing flag
+            # The LLM will see this and apply hard constraints (4 bullets, 6 words max)
         
         # Check for webhook duplication
         cache_mgr = CacheManager()
