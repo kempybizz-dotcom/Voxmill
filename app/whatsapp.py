@@ -842,59 +842,12 @@ What market intelligence can I provide?"""
             return
         
         # ========================================
-        # HANDLE NON-MARKET QUERIES INTELLIGENTLY
+        # LET LLM HANDLE INTENT INFERENCE
         # ========================================
         
-        # Detect casual conversation, off-topic questions
-        casual_keywords = [
-            'how are you', 'how\'s it going', 'whats up', 'sup',
-            'thanks', 'thank you', 'cheers', 'appreciate',
-            'weather', 'joke', 'funny', 'music', 'movie',
-            'food', 'restaurant', 'coffee', 'lunch', 'dinner',
-            'sports', 'football', 'cricket', 'tennis',
-            'news', 'politics'
-        ]
-        
-        is_casual = any(kw in message_normalized.lower() for kw in casual_keywords)
-        
-        # Check if it's genuinely off-topic (no market/property keywords)
-        market_keywords = [
-            'property', 'properties', 'market', 'price', 'pricing',
-            'mayfair', 'knightsbridge', 'chelsea', 'belgravia',
-            'investment', 'buy', 'sell', 'rent', 'lease',
-            'luxury', 'estate', 'agent', 'competitive', 'analysis'
-        ]
-        
-        has_market_context = any(kw in message_normalized.lower() for kw in market_keywords)
-        
-        if is_casual and not has_market_context:
-            greeting = get_time_appropriate_greeting(client_profile.get('name', 'there'))
-            first_name = client_profile.get('name', 'there').split()[0]
-            
-            # Friendly but professional redirect
-            if 'thanks' in message_normalized.lower() or 'thank you' in message_normalized.lower():
-                casual_response = f"""{greeting}
-
-Happy to help. Let me know if you need further intelligence."""
-            
-            elif 'how are you' in message_normalized.lower():
-                casual_response = f"""{greeting}
-
-Operating optimally. What market intelligence can I provide today?"""
-            
-            else:
-                casual_response = f"""{greeting}
-
-I specialize in luxury property market intelligence.
-
-I can help with:
-- Market overviews and trends
-- Competitive landscape analysis  
-- Investment opportunities
-- Strategic forecasting
-- Agent behavioral analysis
-
-What would you like to explore?"""
+        # Remove rigid off-topic detection - LLM's Conversational Intelligence Layer 
+        # handles all intent inference per updated system prompt
+        # Only flag truly empty/spam messages before this point
             
             await send_twilio_message(sender, casual_response)
             
@@ -1001,9 +954,9 @@ What would you like to explore?"""
         # Core regions we have data for
         core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
         
-        # If no data AND region not in core list → offer alternatives gracefully
+        # Flag unavailable data for LLM to handle gracefully
         if property_count == 0 and requested_region not in core_regions:
-            greeting = get_time_appropriate_greeting(client_profile.get('name', 'there'))
+            logger.info(f"No data for {requested_region} - flagging for LLM graceful degradation")
             
             # Intelligent alternative suggestions
             similar_regions = {
@@ -1018,7 +971,13 @@ What would you like to explore?"""
             
             suggestion = similar_regions.get(requested_region, 'Mayfair, Knightsbridge, or Chelsea')
             
-            no_data_msg = f"""{greeting}
+            # Pass to LLM with context - let Conversational Intelligence Layer handle response
+            dataset['metadata']['data_unavailable'] = True
+            dataset['metadata']['requested_region'] = requested_region
+            dataset['metadata']['suggested_alternatives'] = suggestion
+            dataset['metadata']['core_regions'] = core_regions
+            
+            # DO NOT return here - continue to LLM for intelligent handling
 
 I don't currently have live data for {requested_region}.
 
