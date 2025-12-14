@@ -369,7 +369,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
         
-       # ========================================
+        # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
         # ========================================
         
@@ -509,7 +509,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     await send_twilio_message(sender, response)
                     return
         
-       # ========================================
+        # ========================================
         # PIN COMMANDS - MANUAL LOCK/RESET
         # ========================================
         
@@ -715,196 +715,196 @@ Standing by."""
             await send_twilio_message(sender, response)
             return
 
-# ========================================
-# AUTHORIZED - Continue processing
-# ========================================
-logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
-
-# ============================================================
-# WAVE 1: Security validation
-# ============================================================
-security_validator = SecurityValidator()
-
-# Validate incoming message for prompt injection
-is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
-
-if not is_safe:
-    logger.warning(f"Security violation detected from {sender}: {threats}")
-    await send_twilio_message(
-        sender,
-        "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
-    )
-    return {"status": "blocked", "reason": "security_violation"}
-
-# Use sanitized input if threats were detected but sanitized
-if threats:
-    logger.info(f"Input sanitized: {threats}")
-    message_text = sanitized_input
-
-# Normalize query EARLY
-message_normalized = normalize_query(message_text)
-
-# ========================================
-# HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
-# ========================================
-
-greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
-                    'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo',
-                    'helo', 'hola', 'heya', 'howdy', 'greetings']
-
-# Check if message is ONLY a greeting
-message_clean = message_normalized.lower().strip()
-is_simple_greeting = (
-    message_clean in greeting_keywords or 
-    len(message_clean) <= 10 and any(kw in message_clean for kw in greeting_keywords)
-)
-
-is_first_time = client_profile.get('total_queries', 0) == 0
-
-if is_simple_greeting and not is_first_time:
-    # Get client name
-    client_name = client_profile.get('name', 'there')
-    first_name = client_name.split()[0] if client_name != 'there' else 'there'
-    
-    # Time-appropriate personalized greeting
-    greeting = get_time_appropriate_greeting(first_name)
-    
-    greeting_response = f"""{greeting}
+        # ========================================
+        # AUTHORIZED - Continue processing
+        # ========================================
+        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
+        
+        # ============================================================
+        # WAVE 1: Security validation
+        # ============================================================
+        security_validator = SecurityValidator()
+        
+        # Validate incoming message for prompt injection
+        is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
+        
+        if not is_safe:
+            logger.warning(f"Security violation detected from {sender}: {threats}")
+            await send_twilio_message(
+                sender,
+                "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+            )
+            return {"status": "blocked", "reason": "security_violation"}
+        
+        # Use sanitized input if threats were detected but sanitized
+        if threats:
+            logger.info(f"Input sanitized: {threats}")
+            message_text = sanitized_input
+        
+        # Normalize query EARLY
+        message_normalized = normalize_query(message_text)
+        
+        # ========================================
+        # HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
+        # ========================================
+        
+        greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
+                            'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo',
+                            'helo', 'hola', 'heya', 'howdy', 'greetings']
+        
+        # Check if message is ONLY a greeting
+        message_clean = message_normalized.lower().strip()
+        is_simple_greeting = (
+            message_clean in greeting_keywords or 
+            len(message_clean) <= 10 and any(kw in message_clean for kw in greeting_keywords)
+        )
+        
+        is_first_time = client_profile.get('total_queries', 0) == 0
+        
+        if is_simple_greeting and not is_first_time:
+            # Get client name
+            client_name = client_profile.get('name', 'there')
+            first_name = client_name.split()[0] if client_name != 'there' else 'there'
+            
+            # Time-appropriate personalized greeting
+            greeting = get_time_appropriate_greeting(first_name)
+            
+            greeting_response = f"""{greeting}
 
 What can I analyze for you today?"""
-    
-    await send_twilio_message(sender, greeting_response)
-    
-    # Update conversation session
-    conversation = ConversationSession(sender)
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response=greeting_response,
-        metadata={'category': 'greeting'}
-    )
-    
-    # Log interaction
-    log_interaction(sender, message_text, "greeting", greeting_response)
-    update_client_history(sender, message_text, "greeting", "None")
-    
-    logger.info(f"✅ Personalized greeting sent to {first_name}")
-    return
-
-# ========================================
-# GRATITUDE / CLOSING LANGUAGE DETECTION
-# ========================================
-
-gratitude_keywords = ['thanks', 'thank you', 'cheers', 'appreciate it', 
-                     'much appreciated', 'perfect', 'great', 'brilliant',
-                     'thx', 'ty', 'tysm']
-
-# Check if message is ONLY gratitude (very short, 1-3 words)
-is_gratitude_only = (
-    any(kw == message_clean for kw in gratitude_keywords) or
-    (len(message_clean.split()) <= 3 and any(kw in message_clean for kw in gratitude_keywords))
-)
-
-if is_gratitude_only:
-    # Brief professional acknowledgment
-    gratitude_response = "Standing by."
-    
-    await send_twilio_message(sender, gratitude_response)
-    
-    # Update conversation session
-    conversation = ConversationSession(sender)
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response=gratitude_response,
-        metadata={'category': 'gratitude'}
-    )
-    
-    # Log interaction
-    log_interaction(sender, message_text, "gratitude", gratitude_response)
-    update_client_history(sender, message_text, "gratitude", "None")
-    
-    logger.info(f"✅ Gratitude acknowledged")
-    return
-
-# Check for webhook duplication
-cache_mgr = CacheManager()
-webhook_key = f"{sender}:{message_text[:50]}"
-
-if cache_mgr.check_webhook_duplicate(webhook_key):
-    logger.info(f"Duplicate webhook ignored: {webhook_key}")
-    return {"status": "duplicate_ignored"}
-
-# ============================================================
-# WAVE 3: Initialize conversation session
-# ============================================================
-conversation = ConversationSession(sender)
-
-# Check if this is a follow-up query
-is_followup, context_hints = conversation.detect_followup_query(message_normalized)
-
-if is_followup:
-    logger.info(f"Follow-up detected: {context_hints}")
-    # Resolve ambiguous references
-    message_normalized = resolve_reference(message_normalized, context_hints)
-    logger.info(f"Resolved query: {message_normalized}")
-
-# ========================================
-# RATE LIMITING - PREVENT COST EXPLOSION
-# ========================================
-
-query_history = client_profile.get('query_history', [])
-
-# SPAM PROTECTION: Minimum 2 seconds between messages
-if query_history:
-    last_query_time = query_history[-1].get('timestamp')
-    if last_query_time:
-        # Fix timezone-naive datetime issue
-        if last_query_time.tzinfo is None:
-            last_query_time = last_query_time.replace(tzinfo=timezone.utc)
-        
-        seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
-        
-        if seconds_since_last < 2:
-            # Too fast - silently ignore (likely accidental double-tap)
-            logger.warning(f"Spam protection triggered for {sender} ({seconds_since_last:.1f}s since last)")
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=greeting_response,
+                metadata={'category': 'greeting'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "greeting", greeting_response)
+            update_client_history(sender, message_text, "greeting", "None")
+            
+            logger.info(f"✅ Personalized greeting sent to {first_name}")
             return
-
-# RATE LIMITING: Queries per hour by tier
-one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
-
-# Fix timezone for all query timestamps in history
-recent_queries = []
-for q in query_history:
-    timestamp = q.get('timestamp')
-    if timestamp:
-        # Make timezone-aware if needed
-        if timestamp.tzinfo is None:
-            timestamp = timestamp.replace(tzinfo=timezone.utc)
         
-        # Check if within last hour
-        if timestamp > one_hour_ago:
-            recent_queries.append(q)
-
-tier = client_profile.get('tier', 'tier_1')
-limits = {
-    'tier_1': 10,   # 10/hour
-    'tier_2': 50,   # 50/hour
-    'tier_3': 200   # 200/hour (not truly unlimited to prevent abuse)
-}
-
-max_queries = limits.get(tier, 10)
-
-if len(recent_queries) >= max_queries:
-    # Calculate time until reset
-    oldest_timestamp = min(q['timestamp'] for q in recent_queries)
-    
-    # Fix timezone-naive datetime issue
-    if oldest_timestamp.tzinfo is None:
-        oldest_timestamp = oldest_timestamp.replace(tzinfo=timezone.utc)
-    
-    time_until_reset = (oldest_timestamp + timedelta(hours=1) - datetime.now(timezone.utc))
-    minutes_until_reset = int(time_until_reset.total_seconds() / 60)
-    
-    rate_limit_msg = f"""⚠️ RATE LIMIT REACHED
+        # ========================================
+        # GRATITUDE / CLOSING LANGUAGE DETECTION
+        # ========================================
+        
+        gratitude_keywords = ['thanks', 'thank you', 'cheers', 'appreciate it', 
+                             'much appreciated', 'perfect', 'great', 'brilliant',
+                             'thx', 'ty', 'tysm']
+        
+        # Check if message is ONLY gratitude (very short, 1-3 words)
+        is_gratitude_only = (
+            any(kw == message_clean for kw in gratitude_keywords) or
+            (len(message_clean.split()) <= 3 and any(kw in message_clean for kw in gratitude_keywords))
+        )
+        
+        if is_gratitude_only:
+            # Brief professional acknowledgment
+            gratitude_response = "Standing by."
+            
+            await send_twilio_message(sender, gratitude_response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=gratitude_response,
+                metadata={'category': 'gratitude'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "gratitude", gratitude_response)
+            update_client_history(sender, message_text, "gratitude", "None")
+            
+            logger.info(f"✅ Gratitude acknowledged")
+            return
+        
+        # Check for webhook duplication
+        cache_mgr = CacheManager()
+        webhook_key = f"{sender}:{message_text[:50]}"
+        
+        if cache_mgr.check_webhook_duplicate(webhook_key):
+            logger.info(f"Duplicate webhook ignored: {webhook_key}")
+            return {"status": "duplicate_ignored"}
+        
+        # ============================================================
+        # WAVE 3: Initialize conversation session
+        # ============================================================
+        conversation = ConversationSession(sender)
+        
+        # Check if this is a follow-up query
+        is_followup, context_hints = conversation.detect_followup_query(message_normalized)
+        
+        if is_followup:
+            logger.info(f"Follow-up detected: {context_hints}")
+            # Resolve ambiguous references
+            message_normalized = resolve_reference(message_normalized, context_hints)
+            logger.info(f"Resolved query: {message_normalized}")
+        
+        # ========================================
+        # RATE LIMITING - PREVENT COST EXPLOSION
+        # ========================================
+        
+        query_history = client_profile.get('query_history', [])
+        
+        # SPAM PROTECTION: Minimum 2 seconds between messages
+        if query_history:
+            last_query_time = query_history[-1].get('timestamp')
+            if last_query_time:
+                # Fix timezone-naive datetime issue
+                if last_query_time.tzinfo is None:
+                    last_query_time = last_query_time.replace(tzinfo=timezone.utc)
+                
+                seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
+                
+                if seconds_since_last < 2:
+                    # Too fast - silently ignore (likely accidental double-tap)
+                    logger.warning(f"Spam protection triggered for {sender} ({seconds_since_last:.1f}s since last)")
+                    return
+        
+        # RATE LIMITING: Queries per hour by tier
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+        
+        # Fix timezone for all query timestamps in history
+        recent_queries = []
+        for q in query_history:
+            timestamp = q.get('timestamp')
+            if timestamp:
+                # Make timezone-aware if needed
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)
+                
+                # Check if within last hour
+                if timestamp > one_hour_ago:
+                    recent_queries.append(q)
+        
+        tier = client_profile.get('tier', 'tier_1')
+        limits = {
+            'tier_1': 10,   # 10/hour
+            'tier_2': 50,   # 50/hour
+            'tier_3': 200   # 200/hour (not truly unlimited to prevent abuse)
+        }
+        
+        max_queries = limits.get(tier, 10)
+        
+        if len(recent_queries) >= max_queries:
+            # Calculate time until reset
+            oldest_timestamp = min(q['timestamp'] for q in recent_queries)
+            
+            # Fix timezone-naive datetime issue
+            if oldest_timestamp.tzinfo is None:
+                oldest_timestamp = oldest_timestamp.replace(tzinfo=timezone.utc)
+            
+            time_until_reset = (oldest_timestamp + timedelta(hours=1) - datetime.now(timezone.utc))
+            minutes_until_reset = int(time_until_reset.total_seconds() / 60)
+            
+            rate_limit_msg = f"""⚠️ RATE LIMIT REACHED
 
 Your {tier.replace('_', ' ').title()} plan allows {max_queries} queries per hour.
 
@@ -912,84 +912,84 @@ Reset in: {minutes_until_reset} minutes
 
 Need more queries? Upgrade or contact:
 📧 ollys@voxmill.uk"""
-    
-    await send_twilio_message(sender, rate_limit_msg)
-    logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
-    return
-
-# ========================================
-# MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
-# ========================================
-
-MAX_MESSAGE_LENGTH = 500
-
-if len(message_text) > MAX_MESSAGE_LENGTH:
-    await send_twilio_message(
-        sender,
-        f"Message too long ({len(message_text)} characters). "
-        f"Please keep queries under {MAX_MESSAGE_LENGTH} characters for optimal analysis."
-    )
-    logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
-    return
-
-# ========================================
-# PREFERENCE SELF-SERVICE
-# ========================================
-
-try:
-    logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
-    pref_response = handle_whatsapp_preference_message(sender, message_text)
-    
-    if pref_response:
-        logger.info(f"✅ Preference request detected, sending confirmation")
-        await send_twilio_message(sender, pref_response)
+            
+            await send_twilio_message(sender, rate_limit_msg)
+            logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
+            return
         
-        # Log the preference change
-        update_client_history(sender, message_text, "preference_update", "Self-Service")
+        # ========================================
+        # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
+        # ========================================
         
-        logger.info(f"✅ Preference updated via WhatsApp for {sender}")
-        return
-    else:
-        logger.info(f"❌ Not a preference request, continuing to normal analyst")
+        MAX_MESSAGE_LENGTH = 500
         
-except Exception as e:
-    logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
-    # Continue to normal processing
-
-# ========================================
-# FIRST-TIME USER WELCOME
-# ========================================
-
-is_first_time = client_profile.get('total_queries', 0) == 0
-
-if is_first_time:
-    await send_first_time_welcome(sender, client_profile)
-
-# ========================================
-# META-QUESTIONS ABOUT CLIENT PROFILE
-# ========================================
-
-meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 
-                 'my details', 'know about me', 'aware of my', 'what do you know']
-
-is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
-
-if is_meta_question:
-    client_name = client_profile.get('name', 'Unknown')
-    client_email = client_profile.get('email', 'Not on file')
-    client_company = client_profile.get('company', 'Not specified')
-    tier = client_profile.get('tier', 'tier_1')
-    preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-    
-    tier_display = {
-        'tier_1': 'Basic',
-        'tier_2': 'Premium', 
-        'tier_3': 'Enterprise'
-    }[tier]
-    
-    greeting = get_time_appropriate_greeting(client_name)
-    
-    profile_response = f"""{greeting}
+        if len(message_text) > MAX_MESSAGE_LENGTH:
+            await send_twilio_message(
+                sender,
+                f"Message too long ({len(message_text)} characters). "
+                f"Please keep queries under {MAX_MESSAGE_LENGTH} characters for optimal analysis."
+            )
+            logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
+            return
+        
+        # ========================================
+        # PREFERENCE SELF-SERVICE
+        # ========================================
+        
+        try:
+            logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+            pref_response = handle_whatsapp_preference_message(sender, message_text)
+            
+            if pref_response:
+                logger.info(f"✅ Preference request detected, sending confirmation")
+                await send_twilio_message(sender, pref_response)
+                
+                # Log the preference change
+                update_client_history(sender, message_text, "preference_update", "Self-Service")
+                
+                logger.info(f"✅ Preference updated via WhatsApp for {sender}")
+                return
+            else:
+                logger.info(f"❌ Not a preference request, continuing to normal analyst")
+                
+        except Exception as e:
+            logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
+            # Continue to normal processing
+        
+        # ========================================
+        # FIRST-TIME USER WELCOME
+        # ========================================
+        
+        is_first_time = client_profile.get('total_queries', 0) == 0
+        
+        if is_first_time:
+            await send_first_time_welcome(sender, client_profile)
+        
+        # ========================================
+        # META-QUESTIONS ABOUT CLIENT PROFILE
+        # ========================================
+        
+        meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 
+                         'my details', 'know about me', 'aware of my', 'what do you know']
+        
+        is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
+        
+        if is_meta_question:
+            client_name = client_profile.get('name', 'Unknown')
+            client_email = client_profile.get('email', 'Not on file')
+            client_company = client_profile.get('company', 'Not specified')
+            tier = client_profile.get('tier', 'tier_1')
+            preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+            
+            tier_display = {
+                'tier_1': 'Basic',
+                'tier_2': 'Premium', 
+                'tier_3': 'Enterprise'
+            }[tier]
+            
+            greeting = get_time_appropriate_greeting(client_name)
+            
+            profile_response = f"""{greeting}
 
 CLIENT PROFILE
 ————————————————————————————————————————
@@ -1003,22 +1003,22 @@ Contact: {client_email}
 Your intelligence is personalized to your preferences and tier.
 
 What market intelligence can I provide?"""
-    
-    await send_twilio_message(sender, profile_response)
-    
-    # Update conversation session
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response=profile_response,
-        metadata={'category': 'profile_query'}
-    )
-    
-    # Log interaction
-    log_interaction(sender, message_text, "profile_query", profile_response)
-    update_client_history(sender, message_text, "profile_query", "None")
-    
-    logger.info(f"✅ Profile query handled")
-    return
+            
+            await send_twilio_message(sender, profile_response)
+            
+            # Update conversation session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=profile_response,
+                metadata={'category': 'profile_query'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "profile_query", profile_response)
+            update_client_history(sender, message_text, "profile_query", "None")
+            
+            logger.info(f"✅ Profile query handled")
+            return
         
         # ========================================
         # PDF REQUEST DETECTION
@@ -1140,7 +1140,6 @@ What market intelligence can I provide?"""
             dataset['metadata']['core_regions'] = core_regions
             
             # DO NOT return here - continue to LLM for intelligent handling
-
         
         # If we have data, log and continue normally
         if property_count > 0:
@@ -1315,7 +1314,7 @@ What market intelligence can I provide?"""
                             logger.info(f"Cascade predicted: {initiating_agent} {magnitude:+.1f}% -> {cascade['total_affected_agents']} agents affected")
         except (ImportError, Exception) as e:
             logger.debug(f"Cascade predictor unavailable: {str(e)}")
-
+        
         # ========================================
         # WAVE 4 INTELLIGENCE LAYERS
         # ========================================
@@ -1359,9 +1358,8 @@ What market intelligence can I provide?"""
                     logger.info(f"✅ Behavioral clustering complete: {len(clusters.get('clusters', []))} clusters identified")
         except (ImportError, Exception) as e:
             logger.debug(f"Behavioral clustering unavailable: {str(e)}")
-
-
-         # ========================================
+        
+        # ========================================
         # MANUAL MODE OVERRIDE - ADD THIS NEW SECTION
         # ========================================
         
@@ -1580,6 +1578,14 @@ async def send_twilio_message(recipient: str, message: str):
         if not twilio_client:
             logger.error("Twilio client not initialized")
             return
+        
+        # CRITICAL: Validate message is not None
+        if message is None:
+            logger.error(f"Cannot send None message to {recipient}")
+            message = "An error occurred processing your request. Please try again."
+        
+        # Convert to string if needed
+        message = str(message)
         
         # ENSURE WHATSAPP PREFIX
         from_number = TWILIO_WHATSAPP_NUMBER
