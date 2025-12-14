@@ -152,6 +152,7 @@ class MonitorManager:
         }
     
     @staticmethod
+    @staticmethod
     async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
         """
         Create monitor in pending state, awaiting confirmation
@@ -187,6 +188,9 @@ Stop an existing monitor or upgrade tier."""
             "captured_at": datetime.now(timezone.utc)
         }
         
+        # Track if defaults were applied
+        defaults_applied = config.get('defaults_applied', {})
+        
         # Create pending monitor
         monitor_id = f"mon_{int(datetime.now(timezone.utc).timestamp())}"
         
@@ -212,7 +216,8 @@ Stop an existing monitor or upgrade tier."""
             "confirmed_at": None,
             "last_extended": None,
             "user_notes": "",
-            "pending_expires": datetime.now(timezone.utc) + timedelta(minutes=5)
+            "pending_expires": datetime.now(timezone.utc) + timedelta(minutes=5),
+            "defaults_applied": defaults_applied
         }
         
         # Save to MongoDB
@@ -231,6 +236,18 @@ Stop an existing monitor or upgrade tier."""
         agent_str = f"{config['agent']} " if config['agent'] else ""
         duration_str = f"{config['duration_days']} days" if config['duration_days'] < 3650 else "Indefinite"
         
+        # Build execution receipt if defaults were applied
+        execution_receipt = ""
+        if defaults_applied:
+            applied_parts = []
+            if defaults_applied.get('threshold'):
+                applied_parts.append(f"{defaults_applied['threshold']}% threshold")
+            if defaults_applied.get('duration'):
+                applied_parts.append(f"{defaults_applied['duration']} days")
+            
+            if applied_parts:
+                execution_receipt = f"\n\nDefault parameters applied: {' · '.join(applied_parts)}"
+        
         return f"""MONITORING REQUEST RECEIVED
 ————————————————————————————————————————
 
@@ -245,7 +262,7 @@ Reply "CONFIRM" to activate.
 
 Customize duration: "CONFIRM, 30 days" / "CONFIRM, 60 days"
 
-Request expires: 5 minutes."""
+Request expires: 5 minutes.{execution_receipt}"""
     
     @staticmethod
     async def confirm_monitor(whatsapp_number: str, message: str = "") -> str:
@@ -432,6 +449,22 @@ async def handle_monitor_request(whatsapp_number: str, message: str, client_prof
     """
     
     message_lower = message.lower().strip()
+    
+    # Check for manual mode override
+    if 'manual only' in message_lower or 'no inference' in message_lower:
+        return """MANUAL MODE ACTIVATED
+
+Inference disabled. Provide complete parameters:
+
+Format: "Monitor [agent] [region], alert if [condition], [duration]"
+
+Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%, 30 days"
+
+Required:
+- Agent (optional): Knight Frank, Savills, Hamptons, etc.
+- Region: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
+- Condition: "prices drop X%" / "inventory increases X%" / "velocity below X"
+- Duration: "X days" (or "indefinite")"""
     
     # Confirmation (with or without duration)
     if 'confirm' in message_lower:
