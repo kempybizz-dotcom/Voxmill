@@ -447,6 +447,66 @@ async def handle_monitor_request(whatsapp_number: str, message: str, client_prof
     Main handler for monitoring requests
     Routes to appropriate function based on message with intelligent intent inference
     """
+    # DETECT IMPLICIT MONITORING (no explicit "monitor" command)
+    implicit_keywords = ['keep an eye', 'watch for', 'track', 'let me know if', 'watch']
+    
+    is_implicit = any(kw in message.lower() for kw in implicit_keywords)
+    
+    if is_implicit:
+        # Extract target from message
+        target = extract_monitoring_target(message)
+        
+        if not target:
+            return """SURVEILLANCE REQUEST UNCLEAR
+
+Specify target entity or market:
+- "Keep an eye on Knight Frank"
+- "Watch Mayfair listings"
+- "Track Savills pricing"
+
+Standing by."""
+        
+        # CREATE PENDING MONITOR in database
+        pending_config = {
+            'whatsapp_number': whatsapp_number,
+            'target': target,
+            'status': 'pending_confirmation',
+            'created_at': datetime.now(timezone.utc),
+            'message': message
+        }
+        
+        # Store in MongoDB
+        try:
+            from pymongo import MongoClient
+            MONGODB_URI = os.getenv('MONGODB_URI')
+            if MONGODB_URI:
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
+                
+                # Upsert pending monitor
+                db['pending_monitors'].update_one(
+                    {'whatsapp_number': whatsapp_number},
+                    {'$set': pending_config},
+                    upsert=True
+                )
+                
+                logger.info(f"✅ Pending monitor created for {whatsapp_number}: {target}")
+        except Exception as e:
+            logger.error(f"Failed to create pending monitor: {e}")
+            return "Error initializing surveillance. Please try again."
+        
+        return f"""SURVEILLANCE INITIATED
+
+Target: {target}
+Status: Awaiting activation parameters
+
+Reply with timeframe to activate:
+- "24 hours"
+- "7 days"
+- "30 days"
+- "Until I say stop"
+
+Standing by."""
     
     message_lower = message.lower().strip()
     
@@ -506,11 +566,56 @@ Required:
     success, config = MonitorManager.parse_monitor_request(message, client_profile)
     
     if not success:
-        # REMOVED "Unable to parse" - return None to route to LLM
-        return None
+        # Helpful error instead of None
+        return """MONITORING REQUEST UNCLEAR
+
+Provide monitoring directive:
+
+Format: "Monitor [target], alert if [condition]"
+
+Examples:
+- "Monitor Knight Frank Mayfair, alert if prices drop 5%"
+- "Track Savills inventory, notify if listings increase 10%"
+
+Or use implicit monitoring:
+- "Keep an eye on Knight Frank"
+
+Standing by."""
     
     return await MonitorManager.create_monitor_pending(whatsapp_number, config, client_profile)
 
+
+def extract_monitoring_target(message: str) -> str:
+    """Extract monitoring target from implicit request"""
+    message_lower = message.lower()
+    
+    # Agent names
+    agents = ['knight frank', 'savills', 'hamptons', 'chestertons', 'strutt & parker', 
+              'foxtons', 'marsh & parsons']
+    
+    # Regions
+    regions = ['mayfair', 'knightsbridge', 'chelsea', 'belgravia', 'kensington',
+               'notting hill', 'marylebone', 'south kensington']
+    
+    # Check for agent
+    for agent in agents:
+        if agent in message_lower:
+            return agent.title()
+    
+    # Check for region
+    for region in regions:
+        if region in message_lower:
+            return region.title()
+    
+    # Fallback - extract capitalized words (proper nouns)
+    import re
+    words = message.split()
+    capitalized = [w for w in words if w[0].isupper() and len(w) > 2]
+    
+    if capitalized:
+        return ' '.join(capitalized[:3])  # Max 3 words
+    
+    return None
 
 async def show_monitors(whatsapp_number: str) -> str:
     """Show all active monitors"""
