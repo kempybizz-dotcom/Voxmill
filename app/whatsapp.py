@@ -801,13 +801,15 @@ Standing by."""
             
             # Time-appropriate personalized greeting
             greeting = get_time_appropriate_greeting(first_name)
-
-            if client_profile.get('total_queries', 0) == 1:
             
-            greeting_response = f"""{greeting}
+            # Returning user gets question, first-time gets "standing by"
+            if client_profile.get('total_queries', 0) == 1:
+                # First real interaction (after welcome)
+                greeting_response = f"""{greeting}
 
 Voxmill Intelligence standing by."""
             else:
+                # Regular returning user
                 greeting_response = f"""{greeting}
 
 What can I analyze for you today?"""
@@ -826,7 +828,7 @@ What can I analyze for you today?"""
             log_interaction(sender, message_text, "greeting", greeting_response)
             update_client_history(sender, message_text, "greeting", "None")
             
-            logger.info(f"✅ Personalized greeting sent to {first_name}")
+            logger.info(f"✅ Simple greeting handled")
             return
         
         # ========================================
