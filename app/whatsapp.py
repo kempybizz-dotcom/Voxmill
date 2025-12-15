@@ -868,7 +868,7 @@ What can I analyze for you today?"""
             logger.info(f"✅ Acknowledgment handled")
             return
         
-        # ========================================
+       # ========================================
         # META-STRATEGIC QUESTIONS DETECTION
         # ========================================
         
@@ -883,6 +883,91 @@ What can I analyze for you today?"""
             logger.info(f"✅ Meta-strategic question detected: {message_text[:50]}")
             # Continue to LLM with deterministic routing flag
             # The LLM will see this and apply hard constraints (4 bullets, 6 words max)
+        
+        # ========================================
+        # BREVITY PHRASES - HARD GATE (NO LLM)
+        # ========================================
+        
+        brevity_phrases = {
+            'what\'s up': 'Market activity clustered. Direction unresolved.',
+            'whats up': 'Market activity clustered. Direction unresolved.',
+            'feels noisy': 'Noise usually precedes directional move.',
+            'feels quiet': 'Quiet usually precedes a move. Direction depends on who breaks first.',
+            'interesting': 'Standing by.',
+            'hmm': 'Standing by.',
+            'noted': 'Standing by.',
+            'i see': 'Standing by.',
+            'ok then': 'Standing by.',
+            'fair': 'Standing by.',
+            'it feels noisy today': 'Noise usually precedes directional move.',
+            'it feels quiet today': 'Quiet usually precedes a move. Direction depends on who breaks first.'
+        }
+        
+        # Check if message is brevity phrase (exact match, case-insensitive)
+        message_clean_lower = message_clean.lower()
+        
+        if message_clean_lower in brevity_phrases:
+            brevity_response = brevity_phrases[message_clean_lower]
+            
+            await send_twilio_message(sender, brevity_response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=brevity_response,
+                metadata={'category': 'brevity_phrase'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "brevity_phrase", brevity_response)
+            update_client_history(sender, message_text, "brevity_phrase", "None")
+            
+            logger.info(f"✅ Brevity phrase handled (hard-gated, no LLM)")
+            return  # ← CRITICAL: Stop here, never call LLM
+        
+        # ========================================
+        # POST-DECISION CONSEQUENCE QUESTIONS
+        # ========================================
+        
+        # Check if last interaction was Decision Mode
+        conversation = ConversationSession(sender)
+        last_metadata = conversation.get_last_metadata()
+        last_category = last_metadata.get('category', '') if last_metadata else ''
+        
+        consequence_keywords = ['backfire', 'worst case', 'what if this fails', 'downside', 
+                                'risk if wrong', 'if i\'m wrong', 'what could go wrong',
+                                'what if it backfires', 'if this backfires']
+        
+        is_consequence_query = any(kw in message_lower for kw in consequence_keywords)
+        
+        if last_category == 'decision_mode' and is_consequence_query:
+            # User asking about consequences after Decision Mode
+            # Route to BRIEF risk summary (5 lines max)
+            
+            risk_response = """PRIMARY DOWNSIDE SCENARIO:
+
+Price volatility exposure if market reverses.
+Liquidity penalty if exit required <14 days.
+Opportunity cost vs alternative deployment.
+
+Risk mitigated by: timing discipline, exit readiness."""
+            
+            await send_twilio_message(sender, risk_response)
+            
+            # Update session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=risk_response,
+                metadata={'category': 'post_decision_risk'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "post_decision_risk", risk_response)
+            update_client_history(sender, message_text, "post_decision_risk", "None")
+            
+            logger.info(f"✅ Post-decision consequence query handled (brief risk summary)")
+            return  # ← CRITICAL: Don't route to full LLM
         
         # Check for webhook duplication
         cache_mgr = CacheManager()
