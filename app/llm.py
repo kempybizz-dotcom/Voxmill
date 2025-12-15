@@ -1155,6 +1155,68 @@ REMEMBER:
             logger.error("No LLM provider configured")
             return "market_overview", "System configuration error. Please contact support.", {}
         
+        # ========================================
+        # DECISION MODE POST-PROCESSING ENFORCEMENT
+        # ========================================
+        
+        if is_decision_mode:
+            # Validate Decision Mode structure
+            required_sections = ['RECOMMENDATION:', 'PRIMARY RISK:', 'COUNTERFACTUAL', 'ACTION:']
+            forbidden_phrases = ['consider', 'explore', 'recommend monitoring', 'engage with', 
+                                'leverage', 'strategic', 'confidence level', 'data quality']
+            
+            # Check structure
+            has_structure = all(section in response_text for section in required_sections)
+            has_forbidden = any(phrase.lower() in response_text.lower() for phrase in forbidden_phrases)
+            
+            if not has_structure or has_forbidden:
+                logger.warning(f"⚠️ Decision Mode violated structure or used forbidden language")
+                
+                # Strip everything except core Decision Mode sections
+                # This is a safety fallback - LLM should never hit this
+                response_text = f"""🎯 DECISION MODE
+
+RECOMMENDATION:
+[Structure violation detected - response sanitized]
+
+PRIMARY RISK:
+Execution uncertainty
+
+COUNTERFACTUAL (If you don't act):
+- Day 7: Opportunity decay begins
+- Day 14: Window narrows significantly  
+- Day 30: Optimal entry lost
+
+ACTION:
+Contact support for manual directive."""
+            
+            # Log Decision Mode execution
+            logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
+        
+        # ========================================
+        # MONITORING LANGUAGE VALIDATOR
+        # ========================================
+        
+        forbidden_monitoring_phrases = [
+            'monitoring initiated',
+            'surveillance established', 
+            'tracking in progress',
+            'establish monitoring',
+            'consider engaging monitoring'
+        ]
+        
+        has_forbidden_monitoring = any(phrase.lower() in response_text.lower() 
+                                       for phrase in forbidden_monitoring_phrases)
+        
+        if has_forbidden_monitoring:
+            logger.warning(f"⚠️ Forbidden monitoring language detected in LLM response")
+            
+            # Replace with state-locked language
+            for phrase in forbidden_monitoring_phrases:
+                response_text = response_text.replace(phrase, 'Monitor pending confirmation')
+                response_text = response_text.replace(phrase.title(), 'Monitor pending confirmation')
+                response_text = response_text.replace(phrase.upper(), 'MONITOR PENDING CONFIRMATION')
+        
         # Parse JSON response
         try:
             parsed = json.loads(response_text)
