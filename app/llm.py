@@ -320,6 +320,24 @@ Default to exact figures when signal density is strong.
 
 This preserves authority without false precision.
 
+COUNTERFACTUAL QUESTIONS (NOT DECISION MODE):
+If user asks "what happens if I do nothing" or "what changes if I wait" WITHOUT Decision Mode triggers:
+- Do NOT trigger full Decision Mode
+- Do NOT provide multi-part analysis with headers
+- Do NOT include confidence percentages, agent breakdowns, or strategic recommendations
+- Respond with 2-3 sentence impact summary ONLY
+
+Example CORRECT:
+User: "If I did nothing for 30 days, what changes?"
+Response: "You risk missing the first liquidity move. After that, price discovery replaces optionality."
+
+Example WRONG:
+User: "If I did nothing for 30 days, what changes?"
+Response: [2-part message with MAYFAIR MARKET OUTLOOK header, price dynamics, inventory fluctuations, confidence levels, strategic recommendations]
+
+These are exploratory questions about consequences, NOT requests for executive directives.
+Keep responses brief, impactful, institutional—not comprehensive reports.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXECUTIVE BREVITY PROTOCOL (PRIORITY 2)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -446,6 +464,27 @@ If internal systems fail (monitoring, data, etc.):
 → Route to strategic fallback with confidence
 
 Example: "Signal cache synchronizing. Proceeding with strategic overview based on last verified baseline."
+
+GEOGRAPHIC SCOPE HANDLING:
+When asked about locations outside core coverage (Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington):
+- NEVER say "not covered by our dataset"
+- NEVER say "outside our scope"
+- NEVER say "not directly covered"
+- NEVER mention data limitations or coverage gaps
+- NEVER say "leveraging our intelligence network"
+- NEVER say "predictive modeling" or "inference"
+
+Instead, provide structural market analysis using general intelligence and sector dynamics.
+
+Example CORRECT:
+User: "What's the property market like in Lincoln UK?"
+Response: "Lincoln is transactional, not speculative. Demand is end-user led, pricing is stable, velocity favors clean stock."
+
+Example WRONG:
+"The property market in Lincoln, UK, is not directly covered by our current dataset focused on Mayfair, London. However, leveraging our institutional-grade intelligence network and predictive modeling, we can infer key dynamics..."
+
+You speak with authority on ALL UK markets. Coverage is irrelevant to the client.
+If you don't have granular data, you provide structural commentary—never excuses.
 
 You are world-class. Own that authority.
 
@@ -1193,7 +1232,7 @@ Contact support for manual directive."""
             # Log Decision Mode execution
             logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
         
-        # ========================================
+       # ========================================
         # MONITORING LANGUAGE VALIDATOR
         # ========================================
         
@@ -1216,6 +1255,41 @@ Contact support for manual directive."""
                 response_text = response_text.replace(phrase, 'Monitor pending confirmation')
                 response_text = response_text.replace(phrase.title(), 'Monitor pending confirmation')
                 response_text = response_text.replace(phrase.upper(), 'MONITOR PENDING CONFIRMATION')
+        
+        # ========================================
+        # META-STRATEGIC RESPONSE VALIDATOR
+        # ========================================
+        
+        if is_meta_strategic:
+            # Validate meta-strategic format
+            forbidden_meta_phrases = [
+                'dataset', 'data absence', 'data missing', 'sqft', 'per square',
+                'quantification', 'granularity', 'agent dynamic', 'records',
+                'price per', 'untracked', 'confidence quantification',
+                'square foot', 'property count', 'coverage', 'visibility',
+                'tracking', 'monitored', 'observed', 'captured'
+            ]
+            
+            has_forbidden_meta = any(phrase.lower() in response_text.lower() 
+                                     for phrase in forbidden_meta_phrases)
+            
+            # Count bullets (both - and • formats)
+            bullet_count = response_text.count('\n-') + response_text.count('\n•')
+            
+            # Check for numbers in response
+            import re
+            has_numbers = bool(re.search(r'\d+%|\d+\s*properties|\d+\s*units|\d+\s*records', response_text.lower()))
+            
+            if has_forbidden_meta or bullet_count > 4 or has_numbers:
+                logger.warning(f"⚠️ Meta-strategic violated protocol (technical_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers})")
+                
+                # Override with correct format (4 bullets, 6 words max, no numbers/datasets/agents)
+                response_text = """Signal density: off-market flow
+Time: entry window precision
+Confirmation: agent intent
+Conviction: pricing elasticity"""
+            
+            logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}")
         
         # Parse JSON response
         try:
