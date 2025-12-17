@@ -369,7 +369,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
         
-        # ========================================
+       # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
         # ========================================
         
@@ -455,10 +455,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 if len(message_text.strip()) == 4 and message_text.strip().isdigit():
                     # User is sending their new PIN
                     success, message = PINAuthenticator.set_pin(sender, message_text.strip())
-                    response = get_pin_response_message(success, message, client_name)
-                    await send_twilio_message(sender, response)
                     
                     if not success:
+                        response = get_pin_response_message(success, message, client_name)
+                        await send_twilio_message(sender, response)
                         return  # Wait for valid PIN
                     
                     # Sync to Airtable
@@ -498,10 +498,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 if len(message_text.strip()) == 4 and message_text.strip().isdigit():
                     # User is entering PIN
                     success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
-                    response = get_pin_response_message(success, message, client_name)
-                    await send_twilio_message(sender, response)
                     
                     if not success:
+                        response = get_pin_response_message(success, message, client_name)
+                        await send_twilio_message(sender, response)
+                        
                         # Sync failed attempt or locked status
                         from app.pin_auth import sync_pin_status_to_airtable
                         if message == "locked":
@@ -621,7 +622,7 @@ Example: 1234 5678"""
 
 Your new access code is active.
 
-What can I analyze for you?"""
+Standing by."""
                     
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
@@ -664,7 +665,7 @@ Example: 1234 5678"""
 
 Your new access code is active.
 
-What can I analyze for you?"""
+Standing by."""
                     
                     from app.pin_auth import sync_pin_status_to_airtable
                     await sync_pin_status_to_airtable(sender, "Active")
@@ -732,7 +733,6 @@ Standing by."""
                 update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
                 logger.info(f"✅ Monitoring status fallback sent")
                 return
-        
         # ========================================
         # SILENT MONITORING COMMANDS
         # ========================================
@@ -888,27 +888,38 @@ What can I analyze for you today?"""
         # BREVITY PHRASES - HARD GATE (NO LLM)
         # ========================================
         
-        brevity_phrases = {
+        brevity_triggers = {
             'what\'s up': 'Market activity clustered. Direction unresolved.',
             'whats up': 'Market activity clustered. Direction unresolved.',
             'feels noisy': 'Noise usually precedes directional move.',
             'feels quiet': 'Quiet usually precedes a move. Direction depends on who breaks first.',
+            'it feels noisy': 'Noise usually precedes directional move.',
+            'it feels quiet': 'Quiet usually precedes a move. Direction depends on who breaks first.',
+            'noisy today': 'Noise usually precedes directional move.',
+            'quiet today': 'Quiet usually precedes a move. Direction depends on who breaks first.',
+            'noisy right now': 'Noise usually precedes directional move.',
+            'quiet right now': 'Quiet usually precedes a move. Direction depends on who breaks first.',
             'interesting': 'Standing by.',
             'hmm': 'Standing by.',
             'noted': 'Standing by.',
             'i see': 'Standing by.',
             'ok then': 'Standing by.',
-            'fair': 'Standing by.',
-            'it feels noisy today': 'Noise usually precedes directional move.',
-            'it feels quiet today': 'Quiet usually precedes a move. Direction depends on who breaks first.'
+            'fair': 'Standing by.'
         }
         
-        # Check if message is brevity phrase (exact match, case-insensitive)
+        # Check if ANY brevity trigger appears IN the message (substring match, not exact)
         message_clean_lower = message_clean.lower()
         
-        if message_clean_lower in brevity_phrases:
-            brevity_response = brevity_phrases[message_clean_lower]
-            
+        triggered_phrase = None
+        brevity_response = None
+        
+        for trigger, response in brevity_triggers.items():
+            if trigger in message_clean_lower:
+                triggered_phrase = trigger
+                brevity_response = response
+                break  # Stop at first match
+        
+        if triggered_phrase:
             await send_twilio_message(sender, brevity_response)
             
             # Update conversation session
@@ -923,7 +934,7 @@ What can I analyze for you today?"""
             log_interaction(sender, message_text, "brevity_phrase", brevity_response)
             update_client_history(sender, message_text, "brevity_phrase", "None")
             
-            logger.info(f"✅ Brevity phrase handled (hard-gated, no LLM)")
+            logger.info(f"✅ Brevity phrase '{triggered_phrase}' detected in '{message_text[:30]}' (hard-gated, no LLM)")
             return  # ← CRITICAL: Stop here, never call LLM
         
         # ========================================
