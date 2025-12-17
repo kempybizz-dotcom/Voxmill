@@ -14,6 +14,26 @@ from fastapi.responses import PlainTextResponse
 from pymongo import MongoClient
 from typing import Optional
 import httpx
+import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+# At startup
+scheduler = AsyncIOScheduler()
+
+async def check_all_monitors():
+    """Check all active monitors and send alerts"""
+    try:
+        from app.monitoring import check_monitors_and_alert
+        await check_monitors_and_alert()
+    except Exception as e:
+        logger.error(f"Monitor check failed: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    # Start monitor checker every 15 minutes
+    scheduler.add_job(check_all_monitors, 'interval', minutes=15)
+    scheduler.start()
+    logger.info("✅ Monitor checker started (15min intervals)")
 
 # Configure logging
 logging.basicConfig(
