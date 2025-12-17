@@ -707,12 +707,13 @@ class OpenStreetMapEnrichment:
 
 
 # ============================================================
-# MAIN DATASET LOADER - WORLD-CLASS
+# MAIN DATASET LOADER - WORLD-CLASS WITH REDIS CACHING
 # ============================================================
 
 def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
     """
     Load institutional-grade dataset with:
+    - Redis caching (30-minute TTL)
     - Circuit breaker protection
     - Retry logic
     - Data quality validation
@@ -722,6 +723,19 @@ def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
     """
     
     try:
+        # ============================================================
+        # REDIS CACHE CHECK - SKIP EXPENSIVE OPERATIONS IF CACHED
+        # ============================================================
+        from app.cache_manager import CacheManager
+        
+        cache = CacheManager()
+        cached_dataset = cache.get_dataset_cache(area, vertical="real_estate")
+        
+        if cached_dataset:
+            logger.info(f"✅ CACHE HIT: Dataset for {area} (saved 30-60s of processing)")
+            return cached_dataset
+        
+        logger.info(f"⚠️ CACHE MISS: Loading fresh dataset for {area}...")
         logger.info(f"📊 Loading WORLD-CLASS DATA STACK for {area}...")
         start_time = time.time()
         
@@ -913,7 +927,8 @@ def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
                 'load_time_seconds': round(load_time, 2),
                 'data_freshness': freshness_msg,
                 'duplicates_removed': rejected_count,
-                'validation_passed': True
+                'validation_passed': True,
+                'cached': False  # Mark as fresh load
             },
             'intelligence': {
                 'market_sentiment': sentiment_analysis['sentiment'],
@@ -936,11 +951,17 @@ def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
             'amenities': amenities
         }
         
+        # ============================================================
+        # CACHE THE DATASET FOR 30 MINUTES
+        # ============================================================
+        cache.set_dataset_cache(area, dataset, vertical="real_estate")
+        
         logger.info(f"✅ WORLD-CLASS STACK LOADED in {load_time:.2f}s:")
         logger.info(f"   • {len(properties)} properties (validated)")
         logger.info(f"   • {len(historical_sales)} historical sales")
         logger.info(f"   • {sentiment_analysis['sentiment']} sentiment ({sentiment_analysis.get('confidence', 0)*100:.0f}% confidence)")
         logger.info(f"   • {amenities.get('walkability_score', 0)}/100 walkability")
+        logger.info(f"   • 💾 Cached for 30 minutes")
         
         return dataset
         
