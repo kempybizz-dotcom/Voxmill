@@ -586,6 +586,91 @@ Standing by."""
     
     return await MonitorManager.create_monitor_pending(whatsapp_number, config, client_profile)
 
+async def check_monitors_and_alert():
+    """Check all active monitors and send alerts if thresholds breached"""
+    
+    db = mongo_client['Voxmill']
+    clients = db['client_profiles'].find({'active_monitors': {'$exists': True}})
+    
+    for client in clients:
+        monitors = client.get('active_monitors', [])
+        
+        for monitor in monitors:
+            if monitor.get('status') != 'active':
+                continue
+            
+            # Check if it's time to check
+            next_check = monitor.get('next_check')
+            if not next_check or datetime.now(timezone.utc) < next_check:
+                continue
+            
+            # Load current data
+            from app.dataset_loader import load_dataset
+            dataset = load_dataset(area=monitor['region'])
+            
+            current_data = {
+                "avg_price": dataset.get('metrics', {}).get('avg_price', 0),
+                "inventory_count": len(dataset.get('properties', [])),
+                "velocity_score": dataset.get('liquidity_velocity', {}).get('velocity_score', 0)
+            }
+            
+            baseline = monitor['baseline_data']
+            
+            # Check each trigger
+            alert_triggered = False
+            alert_details = []
+            
+            for trigger in monitor['triggers']:
+                if trigger['type'] == 'price_drop':
+                    pct_change = ((current_data['avg_price'] - baseline['avg_price']) / baseline['avg_price']) * 100
+                    
+                    if pct_change <= -trigger['threshold']:
+                        alert_triggered = True
+                        alert_details.append(f"Price dropped {abs(pct_change):.1f}% (threshold: {trigger['threshold']}%)")
+                
+                # Add other trigger types...
+            
+            if alert_triggered:
+                # Send alert
+                agent_str = f"{monitor['agent']} " if monitor.get('agent') else ""
+                alert_msg = f"""🚨 MONITORING ALERT
+
+{agent_str}{monitor['region']}
+
+{chr(10).join(alert_details)}
+
+Baseline: £{baseline['avg_price']:,.0f}
+Current: £{current_data['avg_price']:,.0f}
+
+Monitor paused until you resume."""
+                
+                from app.whatsapp import send_twilio_message
+                await send_twilio_message(client['whatsapp_number'], alert_msg)
+                
+                # Pause monitor
+                db['client_profiles'].update_one(
+                    {'whatsapp_number': client['whatsapp_number'], 'active_monitors.id': monitor['id']},
+                    {'$set': {
+                        'active_monitors.$.status': 'paused',
+                        'active_monitors.$.pause_reason': 'alert_sent',
+                        'active_monitors.$.last_alert': datetime.now(timezone.utc),
+                        'active_monitors.$.alerts_sent': monitor.get('alerts_sent', 0) + 1
+                    }}
+                )
+            
+            # Update next check time
+            next_check_time = datetime.now(timezone.utc) + timedelta(hours=monitor['check_frequency_hours'])
+            
+            db['client_profiles'].update_one(
+                {'whatsapp_number': client['whatsapp_number'], 'active_monitors.id': monitor['id']},
+                {'$set': {
+                    'active_monitors.$.next_check': next_check_time,
+                    'active_monitors.$.last_checked': datetime.now(timezone.utc),
+                    'active_monitors.$.total_checks': monitor.get('total_checks', 0) + 1,
+                    'active_monitors.$.current_data': current_data
+                }}
+            )
+
 
 def extract_monitoring_target(message: str) -> str:
     """Extract monitoring target from implicit request"""
