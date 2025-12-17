@@ -438,277 +438,277 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
-        # ========================================
-        # PIN AUTHENTICATION - SECURITY LAYER
-        # ========================================
-        
-        # Check if user needs PIN verification
-        needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
-        
-        client_name = client_profile.get('name', 'there')
-        
-        if needs_verification:
-            # User needs to set or enter PIN
+       # ========================================
+# PIN AUTHENTICATION - SECURITY LAYER
+# ========================================
+
+# Check if user needs PIN verification
+needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
+
+client_name = client_profile.get('name', 'there')
+
+if needs_verification:
+    # User needs to set or enter PIN
+    
+    if reason == "not_set":
+        # First time - needs to set PIN
+        if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+            # User is sending their new PIN
+            success, message = PINAuthenticator.set_pin(sender, message_text.strip())
             
-            if reason == "not_set":
-                # First time - needs to set PIN
-                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                    # User is sending their new PIN
-                    success, message = PINAuthenticator.set_pin(sender, message_text.strip())
-                    
-                    if not success:
-                        response = get_pin_response_message(success, message, client_name)
-                        await send_twilio_message(sender, response)
-                        return  # Wait for valid PIN
-                    
-                    # Sync to Airtable
-                    from app.pin_auth import sync_pin_status_to_airtable
-                    await sync_pin_status_to_airtable(sender, "Active")
-                    
-                    # PIN set successfully - RESPOND AND STOP
-                    unlock_response = "Access verified. Standing by."
-                    await send_twilio_message(sender, unlock_response)
-                    
-                    # Update session
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response=unlock_response,
-                        metadata={'category': 'pin_setup'}
-                    )
-                    
-                    logger.info(f"✅ PIN setup complete - silenced")
-                    return  # ← CRITICAL: Stop here, don't process as query
-                    
-                else:
-                    # Ask for PIN setup
-                    response = get_pin_status_message(reason, client_name)
-                    await send_twilio_message(sender, response)
-                    return
-            
-            elif reason == "locked":
-                # Account locked - send locked message
-                response = get_pin_status_message("locked", client_name)
+            if not success:
+                response = get_pin_response_message(success, message, client_name)
                 await send_twilio_message(sender, response)
-                return
+                return  # Wait for valid PIN
             
-            else:
-                # Re-verification needed (inactivity or subscription change)
+            # Sync to Airtable
+            from app.pin_auth import sync_pin_status_to_airtable
+            await sync_pin_status_to_airtable(sender, "Active")
+            
+            # PIN set successfully - RESPOND AND STOP
+            unlock_response = "Access verified. Standing by."
+            await send_twilio_message(sender, unlock_response)
+            
+            # Update session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=unlock_response,
+                metadata={'category': 'pin_setup'}
+            )
+            
+            logger.info(f"✅ PIN setup complete - silenced")
+            return  # ← CRITICAL: Stop here, don't process as query
+            
+        else:
+            # Ask for PIN setup
+            response = get_pin_status_message(reason, client_name)
+            await send_twilio_message(sender, response)
+            return
+    
+    elif reason == "locked":
+        # Account locked - send locked message
+        response = get_pin_status_message("locked", client_name)
+        await send_twilio_message(sender, response)
+        return
+    
+    else:
+        # Re-verification needed (inactivity or subscription change)
+        
+        if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+            # User is entering PIN
+            success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
+            
+            if not success:
+                response = get_pin_response_message(success, message, client_name)
+                await send_twilio_message(sender, response)
                 
-                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                    # User is entering PIN
-                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
-                    
-                    if not success:
-                        response = get_pin_response_message(success, message, client_name)
-                        await send_twilio_message(sender, response)
-                        
-                        # Sync failed attempt or locked status
-                        from app.pin_auth import sync_pin_status_to_airtable
-                        if message == "locked":
-                            await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
-                        return  # Wait for correct PIN
-                    
-                    # Sync successful verification
-                    from app.pin_auth import sync_pin_status_to_airtable
-                    await sync_pin_status_to_airtable(sender, "Active")
-                    
-                    # PIN verified successfully - RESPOND AND STOP
-                    unlock_response = "Access verified. Standing by."
-                    await send_twilio_message(sender, unlock_response)
-                    
-                    # Update session
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response=unlock_response,
-                        metadata={'category': 'pin_unlock'}
-                    )
-                    
-                    logger.info(f"✅ PIN verified - silenced")
-                    return  # ← CRITICAL: Stop here, don't process as query
-                    
-                else:
-                    # Ask for PIN
-                    response = get_pin_status_message(reason, client_name)
-                    await send_twilio_message(sender, response)
-                    return
-        
-        # ========================================
-        # PIN COMMANDS - MANUAL LOCK/RESET
-        # ========================================
-        
-        message_lower = message_text.lower().strip()
-        
-        # Lock command (flexible matching)
-        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
-                        'lock it', 'lock this', 'lock down', 'secure account']
-        if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
-            success, message = PINAuthenticator.manual_lock(sender)
+                # Sync failed attempt or locked status
+                from app.pin_auth import sync_pin_status_to_airtable
+                if message == "locked":
+                    await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
+                return  # Wait for correct PIN
             
-            if success:
-                response = """INTELLIGENCE LINE LOCKED
+            # Sync successful verification
+            from app.pin_auth import sync_pin_status_to_airtable
+            await sync_pin_status_to_airtable(sender, "Active")
+            
+            # PIN verified successfully - RESPOND AND STOP
+            unlock_response = "Access verified. Standing by."
+            await send_twilio_message(sender, unlock_response)
+            
+            # Update session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=unlock_response,
+                metadata={'category': 'pin_unlock'}
+            )
+            
+            logger.info(f"✅ PIN verified - silenced")
+            return  # ← CRITICAL: Stop here, don't process as query
+            
+        else:
+            # Ask for PIN
+            response = get_pin_status_message(reason, client_name)
+            await send_twilio_message(sender, response)
+            return
+
+# ========================================
+# PIN COMMANDS - MANUAL LOCK/RESET
+# ========================================
+
+message_lower = message_text.lower().strip()
+
+# Lock command (flexible matching)
+lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
+                'lock it', 'lock this', 'lock down', 'secure account']
+if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
+    success, message = PINAuthenticator.manual_lock(sender)
+    
+    if success:
+        response = """INTELLIGENCE LINE LOCKED
 
 Your access has been secured.
 
 Enter your 4-digit code to unlock."""
-                
-                # Sync to Airtable
-                from app.pin_auth import sync_pin_status_to_airtable
-                await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
-            else:
-                response = "Unable to lock. Please try again."
-            
-            await send_twilio_message(sender, response)
-            return
         
-        # PIN verification request (NEW - handles "verify my pin", "re-verify", etc.)
-        verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
-        if any(kw in message_lower for kw in verify_keywords):
-            response = """PIN VERIFICATION
+        # Sync to Airtable
+        from app.pin_auth import sync_pin_status_to_airtable
+        await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
+    else:
+        response = "Unable to lock. Please try again."
+    
+    await send_twilio_message(sender, response)
+    return
+
+# PIN verification request (NEW - handles "verify my pin", "re-verify", etc.)
+verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
+if any(kw in message_lower for kw in verify_keywords):
+    response = """PIN VERIFICATION
 
 Enter your 4-digit access code to verify your account."""
-            
-            await send_twilio_message(sender, response)
-            return
-        
-        # Reset PIN command (more flexible)
-        reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
-                         'reset access code', 'new pin', 'update pin']
-        if any(kw in message_lower for kw in reset_keywords):
-            # SET STATE FLAG - user is in PIN reset flow
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response="PIN_RESET_INITIATED",
-                metadata={'pin_flow_state': 'awaiting_reset'}
-            )
-            
-            response = """PIN RESET
+    
+    await send_twilio_message(sender, response)
+    return
+
+# Reset PIN command (more flexible)
+reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
+                 'reset access code', 'new pin', 'update pin']
+if any(kw in message_lower for kw in reset_keywords):
+    # SET STATE FLAG - user is in PIN reset flow
+    conversation = ConversationSession(sender)
+    conversation.update_session(
+        user_message=message_text,
+        assistant_response="PIN_RESET_INITIATED",
+        metadata={'pin_flow_state': 'awaiting_reset'}
+    )
+    
+    response = """PIN RESET
 
 To reset your access code, reply with:
 
 OLD_PIN NEW_PIN
 
 Example: 1234 5678"""
-            
-            await send_twilio_message(sender, response)
-            return
+    
+    await send_twilio_message(sender, response)
+    return
+
+# CHECK IF USER IS IN PIN RESET FLOW
+conversation = ConversationSession(sender)
+last_metadata = conversation.get_last_metadata()
+
+if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
+    # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
+    digits_only = ''.join(c for c in message_text if c.isdigit())
+    
+    if len(digits_only) == 8:
+        # Format: OLD_PIN NEW_PIN without space
+        old_pin = digits_only[:4]
+        new_pin = digits_only[4:]
         
-        # CHECK IF USER IS IN PIN RESET FLOW
-        conversation = ConversationSession(sender)
-        last_metadata = conversation.get_last_metadata()
+        success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
         
-        if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
-            # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
-            digits_only = ''.join(c for c in message_text if c.isdigit())
-            
-            if len(digits_only) == 8:
-                # Format: OLD_PIN NEW_PIN without space
-                old_pin = digits_only[:4]
-                new_pin = digits_only[4:]
-                
-                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
-                # CLEAR STATE
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                    metadata={'pin_flow_state': None}
-                )
-                
-                if success:
-                    response = """PIN RESET SUCCESSFUL
+        # CLEAR STATE
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+            metadata={'pin_flow_state': None}
+        )
+        
+        if success:
+            response = """PIN RESET SUCCESSFUL
 
 Your new access code is active.
 
 Standing by."""
-                    
-                    from app.pin_auth import sync_pin_status_to_airtable
-                    await sync_pin_status_to_airtable(sender, "Active")
-                else:
-                    response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
-                
-                await send_twilio_message(sender, response)
-                return
             
-            elif len(digits_only) == 4:
-                # User sent only new PIN - remind them of format
-                response = """PIN RESET
+            from app.pin_auth import sync_pin_status_to_airtable
+            await sync_pin_status_to_airtable(sender, "Active")
+        else:
+            response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
+        
+        await send_twilio_message(sender, response)
+        return
+    
+    elif len(digits_only) == 4:
+        # User sent only new PIN - remind them of format
+        response = """PIN RESET
 
 Please send both OLD and NEW PIN:
 
 OLD_PIN NEW_PIN
 
 Example: 1234 5678"""
-                
-                await send_twilio_message(sender, response)
-                return
         
-        # Handle PIN reset (format: "1234 5678" with space)
-        if len(message_text.strip()) == 9 and ' ' in message_text:
-            parts = message_text.strip().split()
-            if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
-                old_pin, new_pin = parts
-                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
-                # CLEAR STATE
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                    metadata={'pin_flow_state': None}
-                )
-                
-                if success:
-                    response = """PIN RESET SUCCESSFUL
+        await send_twilio_message(sender, response)
+        return
+
+# Handle PIN reset (format: "1234 5678" with space)
+if len(message_text.strip()) == 9 and ' ' in message_text:
+    parts = message_text.strip().split()
+    if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
+        old_pin, new_pin = parts
+        success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+        
+        # CLEAR STATE
+        conversation = ConversationSession(sender)
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+            metadata={'pin_flow_state': None}
+        )
+        
+        if success:
+            response = """PIN RESET SUCCESSFUL
 
 Your new access code is active.
 
 Standing by."""
-                    
-                    from app.pin_auth import sync_pin_status_to_airtable
-                    await sync_pin_status_to_airtable(sender, "Active")
-                else:
-                    response = f"{message}"
-                
-                await send_twilio_message(sender, response)
-                return
+            
+            from app.pin_auth import sync_pin_status_to_airtable
+            await sync_pin_status_to_airtable(sender, "Active")
+        else:
+            response = f"{message}"
         
-        # ========================================
-        # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
-        # ========================================
+        await send_twilio_message(sender, response)
+        return
+
+# ========================================
+# MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
+# ========================================
+
+# Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
+status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
+                   'my monitor', 'active monitor', 'current monitor', 'monitoring']
+
+if any(kw in message_lower for kw in status_keywords):
+    try:
+        from app.monitoring import show_monitors
+        response = await show_monitors(sender)
+        await send_twilio_message(sender, response)
         
-        # Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
-        status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
-                           'my monitor', 'active monitor', 'current monitor', 'monitoring']
+        # Update conversation session
+        conversation = ConversationSession(sender)
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response=response,
+            metadata={'category': 'monitoring_status'}
+        )
         
-        if any(kw in message_lower for kw in status_keywords):
-            try:
-                from app.monitoring import show_monitors
-                response = await show_monitors(sender)
-                await send_twilio_message(sender, response)
-                
-                # Update conversation session
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'monitoring_status'}
-                )
-                
-                # Log interaction
-                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-                log_interaction(sender, message_text, "monitoring_status", response)
-                update_client_history(sender, message_text, "monitoring_status", preferred_region)
-                logger.info(f"✅ Monitoring status query handled successfully")
-                return
-                
-            except Exception as e:
-                # GUARANTEED FALLBACK - NEVER ERROR
-                logger.error(f"Monitoring query failed: {e}")
-                
-                fallback_response = """MONITORING STATUS
+        # Log interaction
+        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        log_interaction(sender, message_text, "monitoring_status", response)
+        update_client_history(sender, message_text, "monitoring_status", preferred_region)
+        logger.info(f"✅ Monitoring status query handled successfully")
+        return
+        
+    except Exception as e:
+        # GUARANTEED FALLBACK - NEVER ERROR
+        logger.error(f"Monitoring query failed: {e}")
+        
+        fallback_response = """MONITORING STATUS
 
 Signal cache synchronizing. Your active monitoring directives will display momentarily.
 
@@ -718,68 +718,169 @@ To create a new monitor:
 Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"
 
 Standing by."""
-                
-                await send_twilio_message(sender, fallback_response)
-                
-                # Update conversation session
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=fallback_response,
-                    metadata={'category': 'monitoring_status_fallback'}
-                )
-                
-                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-                update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
-                logger.info(f"✅ Monitoring status fallback sent")
-                return
-        # ========================================
-        # SILENT MONITORING COMMANDS
-        # ========================================
         
-        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
-                           'keep an eye', 'keep watch', 'keep monitoring',
-                           'flag if', 'let me know if', 'tell me if',
-                           'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
-        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+        await send_twilio_message(sender, fallback_response)
         
-        if is_monitor_request:
-            from app.monitoring import handle_monitor_request
-            response = await handle_monitor_request(sender, message_text, client_profile)
-            await send_twilio_message(sender, response)
-            return
-        # ========================================
-        # AUTHORIZED - Continue processing
-        # ========================================
-        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
+        # Update conversation session
+        conversation = ConversationSession(sender)
+        conversation.update_session(
+            user_message=message_text,
+            assistant_response=fallback_response,
+            metadata={'category': 'monitoring_status_fallback'}
+        )
         
-        # ============================================================
-        # WAVE 1: Security validation
-        # ============================================================
-        security_validator = SecurityValidator()
+        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+        update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
+        logger.info(f"✅ Monitoring status fallback sent")
+        return
+
+# ========================================
+# PORTFOLIO TRACKING COMMANDS
+# ========================================
+
+portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
+
+if any(kw in message_lower for kw in portfolio_keywords):
+    from app.portfolio import get_portfolio_summary, add_property_to_portfolio
+    
+    if 'add property' in message_lower:
+        # Guide user through adding property
+        response = """ADD PROPERTY TO PORTFOLIO
+
+Reply with property details:
+
+Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
+
+Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
         
-        # Validate incoming message for prompt injection
-        is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
-        
-        if not is_safe:
-            logger.warning(f"Security violation detected from {sender}: {threats}")
-            await send_twilio_message(
-                sender,
-                "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
-            )
-            return {"status": "blocked", "reason": "security_violation"}
-        
-        # Use sanitized input if threats were detected but sanitized
-        if threats:
-            logger.info(f"Input sanitized: {threats}")
-            message_text = sanitized_input
-        
-        # Normalize query EARLY
-        message_normalized = normalize_query(message_text)
-        
-        # ========================================
-        # HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
-        # ========================================
+        await send_twilio_message(sender, response)
+        return
+    
+    # Show portfolio summary
+    portfolio = get_portfolio_summary(sender)
+    
+    if portfolio.get('error'):
+        response = """No properties in portfolio.
+
+Add a property: "Add property [details]" """
+        await send_twilio_message(sender, response)
+        return
+    
+    # Format portfolio response
+    prop_list = []
+    for prop in portfolio['properties'][:5]:
+        prop_list.append(
+            f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
+            f"({prop['gain_loss_pct']:+.1f}%)"
+        )
+    
+    response = f"""PORTFOLIO SUMMARY
+
+{chr(10).join(prop_list)}
+
+Total Value: £{portfolio['total_current_value']:,.0f}
+Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_loss_pct']:+.1f}%)
+
+Properties: {portfolio['property_count']}"""
+    
+    await send_twilio_message(sender, response)
+    return
+
+# ========================================
+# EXPORT/SHARING COMMANDS
+# ========================================
+
+# Export command detection
+if 'export' in message_lower or 'send pdf' in message_lower or 'email report' in message_lower or 'share' in message_lower:
+    # Generate shareable link to last analysis
+    
+    conversation = ConversationSession(sender)
+    last_metadata = conversation.get_last_metadata()
+    
+    if not last_metadata or not last_metadata.get('category'):
+        response = "No recent analysis to export. Run an analysis first, then ask to export it."
+        await send_twilio_message(sender, response)
+        return
+    
+    # Generate shareable link (simplified - you'd upload to Cloudflare/S3)
+    import hashlib
+    import time
+    
+    export_id = hashlib.md5(f"{sender}{time.time()}".encode()).hexdigest()[:12]
+    
+    # Store export in MongoDB
+    db['exports'].insert_one({
+        'export_id': export_id,
+        'whatsapp_number': sender,
+        'analysis_category': last_metadata.get('category'),
+        'analysis_region': last_metadata.get('region'),
+        'created_at': datetime.now(timezone.utc),
+        'expires_at': datetime.now(timezone.utc) + timedelta(days=7),
+        'content': conversation.get_session()['messages'][-1]['assistant']
+    })
+    
+    share_url = f"https://voxmill.uk/share/{export_id}"
+    
+    response = f"""ANALYSIS EXPORT
+
+Share link (valid 7 days):
+{share_url}
+
+Recipients can view analysis without login.
+
+Note: This is a shareable snapshot. Real-time updates remain in your WhatsApp intelligence line."""
+    
+    await send_twilio_message(sender, response)
+    return
+
+# ========================================
+# SILENT MONITORING COMMANDS
+# ========================================
+
+monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
+                   'keep an eye', 'keep watch', 'keep monitoring',
+                   'flag if', 'let me know if', 'tell me if',
+                   'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
+is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+
+if is_monitor_request:
+    from app.monitoring import handle_monitor_request
+    response = await handle_monitor_request(sender, message_text, client_profile)
+    await send_twilio_message(sender, response)
+    return
+
+# ========================================
+# AUTHORIZED - Continue processing
+# ========================================
+logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
+
+# ============================================================
+# WAVE 1: Security validation
+# ============================================================
+security_validator = SecurityValidator()
+
+# Validate incoming message for prompt injection
+is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
+
+if not is_safe:
+    logger.warning(f"Security violation detected from {sender}: {threats}")
+    await send_twilio_message(
+        sender,
+        "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+    )
+    return {"status": "blocked", "reason": "security_violation"}
+
+# Use sanitized input if threats were detected but sanitized
+if threats:
+    logger.info(f"Input sanitized: {threats}")
+    message_text = sanitized_input
+
+# Normalize query EARLY
+message_normalized = normalize_query(message_text)
+
+# ========================================
+# HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
+# ========================================
         
         greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
                             'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo',
