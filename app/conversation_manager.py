@@ -138,6 +138,60 @@ class ConversationSession:
                 context_parts.append(f"• Topics: {topics}")
         
         return "\n".join(context_parts)
+
+    # In conversation_manager.py, add:
+
+def get_cross_session_summary(self, days: int = 7) -> str:
+    """Get summary of key decisions/topics from past N days"""
+    
+    if not redis_client:
+        return ""
+    
+    # Get all sessions from past N days
+    pattern = f"{self.session_key}:*"
+    keys = redis_client.keys(pattern)
+    
+    all_sessions = []
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    for key in keys:
+        session_data = redis_client.get(key)
+        if session_data:
+            session = json.loads(session_data)
+            session_time = datetime.fromisoformat(session['last_updated'])
+            
+            if session_time > cutoff:
+                all_sessions.append(session)
+    
+    if not all_sessions:
+        return ""
+    
+    # Extract key topics and decisions
+    key_topics = []
+    key_decisions = []
+    
+    for session in all_sessions:
+        for msg in session['messages']:
+            # Extract decision mode responses
+            if 'DECISION MODE' in msg.get('assistant', ''):
+                decision = msg['assistant'].split('RECOMMENDATION:')[1].split('PRIMARY RISK:')[0].strip()
+                key_decisions.append(f"- {decision[:100]}")
+            
+            # Extract monitoring requests
+            if 'MONITORING ACTIVE' in msg.get('assistant', ''):
+                key_topics.append("- Active monitoring directive")
+    
+    summary_parts = []
+    
+    if key_decisions:
+        summary_parts.append(f"RECENT STRATEGIC DECISIONS (Last {days}d):")
+        summary_parts.extend(key_decisions[:3])
+    
+    if key_topics:
+        summary_parts.append(f"\nACTIVE INTELLIGENCE DIRECTIVES:")
+        summary_parts.extend(key_topics[:5])
+    
+    return "\n".join(summary_parts) if summary_parts else ""
     
     def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
         """
@@ -303,28 +357,24 @@ def resolve_reference(query: str, context_hints: Dict) -> str:
 
 
 def generate_contextualized_prompt(base_prompt: str, session: ConversationSession) -> str:
-    """
-    Enhance LLM prompt with conversation context
-    """
+    """Enhance LLM prompt with conversation context"""
     
     conversation_context = session.get_conversation_context()
+    cross_session_context = session.get_cross_session_summary(days=7)  # ← ADD THIS
     
-    if not conversation_context:
+    if not conversation_context and not cross_session_context:
         return base_prompt
     
-    # Add conversation context to prompt
-    enhanced_prompt = f"""{conversation_context}
+    enhanced_prompt = f"""
+{conversation_context}
+
+{cross_session_context if cross_session_context else ""}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CURRENT QUERY:
 {base_prompt}
-
-INSTRUCTIONS:
-- Reference previous exchanges naturally when relevant
-- If query uses "that", "it", "them" etc., infer referent from conversation history
-- Maintain conversational flow, avoid repeating information already provided
-- If query is a follow-up, provide delta/incremental information"""
+"""
     
     return enhanced_prompt
 
