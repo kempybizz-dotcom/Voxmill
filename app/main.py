@@ -262,6 +262,24 @@ async def intelligence_health_check():
     
     return health_status
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+@app.on_event("startup")
+async def startup_event():
+    scheduler = AsyncIOScheduler()
+    
+    # Pre-warm cache at 7am daily
+    scheduler.add_job(warm_cache, 'cron', hour=7, minute=0)
+    scheduler.start()
+
+async def warm_cache():
+    """Pre-warm cache at 7am before users wake up"""
+    from app.dataset_loader import load_dataset
+    
+    for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
+        load_dataset(area)  # This caches for 30min
+        logger.info(f"✅ Cache warmed for {area}")
+
 
 # ============================================================================
 # WHATSAPP WEBHOOK
