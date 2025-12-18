@@ -4,14 +4,6 @@ VOXMILL WHATSAPP HANDLER
 Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages + Airtable API integration 
 """
 
-# FORCE MODULE RELOAD (CRITICAL - DO NOT REMOVE)
-import sys
-import importlib
-
-# Clear conversation_manager from cache
-if 'app.conversation_manager' in sys.modules:
-    del sys.modules['app.conversation_manager']
-
 import os
 import logging
 import httpx
@@ -25,7 +17,10 @@ from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction
 from app.whatsapp_self_service import handle_whatsapp_preference_message
+
+# IMPORT CONVERSATION MANAGER DIRECTLY (NO CACHE ISSUES)
 from app.conversation_manager import ConversationSession, resolve_reference, generate_contextualized_prompt
+
 from app.security import SecurityValidator
 from app.cache_manager import CacheManager
 from app.client_manager import get_client_profile, update_client_history
@@ -34,7 +29,6 @@ from app.pin_auth import (
     get_pin_status_message,
     get_pin_response_message
 )
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
