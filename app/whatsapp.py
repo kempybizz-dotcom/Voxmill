@@ -645,7 +645,7 @@ Example: 1234 5678"""
                 await send_twilio_message(sender, response)
                 return
 
-        # Handle PIN reset (format: "1234 5678" with space)
+       # Handle PIN reset (format: "1234 5678" with space)
         if len(message_text.strip()) == 9 and ' ' in message_text:
             parts = message_text.strip().split()
             if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
@@ -675,13 +675,13 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 return
 
-# ========================================
-# MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
-# ========================================
+        # ========================================
+        # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
+        # ========================================
 
-# Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
-status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
-                   'my monitor', 'active monitor', 'current monitor', 'monitoring']
+        # Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
+        status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
+                           'my monitor', 'active monitor', 'current monitor', 'monitoring']
 
 if any(kw in message_lower for kw in status_keywords):
     try:
