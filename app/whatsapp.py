@@ -1,7 +1,7 @@
 """
 VOXMILL WHATSAPP HANDLER
 ========================
-Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages + Airtable API integration
+Handles incoming WhatsApp messages with V3 predictive intelligence + welcome messages + Airtable API integration 
 """
 
 import os
