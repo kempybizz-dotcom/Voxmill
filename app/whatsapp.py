@@ -40,6 +40,19 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
+def safe_get_last_metadata(conversation: ConversationSession) -> dict:
+    """Safely get last metadata with fallback"""
+    try:
+        return conversation.get_last_metadata()
+    except AttributeError:
+        # Method not available - direct access
+        try:
+            session = conversation.get_session()
+            messages = session.get('messages', [])
+            return messages[-1].get('metadata', {}) if messages else {}
+        except:
+            return {}
+
 
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
     """Generate time-appropriate greeting based on UK time"""
