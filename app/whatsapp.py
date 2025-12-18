@@ -369,7 +369,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
         
-       # ========================================
+        # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
         # ========================================
         
@@ -438,242 +438,242 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
-       # ========================================
-# PIN AUTHENTICATION - SECURITY LAYER
-# ========================================
+        # ========================================
+        # PIN AUTHENTICATION - SECURITY LAYER
+        # ========================================
 
-# Check if user needs PIN verification
-needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
+        # Check if user needs PIN verification
+        needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
 
-client_name = client_profile.get('name', 'there')
+        client_name = client_profile.get('name', 'there')
 
-if needs_verification:
-    # User needs to set or enter PIN
-    
-    if reason == "not_set":
-        # First time - needs to set PIN
-        if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-            # User is sending their new PIN
-            success, message = PINAuthenticator.set_pin(sender, message_text.strip())
+        if needs_verification:
+            # User needs to set or enter PIN
             
-            if not success:
-                response = get_pin_response_message(success, message, client_name)
+            if reason == "not_set":
+                # First time - needs to set PIN
+                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # User is sending their new PIN
+                    success, message = PINAuthenticator.set_pin(sender, message_text.strip())
+                    
+                    if not success:
+                        response = get_pin_response_message(success, message, client_name)
+                        await send_twilio_message(sender, response)
+                        return  # Wait for valid PIN
+                    
+                    # Sync to Airtable
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                    
+                    # PIN set successfully - RESPOND AND STOP
+                    unlock_response = "Access verified. Standing by."
+                    await send_twilio_message(sender, unlock_response)
+                    
+                    # Update session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=unlock_response,
+                        metadata={'category': 'pin_setup'}
+                    )
+                    
+                    logger.info(f"✅ PIN setup complete - silenced")
+                    return  # ← CRITICAL: Stop here, don't process as query
+                    
+                else:
+                    # Ask for PIN setup
+                    response = get_pin_status_message(reason, client_name)
+                    await send_twilio_message(sender, response)
+                    return
+            
+            elif reason == "locked":
+                # Account locked - send locked message
+                response = get_pin_status_message("locked", client_name)
                 await send_twilio_message(sender, response)
-                return  # Wait for valid PIN
+                return
             
-            # Sync to Airtable
-            from app.pin_auth import sync_pin_status_to_airtable
-            await sync_pin_status_to_airtable(sender, "Active")
-            
-            # PIN set successfully - RESPOND AND STOP
-            unlock_response = "Access verified. Standing by."
-            await send_twilio_message(sender, unlock_response)
-            
-            # Update session
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=unlock_response,
-                metadata={'category': 'pin_setup'}
-            )
-            
-            logger.info(f"✅ PIN setup complete - silenced")
-            return  # ← CRITICAL: Stop here, don't process as query
-            
-        else:
-            # Ask for PIN setup
-            response = get_pin_status_message(reason, client_name)
-            await send_twilio_message(sender, response)
-            return
-    
-    elif reason == "locked":
-        # Account locked - send locked message
-        response = get_pin_status_message("locked", client_name)
-        await send_twilio_message(sender, response)
-        return
-    
-    else:
-        # Re-verification needed (inactivity or subscription change)
-        
-        if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-            # User is entering PIN
-            success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
-            
-            if not success:
-                response = get_pin_response_message(success, message, client_name)
-                await send_twilio_message(sender, response)
+            else:
+                # Re-verification needed (inactivity or subscription change)
                 
-                # Sync failed attempt or locked status
-                from app.pin_auth import sync_pin_status_to_airtable
-                if message == "locked":
-                    await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
-                return  # Wait for correct PIN
-            
-            # Sync successful verification
-            from app.pin_auth import sync_pin_status_to_airtable
-            await sync_pin_status_to_airtable(sender, "Active")
-            
-            # PIN verified successfully - RESPOND AND STOP
-            unlock_response = "Access verified. Standing by."
-            await send_twilio_message(sender, unlock_response)
-            
-            # Update session
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=unlock_response,
-                metadata={'category': 'pin_unlock'}
-            )
-            
-            logger.info(f"✅ PIN verified - silenced")
-            return  # ← CRITICAL: Stop here, don't process as query
-            
-        else:
-            # Ask for PIN
-            response = get_pin_status_message(reason, client_name)
-            await send_twilio_message(sender, response)
-            return
+                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # User is entering PIN
+                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
+                    
+                    if not success:
+                        response = get_pin_response_message(success, message, client_name)
+                        await send_twilio_message(sender, response)
+                        
+                        # Sync failed attempt or locked status
+                        from app.pin_auth import sync_pin_status_to_airtable
+                        if message == "locked":
+                            await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
+                        return  # Wait for correct PIN
+                    
+                    # Sync successful verification
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                    
+                    # PIN verified successfully - RESPOND AND STOP
+                    unlock_response = "Access verified. Standing by."
+                    await send_twilio_message(sender, unlock_response)
+                    
+                    # Update session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=unlock_response,
+                        metadata={'category': 'pin_unlock'}
+                    )
+                    
+                    logger.info(f"✅ PIN verified - silenced")
+                    return  # ← CRITICAL: Stop here, don't process as query
+                    
+                else:
+                    # Ask for PIN
+                    response = get_pin_status_message(reason, client_name)
+                    await send_twilio_message(sender, response)
+                    return
 
-# ========================================
-# PIN COMMANDS - MANUAL LOCK/RESET
-# ========================================
+        # ========================================
+        # PIN COMMANDS - MANUAL LOCK/RESET
+        # ========================================
 
-message_lower = message_text.lower().strip()
+        message_lower = message_text.lower().strip()
 
-# Lock command (flexible matching)
-lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
-                'lock it', 'lock this', 'lock down', 'secure account']
-if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
-    success, message = PINAuthenticator.manual_lock(sender)
-    
-    if success:
-        response = """INTELLIGENCE LINE LOCKED
+        # Lock command (flexible matching)
+        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account',
+                        'lock it', 'lock this', 'lock down', 'secure account']
+        if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
+            success, message = PINAuthenticator.manual_lock(sender)
+            
+            if success:
+                response = """INTELLIGENCE LINE LOCKED
 
 Your access has been secured.
 
 Enter your 4-digit code to unlock."""
-        
-        # Sync to Airtable
-        from app.pin_auth import sync_pin_status_to_airtable
-        await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
-    else:
-        response = "Unable to lock. Please try again."
-    
-    await send_twilio_message(sender, response)
-    return
+                
+                # Sync to Airtable
+                from app.pin_auth import sync_pin_status_to_airtable
+                await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
+            else:
+                response = "Unable to lock. Please try again."
+            
+            await send_twilio_message(sender, response)
+            return
 
-# PIN verification request (NEW - handles "verify my pin", "re-verify", etc.)
-verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
-if any(kw in message_lower for kw in verify_keywords):
-    response = """PIN VERIFICATION
+        # PIN verification request (NEW - handles "verify my pin", "re-verify", etc.)
+        verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
+        if any(kw in message_lower for kw in verify_keywords):
+            response = """PIN VERIFICATION
 
 Enter your 4-digit access code to verify your account."""
-    
-    await send_twilio_message(sender, response)
-    return
+            
+            await send_twilio_message(sender, response)
+            return
 
-# Reset PIN command (more flexible)
-reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
-                 'reset access code', 'new pin', 'update pin']
-if any(kw in message_lower for kw in reset_keywords):
-    # SET STATE FLAG - user is in PIN reset flow
-    conversation = ConversationSession(sender)
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response="PIN_RESET_INITIATED",
-        metadata={'pin_flow_state': 'awaiting_reset'}
-    )
-    
-    response = """PIN RESET
+        # Reset PIN command (more flexible)
+        reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 
+                         'reset access code', 'new pin', 'update pin']
+        if any(kw in message_lower for kw in reset_keywords):
+            # SET STATE FLAG - user is in PIN reset flow
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response="PIN_RESET_INITIATED",
+                metadata={'pin_flow_state': 'awaiting_reset'}
+            )
+            
+            response = """PIN RESET
 
 To reset your access code, reply with:
 
 OLD_PIN NEW_PIN
 
 Example: 1234 5678"""
-    
-    await send_twilio_message(sender, response)
-    return
+            
+            await send_twilio_message(sender, response)
+            return
 
-# CHECK IF USER IS IN PIN RESET FLOW
-conversation = ConversationSession(sender)
-last_metadata = conversation.get_last_metadata()
+        # CHECK IF USER IS IN PIN RESET FLOW
+        conversation = ConversationSession(sender)
+        last_metadata = conversation.get_last_metadata()
 
-if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
-    # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
-    digits_only = ''.join(c for c in message_text if c.isdigit())
-    
-    if len(digits_only) == 8:
-        # Format: OLD_PIN NEW_PIN without space
-        old_pin = digits_only[:4]
-        new_pin = digits_only[4:]
-        
-        success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-        
-        # CLEAR STATE
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-            metadata={'pin_flow_state': None}
-        )
-        
-        if success:
-            response = """PIN RESET SUCCESSFUL
+        if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
+            # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
+            digits_only = ''.join(c for c in message_text if c.isdigit())
+            
+            if len(digits_only) == 8:
+                # Format: OLD_PIN NEW_PIN without space
+                old_pin = digits_only[:4]
+                new_pin = digits_only[4:]
+                
+                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                # CLEAR STATE
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                    metadata={'pin_flow_state': None}
+                )
+                
+                if success:
+                    response = """PIN RESET SUCCESSFUL
 
 Your new access code is active.
 
 Standing by."""
+                    
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                else:
+                    response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
+                
+                await send_twilio_message(sender, response)
+                return
             
-            from app.pin_auth import sync_pin_status_to_airtable
-            await sync_pin_status_to_airtable(sender, "Active")
-        else:
-            response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
-        
-        await send_twilio_message(sender, response)
-        return
-    
-    elif len(digits_only) == 4:
-        # User sent only new PIN - remind them of format
-        response = """PIN RESET
+            elif len(digits_only) == 4:
+                # User sent only new PIN - remind them of format
+                response = """PIN RESET
 
 Please send both OLD and NEW PIN:
 
 OLD_PIN NEW_PIN
 
 Example: 1234 5678"""
-        
-        await send_twilio_message(sender, response)
-        return
+                
+                await send_twilio_message(sender, response)
+                return
 
-# Handle PIN reset (format: "1234 5678" with space)
-if len(message_text.strip()) == 9 and ' ' in message_text:
-    parts = message_text.strip().split()
-    if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
-        old_pin, new_pin = parts
-        success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-        
-        # CLEAR STATE
-        conversation = ConversationSession(sender)
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-            metadata={'pin_flow_state': None}
-        )
-        
-        if success:
-            response = """PIN RESET SUCCESSFUL
+        # Handle PIN reset (format: "1234 5678" with space)
+        if len(message_text.strip()) == 9 and ' ' in message_text:
+            parts = message_text.strip().split()
+            if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
+                old_pin, new_pin = parts
+                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                # CLEAR STATE
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                    metadata={'pin_flow_state': None}
+                )
+                
+                if success:
+                    response = """PIN RESET SUCCESSFUL
 
 Your new access code is active.
 
 Standing by."""
-            
-            from app.pin_auth import sync_pin_status_to_airtable
-            await sync_pin_status_to_airtable(sender, "Active")
-        else:
-            response = f"{message}"
-        
-        await send_twilio_message(sender, response)
-        return
+                    
+                    from app.pin_auth import sync_pin_status_to_airtable
+                    await sync_pin_status_to_airtable(sender, "Active")
+                else:
+                    response = f"{message}"
+                
+                await send_twilio_message(sender, response)
+                return
 
 # ========================================
 # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
