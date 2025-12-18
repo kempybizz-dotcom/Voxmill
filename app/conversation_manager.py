@@ -238,13 +238,28 @@ def get_cross_session_summary(self, days: int = 7) -> str:
         
         Returns: metadata dict or empty dict if no messages
         """
-        session = self.get_session()
-        
-        if not session.get('messages'):
+        try:
+            session = self.get_session()
+            
+            if not session:
+                logger.debug(f"No session found for {self.client_id}")
+                return {}
+            
+            messages = session.get('messages', [])
+            
+            if not messages:
+                logger.debug(f"No messages in session for {self.client_id}")
+                return {}
+            
+            last_message = messages[-1]
+            metadata = last_message.get('metadata', {})
+            
+            logger.debug(f"Retrieved metadata for {self.client_id}: {metadata}")
+            return metadata
+            
+        except Exception as e:
+            logger.error(f"Error getting last metadata for {self.client_id}: {e}", exc_info=True)
             return {}
-        
-        last_message = session['messages'][-1]
-        return last_message.get('metadata', {})
     
     def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
         """Extract and track entities mentioned in conversation"""
