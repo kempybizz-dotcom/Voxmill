@@ -595,7 +595,7 @@ Example: 1234 5678"""
             await send_twilio_message(sender, response)
             return
 
-        # CHECK IF USER IS IN PIN RESET FLOW
+      # CHECK IF USER IS IN PIN RESET FLOW
         conversation = ConversationSession(sender)
         last_metadata = conversation.get_last_metadata()
 
@@ -645,7 +645,7 @@ Example: 1234 5678"""
                 await send_twilio_message(sender, response)
                 return
 
-       # Handle PIN reset (format: "1234 5678" with space)
+        # Handle PIN reset (format: "1234 5678" with space)
         if len(message_text.strip()) == 9 and ' ' in message_text:
             parts = message_text.strip().split()
             if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
@@ -683,32 +683,32 @@ Standing by."""
         status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
                            'my monitor', 'active monitor', 'current monitor', 'monitoring']
 
-if any(kw in message_lower for kw in status_keywords):
-    try:
-        from app.monitoring import show_monitors
-        response = await show_monitors(sender)
-        await send_twilio_message(sender, response)
-        
-        # Update conversation session
-        conversation = ConversationSession(sender)
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=response,
-            metadata={'category': 'monitoring_status'}
-        )
-        
-        # Log interaction
-        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-        log_interaction(sender, message_text, "monitoring_status", response)
-        update_client_history(sender, message_text, "monitoring_status", preferred_region)
-        logger.info(f"✅ Monitoring status query handled successfully")
-        return
-        
-    except Exception as e:
-        # GUARANTEED FALLBACK - NEVER ERROR
-        logger.error(f"Monitoring query failed: {e}")
-        
-        fallback_response = """MONITORING STATUS
+        if any(kw in message_lower for kw in status_keywords):
+            try:
+                from app.monitoring import show_monitors
+                response = await show_monitors(sender)
+                await send_twilio_message(sender, response)
+                
+                # Update conversation session
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'monitoring_status'}
+                )
+                
+                # Log interaction
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                log_interaction(sender, message_text, "monitoring_status", response)
+                update_client_history(sender, message_text, "monitoring_status", preferred_region)
+                logger.info(f"✅ Monitoring status query handled successfully")
+                return
+                
+            except Exception as e:
+                # GUARANTEED FALLBACK - NEVER ERROR
+                logger.error(f"Monitoring query failed: {e}")
+                
+                fallback_response = """MONITORING STATUS
 
 Signal cache synchronizing. Your active monitoring directives will display momentarily.
 
@@ -718,63 +718,63 @@ To create a new monitor:
 Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"
 
 Standing by."""
-        
-        await send_twilio_message(sender, fallback_response)
-        
-        # Update conversation session
-        conversation = ConversationSession(sender)
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=fallback_response,
-            metadata={'category': 'monitoring_status_fallback'}
-        )
-        
-        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-        update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
-        logger.info(f"✅ Monitoring status fallback sent")
-        return
+                
+                await send_twilio_message(sender, fallback_response)
+                
+                # Update conversation session
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=fallback_response,
+                    metadata={'category': 'monitoring_status_fallback'}
+                )
+                
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
+                logger.info(f"✅ Monitoring status fallback sent")
+                return
 
-# ========================================
-# PORTFOLIO TRACKING COMMANDS
-# ========================================
+        # ========================================
+        # PORTFOLIO TRACKING COMMANDS
+        # ========================================
 
-portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
+        portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
 
-if any(kw in message_lower for kw in portfolio_keywords):
-    from app.portfolio import get_portfolio_summary, add_property_to_portfolio
-    
-    if 'add property' in message_lower:
-        # Guide user through adding property
-        response = """ADD PROPERTY TO PORTFOLIO
+        if any(kw in message_lower for kw in portfolio_keywords):
+            from app.portfolio import get_portfolio_summary, add_property_to_portfolio
+            
+            if 'add property' in message_lower:
+                # Guide user through adding property
+                response = """ADD PROPERTY TO PORTFOLIO
 
 Reply with property details:
 
 Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
 
 Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
-        
-        await send_twilio_message(sender, response)
-        return
-    
-    # Show portfolio summary
-    portfolio = get_portfolio_summary(sender)
-    
-    if portfolio.get('error'):
-        response = """No properties in portfolio.
+                
+                await send_twilio_message(sender, response)
+                return
+            
+            # Show portfolio summary
+            portfolio = get_portfolio_summary(sender)
+            
+            if portfolio.get('error'):
+                response = """No properties in portfolio.
 
 Add a property: "Add property [details]" """
-        await send_twilio_message(sender, response)
-        return
-    
-    # Format portfolio response
-    prop_list = []
-    for prop in portfolio['properties'][:5]:
-        prop_list.append(
-            f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
-            f"({prop['gain_loss_pct']:+.1f}%)"
-        )
-    
-    response = f"""PORTFOLIO SUMMARY
+                await send_twilio_message(sender, response)
+                return
+            
+            # Format portfolio response
+            prop_list = []
+            for prop in portfolio['properties'][:5]:
+                prop_list.append(
+                    f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
+                    f"({prop['gain_loss_pct']:+.1f}%)"
+                )
+            
+            response = f"""PORTFOLIO SUMMARY
 
 {chr(10).join(prop_list)}
 
@@ -782,46 +782,46 @@ Total Value: £{portfolio['total_current_value']:,.0f}
 Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_loss_pct']:+.1f}%)
 
 Properties: {portfolio['property_count']}"""
-    
-    await send_twilio_message(sender, response)
-    return
+            
+            await send_twilio_message(sender, response)
+            return
 
-# ========================================
-# EXPORT/SHARING COMMANDS
-# ========================================
+        # ========================================
+        # EXPORT/SHARING COMMANDS
+        # ========================================
 
-# Export command detection
-if 'export' in message_lower or 'send pdf' in message_lower or 'email report' in message_lower or 'share' in message_lower:
-    # Generate shareable link to last analysis
-    
-    conversation = ConversationSession(sender)
-    last_metadata = conversation.get_last_metadata()
-    
-    if not last_metadata or not last_metadata.get('category'):
-        response = "No recent analysis to export. Run an analysis first, then ask to export it."
-        await send_twilio_message(sender, response)
-        return
-    
-    # Generate shareable link (simplified - you'd upload to Cloudflare/S3)
-    import hashlib
-    import time
-    
-    export_id = hashlib.md5(f"{sender}{time.time()}".encode()).hexdigest()[:12]
-    
-    # Store export in MongoDB
-    db['exports'].insert_one({
-        'export_id': export_id,
-        'whatsapp_number': sender,
-        'analysis_category': last_metadata.get('category'),
-        'analysis_region': last_metadata.get('region'),
-        'created_at': datetime.now(timezone.utc),
-        'expires_at': datetime.now(timezone.utc) + timedelta(days=7),
-        'content': conversation.get_session()['messages'][-1]['assistant']
-    })
-    
-    share_url = f"https://voxmill.uk/share/{export_id}"
-    
-    response = f"""ANALYSIS EXPORT
+        # Export command detection
+        if 'export' in message_lower or 'send pdf' in message_lower or 'email report' in message_lower or 'share' in message_lower:
+            # Generate shareable link to last analysis
+            
+            conversation = ConversationSession(sender)
+            last_metadata = conversation.get_last_metadata()
+            
+            if not last_metadata or not last_metadata.get('category'):
+                response = "No recent analysis to export. Run an analysis first, then ask to export it."
+                await send_twilio_message(sender, response)
+                return
+            
+            # Generate shareable link (simplified - you'd upload to Cloudflare/S3)
+            import hashlib
+            import time
+            
+            export_id = hashlib.md5(f"{sender}{time.time()}".encode()).hexdigest()[:12]
+            
+            # Store export in MongoDB
+            db['exports'].insert_one({
+                'export_id': export_id,
+                'whatsapp_number': sender,
+                'analysis_category': last_metadata.get('category'),
+                'analysis_region': last_metadata.get('region'),
+                'created_at': datetime.now(timezone.utc),
+                'expires_at': datetime.now(timezone.utc) + timedelta(days=7),
+                'content': conversation.get_session()['messages'][-1]['assistant']
+            })
+            
+            share_url = f"https://voxmill.uk/share/{export_id}"
+            
+            response = f"""ANALYSIS EXPORT
 
 Share link (valid 7 days):
 {share_url}
@@ -829,58 +829,58 @@ Share link (valid 7 days):
 Recipients can view analysis without login.
 
 Note: This is a shareable snapshot. Real-time updates remain in your WhatsApp intelligence line."""
-    
-    await send_twilio_message(sender, response)
-    return
+            
+            await send_twilio_message(sender, response)
+            return
 
-# ========================================
-# SILENT MONITORING COMMANDS
-# ========================================
+        # ========================================
+        # SILENT MONITORING COMMANDS
+        # ========================================
 
-monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
-                   'keep an eye', 'keep watch', 'keep monitoring',
-                   'flag if', 'let me know if', 'tell me if',
-                   'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
-is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
+                           'keep an eye', 'keep watch', 'keep monitoring',
+                           'flag if', 'let me know if', 'tell me if',
+                           'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
+        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
 
-if is_monitor_request:
-    from app.monitoring import handle_monitor_request
-    response = await handle_monitor_request(sender, message_text, client_profile)
-    await send_twilio_message(sender, response)
-    return
+        if is_monitor_request:
+            from app.monitoring import handle_monitor_request
+            response = await handle_monitor_request(sender, message_text, client_profile)
+            await send_twilio_message(sender, response)
+            return
 
-# ========================================
-# AUTHORIZED - Continue processing
-# ========================================
-logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
+        # ========================================
+        # AUTHORIZED - Continue processing
+        # ========================================
+        logger.info(f"✅ AUTHORIZED: {client_profile.get('name')} ({client_profile.get('tier')})") 
 
-# ============================================================
-# WAVE 1: Security validation
-# ============================================================
-security_validator = SecurityValidator()
+        # ============================================================
+        # WAVE 1: Security validation
+        # ============================================================
+        security_validator = SecurityValidator()
 
-# Validate incoming message for prompt injection
-is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
+        # Validate incoming message for prompt injection
+        is_safe, sanitized_input, threats = security_validator.validate_input(message_text)
 
-if not is_safe:
-    logger.warning(f"Security violation detected from {sender}: {threats}")
-    await send_twilio_message(
-        sender,
-        "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
-    )
-    return {"status": "blocked", "reason": "security_violation"}
+        if not is_safe:
+            logger.warning(f"Security violation detected from {sender}: {threats}")
+            await send_twilio_message(
+                sender,
+                "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+            )
+            return {"status": "blocked", "reason": "security_violation"}
 
-# Use sanitized input if threats were detected but sanitized
-if threats:
-    logger.info(f"Input sanitized: {threats}")
-    message_text = sanitized_input
+        # Use sanitized input if threats were detected but sanitized
+        if threats:
+            logger.info(f"Input sanitized: {threats}")
+            message_text = sanitized_input
 
-# Normalize query EARLY
-message_normalized = normalize_query(message_text)
+        # Normalize query EARLY
+        message_normalized = normalize_query(message_text)
 
-# ========================================
-# HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
-# ========================================
+        # ========================================
+        # HANDLE SIMPLE GREETINGS FIRST (NO DATA NEEDED)
+        # ========================================
         
         greeting_keywords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 
                             'good evening', 'morning', 'afternoon', 'evening', 'sup', 'yo',
@@ -969,7 +969,7 @@ What can I analyze for you today?"""
             logger.info(f"✅ Acknowledgment handled")
             return
         
-       # ========================================
+        # ========================================
         # META-STRATEGIC QUESTIONS DETECTION
         # ========================================
         
@@ -1037,7 +1037,6 @@ What can I analyze for you today?"""
             
             logger.info(f"✅ Brevity phrase '{triggered_phrase}' detected in '{message_text[:30]}' (hard-gated, no LLM)")
             return  # ← CRITICAL: Stop here, never call LLM
-        
         # ========================================
         # POST-DECISION CONSEQUENCE QUESTIONS
         # ========================================
