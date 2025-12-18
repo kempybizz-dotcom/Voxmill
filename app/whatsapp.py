@@ -608,9 +608,9 @@ Example: 1234 5678"""
             await send_twilio_message(sender, response)
             return
 
-      # CHECK IF USER IS IN PIN RESET FLOW
+        # CHECK IF USER IS IN PIN RESET FLOW
         conversation = ConversationSession(sender)
-        last_metadata = conversation.get_last_metadata()
+        last_metadata = safe_get_last_metadata(conversation)
 
         if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
             # User is in PIN reset flow - treat ANY 4 or 8 digit input as PIN attempt
@@ -808,7 +808,7 @@ Properties: {portfolio['property_count']}"""
             # Generate shareable link to last analysis
             
             conversation = ConversationSession(sender)
-            last_metadata = conversation.get_last_metadata()
+            last_metadata = safe_get_last_metadata(conversation)
             
             if not last_metadata or not last_metadata.get('category'):
                 response = "No recent analysis to export. Run an analysis first, then ask to export it."
@@ -822,6 +822,11 @@ Properties: {portfolio['property_count']}"""
             export_id = hashlib.md5(f"{sender}{time.time()}".encode()).hexdigest()[:12]
             
             # Store export in MongoDB
+            from pymongo import MongoClient
+            MONGODB_URI = os.getenv('MONGODB_URI')
+            mongo_client = MongoClient(MONGODB_URI)
+            db = mongo_client['Voxmill']
+            
             db['exports'].insert_one({
                 'export_id': export_id,
                 'whatsapp_number': sender,
@@ -1050,13 +1055,14 @@ What can I analyze for you today?"""
             
             logger.info(f"✅ Brevity phrase '{triggered_phrase}' detected in '{message_text[:30]}' (hard-gated, no LLM)")
             return  # ← CRITICAL: Stop here, never call LLM
+        
         # ========================================
         # POST-DECISION CONSEQUENCE QUESTIONS
         # ========================================
         
         # Check if last interaction was Decision Mode
         conversation = ConversationSession(sender)
-        last_metadata = conversation.get_last_metadata()
+        last_metadata = safe_get_last_metadata(conversation)
         last_category = last_metadata.get('category', '') if last_metadata else ''
         
         consequence_keywords = ['backfire', 'worst case', 'what if this fails', 'downside', 
