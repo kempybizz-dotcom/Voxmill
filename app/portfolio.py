@@ -1,7 +1,7 @@
 """
 VOXMILL PORTFOLIO TRACKER
 =========================
-Track client property holdings and generate cross-property insights
+Track client property holdings and generate cross-property insights 
 """
 
 import logging
