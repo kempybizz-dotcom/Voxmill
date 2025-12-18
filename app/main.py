@@ -12,55 +12,14 @@ from typing import Optional
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from fastapi.responses import PlainTextResponse
 from pymongo import MongoClient
-from typing import Optional
-import httpx
-import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# At startup
-scheduler = AsyncIOScheduler()
-
-async def check_all_monitors():
-    """Check all active monitors and send alerts"""
-    try:
-        from app.monitoring import check_monitors_and_alert
-        await check_monitors_and_alert()
-    except Exception as e:
-        logger.error(f"Monitor check failed: {e}")
-
-@app.on_event("startup")
-async def startup_event():
-    # Start monitor checker every 15 minutes
-    scheduler.add_job(check_all_monitors, 'interval', minutes=15)
-    scheduler.start()
-    logger.info("✅ Monitor checker started (15min intervals)")
-
-# Configure logging
+# Configure logging FIRST
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Initialize FastAPI
-app = FastAPI(
-    title="Voxmill WhatsApp Intelligence API",
-    description="AI-powered market intelligence via WhatsApp",
-    version="2.0.0"
-)
-
-# Initialize Redis client for deduplication
-REDIS_URL = os.getenv("REDIS_URL")
-redis_client = None
-try:
-    import redis
-    if REDIS_URL:
-        redis_client = redis.from_url(REDIS_URL, decode_responses=True)
-        logger.info("✅ Redis connected for webhook deduplication")
-except ImportError:
-    logger.warning("⚠️  Redis not installed")
-except Exception as e:
-    logger.warning(f"⚠️  Redis not configured: {e}")
 
 # Environment validation
 REQUIRED_ENV_VARS = [
@@ -77,41 +36,167 @@ if missing_vars:
 
 logger.info("✅ All required environment variables present")
 
-# MongoDB connection
+# ============================================================================
+# INITIALIZE FASTAPI APP
+# ============================================================================
+app = FastAPI(
+    title="Voxmill WhatsApp Intelligence API",
+    description="AI-powered market intelligence via WhatsApp",
+    version="2.0.0"
+)
+
+# ============================================================================
+# INITIALIZE SCHEDULER
+# ============================================================================
+scheduler = AsyncIOScheduler()
+
+# ============================================================================
+# INITIALIZE REDIS
+# ============================================================================
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = None
+try:
+    import redis
+    if REDIS_URL:
+        redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+        logger.info("✅ Redis connected for webhook deduplication")
+except ImportError:
+    logger.warning("⚠️  Redis not installed")
+except Exception as e:
+    logger.warning(f"⚠️  Redis not configured: {e}")
+
+# ============================================================================
+# INITIALIZE MONGODB
+# ============================================================================
 MONGODB_URI = os.getenv('MONGODB_URI')
 mongo_client = MongoClient(MONGODB_URI)
 db = mongo_client['Voxmill']
 logger.info("✅ MongoDB connected")
 
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
 
 def normalize_phone_number(phone: str) -> str:
-    """
-    Normalize phone number format for WhatsApp
-    Remove whatsapp: prefix and ensure + prefix
-    """
+    """Normalize phone number format for WhatsApp"""
     if not phone:
         return phone
-    
-    # Remove whatsapp: prefix if present (also handle URL-encoded version)
     phone = phone.replace('whatsapp:', '').replace('whatsapp%3A', '')
-    
-    # Ensure it starts with +
     if not phone.startswith('+'):
         phone = '+' + phone
-    
     return phone
 
+# ============================================================================
+# BACKGROUND TASKS
+# ============================================================================
+
+async def check_all_monitors():
+    """Check all active monitors and send alerts"""
+    try:
+        from app.monitoring import check_monitors_and_alert
+        await check_monitors_and_alert()
+        logger.info("✅ Monitor check complete")
+    except Exception as e:
+        logger.error(f"Monitor check failed: {e}")
+
+async def warm_cache():
+    """Pre-warm cache at 7am"""
+    try:
+        from app.dataset_loader import load_dataset
+        for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
+            load_dataset(area)
+            logger.info(f"✅ Cache warmed for {area}")
+    except Exception as e:
+        logger.error(f"Cache warming failed: {e}")
+
+async def check_and_send_alerts_task():
+    """Background task to check and send alerts"""
+    try:
+        from app.intelligence.alert_detector import detect_alerts_for_region, format_alert_message
+        from app.whatsapp import send_twilio_message
+        
+        logger.info("="*70)
+        logger.info("ALERT CHECKER - Starting")
+        logger.info("="*70)
+        
+        clients = list(db['client_profiles'].find({
+            "tier": {"$in": ["tier_2", "tier_3"]},
+            "whatsapp_number": {"$exists": True}
+        }))
+        
+        logger.info(f"Found {len(clients)} clients eligible for alerts")
+        
+        total_alerts_sent = 0
+        
+        for client in clients:
+            client_name = client.get('name', 'Unknown')
+            whatsapp_number = client.get('whatsapp_number')
+            preferred_regions = client.get('preferences', {}).get('preferred_regions', [])
+            
+            alert_preferences = client.get('alert_preferences', {})
+            alerts_enabled = alert_preferences.get('enabled', True)
+            
+            if not alerts_enabled or not whatsapp_number or not preferred_regions:
+                continue
+            
+            for region in preferred_regions:
+                try:
+                    alerts = detect_alerts_for_region(region)
+                    if not alerts:
+                        continue
+                    
+                    for alert in alerts:
+                        message = format_alert_message(alert)
+                        try:
+                            await send_twilio_message(whatsapp_number, message)
+                            logger.info(f"✅ Sent {alert['type']} alert to {client_name}")
+                            
+                            db['alerts_sent'].insert_one({
+                                "client_id": client.get('_id'),
+                                "client_name": client_name,
+                                "whatsapp_number": whatsapp_number,
+                                "alert_type": alert['type'],
+                                "region": region,
+                                "urgency": alert['urgency'],
+                                "timestamp": datetime.now(timezone.utc),
+                                "alert_data": alert
+                            })
+                            
+                            total_alerts_sent += 1
+                        except Exception as e:
+                            logger.error(f"❌ Failed to send alert to {client_name}: {e}")
+                except Exception as e:
+                    logger.error(f"Error detecting alerts for {region}: {e}", exc_info=True)
+        
+        logger.info(f"ALERT CHECKER COMPLETE - Sent {total_alerts_sent} total alerts")
+        
+    except Exception as e:
+        logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
 
 # ============================================================================
-# STARTUP/SHUTDOWN EVENTS
+# STARTUP EVENT (SINGLE COMBINED VERSION)
 # ============================================================================
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize services on startup"""
+    """Initialize all services on startup"""
     logger.info("🚀 Starting Voxmill WhatsApp Intelligence Service...")
     
-    # Start background scheduler for data collection
+    try:
+        # Start monitor checker (every 15 minutes)
+        scheduler.add_job(check_all_monitors, 'interval', minutes=15)
+        
+        # Start cache warming (daily at 7am GMT)
+        scheduler.add_job(warm_cache, 'cron', hour=7, minute=0)
+        
+        # Start scheduler
+        scheduler.start()
+        logger.info("✅ Scheduler started: monitors (15min), cache warming (7am)")
+        
+    except Exception as e:
+        logger.error(f"Scheduler startup failed: {e}")
+    
+    # Start background data collection
     try:
         from app.scheduler import daily_intelligence_cycle
         asyncio.create_task(daily_intelligence_cycle())
@@ -119,43 +204,25 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"⚠️  Scheduler not started: {e}")
     
-    # Start alert checker scheduler
-    try:
-        from apscheduler.schedulers.asyncio import AsyncIOScheduler
-        from apscheduler.triggers.cron import CronTrigger
-        
-        scheduler = AsyncIOScheduler()
-        
-        @scheduler.scheduled_job(CronTrigger(hour='*', minute=0))
-        async def scheduled_alert_checker():
-            logger.info("ALERT CHECKER - Running hourly")
-            try:
-                await check_and_send_alerts_task()
-            except Exception as e:
-                logger.error(f"Alert error: {e}", exc_info=True)
-        
-        scheduler.start()
-        logger.info("✅ Alert scheduler started")
-    except Exception as e:
-        logger.warning(f"⚠️  Alert scheduler not started: {e}")
-    
     logger.info("✅ Voxmill service ready")
-
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("🛑 Shutting down Voxmill service...")
+    try:
+        scheduler.shutdown()
+        logger.info("✅ Scheduler stopped")
+    except Exception as e:
+        logger.error(f"Scheduler shutdown failed: {e}")
     logger.info("✅ Shutdown complete")
 
-
 # ============================================================================
-# BASIC ENDPOINTS
+# HEALTH CHECK ENDPOINTS
 # ============================================================================
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "service": "Voxmill WhatsApp Intelligence API",
         "status": "operational",
@@ -163,123 +230,37 @@ async def root():
         "timestamp": datetime.utcnow().isoformat()
     }
 
-
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "redis": "connected" if redis_client else "not configured"
-    }
-
-
-@app.get("/api/health")
-async def api_health_check():
-    """API health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "Voxmill Intelligence API",
-        "version": "2.0.0",
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
-
-@app.get("/health/intelligence")
-async def intelligence_health_check():
-    """
-    Intelligence layer health check endpoint
-    Tests all critical dependencies and intelligence modules
-    """
-    health_status = {
-        "overall_status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "components": {}
-    }
-    
-    overall_healthy = True
-    
-    # Test MongoDB connection
+    """Enhanced health check with system status"""
     try:
-        mongo_client.admin.command('ping')
-        health_status["components"]["mongodb"] = {"status": "healthy", "message": "Connection successful"}
-    except Exception as e:
-        health_status["components"]["mongodb"] = {"status": "unhealthy", "error": str(e)}
-        overall_healthy = False
-    
-    # Test Redis connection
-    if redis_client:
+        # Check Redis
+        redis_status = "healthy"
         try:
-            redis_client.ping()
-            health_status["components"]["redis"] = {"status": "healthy", "message": "Connection successful"}
-        except Exception as e:
-            health_status["components"]["redis"] = {"status": "unhealthy", "error": str(e)}
-            overall_healthy = False
-    else:
-        health_status["components"]["redis"] = {"status": "not_configured", "message": "Redis not enabled"}
-    
-    # Test intelligence layer imports
-    intelligence_layers = [
-        "app.intelligence.trend_detector",
-        "app.intelligence.agent_profiler",
-        "app.intelligence.micromarket_segmenter",
-        "app.intelligence.liquidity_velocity",
-        "app.intelligence.cascade_predictor"
-    ]
-    
-    for layer_module in intelligence_layers:
+            if redis_client:
+                redis_client.ping()
+        except:
+            redis_status = "down"
+        
+        # Check MongoDB
+        mongo_status = "healthy"
         try:
-            __import__(layer_module)
-            layer_name = layer_module.split(".")[-1]
-            health_status["components"][layer_name] = {"status": "healthy", "message": "Module loaded"}
-        except Exception as e:
-            layer_name = layer_module.split(".")[-1]
-            health_status["components"][layer_name] = {"status": "unhealthy", "error": str(e)}
-            overall_healthy = False
-    
-    # Test OpenAI client
-    try:
-        import openai
-        openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        health_status["components"]["openai"] = {"status": "healthy", "message": "Client initialized"}
+            mongo_client.admin.command('ping')
+        except:
+            mongo_status = "down"
+        
+        # Check scheduler
+        scheduler_status = "running" if scheduler.running else "stopped"
+        
+        return {
+            "status": "operational",
+            "redis": redis_status,
+            "mongodb": mongo_status,
+            "scheduler": scheduler_status,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
     except Exception as e:
-        health_status["components"]["openai"] = {"status": "unhealthy", "error": str(e)}
-        overall_healthy = False
-    
-    # Test Twilio client
-    try:
-        from twilio.rest import Client
-        twilio_client = Client(
-            os.getenv("TWILIO_ACCOUNT_SID"),
-            os.getenv("TWILIO_AUTH_TOKEN")
-        )
-        health_status["components"]["twilio"] = {"status": "healthy", "message": "Client initialized"}
-    except Exception as e:
-        health_status["components"]["twilio"] = {"status": "unhealthy", "error": str(e)}
-        overall_healthy = False
-    
-    health_status["overall_status"] = "healthy" if overall_healthy else "degraded"
-    
-    return health_status
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-@app.on_event("startup")
-async def startup_event():
-    scheduler = AsyncIOScheduler()
-    
-    # Pre-warm cache at 7am daily
-    scheduler.add_job(warm_cache, 'cron', hour=7, minute=0)
-    scheduler.start()
-
-async def warm_cache():
-    """Pre-warm cache at 7am before users wake up"""
-    from app.dataset_loader import load_dataset
-    
-    for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
-        load_dataset(area)  # This caches for 30min
-        logger.info(f"✅ Cache warmed for {area}")
-
+        return {"status": "error", "message": str(e)}
 
 # ============================================================================
 # WHATSAPP WEBHOOK
@@ -287,39 +268,29 @@ async def warm_cache():
 
 @app.post("/webhook/whatsapp")
 async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
-    """
-    Main Twilio WhatsApp webhook endpoint
-    With webhook deduplication via Redis
-    """
+    """Main Twilio WhatsApp webhook endpoint"""
     try:
-        # Parse incoming webhook data
         form_data = await request.form()
-        
         message_sid = form_data.get('MessageSid')
         sender = form_data.get('From', '')
         message_body = form_data.get('Body', '').strip()
         
-        # WEBHOOK DEDUPLICATION
+        # Webhook deduplication
         if redis_client and message_sid:
             cache_key = f"webhook_processed:{message_sid}"
             if redis_client.get(cache_key):
                 logger.info(f"⚠️  Duplicate webhook ignored: {message_sid}")
                 return PlainTextResponse("", status_code=200)
-            
-            # Mark as processed with 60s TTL
             redis_client.setex(cache_key, 60, "1")
         
-        # Validate required fields
         if not sender or not message_body:
             logger.warning(f"⚠️  Empty message from {sender}")
             return PlainTextResponse("", status_code=200)
         
-        # Normalize phone number
         normalized_sender = normalize_phone_number(sender)
-        
         logger.info(f"📱 Incoming message from {normalized_sender}: {message_body[:100]}")
         
-        # Check rate limit using actual function signature
+        # Check rate limit
         from app.client_manager import check_rate_limit
         allowed, rate_limit_message = check_rate_limit(normalized_sender)
         
@@ -329,56 +300,30 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
             return PlainTextResponse("", status_code=200)
         
         # Process message in background
-        background_tasks.add_task(
-            process_message_async,
-            normalized_sender,
-            message_body
-        )
-        
-        # Return 200 immediately to Twilio
+        background_tasks.add_task(process_message_async, normalized_sender, message_body)
         return PlainTextResponse("", status_code=200)
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return PlainTextResponse("", status_code=200)
 
-
 async def process_message_async(sender: str, message_body: str):
-    """
-    Process message asynchronously to avoid webhook timeout
-    """
+    """Process message asynchronously"""
     try:
-        # Import here to avoid startup crashes if module has issues
         from app.whatsapp import handle_whatsapp_message
-        
-        # Process message - handle_whatsapp_message does everything:
-        # - First-time welcome detection
-        # - PDF request detection
-        # - Intelligence layer loading
-        # - Response generation
-        # - Message sending
         await handle_whatsapp_message(sender, message_body)
-        
     except Exception as e:
         logger.error(f"❌ Error processing message for {sender}: {e}", exc_info=True)
-        
-        # Try to send error message
         try:
             from app.whatsapp import send_twilio_message
-            error_msg = (
-                "⚠️ Sorry, I encountered an error processing your request. "
-                "Our team has been notified. Please try again in a moment."
-            )
+            error_msg = "⚠️ Sorry, I encountered an error processing your request. Please try again."
             await send_twilio_message(sender, error_msg)
         except:
             logger.error("Failed to send error message to user")
 
-
 @app.get("/webhook/whatsapp")
 async def whatsapp_webhook_get(request: Request):
-    """
-    Handle Twilio webhook verification (GET request)
-    """
+    """Handle Twilio webhook verification (GET request)"""
     return PlainTextResponse("Voxmill WhatsApp Webhook Active", status_code=200)
 
 
@@ -1194,3 +1139,9 @@ async def log_usage_to_airtable(
     except Exception as e:
         logger.error(f"❌ Airtable logging error: {e}")
         return {"success": False, "error": str(e)}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
