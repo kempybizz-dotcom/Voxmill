@@ -40,18 +40,27 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
-def safe_get_last_metadata(conversation: ConversationSession) -> dict:
-    """Safely get last metadata with fallback"""
+# HELPER FUNCTIONS FOR METHOD CACHE ISSUES
+
+def safe_get_last_metadata(conversation) -> dict:
+    """Safely get last metadata with fallback for cache issues"""
     try:
         return conversation.get_last_metadata()
-    except AttributeError:
-        # Method not available - direct access
+    except (AttributeError, Exception):
         try:
             session = conversation.get_session()
             messages = session.get('messages', [])
             return messages[-1].get('metadata', {}) if messages else {}
         except:
             return {}
+
+def safe_detect_followup(conversation, message_normalized):
+    """Safely detect followup with fallback"""
+    try:
+        return conversation.detect_followup_query(message_normalized)
+    except (AttributeError, Exception):
+        # Method not available - skip followup detection
+        return False, {}
 
 
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
