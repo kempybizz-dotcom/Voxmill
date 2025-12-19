@@ -123,6 +123,8 @@ class AdaptiveLLMController:
         """
         Adjust system prompt to modulate tone based on confidence
         
+        FIXED: No longer injects hedging language. All confidence levels use declarative statements.
+        
         Args:
             system_prompt: Base system prompt
             confidence_level: 'high', 'medium', 'low'
@@ -139,21 +141,15 @@ class AdaptiveLLMController:
 CONFIDENCE MODULATION: LOW DATA QUALITY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Current dataset has limited coverage. Adjust tone accordingly:
+Current dataset has limited coverage. Maintain institutional brevity:
 
-✓ Use hedging language: "suggests", "indicates", "preliminary signals show"
-✓ Acknowledge limitations: "Based on available data..." "Within current coverage..."
-✓ Provide confidence ranges: "Estimate: £4-5M (moderate confidence)"
-✓ Recommend caution: "Recommend additional validation before major decisions"
-
-✗ Do NOT use directive language: "Act now", "Definitive opportunity"
-✗ Do NOT present estimates as facts
-✗ Do NOT ignore data gaps
+✓ State findings directly: "Market shows downward pressure."
+✓ Provide ranges: "Estimate: £4-5M"
+✓ Be concise: 2-3 sentences maximum
+✓ NO hedging language whatsoever
 
 Example phrasing:
-"Preliminary signals suggest potential downward pressure. Current data 
-indicates 15% inventory increase, though coverage is limited. Recommend 
-monitoring additional indicators before committing to positioning."
+"Market shows downward pressure. Inventory +15%. Monitor."
 """
         
         elif confidence_level == 'medium' or 0.5 <= data_quality < 0.8:
@@ -162,17 +158,14 @@ monitoring additional indicators before committing to positioning."
 CONFIDENCE MODULATION: MODERATE DATA QUALITY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Dataset provides reasonable coverage. Balanced tone:
+Dataset provides reasonable coverage. Maintain declarative tone:
 
-✓ Use measured language: "Analysis indicates...", "Data shows...", "Pattern suggests..."
-✓ Provide directional guidance with caveats
-✓ Acknowledge uncertainty where it exists
-✓ Offer probabilistic assessments
+✓ Use direct statements: "Knight Frank inventory up 15%"
+✓ Provide probabilistic ranges: "Cascade probability: 65-75%"
+✓ Be decisive: "Position for value opportunities"
 
 Example phrasing:
-"Market data indicates downward pressure emerging. Knight Frank inventory 
-up 15% with concurrent pricing adjustments. Probability of cascade: 65-75%. 
-Consider positioning for value opportunities within 30-day window."
+"Knight Frank inventory up 15%. Cascade probability: 65-75%. Position within 30 days."
 """
         
         else:  # high confidence
@@ -183,15 +176,12 @@ CONFIDENCE MODULATION: HIGH DATA QUALITY
 
 Comprehensive dataset with strong signals. Directive tone authorized:
 
-✓ Use direct language: "Market shows...", "Data confirms...", "Clear signal..."
-✓ Provide actionable directives when warranted
-✓ Express probability ranges with confidence
-✓ Recommend timing and positioning decisively
+✓ Use definitive statements: "Knight Frank capitulation confirmed"
+✓ Provide specific timing: "Strategic window: 14-21 days"
+✓ Express high conviction: "Position aggressively"
 
 Example phrasing:
-"Market confirms Knight Frank capitulation. Inventory surge +22%, pricing 
-down 8.5%. Cascade probability: 82%. Strategic window: 14-21 days. 
-Position aggressively for £3-5M corridor. High conviction."
+"Knight Frank capitulation confirmed. Inventory +22%, pricing -8.5%. Cascade probability: 82%. Position aggressively £3-5M corridor. 14-21 day window."
 """
         
         # Insert tone modulation before the query context
