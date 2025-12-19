@@ -16,71 +16,39 @@ from typing import Dict, Tuple
 logger = logging.getLogger(__name__)
 
 
-class AdaptiveLLMController:
-    """Controls LLM parameters based on query and data context"""
+@classmethod
+def determine_optimal_temperature(cls, query: str, query_metadata: Dict) -> float:
+    """
+    Determine optimal temperature based on query characteristics
     
-    # Temperature ranges by query type
-    TEMPERATURE_MAP = {
-        'factual': 0.3,           # "What's the average price?"
-        'analytical': 0.5,        # "Analyze competitive landscape"
-        'predictive': 0.6,        # "What if Knight Frank drops 10%?"
-        'strategic': 0.7,         # "Develop strategic positioning"
-        'creative': 0.8,          # "Generate alternative scenarios"
-        'conversational': 0.4     # Greetings, follow-ups
-    }
+    FIXED: Always return 0.2 for institutional brevity
+    Previous adaptive logic (0.3-0.8) was causing verbose responses
     
-    @classmethod
-    def determine_optimal_temperature(cls, query: str, query_metadata: Dict) -> float:
-        """
-        Determine optimal temperature based on query characteristics
-        
-        Args:
-            query: User query text
-            query_metadata: {
-                'category': str,
-                'complexity': str,
-                'is_followup': bool,
-                'data_quality': float
-            }
-        
-        Returns: Temperature value 0.0-1.0
-        """
-        
-        query_lower = query.lower()
-        category = query_metadata.get('category', 'market_overview')
-        complexity = query_metadata.get('complexity', 'medium')
-        
-        # RULE 1: Determine base temperature from query type
-        base_temp = cls._classify_query_type(query_lower, category)
-        
-        # RULE 2: Adjust for complexity
-        complexity_adjustment = {
-            'simple': -0.1,
-            'medium': 0.0,
-            'complex': +0.1,
-            'very_complex': +0.2
+    Args:
+        query: User query text
+        query_metadata: {
+            'category': str,
+            'complexity': str,
+            'is_followup': bool,
+            'data_quality': float
         }
-        
-        adjusted_temp = base_temp + complexity_adjustment.get(complexity, 0.0)
-        
-        # RULE 3: Adjust for data quality
-        data_quality = query_metadata.get('data_quality', 1.0)
-        
-        if data_quality < 0.5:
-            # Low data quality → reduce temperature (more conservative)
-            adjusted_temp *= 0.9
-        
-        # RULE 4: Adjust for follow-up queries
-        if query_metadata.get('is_followup'):
-            # Follow-ups should be slightly more conversational
-            adjusted_temp += 0.05
-        
-        # Clamp to valid range
-        final_temp = max(0.3, min(adjusted_temp, 0.8))
-        
-        logger.info(f"Temperature selection: {final_temp:.2f} (base: {base_temp:.2f}, complexity: {complexity}, quality: {data_quality:.2f})")
-        
-        return round(final_temp, 2)
+    
+    Returns: Temperature value (always 0.2 for institutional brevity)
+    """
+    
+    # INSTITUTIONAL STANDARD: Fixed low temperature for sharp, concise responses
+    # This matches Goldman Sachs / Bridgewater analyst communication style
+    final_temp = 0.2
+    
+    query_lower = query.lower()
+    category = query_metadata.get('category', 'market_overview')
+    complexity = query_metadata.get('complexity', 'medium')
+    data_quality = query_metadata.get('data_quality', 1.0)
+    
+    # Log for debugging (but don't actually use adaptive logic)
+    logger.info(f"Temperature selection: {final_temp:.2f} (base: 0.20, complexity: {complexity}, quality: {data_quality:.2f})")
+    
+    return final_temp
     
     @classmethod
     def _classify_query_type(cls, query: str, category: str) -> float:
