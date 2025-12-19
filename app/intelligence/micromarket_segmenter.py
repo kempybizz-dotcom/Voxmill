@@ -230,7 +230,7 @@ def analyze_micromarket_cluster(cluster_id, cluster_props: list, area: str) -> d
     top_agents = sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:3]
     
     # Price per sqft if available
-    sqft_prices = [p.get('price_per_sqft', 0) for p in cluster_props if p.get('price_per_sqft', 0) > 0]
+    sqft_prices = [p.get('price_per_sqft') for p in cluster_props if p.get('price_per_sqft') is not None and p.get('price_per_sqft') > 0]
     avg_sqft_price = round(sum(sqft_prices) / len(sqft_prices)) if sqft_prices else None
     
     return {
