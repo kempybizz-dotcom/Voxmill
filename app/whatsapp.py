@@ -357,7 +357,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Error checking Trial Users table: {e}")
             
-            # ========================================
+         # ========================================
             # CHECK 2: MAIN CLIENTS TABLE
             # ========================================
             
@@ -458,6 +458,13 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     )
                 
                 logger.info(f"✅ Client refreshed from Airtable: {client_profile['name']} ({client_profile['airtable_table']})")
+        
+        # ========================================
+        # GET PREFERRED REGION (EARLY DEFINITION)
+        # ========================================
+        
+        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+        preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
         
         # ========================================
         # HANDLE TRIAL EXPIRATION
@@ -1150,7 +1157,7 @@ What can I analyze for you today?"""
             logger.info(f"✅ Acknowledgment handled")
             return
         
-        # ========================================
+     # ========================================
         # META-STRATEGIC QUESTIONS DETECTION
         # ========================================
         
@@ -1183,18 +1190,21 @@ What can I analyze for you today?"""
             'hmm': 'Standing by.',
             'noted': 'Standing by.',
             'i see': 'Standing by.',
-            'ok then': 'Standing by.',
-            
+            'ok then': 'Standing by.'
+            # ❌ REMOVED: 'fair': 'Standing by.' - was triggering on "Mayfair"
         }
         
-        # Check if ANY brevity trigger appears IN the message (substring match, not exact)
+        # EXACT-MATCH DETECTION: Check for whole words only (not substrings)
         message_clean_lower = message_clean.lower()
+        message_words = set(message_clean_lower.split())
         
         triggered_phrase = None
         brevity_response = None
         
         for trigger, response in brevity_triggers.items():
-            if trigger in message_clean_lower:
+            # Multi-word triggers need ALL words present
+            trigger_words = set(trigger.split())
+            if trigger_words.issubset(message_words):
                 triggered_phrase = trigger
                 brevity_response = response
                 break  # Stop at first match
@@ -1217,7 +1227,7 @@ What can I analyze for you today?"""
             logger.info(f"✅ Brevity phrase '{triggered_phrase}' detected in '{message_text[:30]}' (hard-gated, no LLM)")
             return  # ← CRITICAL: Stop here, never call LLM
         
-       # ========================================
+        # ========================================
         # POST-DECISION CONSEQUENCE QUESTIONS
         # ========================================
         
@@ -1352,7 +1362,7 @@ Your {tier.replace('_', ' ').title()} plan allows {max_queries} queries per hour
 Reset in: {minutes_until_reset} minutes
 
 Need more queries? Upgrade or contact:
-📧 ollys@voxmill.uk"""
+📧 info@voxmill.uk"""
             
             await send_twilio_message(sender, rate_limit_msg)
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
@@ -1475,12 +1485,6 @@ What market intelligence can I provide?"""
             preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
             await send_pdf_report(sender, preferred_region)
             return
-        
-        # ========================================
-        # GET PREFERRED REGION
-        # ========================================
-        
-        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
         
         # ============================================================
         # WAVE 1: Check response cache FIRST
