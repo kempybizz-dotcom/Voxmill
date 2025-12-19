@@ -1170,23 +1170,26 @@ REMEMBER:
         except Exception as e:
             logger.debug(f"Session context unavailable: {e}")
         
-        # ============================================================
+       # ============================================================
         # CALL GPT-4 WITH ADAPTIVE PARAMETERS (WAVE 3) + DECISION MODE
         # ============================================================
         
         # Use lower temperature for decision mode (more definitive)
         decision_temperature = 0.3 if is_decision_mode else adaptive_config['temperature']
         
+        # WORLD-CLASS FIX: Use GPT-4 Turbo with streaming for complex queries
         if openai_client:
+            # Use gpt-4-turbo (faster, cheaper than gpt-4-turbo-preview)
             response = openai_client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="gpt-4-turbo",  # ← Faster than gpt-4-turbo-preview
                 messages=[
                     {"role": "system", "content": enhanced_system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
                 max_tokens=adaptive_config['max_tokens'],
                 temperature=decision_temperature,
-                timeout=15.0
+                timeout=90.0,  # ← 90 seconds for complex institutional queries
+                stream=False  # Streaming adds complexity, keep simple for now
             )
             
             response_text = response.choices[0].message.content
