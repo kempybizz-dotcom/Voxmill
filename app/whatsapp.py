@@ -1385,7 +1385,7 @@ What market intelligence can I provide?"""
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
         
-        # ========================================
+      # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
@@ -1432,59 +1432,61 @@ What market intelligence can I provide?"""
         if property_count > 0:
             logger.info(f"✅ Dataset loaded for {requested_region}: {property_count} properties")
         
-        # Check data freshness and add warning if stale
-        data_timestamp = metadata.get('analysis_timestamp')
-        data_freshness_warning = ""
-        
-        if data_timestamp:
-            # Convert string to datetime if needed
-            if isinstance(data_timestamp, str):
-                try:
-                    from dateutil import parser
-                    data_timestamp = parser.parse(data_timestamp)
-                except:
-                    # If parsing fails, skip freshness check
-                    data_timestamp = None
-            
-            if data_timestamp:
-                # Make timezone-aware if needed
-                if data_timestamp.tzinfo is None:
-                    data_timestamp = data_timestamp.replace(tzinfo=timezone.utc)
-                
-                data_age_hours = (datetime.now(timezone.utc) - data_timestamp).total_seconds() / 3600
-                
-                if data_age_hours > 48:  # Data older than 2 days
-                    data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
-                    logger.warning(f"Stale data for {preferred_region}: {int(data_age_hours)} hours old")
-
-
         # ========================================
-        # WORLD-CLASS: INSTANT vs DEEP ANALYSIS
+        # WORLD-CLASS: DETECT QUERY TYPE & USE INSTANT RESPONSE
         # ========================================
         
-        can_respond_instantly = should_use_instant_response(message_normalized, category)
+        from app.instant_response import InstantIntelligence, should_use_instant_response
         
-        if can_respond_instantly:
-            # TIER 1: INSTANT RESPONSE (0-3 seconds)
+        # Determine if we can use instant response
+        query_type = 'complex'  # Default
+        
+        # Detect query patterns
+        message_lower = message_normalized.lower()
+        
+        # Market overview patterns
+        overview_patterns = ['market overview', 'what\'s up', 'what\'s the market', 
+                            'market status', 'how\'s the market', 'market update',
+                            'what\'s happening', 'give me an update']
+        
+        # Decision mode patterns
+        decision_patterns = ['decision mode', 'what should i do', 'recommend action',
+                            'tell me what to do', 'make the call', 'your recommendation']
+        
+        # Trend patterns
+        trend_patterns = ['what\'s changed', 'what\'s different', 'trends', 'what\'s new',
+                         'movements', 'shifts']
+        
+        # Timing patterns
+        timing_patterns = ['timing', 'when should i', 'optimal time', 'entry window',
+                          'exit window', 'liquidity window']
+        
+        # Agent patterns
+        agent_patterns = ['agent', 'agents', 'who\'s moving', 'agent behavior',
+                         'knight frank', 'savills', 'hamptons']
+        
+        # Detect which pattern matches
+        is_overview = any(p in message_lower for p in overview_patterns)
+        is_decision = any(p in message_lower for p in decision_patterns)
+        is_trend = any(p in message_lower for p in trend_patterns)
+        is_timing = any(p in message_lower for p in timing_patterns)
+        is_agent = any(p in message_lower for p in agent_patterns)
+        
+        # ========================================
+        # ROUTE TO INSTANT RESPONSE (Uses ALL intelligence layers)
+        # ========================================
+        
+        if is_overview:
+            # INSTANT MARKET SNAPSHOT (uses all intelligence)
+            logger.info(f"🚀 INSTANT MARKET SNAPSHOT for: {message_normalized[:50]}")
             
-            logger.info(f"✅ INSTANT RESPONSE MODE for: {message_normalized[:50]}")
+            formatted_response = InstantIntelligence.get_full_market_snapshot(
+                preferred_region,
+                dataset,
+                client_profile
+            )
             
-            if 'decision' in message_normalized.lower():
-                # Instant decision using rule-based logic
-                formatted_response = InstantIntelligence.get_instant_decision(
-                    preferred_region, 
-                    dataset, 
-                    client_profile
-                )
-                category = "decision_mode"
-            
-            else:
-                # Instant market overview
-                formatted_response = InstantIntelligence.get_instant_market_overview(
-                    preferred_region,
-                    dataset
-                )
-                category = "market_overview"
+            category = "market_overview"
             
             # Send instant response
             await send_twilio_message(sender, formatted_response)
@@ -1493,239 +1495,138 @@ What market intelligence can I provide?"""
             conversation.update_session(
                 user_message=message_text,
                 assistant_response=formatted_response,
-                metadata={'category': category, 'response_type': 'instant'}
+                metadata={'category': category, 'response_type': 'instant_full_intelligence'}
             )
             
             # Log interaction
             log_interaction(sender, message_text, category, formatted_response)
             update_client_history(sender, message_text, category, preferred_region)
             
-            logger.info(f"✅ Instant response sent in <3s")
+            logger.info(f"✅ Instant full-intelligence snapshot sent (<3s)")
+            return
+        
+        elif is_decision:
+            # INSTANT DECISION MODE (rule-based)
+            logger.info(f"🎯 INSTANT DECISION MODE for: {message_normalized[:50]}")
             
-            # TIER 2: BACKGROUND GPT-4 ENHANCEMENT (async)
-            # This runs AFTER user gets response, refines it with GPT-4
+            formatted_response = InstantIntelligence.get_instant_decision(
+                preferred_region,
+                dataset,
+                client_profile
+            )
+            
+            category = "decision_mode"
+            
+            # Send instant response
+            await send_twilio_message(sender, formatted_response)
+            
+            # Update session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=formatted_response,
+                metadata={'category': category, 'response_type': 'instant_decision'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, category, formatted_response)
+            update_client_history(sender, message_text, category, preferred_region)
+            
+            logger.info(f"✅ Instant decision sent (<3s)")
+            
+            # OPTIONAL: Background GPT-4 enhancement
+            import asyncio
             asyncio.create_task(
                 enhance_response_async(
-                    sender, 
-                    message_normalized, 
-                    dataset, 
-                    client_profile, 
+                    sender,
+                    message_normalized,
+                    dataset,
+                    client_profile,
                     formatted_response
                 )
             )
             
             return
         
-        else:
-            # COMPLEX QUERY: Use full GPT-4 pipeline
-            logger.info(f"📊 DEEP ANALYSIS MODE for: {message_normalized[:50]}")
+        elif is_trend:
+            # INSTANT TREND ANALYSIS
+            logger.info(f"📈 INSTANT TREND ANALYSIS for: {message_normalized[:50]}")
             
-            category, response_text, response_metadata = await classify_and_respond(
-                message_normalized,
-                dataset,
-                client_profile=client_profile,
-                comparison_datasets=comparison_datasets if comparison_datasets else None
+            formatted_response = InstantIntelligence.get_trend_analysis(
+                preferred_region,
+                dataset
             )
             
-        
-        # ========================================
-        # INTELLIGENT QUERY PRE-PROCESSING
-        # ========================================
-        
-        # FILTER QUERIES: "properties under £3M", "apartments over £5M"
-        filter_keywords = ['under', 'below', 'above', 'over', 'between', 'cheaper than', 'more expensive than']
-        has_price_filter = any(kw in message_normalized.lower() for kw in filter_keywords)
-        
-        if has_price_filter:
-            # Extract price from query (handles £3M, 3M, £3,000,000, etc.)
-            price_match = re.search(r'£?(\d+(?:,\d{3})*(?:\.\d+)?)\s*M?', message_normalized, re.IGNORECASE)
+            category = "trend_analysis"
             
-            if price_match:
-                price_str = price_match.group(1).replace(',', '')
-                price_threshold = float(price_str)
-                
-                # Check if it's in millions
-                if 'M' in message_normalized.upper() or price_threshold < 100:
-                    price_threshold *= 1_000_000
-                
-                # Filter properties
-                original_count = len(dataset['properties'])
-                
-                if 'under' in message_normalized.lower() or 'below' in message_normalized.lower() or 'cheaper' in message_normalized.lower():
-                    dataset['properties'] = [
-                        p for p in dataset['properties'] 
-                        if p.get('price', 0) > 0 and p.get('price', 0) < price_threshold
-                    ]
-                    filter_type = "under"
-                elif 'above' in message_normalized.lower() or 'over' in message_normalized.lower() or 'expensive' in message_normalized.lower():
-                    dataset['properties'] = [
-                        p for p in dataset['properties'] 
-                        if p.get('price', 0) > price_threshold
-                    ]
-                    filter_type = "over"
-                
-                filtered_count = len(dataset['properties'])
-                logger.info(f"Price filter applied: {original_count} → {filtered_count} properties {filter_type} £{price_threshold/1_000_000:.1f}M")
-        
-        # SUPERLATIVE QUERIES: "cheapest", "most expensive", "best value"
-        superlative_keywords = ['cheapest', 'most expensive', 'best value', 'lowest price', 'highest price', 'best deal']
-        has_superlative = any(kw in message_normalized.lower() for kw in superlative_keywords)
-        
-        if has_superlative:
-            # Extract property type if mentioned
-            property_types = ['apartment', 'penthouse', 'house', 'flat', 'studio', 
-                            '1-bed', '2-bed', '3-bed', '4-bed', '5-bed', 
-                            '1 bed', '2 bed', '3 bed', '4 bed', '5 bed']
-            mentioned_type = next((pt for pt in property_types if pt.replace('-', ' ') in message_normalized.lower()), None)
+            await send_twilio_message(sender, formatted_response)
             
-            # Filter by type if mentioned
-            if mentioned_type:
-                dataset['properties'] = [
-                    p for p in dataset['properties']
-                    if mentioned_type.replace('-', ' ').replace(' bed', '') in p.get('property_type', '').lower()
-                ]
-                logger.info(f"Filtered to {len(dataset['properties'])} {mentioned_type} properties")
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=formatted_response,
+                metadata={'category': category, 'response_type': 'instant_trends'}
+            )
             
-            # Sort by price
-            if 'cheapest' in message_normalized.lower() or 'lowest' in message_normalized.lower() or 'best value' in message_normalized.lower():
-                dataset['properties'] = sorted(
-                    [p for p in dataset['properties'] if p.get('price', 0) > 0],
-                    key=lambda x: x.get('price', float('inf'))
-                )[:10]  # Top 10
-                logger.info(f"Sorted by lowest price, showing top 10")
-            elif 'expensive' in message_normalized.lower() or 'highest' in message_normalized.lower():
-                dataset['properties'] = sorted(
-                    dataset['properties'],
-                    key=lambda x: x.get('price', 0),
-                    reverse=True
-                )[:10]  # Top 10
-                logger.info(f"Sorted by highest price, showing top 10")
+            log_interaction(sender, message_text, category, formatted_response)
+            update_client_history(sender, message_text, category, preferred_region)
+            
+            logger.info(f"✅ Instant trend analysis sent (<3s)")
+            return
+        
+        elif is_timing:
+            # INSTANT TIMING ANALYSIS
+            logger.info(f"⏰ INSTANT TIMING ANALYSIS for: {message_normalized[:50]}")
+            
+            formatted_response = InstantIntelligence.get_timing_analysis(
+                preferred_region,
+                dataset
+            )
+            
+            category = "timing_analysis"
+            
+            await send_twilio_message(sender, formatted_response)
+            
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=formatted_response,
+                metadata={'category': category, 'response_type': 'instant_timing'}
+            )
+            
+            log_interaction(sender, message_text, category, formatted_response)
+            update_client_history(sender, message_text, category, preferred_region)
+            
+            logger.info(f"✅ Instant timing analysis sent (<3s)")
+            return
+        
+        elif is_agent:
+            # INSTANT AGENT ANALYSIS
+            logger.info(f"🔍 INSTANT AGENT ANALYSIS for: {message_normalized[:50]}")
+            
+            formatted_response = InstantIntelligence.get_agent_analysis(
+                preferred_region,
+                dataset
+            )
+            
+            category = "agent_analysis"
+            
+            await send_twilio_message(sender, formatted_response)
+            
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=formatted_response,
+                metadata={'category': category, 'response_type': 'instant_agents'}
+            )
+            
+            log_interaction(sender, message_text, category, formatted_response)
+            update_client_history(sender, message_text, category, preferred_region)
+            
+            logger.info(f"✅ Instant agent analysis sent (<3s)")
+            return
         
         # ========================================
-        # ADD V3 INTELLIGENCE LAYERS
+        # FALLBACK: COMPLEX QUERIES USE GPT-4
         # ========================================
         
-        # Layer 1: Trend Detection
-        try:
-            from app.intelligence.trend_detector import detect_market_trends
-            trends = detect_market_trends(area=preferred_region, lookback_days=14)
-            if trends:
-                dataset['detected_trends'] = trends
-        except (ImportError, Exception) as e:
-            logger.debug(f"Trend detection unavailable: {str(e)}")
-        
-        # Layer 2: Agent Profiling
-        try:
-            from app.intelligence.agent_profiler import get_agent_profiles
-            agent_profiles = get_agent_profiles(area=preferred_region)
-            if agent_profiles:
-                dataset['agent_profiles'] = agent_profiles
-        except (ImportError, Exception) as e:
-            logger.debug(f"Agent profiler unavailable: {str(e)}")
-        
-        # Layer 3: Micro-Market Segmentation
-        try:
-            from app.intelligence.micromarket_segmenter import segment_micromarkets
-            micromarkets = segment_micromarkets(dataset.get('properties', []), preferred_region)
-            if micromarkets and 'error' not in micromarkets:
-                dataset['micromarkets'] = micromarkets
-        except (ImportError, Exception) as e:
-            logger.debug(f"Micromarket segmenter unavailable: {str(e)}")
-        
-        # Layer 4: Liquidity Velocity
-        try:
-            from app.intelligence.liquidity_velocity import calculate_liquidity_velocity
-            from app.dataset_loader import load_historical_snapshots
-            historical = load_historical_snapshots(area=preferred_region, days=30)
-            if historical:
-                velocity = calculate_liquidity_velocity(dataset.get('properties', []), historical)
-                if velocity and 'error' not in velocity:
-                    dataset['liquidity_velocity'] = velocity
-        except (ImportError, Exception) as e:
-            logger.debug(f"Liquidity velocity unavailable: {str(e)}")
-        
-        # Layer 5: Cascade Prediction (if scenario query)
-        try:
-            from app.intelligence.cascade_predictor import build_agent_network, predict_cascade
-            
-            scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'cascade']
-            is_scenario_query = any(keyword in message_normalized.lower() for keyword in scenario_keywords)
-            
-            if is_scenario_query:
-                network = build_agent_network(area=preferred_region, lookback_days=90)
-                
-                if not network.get('error'):
-                    # Extract scenario from query
-                    agent_pattern = r'(Knight Frank|Savills|Hamptons|Chestertons|Strutt & Parker|[\w\s&]+?)\s+(?:drops?|reduces?|lowers?|cuts?|increases?|raises?)(?:\s+by)?\s+(\d+\.?\d*)%'
-                    match = re.search(agent_pattern, message_normalized, re.IGNORECASE)
-                    
-                    if match:
-                        initiating_agent = match.group(1).strip()
-                        magnitude = float(match.group(2))
-                        
-                        if any(word in message_normalized.lower() for word in ['drop', 'reduce', 'lower', 'cut']):
-                            magnitude = -magnitude
-                        
-                        cascade = predict_cascade(network, initiating_agent, magnitude)
-                        if not cascade.get('error'):
-                            dataset['cascade_prediction'] = cascade
-                            logger.info(f"Cascade predicted: {initiating_agent} {magnitude:+.1f}% -> {cascade['total_affected_agents']} agents affected")
-        except (ImportError, Exception) as e:
-            logger.debug(f"Cascade predictor unavailable: {str(e)}")
-        
-        # ========================================
-        # WAVE 4 INTELLIGENCE LAYERS
-        # ========================================
-        
-        # Layer 6: Liquidity Window Prediction
-        try:
-            from app.intelligence.liquidity_window_predictor import predict_liquidity_windows
-            from app.dataset_loader import load_historical_snapshots
-            
-            # Check if we have liquidity velocity data
-            if 'liquidity_velocity' in dataset and not dataset['liquidity_velocity'].get('error'):
-                # Load historical data for window prediction
-                historical = load_historical_snapshots(area=preferred_region, days=60)
-                
-                if historical and len(historical) >= 10:
-                    windows = predict_liquidity_windows(
-                        area=preferred_region,
-                        current_velocity=dataset['liquidity_velocity'],
-                        historical_data=historical
-                    )
-                    
-                    if not windows.get('error'):
-                        dataset['liquidity_windows'] = windows
-                        logger.info(f"✅ Liquidity windows predicted: {windows['total_windows']} windows detected")
-        except (ImportError, Exception) as e:
-            logger.debug(f"Liquidity window predictor unavailable: {str(e)}")
-        
-        # Layer 7: Behavioral Clustering
-        try:
-            from app.intelligence.behavioral_clustering import cluster_agents_by_behavior
-            
-            # Check if we have agent profiles
-            if 'agent_profiles' in dataset and dataset['agent_profiles']:
-                clusters = cluster_agents_by_behavior(
-                    area=preferred_region,
-                    agent_profiles=dataset['agent_profiles']
-                )
-                
-                if not clusters.get('error'):
-                    dataset['behavioral_clusters'] = clusters
-                    logger.info(f"✅ Behavioral clustering complete: {len(clusters.get('clusters', []))} clusters identified")
-        except (ImportError, Exception) as e:
-            logger.debug(f"Behavioral clustering unavailable: {str(e)}")
-        
-        # ========================================
-        # MANUAL MODE OVERRIDE - ADD THIS NEW SECTION
-        # ========================================
-        
-        # Check for manual mode kill-switch
-        if 'manual only' in message_normalized.lower() or 'no inference' in message_normalized.lower():
-            # Flag for LLM to disable all inference
-            dataset['metadata']['manual_mode'] = True
-            logger.info(f"Manual mode activated for {sender} - disabling inference")
+        logger.info(f"🤖 COMPLEX QUERY - Using GPT-4 for: {message_normalized[:50]}")
         
         # ========================================
         # GPT-4 ANALYSIS
