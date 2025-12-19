@@ -44,7 +44,45 @@ TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
 
-# HELPER FUNCTIONS FOR METHOD CACHE ISSUES
+
+# HELPER FUNCTIONS
+
+def parse_regions(regions_raw):
+    """Parse Airtable Regions field into proper list"""
+    if not regions_raw:
+        return ['Mayfair']
+    
+    # Airtable returns string, convert to list
+    if isinstance(regions_raw, str):
+        # Handle comma-separated or single region
+        regions = [r.strip() for r in regions_raw.split(',') if r.strip()]
+        
+        # Expansion map for abbreviations
+        region_expansion = {
+            'M': 'Mayfair',
+            'K': 'Knightsbridge',
+            'C': 'Chelsea',
+            'B': 'Belgravia',
+            'W': 'Kensington'
+        }
+        
+        # Expand single letters
+        regions = [region_expansion.get(r, r) if len(r) == 1 else r for r in regions]
+        
+        # Filter invalid (must be at least 3 chars)
+        regions = [r for r in regions if len(r) > 2]
+        
+        # Fallback
+        if not regions:
+            return ['Mayfair']
+        
+        return regions
+    elif isinstance(regions_raw, list):
+        # Already a list (shouldn't happen with Airtable, but safe)
+        return regions_raw if regions_raw else ['Mayfair']
+    else:
+        return ['Mayfair']
+
 
 def safe_get_last_metadata(conversation) -> dict:
     """Safely get last metadata with fallback for cache issues"""
@@ -57,6 +95,7 @@ def safe_get_last_metadata(conversation) -> dict:
             return messages[-1].get('metadata', {}) if messages else {}
         except:
             return {}
+
 
 def safe_detect_followup(conversation, message_normalized):
     """Safely detect followup with fallback"""
@@ -289,45 +328,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             search_number = sender.replace('whatsapp:', '').replace('whatsapp%3A', '')
             if not search_number.startswith('+'):
                 search_number = '+' + search_number
-            
-            # ========================================
-            # HELPER: Parse Airtable Regions Field
-            # ========================================
-            def parse_regions(regions_raw):
-                """Parse Airtable Regions field into proper list"""
-                if not regions_raw:
-                    return ['Mayfair']
-                
-                # Airtable returns string, convert to list
-                if isinstance(regions_raw, str):
-                    # Handle comma-separated or single region
-                    regions = [r.strip() for r in regions_raw.split(',') if r.strip()]
-                    
-                    # Expansion map for abbreviations
-                    region_expansion = {
-                        'M': 'Mayfair',
-                        'K': 'Knightsbridge',
-                        'C': 'Chelsea',
-                        'B': 'Belgravia',
-                        'W': 'Kensington'
-                    }
-                    
-                    # Expand single letters
-                    regions = [region_expansion.get(r, r) if len(r) == 1 else r for r in regions]
-                    
-                    # Filter invalid (must be at least 3 chars)
-                    regions = [r for r in regions if len(r) > 2]
-                    
-                    # Fallback
-                    if not regions:
-                        return ['Mayfair']
-                    
-                    return regions
-                elif isinstance(regions_raw, list):
-                    # Already a list (shouldn't happen with Airtable, but safe)
-                    return regions_raw if regions_raw else ['Mayfair']
-                else:
-                    return ['Mayfair']
             
             # ========================================
             # CHECK 1: TRIAL USERS TABLE
