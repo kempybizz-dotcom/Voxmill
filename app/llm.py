@@ -192,17 +192,44 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
         # ============================================================
-        adaptive_config = get_adaptive_llm_config(
-            query=message,
-            dataset=dataset,
-            is_followup=False,
-            category='market_overview'
-        )
-        
-        logger.info(f"Adaptive LLM config: temp={adaptive_config['temperature']}, "
-                   f"complexity={adaptive_config['complexity']}, "
-                   f"quality={adaptive_config['data_quality']}, "
-                   f"confidence={adaptive_config['confidence_level']}")
+       def get_adaptive_llm_config(
+    query: str,
+    dataset: dict,
+    is_followup: bool = False,
+    category: str = 'market_overview'
+) -> dict:
+    """
+    Generate adaptive LLM configuration based on query and data characteristics
+    
+    FIXED: Hardcoded temperature=0.2 and max_tokens=350 for institutional brevity
+    """
+    
+    # Analyze data quality
+    data_quality = analyze_data_quality(dataset)
+    
+    # Determine confidence level
+    confidence_level = determine_confidence_level(data_quality, dataset)
+    
+    # Determine complexity
+    complexity = determine_query_complexity(query)
+    
+    # FIXED VALUES (no longer adaptive)
+    temperature = 0.2  # Always institutional brevity
+    max_tokens = 350   # Always force concise responses
+    
+    config = {
+        'temperature': temperature,
+        'max_tokens': max_tokens,
+        'complexity': complexity,
+        'data_quality': data_quality,
+        'confidence_level': confidence_level,
+        'is_followup': is_followup,
+        'category': category
+    }
+    
+    logger.info(f"LLM Config: temp={temperature}, tokens={max_tokens}, complexity={complexity}, quality={data_quality:.2f}")
+    
+    return config
         
         # ============================================================
         # WAVE 3: Apply confidence-based tone modulation
