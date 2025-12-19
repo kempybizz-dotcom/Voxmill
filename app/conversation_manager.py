@@ -139,14 +139,13 @@ class ConversationSession:
         
         return "\n".join(context_parts)
 
-    # In conversation_manager.py, add:
-
-# Should be indented 4 spaces (class method)
-    def get_cross_session_summary(self, days: int = 7) -> str:
-        """Get summary of key decisions/topics from past N days"""
     
-    if not redis_client:
-        return ""
+    def get_cross_session_summary(self, days: int = 7) -> str:  # ← 4 space indent
+        """Get summary of key decisions/topics from past N days"""
+        
+        if not redis_client:  # ← 8 space indent
+            return ""
+       
     
     # Get all sessions from past N days
     pattern = f"{self.session_key}:*"
