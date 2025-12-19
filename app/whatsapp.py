@@ -434,6 +434,54 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 "📧 ollys@voxmill.uk"
             )
             return
+        
+        # ========================================
+        # TRIAL EXPIRATION CHECK
+        # ========================================
+        
+        subscription_status = client_profile.get('subscription_status', 'Active')
+        
+        if subscription_status == 'Trial':
+            # Check if trial has expired (24 hours from creation)
+            created_at = client_profile.get('created_at')
+            
+            if created_at:
+                # Make timezone-aware if needed
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                
+                trial_age_hours = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
+                
+                if trial_age_hours > 24:
+                    # Trial expired
+                    logger.warning(f"🚫 TRIAL EXPIRED: {sender} (age: {trial_age_hours:.1f}h)")
+                    
+                    trial_expired_msg = f"""TRIAL PERIOD EXPIRED
+
+Your 24-hour trial access has concluded.
+
+To continue using Voxmill Intelligence:
+📧 Contact: ollys@voxmill.uk
+
+Thank you for trying our service."""
+                    
+                    await send_twilio_message(sender, trial_expired_msg)
+                    
+                    # Log interaction
+                    try:
+                        log_interaction(sender, message_text, "trial_expired", trial_expired_msg)
+                        update_client_history(sender, message_text, "trial_expired", "None")
+                    except Exception:
+                        pass
+                    
+                    return
+                else:
+                    # Trial still active - show remaining time
+                    hours_remaining = 24 - trial_age_hours
+                    logger.info(f"✅ Trial user active: {sender} ({hours_remaining:.1f}h remaining)")
+            else:
+                # No created_at timestamp - allow access but warn
+                logger.warning(f"Trial user missing created_at timestamp: {sender}")
 
         # ========================================
         # FORCE SYNC PIN TIMESTAMP FROM AIRTABLE (EVEN IF CACHED)
