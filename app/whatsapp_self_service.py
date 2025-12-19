@@ -331,7 +331,8 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
 
 def handle_whatsapp_preference_message(from_number: str, message: str) -> Optional[str]:
     """
-    Main handler for WhatsApp messages
+    Main handler for WhatsApp messages - READ ONLY
+    Does NOT modify any global state
     Returns response to send to client, or None if not a preference request
     """
     
