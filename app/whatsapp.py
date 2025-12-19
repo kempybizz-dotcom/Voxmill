@@ -102,7 +102,7 @@ def get_client_from_airtable(sender: str) -> dict:
     if not search_number.startswith('+'):
         search_number = '+' + search_number
     
-    # ========================================
+# ========================================
     # CHECK 1: TRIAL USERS TABLE
     # ========================================
     
@@ -126,8 +126,7 @@ def get_client_from_airtable(sender: str) -> dict:
                 trial_end_date = fields.get('Trial End Date')
                 
                 if trial_end_date:
-                    from dateutil import parser
-                    trial_end = parser.parse(trial_end_date)
+                    trial_end = dateutil_parser.parse(trial_end_date)
                     
                     if trial_end.tzinfo is None:
                         trial_end = trial_end.replace(tzinfo=timezone.utc)
