@@ -1392,13 +1392,17 @@ Need more queries? Upgrade or contact:
             logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
             return
         
-        # ========================================
+     # ========================================
         # PREFERENCE SELF-SERVICE
         # ========================================
         
         try:
+            logger.info(f"🔍 BEFORE preference check - preferred_region: '{preferred_region}'")
             logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+            
             pref_response = handle_whatsapp_preference_message(sender, message_text)
+            
+            logger.info(f"🔍 AFTER preference check - preferred_region: '{preferred_region}'")
             
             if pref_response:
                 logger.info(f"✅ Preference request detected, sending confirmation")
