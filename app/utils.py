@@ -5,10 +5,11 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-def format_analyst_response(response_text: str, category: str) -> str:
+def format_analyst_response(response_text: str, category: str, response_metadata: dict = None) -> str:
     """
     Format analyst response with intelligent header detection.
-    Wave 3: Smart formatting - only add headers if response doesn't already have structure.
+    
+    WORLD-CLASS UPDATE: Respects authority mode - NO headers for brief institutional responses
     """
     
     # Try to parse as JSON first (V3 format)
@@ -23,10 +24,29 @@ def format_analyst_response(response_text: str, category: str) -> str:
     prose_response = '\n'.join(line.strip() for line in prose_response.split('\n') if line.strip())
     
     # ============================================================
+    # AUTHORITY MODE: NO HEADERS FOR BRIEF RESPONSES
+    # ============================================================
+    
+    response_metadata = response_metadata or {}
+    word_count = len(prose_response.split())
+    
+    # Check if this is an authority mode response
+    is_authority_mode = (
+        response_metadata.get('authority_mode', False) or 
+        word_count < 50
+    )
+    
+    if is_authority_mode:
+        # Pure institutional authority - no headers, no decoration
+        logger.info(f"✅ Authority mode: {word_count} words, no headers")
+        return prose_response
+    
+    # ============================================================
     # CRITICAL: Check if response already has section headers
     # ============================================================
     has_headers = any(marker in prose_response for marker in [
         '————————',  # Divider lines
+        '────────',  # Alternative divider
         'INTELLIGENCE',
         'ANALYSIS',
         'FORECAST',
@@ -36,7 +56,9 @@ def format_analyst_response(response_text: str, category: str) -> str:
         'MONITORING',
         'PIN',
         'LOCKED',
-        'VERIFICATION'
+        'VERIFICATION',
+        'DECISION MODE',
+        '🎯'
     ])
     
     # ============================================================
@@ -52,7 +74,14 @@ def format_analyst_response(response_text: str, category: str) -> str:
         'guidance',
         'cached',
         'small_talk',
-        'off_topic'
+        'off_topic',
+        'acknowledgment',
+        'brevity_phrase',
+        'post_decision_risk',
+        'pin_setup',
+        'pin_unlock',
+        'monitoring_status',
+        'monitoring_status_fallback'
     ]
     
     # Short conversational responses
@@ -88,7 +117,6 @@ def format_analyst_response(response_text: str, category: str) -> str:
     if header:
         formatted = f"""{header}
 ————————————————————————————————————————
-
 {prose_response}"""
         return formatted
     
