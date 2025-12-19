@@ -9,6 +9,7 @@ import logging
 import httpx
 import hashlib 
 import re
+from dateutil import parser as dateutil_parser
 import requests
 import pytz
 from typing import Dict, List, Optional
@@ -444,8 +445,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             if updated_at:
                 # Handle both datetime objects and ISO strings
                 if isinstance(updated_at, str):
-                    from dateutil import parser
-                    updated_at = parser.parse(updated_at)
+                    updated_at = dateutil_parser.parse(updated_at)
                 
                 # Make timezone-aware if needed
                 if updated_at.tzinfo is None:
@@ -598,8 +598,7 @@ Thank you for trying our service."""
                     
                     if airtable_last_pin:
                         # Sync to MongoDB pin_auth
-                        from dateutil import parser
-                        last_verified_dt = parser.parse(airtable_last_pin)
+                        last_verified_dt = dateutil_parser.parse(airtable_last_pin)
                         
                         if last_verified_dt.tzinfo is None:
                             last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
