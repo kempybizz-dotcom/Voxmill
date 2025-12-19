@@ -1184,7 +1184,6 @@ What can I analyze for you today?"""
             'noted': 'Standing by.',
             'i see': 'Standing by.',
             'ok then': 'Standing by.',
-            'fair': 'Standing by.'
             
         }
         
