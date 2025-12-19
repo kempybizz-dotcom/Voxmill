@@ -77,31 +77,59 @@ class ConversationalGovernor:
         }
     }
     
-    @staticmethod
-    async def govern(message_text: str, sender: str, client_profile: dict, system_state: dict) -> GovernanceResult:
+        @staticmethod
+    async def govern(message_text: str, sender: str, client_profile: dict, 
+                    system_state: dict) -> 'GovernanceResult':
         """
-        Main governance check - decides if/how system responds
+        Main governance entry point with confidence enforcement
         """
         
-        # Step 1: Classify intent (using simple rules for now)
-        intent = ConversationalGovernor._classify_intent(message_text)
+        # Classify intent with confidence
+        intent, confidence = ConversationalGovernor._classify_intent(message_text)
         
-        # Step 2: Get envelope for this intent
-        envelope = ConversationalGovernor.ENVELOPES.get(intent, ConversationalGovernor.ENVELOPES[Intent.CASUAL])
+        logger.info(f"Intent classified: {intent.value} (confidence: {confidence:.2f})")
         
-        # Step 3: Check if silence required
-        if intent == Intent.PROVOCATION:
+        # ========================================
+        # CONFIDENCE THRESHOLD ENFORCEMENT
+        # ========================================
+        
+        CONFIDENCE_THRESHOLDS = {
+            Intent.SECURITY: 0.95,
+            Intent.ADMINISTRATIVE: 0.90,
+            Intent.PROVOCATION: 0.85,
+            Intent.CASUAL: 0.90,
+            Intent.STATUS_CHECK: 0.92,
+            Intent.STRATEGIC: 0.80,
+            Intent.DECISION_REQUEST: 0.95,
+            Intent.META_STRATEGIC: 0.88,
+            Intent.MONITORING_DIRECTIVE: 0.93,
+            Intent.UNKNOWN: 0.00  # Always allowed (but will refuse)
+        }
+        
+        required_confidence = CONFIDENCE_THRESHOLDS.get(intent, 0.80)
+        
+        if confidence < required_confidence:
+            logger.warning(f"Confidence too low: {confidence:.2f} < {required_confidence:.2f}, defaulting to UNKNOWN")
+            intent = Intent.UNKNOWN
+            confidence = 0.50
+        
+        # Get envelope for intent
+        envelope = ConversationalGovernor._get_envelope(intent)
+        
+        # Check for hard-coded overrides
+        override_response = ConversationalGovernor._check_overrides(message_text, intent)
+        
+        if override_response:
             return GovernanceResult(
                 intent=intent,
                 blocked=True,
-                silence_required=True,
-                response=None,
-                allowed_shapes=[],
-                max_words=0,
+                silence_required=False,
+                response=override_response,
+                allowed_shapes=envelope.allowed_shapes,
+                max_words=envelope.max_response_length // 5,  # ~5 chars per word
                 analysis_allowed=False,
                 data_load_allowed=False
             )
-        
         # Step 4: Check if immediate override needed
         message_lower = message_text.lower().strip()
         
@@ -143,54 +171,125 @@ class ConversationalGovernor:
             data_load_allowed=envelope['data_load_allowed']
         )
     
-    @staticmethod
-def _classify_intent(message: str) -> Intent:
-    """Intent classification with robust normalization"""
-    
-    # Aggressive normalization
-    message_lower = message.lower().strip()
-    message_normalized = ' '.join(message_lower.split())  # Remove extra whitespace
-    message_clean = message_normalized.replace("'", "").replace("'", "")  # Remove apostrophes
-    
-    # Provocation
-    provocation_keywords = ['lol', 'haha', 'lmao', 'hehe', 'nice', 'wow', 'lmfao', 'rofl']
-    if message_clean in provocation_keywords:
-        return Intent.PROVOCATION
-    
-    # Casual greetings/checks
-    casual_exact = [
-        'whats up', 'what up', 'sup', 'wassup', 'whatsup',
-        'any news', 'any updates', 'any update',
-        'hi', 'hello', 'hey', 'yo', 'hiya', 'good morning', 'good afternoon', 'good evening'
-    ]
-    
-    if message_clean in casual_exact:
-        return Intent.CASUAL
-    
-    # Acknowledgments
-    acknowledgments = [
-        'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-        'ok', 'okay', 'noted', 'got it', 'gotit',
-        'yep', 'yeah', 'yup', 'sure', 'cool'
-    ]
-    
-    if message_clean in acknowledgments:
-        return Intent.CASUAL
-    
-    # Decision requests
-    if any(kw in message_clean for kw in ['decision mode', 'what should i do', 'recommend action', 'make the call']):
-        return Intent.DECISION_REQUEST
-    
-    # Status checks
-    if any(kw in message_clean for kw in ['what am i monitoring', 'monitoring status', 'show monitor']):
-        return Intent.STATUS_CHECK
-    
-    # Short messages (1-3 words) without strategic keywords = probably casual
-    word_count = len(message_clean.split())
-    strategic_keywords = ['market', 'price', 'opportunity', 'competitive', 'trend', 'forecast', 'analyse', 'analyze', 'overview']
-    
-    if word_count <= 3 and not any(kw in message_clean for kw in strategic_keywords):
-        return Intent.CASUAL
-    
-    # Default to strategic
-    return Intent.STRATEGIC
+ @staticmethod
+    def _classify_intent(message: str) -> tuple[Intent, float]:
+        """
+        Intent classification with confidence scoring
+        
+        Returns: (intent, confidence_score)
+        """
+        
+        # Aggressive normalization
+        message_lower = message.lower().strip()
+        message_normalized = ' '.join(message_lower.split())
+        message_clean = message_normalized.replace("'", "").replace("'", "")
+        word_count = len(message_clean.split())
+        
+        # ========================================
+        # SECURITY (95% threshold)
+        # ========================================
+        
+        security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
+        if any(kw in message_clean for kw in security_keywords):
+            return Intent.SECURITY, 0.95
+        
+        # ========================================
+        # PROVOCATION (85% threshold)
+        # ========================================
+        
+        provocation_exact = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
+        if message_clean in provocation_exact:
+            return Intent.PROVOCATION, 0.98
+        
+        # ========================================
+        # CASUAL - HIGH CONFIDENCE (90% threshold)
+        # ========================================
+        
+        # Exact matches = very high confidence
+        casual_exact = [
+            'whats up', 'what up', 'sup', 'wassup', 'whatsup',
+            'any news', 'any updates', 'any update',
+            'hi', 'hello', 'hey', 'yo', 'hiya',
+            'good morning', 'good afternoon', 'good evening'
+        ]
+        
+        if message_clean in casual_exact:
+            return Intent.CASUAL, 0.95
+        
+        # Acknowledgments = high confidence
+        acknowledgments = [
+            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
+            'ok', 'okay', 'noted', 'got it', 'gotit',
+            'yep', 'yeah', 'yup', 'sure', 'cool', 'right'
+        ]
+        
+        if message_clean in acknowledgments:
+            return Intent.CASUAL, 0.95
+        
+        # Short casual queries (heuristic)
+        if word_count <= 3:
+            casual_words = ['up', 'news', 'update', 'status', 'thoughts', 'view']
+            if any(w in message_clean for w in casual_words):
+                return Intent.CASUAL, 0.85
+        
+        # ========================================
+        # DECISION_REQUEST (95% threshold)
+        # ========================================
+        
+        decision_keywords = ['decision mode', 'what should i do', 'make the call', 
+                             'recommend action', 'tell me what to do', 'your recommendation']
+        
+        if any(kw in message_clean for kw in decision_keywords):
+            return Intent.DECISION_REQUEST, 0.95
+        
+        # ========================================
+        # META_STRATEGIC (88% threshold)
+        # ========================================
+        
+        meta_keywords = ['whats missing', 'what am i missing', 'blind spot', 'blind spots',
+                         'what dont i know', 'what am i not seeing', 'whats the gap']
+        
+        if any(kw in message_clean for kw in meta_keywords):
+            return Intent.META_STRATEGIC, 0.90
+        
+        # ========================================
+        # MONITORING_DIRECTIVE (93% threshold)
+        # ========================================
+        
+        monitoring_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
+                               'stop monitor', 'cancel monitor', 'show monitor']
+        
+        if any(kw in message_clean for kw in monitoring_keywords):
+            return Intent.MONITORING_DIRECTIVE, 0.93
+        
+        # ========================================
+        # STATUS_CHECK (92% threshold)
+        # ========================================
+        
+        status_keywords = ['status', 'monitoring status', 'what am i monitoring',
+                          'active monitors', 'my monitors']
+        
+        if any(kw in message_clean for kw in status_keywords):
+            return Intent.STATUS_CHECK, 0.92
+        
+        # ========================================
+        # STRATEGIC (80% threshold - lowest for analysis)
+        # ========================================
+        
+        strategic_keywords = ['market', 'overview', 'analysis', 'competitive', 'landscape',
+                             'opportunity', 'opportunities', 'trend', 'forecast', 'outlook',
+                             'price', 'inventory', 'agent', 'liquidity', 'timing']
+        
+        strategic_match_count = sum(1 for kw in strategic_keywords if kw in message_clean)
+        
+        if strategic_match_count >= 2:
+            return Intent.STRATEGIC, 0.88
+        elif strategic_match_count == 1:
+            return Intent.STRATEGIC, 0.82
+        
+        # ========================================
+        # UNKNOWN (catch-all - REFUSAL)
+        # ========================================
+        
+        # If we get here, intent is unclear
+        return Intent.UNKNOWN, 0.50
