@@ -1,89 +1,78 @@
-"""
-VOXMILL PORTFOLIO TRACKER
-=========================
-Track client property holdings and generate cross-property insights 
-"""
+# ========================================
+        # PORTFOLIO TRACKING COMMANDS
+        # ========================================
 
-import logging
-from datetime import datetime, timezone
-from pymongo import MongoClient
-import os
+        portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
 
-logger = logging.getLogger(__name__)
+        if any(kw in message_lower for kw in portfolio_keywords):
+            from app.portfolio import get_portfolio_summary, add_property_to_portfolio, parse_property_from_message
+            
+            if 'add property' in message_lower:
+                # Check if user is sending property details
+                parsed_property = parse_property_from_message(message_text)
+                
+                if parsed_property:
+                    # Add property
+                    response = add_property_to_portfolio(sender, parsed_property)
+                    await send_twilio_message(sender, response)
+                    
+                    # Update conversation session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=response,
+                        metadata={'category': 'portfolio_add'}
+                    )
+                    
+                    return
+                else:
+                    # Guide user through adding property
+                    response = """ADD PROPERTY TO PORTFOLIO
 
-MONGODB_URI = os.getenv('MONGODB_URI')
-mongo_client = MongoClient(MONGODB_URI)
-db = mongo_client['Voxmill']
+Reply with property details:
 
+Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
 
-def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
-    """Add property to client's portfolio"""
-    
-    db['client_portfolios'].update_one(
-        {'whatsapp_number': whatsapp_number},
-        {
-            '$push': {'properties': {
-                'id': f"prop_{int(datetime.now(timezone.utc).timestamp())}",
-                'address': property_data.get('address'),
-                'purchase_price': property_data.get('purchase_price'),
-                'purchase_date': property_data.get('purchase_date'),
-                'region': property_data.get('region'),
-                'property_type': property_data.get('property_type'),
-                'added_at': datetime.now(timezone.utc)
-            }},
-            '$set': {'updated_at': datetime.now(timezone.utc)}
-        },
-        upsert=True
-    )
-    
-    return f"""PROPERTY ADDED TO PORTFOLIO
+Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
+                    
+                    await send_twilio_message(sender, response)
+                    return
+            
+            # Show portfolio summary
+            portfolio = get_portfolio_summary(sender)
+            
+            if portfolio.get('error'):
+                response = """No properties in portfolio.
 
-{property_data.get('address')}
-Purchase: £{property_data.get('purchase_price'):,.0f}
-Region: {property_data.get('region')}
+Add a property: "Add property [details]" """
+                await send_twilio_message(sender, response)
+                return
+            
+            # Format portfolio response
+            prop_list = []
+            for prop in portfolio['properties'][:5]:
+                prop_list.append(
+                    f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
+                    f"({prop['gain_loss_pct']:+.1f}%)"
+                )
+            
+            response = f"""PORTFOLIO SUMMARY
 
-Portfolio tracking active."""
+{chr(10).join(prop_list)}
 
+Total Value: £{portfolio['total_current_value']:,.0f}
+Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_loss_pct']:+.1f}%)
 
-def get_portfolio_summary(whatsapp_number: str) -> dict:
-    """Get client's full portfolio with current valuations"""
-    
-    portfolio = db['client_portfolios'].find_one({'whatsapp_number': whatsapp_number})
-    
-    if not portfolio or not portfolio.get('properties'):
-        return {'error': 'no_portfolio'}
-    
-    from app.dataset_loader import load_dataset
-    
-    enriched_properties = []
-    total_purchase = 0
-    total_current = 0
-    
-    for prop in portfolio['properties']:
-        # Load market data for region
-        dataset = load_dataset(area=prop['region'])
-        
-        # Estimate current value (simple method - match property type avg)
-        current_estimate = dataset.get('metrics', {}).get('avg_price', prop['purchase_price'])
-        
-        gain_loss = current_estimate - prop['purchase_price']
-        gain_loss_pct = (gain_loss / prop['purchase_price']) * 100
-        
-        enriched_properties.append({
-            **prop,
-            'current_estimate': current_estimate,
-            'gain_loss': gain_loss,
-            'gain_loss_pct': gain_loss_pct
-        })
-        
-        total_purchase += prop['purchase_price']
-        total_current += current_estimate
-    
-    return {
-        'properties': enriched_properties,
-        'total_purchase_value': total_purchase,
-        'total_current_value': total_current,
-        'total_gain_loss': total_current - total_purchase,
-        'total_gain_loss_pct': ((total_current - total_purchase) / total_purchase) * 100,
-        'property_count': len(enriched_properties)
-    }
+Properties: {portfolio['property_count']}"""
+            
+            await send_twilio_message(sender, response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'portfolio_summary'}
+            )
+            
+            return
