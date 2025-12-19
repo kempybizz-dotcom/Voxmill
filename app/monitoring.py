@@ -27,7 +27,7 @@ class MonitorManager:
         'tier_3': 999  # Unlimited
     }
     
-   @staticmethod
+    @staticmethod
     def parse_monitor_request(message: str, client_profile: dict) -> Tuple[bool, dict]:
         """
         Parse monitoring request and extract parameters with intelligent inference
