@@ -242,7 +242,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         
-     # ========================================
+   # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -270,154 +270,213 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
+        # ========================================
+        # FETCH CLIENT FROM AIRTABLE (TRIAL OR PAID)
+        # ========================================
+        
+        def get_client_from_airtable(sender: str) -> dict:
+            """Check Trial Users table first, then Clients table"""
+            
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            
+            if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+                logger.error("Airtable credentials missing")
+                return None
+            
+            headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+            
+            # Normalize phone for search
+            search_number = sender.replace('whatsapp:', '').replace('whatsapp%3A', '')
+            if not search_number.startswith('+'):
+                search_number = '+' + search_number
+            
+            # ========================================
+            # CHECK 1: TRIAL USERS TABLE
+            # ========================================
+            
+            try:
+                trial_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Trial%20Users"
+                
+                params = {
+                    'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
+                }
+                
+                response = requests.get(trial_table_url, headers=headers, params=params, timeout=5)
+                
+                if response.status_code == 200:
+                    records = response.json().get('records', [])
+                    
+                    if records:
+                        trial_record = records[0]
+                        fields = trial_record.get('fields', {})
+                        
+                        # Check if trial expired
+                        trial_end_date = fields.get('Trial End Date')
+                        
+                        if trial_end_date:
+                            from dateutil import parser
+                            trial_end = parser.parse(trial_end_date)
+                            
+                            if trial_end.tzinfo is None:
+                                trial_end = trial_end.replace(tzinfo=timezone.utc)
+                            
+                            if datetime.now(timezone.utc) > trial_end:
+                                # Trial expired
+                                logger.warning(f"Trial expired for {sender}")
+                                return {
+                                    'subscription_status': 'Trial',
+                                    'trial_expired': True,
+                                    'name': fields.get('Name', 'there'),
+                                    'airtable_record_id': None,
+                                    'table': 'Trial Users'
+                                }
+                        
+                        # Trial active
+                        logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
+                        return {
+                            'name': fields.get('Name', 'there'),
+                            'email': fields.get('Email', ''),
+                            'subscription_status': 'Trial',
+                            'tier': 'tier_2',
+                            'trial_expired': False,
+                            'airtable_record_id': trial_record['id'],
+                            'table': 'Trial Users',
+                            'preferences': {
+                                'preferred_regions': fields.get('Regions', ['Mayfair']) if fields.get('Regions') else ['Mayfair'],
+                                'competitor_focus': 'medium',
+                                'report_depth': 'detailed'
+                            },
+                            'usage_metrics': {
+                                'messages_used_this_month': 0,
+                                'monthly_message_limit': 50,
+                                'total_messages_sent': 0
+                            }
+                        }
+            
+            except Exception as e:
+                logger.error(f"Error checking Trial Users table: {e}")
+            
+            # ========================================
+            # CHECK 2: MAIN CLIENTS TABLE
+            # ========================================
+            
+            try:
+                clients_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Clients"
+                
+                params = {
+                    'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
+                }
+                
+                response = requests.get(clients_table_url, headers=headers, params=params, timeout=5)
+                
+                if response.status_code == 200:
+                    records = response.json().get('records', [])
+                    
+                    if records:
+                        client_record = records[0]
+                        fields = client_record.get('fields', {})
+                        
+                        subscription_status = fields.get('Subscription Status', 'Active')
+                        
+                        # Map status to tier
+                        status_to_tier = {
+                            'Active': 'tier_3',
+                            'Premium': 'tier_3',
+                            'Basic': 'tier_1',
+                            'Cancelled': 'tier_1',
+                            'Suspended': 'tier_1'
+                        }
+                        
+                        tier = status_to_tier.get(subscription_status, 'tier_1')
+                        
+                        logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
+                        
+                        return {
+                            'name': fields.get('Name', 'there'),
+                            'email': fields.get('Email', ''),
+                            'subscription_status': subscription_status,
+                            'tier': tier,
+                            'trial_expired': False,
+                            'airtable_record_id': client_record['id'],
+                            'table': 'Clients',
+                            'preferences': {
+                                'preferred_regions': fields.get('Regions', ['Mayfair']) if fields.get('Regions') else ['Mayfair'],
+                                'competitor_focus': fields.get('Competitor Focus', 'medium'),
+                                'report_depth': fields.get('Report Depth', 'detailed')
+                            },
+                            'usage_metrics': {
+                                'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                                'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
+                                'total_messages_sent': fields.get('Total Messages Sent', 0)
+                            }
+                        }
+            
+            except Exception as e:
+                logger.error(f"Error checking Clients table: {e}")
+            
+            # Not found in either table
+            return None
+        
         # ALWAYS fetch from Airtable on first message OR if stale
         if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
-            try:
-                AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-                AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-                AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+            # Fetch from Airtable (checks both Trial Users and Clients tables)
+            client_profile_airtable = get_client_from_airtable(sender)
+            
+            if client_profile_airtable:
+                # Merge with MongoDB profile (preserve history)
+                old_history = client_profile.get('query_history', []) if client_profile else []
+                old_total = client_profile.get('total_queries', 0) if client_profile else 0
                 
-                if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
-                    # Clean WhatsApp number - remove 'whatsapp:' prefix
-                    whatsapp_search = sender.replace('whatsapp:', '')
-                    whatsapp_clean = whatsapp_search.replace(' ', '')
-                    
-                    # Search Airtable
-                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}"
-                    headers = {
-                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                        "Content-Type": "application/json"
-                    }
-                    
-                    # Try exact match first
-                    params = {
-                        "filterByFormula": f"{{WhatsApp Number}}='{whatsapp_search}'"
-                    }
-                    
-                    logger.info(f"🔍 DEBUG: Searching Airtable for {whatsapp_search}")
-                    logger.info(f"🔍 DEBUG: URL: {url}")
-                    logger.info(f"🔍 DEBUG: Formula: {params.get('filterByFormula')}")
-                    
-                    response = requests.get(url, headers=headers, params=params, timeout=10)
-                    
-                    logger.info(f"🔍 DEBUG: Response status: {response.status_code}")
-                    
-                    # If no match, try with spaces removed
-                    if response.status_code == 200 and not response.json().get('records'):
-                        logger.info(f"No exact match, trying space-removed matching")
-                        params = {
-                            "filterByFormula": f"SUBSTITUTE({{WhatsApp Number}}, ' ', '')='{whatsapp_clean}'"
-                        }
-                        response = requests.get(url, headers=headers, params=params, timeout=10)
-                    
-                    if response.status_code == 200:
-                        records = response.json().get('records', [])
-                        logger.info(f"🔍 DEBUG: Found {len(records)} records")
-                        
-                        if records:
-                            fields = records[0]['fields']
-                            logger.info(f"🔍 DEBUG: Name={fields.get('Name')}, Email={fields.get('Email')}")
-                            
-                            # Map Subscription Status → Tier
-                            subscription_status = (fields.get('Subscription Status', 'Trial') or 'Trial').lower()
-                            
-                            status_to_tier = {
-                                'trial': 'tier_1',
-                                'active': 'tier_3',
-                                'paused': 'tier_1',
-                                'cancelled': 'tier_1'
-                            }
-                            
-                            tier = status_to_tier.get(subscription_status, 'tier_3')
-                            
-                            # Trigger PIN re-verification on subscription change
-                            old_status = client_profile.get('subscription_status', 'trial') if client_profile else 'trial'
-                            
-                            if old_status in ['paused', 'cancelled'] and subscription_status == 'active':
-                                # Subscription reactivated - trigger PIN re-verification
-                                PINAuthenticator.trigger_reverification_on_subscription_change(sender)
-                                logger.info(f"🔄 PIN re-verification triggered for {sender} (subscription reactivated)")
-                                
-                                # Sync to Airtable
-                                from app.pin_auth import sync_pin_status_to_airtable
-                                import asyncio
-                                asyncio.create_task(sync_pin_status_to_airtable(sender, "Requires Re-verification", "Subscription reactivated"))
-                            
-                            # Preserve query history
-                            old_history = client_profile.get('query_history', []) if client_profile else []
-                            old_total = client_profile.get('total_queries', 0) if client_profile else 0
-                            
-                            client_profile = {
-                                'whatsapp_number': sender,
-                                'email': fields.get('Email', ''),
-                                'name': fields.get('Name', 'Valued Client'),
-                                'company': fields.get('Company', ''),
-                                'tier': tier,
-                                'preferences': {
-                                    'preferred_regions': [fields.get('Preferred City', 'London')],
-                                    'preferred_city': fields.get('Preferred City', 'London'),
-                                    'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
-                                    'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
-                                    'update_frequency': fields.get('Update Frequency', 'weekly'),
-                                    'signal_sensitivity': fields.get('Signal Sensitivity', 'Medium'),
-                                    'risk_tolerance': fields.get('Observed Risk Tolerance', 'Moderate'),
-                                    'decision_style': fields.get('Decision Style', 'Analytical')
-                                },
-                                'behavioral_profile': {
-                                    'trust_state': fields.get('Trust State', 'Building'),
-                                    'confidence_trajectory': fields.get('Confidence Trajectory', 'Stable'),
-                                    'accumulating_bias': fields.get('Accumulating Bias', 'None'),
-                                    'engagement_level': fields.get('Engagement Level (AI)', 'Medium'),
-                                    'last_strategic_action_taken': fields.get('Last Strategic Action Taken'),
-                                    'last_strategic_action_recommended': fields.get('Last Strategic Action Recommended'),
-                                    'last_decision_mode_trigger': fields.get('Last Decision Mode Trigger')
-                                },
-                                'usage_metrics': {
-                                    'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
-                                    'messages_used_this_month': fields.get('Messages Used This Month', 0),
-                                    'message_limit_remaining': fields.get('Message Limit Remaining', 10000),
-                                    'total_messages_sent': fields.get('Total Messages Sent', 0),
-                                    'total_tokens_used': fields.get('Total Tokens Used', 0),
-                                    'usage_this_month_pct': fields.get('Usage This Month (%)', 0)
-                                },
-                                'team': {
-                                    'team_members': fields.get('Team Members', []),
-                                    'active_team_members': fields.get('Active Team Members', 0)
-                                },
-                                'subscription_status': subscription_status,
-                                'stripe_customer_id': fields.get('Stripe Customer ID', ''),
-                                'airtable_record_id': records[0]['id'],
-                                'airtable_last_pin_verified': fields.get('PIN Last Verified'),
-                                'total_queries': old_total,
-                                'query_history': old_history,
-                                'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-                                'updated_at': datetime.now(timezone.utc)
-                            }
-                            
-                            # Update MongoDB cache
-                            from pymongo import MongoClient
-                            MONGODB_URI = os.getenv('MONGODB_URI')
-                            if MONGODB_URI:
-                                mongo_client = MongoClient(MONGODB_URI)
-                                db = mongo_client['Voxmill']
-                                db['client_profiles'].update_one(
-                                    {'whatsapp_number': sender},
-                                    {'$set': client_profile},
-                                    upsert=True
-                                )
-                            
-                            logger.info(f"✅ Client refreshed from Airtable: {fields.get('Name')} (Status: {subscription_status}, Tier: {tier})")
-                        else:
-                            logger.info(f"❌ No Airtable record for {whatsapp_search}")
-                    elif response.status_code == 404:
-                        logger.error(f"❌ Airtable 404: Check BASE_ID={AIRTABLE_BASE_ID} and TABLE={AIRTABLE_TABLE}")
-                    else:
-                        logger.warning(f"Airtable API error: {response.status_code}")
-                        logger.error(f"🔍 DEBUG: Error response: {response.text}")
-                            
-            except Exception as e:
-                logger.error(f"Airtable API error: {e}", exc_info=True)
+                client_profile = {
+                    'whatsapp_number': sender,
+                    'name': client_profile_airtable['name'],
+                    'email': client_profile_airtable['email'],
+                    'tier': client_profile_airtable['tier'],
+                    'subscription_status': client_profile_airtable['subscription_status'],
+                    'airtable_record_id': client_profile_airtable['airtable_record_id'],
+                    'airtable_table': client_profile_airtable['table'],
+                    'preferences': client_profile_airtable['preferences'],
+                    'usage_metrics': client_profile_airtable['usage_metrics'],
+                    'trial_expired': client_profile_airtable.get('trial_expired', False),
+                    'total_queries': old_total,
+                    'query_history': old_history,
+                    'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
+                    'updated_at': datetime.now(timezone.utc)
+                }
                 
+                # Update MongoDB cache
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {'$set': client_profile},
+                        upsert=True
+                    )
+                
+                logger.info(f"✅ Client refreshed from Airtable: {client_profile['name']} ({client_profile['airtable_table']})")
+        
+        # ========================================
+        # HANDLE TRIAL EXPIRATION
+        # ========================================
+        
+        if client_profile and client_profile.get('trial_expired'):
+            logger.warning(f"🚫 TRIAL EXPIRED: {sender}")
+            
+            trial_expired_msg = """TRIAL PERIOD EXPIRED
+
+Your 24-hour trial access has concluded.
+
+To continue using Voxmill Intelligence, contact:
+📧 info@voxmill.uk
+
+Thank you for trying our service."""
+            
+            await send_twilio_message(sender, trial_expired_msg)
+            return
         
         # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
@@ -436,54 +495,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         # ========================================
-        # TRIAL EXPIRATION CHECK
-        # ========================================
-        
-        subscription_status = client_profile.get('subscription_status', 'Active')
-        
-        if subscription_status == 'Trial':
-            # Check if trial has expired (24 hours from creation)
-            created_at = client_profile.get('created_at')
-            
-            if created_at:
-                # Make timezone-aware if needed
-                if created_at.tzinfo is None:
-                    created_at = created_at.replace(tzinfo=timezone.utc)
-                
-                trial_age_hours = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
-                
-                if trial_age_hours > 24:
-                    # Trial expired
-                    logger.warning(f"🚫 TRIAL EXPIRED: {sender} (age: {trial_age_hours:.1f}h)")
-                    
-                    trial_expired_msg = f"""TRIAL PERIOD EXPIRED
-
-Your 24-hour trial access has concluded.
-
-To continue using Voxmill Intelligence:
-📧 Contact: ollys@voxmill.uk
-
-Thank you for trying our service."""
-                    
-                    await send_twilio_message(sender, trial_expired_msg)
-                    
-                    # Log interaction
-                    try:
-                        log_interaction(sender, message_text, "trial_expired", trial_expired_msg)
-                        update_client_history(sender, message_text, "trial_expired", "None")
-                    except Exception:
-                        pass
-                    
-                    return
-                else:
-                    # Trial still active - show remaining time
-                    hours_remaining = 24 - trial_age_hours
-                    logger.info(f"✅ Trial user active: {sender} ({hours_remaining:.1f}h remaining)")
-            else:
-                # No created_at timestamp - allow access but warn
-                logger.warning(f"Trial user missing created_at timestamp: {sender}")
-
-        # ========================================
         # FORCE SYNC PIN TIMESTAMP FROM AIRTABLE (EVEN IF CACHED)
         # ========================================
         
@@ -491,11 +502,13 @@ Thank you for trying our service."""
         try:
             AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
             AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+            
+            # Get correct table name
+            airtable_table = client_profile.get('airtable_table', 'Clients')
             
             if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
                 # Fetch only the PIN field from Airtable (lightweight)
-                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
                 headers = {
                     "Authorization": f"Bearer {AIRTABLE_API_KEY}",
                 }
@@ -504,7 +517,7 @@ Thank you for trying our service."""
                 
                 if response.status_code == 200:
                     fields = response.json().get('fields', {})
-                    airtable_last_pin = fields.get('Last PIN Verified')
+                    airtable_last_pin = fields.get('PIN Last Verified')
                     
                     if airtable_last_pin:
                         # Sync to MongoDB pin_auth
