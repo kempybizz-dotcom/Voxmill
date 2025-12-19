@@ -385,10 +385,6 @@ class RightmoveLiveData:
             return None
 
 
-# ============================================================
-# 2. LAND REGISTRY - FIXED SPARQL
-# ============================================================
-
 class LandRegistryData:
     """HM Land Registry with corrected SPARQL query"""
     
@@ -706,219 +702,316 @@ class OpenStreetMapEnrichment:
             return {}
 
 
-# ========================================
-        # LOAD HISTORICAL SNAPSHOTS (Wave 3 Enhancement)
+# ============================================================
+# 5. LIQUIDITY VELOCITY CALCULATOR
+# ============================================================
+
+def calculate_liquidity_velocity(properties: List[Dict], historical_snapshots: List[List[Dict]]) -> Dict:
+    """Calculate liquidity velocity (requires historical_storage.py implementation)"""
+    try:
+        from app.intelligence.liquidity_velocity import calculate_liquidity_velocity as calc_velocity
+        return calc_velocity(properties, historical_snapshots)
+    except ImportError:
+        return {
+            'error': 'module_not_found',
+            'message': 'Liquidity velocity module not available'
+        }
+    except Exception as e:
+        logger.error(f"Liquidity velocity calculation failed: {e}")
+        return {
+            'error': 'calculation_failed',
+            'message': str(e)
+        }
+
+
+# ============================================================
+# MAIN DATASET LOADER - WORLD-CLASS WITH REDIS CACHING
+# ============================================================
+
+def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
+    """
+    Load institutional-grade dataset with all intelligence layers
+    """
+    
+    try:
+        # ============================================================
+        # REDIS CACHE CHECK
+        # ============================================================
+        from app.cache_manager import CacheManager
+        
+        cache = CacheManager()
+        cached_dataset = cache.get_dataset_cache(area, vertical="real_estate")
+        
+        if cached_dataset:
+            logger.info(f"✅ CACHE HIT: Dataset for {area}")
+            return cached_dataset
+        
+        logger.info(f"📊 Loading dataset for {area}...")
+        start_time = time.time()
+        
+        # ============================================================
+        # SOURCE 1: Rightmove
+        # ============================================================
+        
+        properties = circuit_breaker.call(
+            'rightmove',
+            RightmoveLiveData.fetch,
+            area,
+            max_properties
+        )
+        
+        if not properties:
+            return _empty_dataset(area)
+        
+        properties = DataQualityValidator.remove_duplicates(properties)
+        
+        prices = [p['price'] for p in properties if p.get('price')]
+        if not prices:
+            return _empty_dataset(area)
+        
+        initial_stats = {
+            'avg_price': statistics.mean(prices),
+            'std_dev_price': statistics.stdev(prices) if len(prices) > 1 else 0
+        }
+        
+        validated_properties = []
+        rejected_count = 0
+        
+        for prop in properties:
+            is_valid, reason = DataQualityValidator.validate_property(prop, initial_stats)
+            if is_valid:
+                validated_properties.append(prop)
+            else:
+                rejected_count += 1
+        
+        properties = validated_properties
+        
+        if not properties:
+            return _empty_dataset(area)
+        
+        # ============================================================
+        # SOURCE 2: Land Registry
+        # ============================================================
+        
+        postcode_map = {
+            'Mayfair': 'W1',
+            'Knightsbridge': 'SW1X',
+            'Chelsea': 'SW3',
+            'Belgravia': 'SW1',
+            'Kensington': 'W8'
+        }
+        
+        postcode_prefix = postcode_map.get(area, 'W1')
+        
+        historical_sales = circuit_breaker.call(
+            'land_registry',
+            LandRegistryData.fetch_recent_sales,
+            area,
+            postcode_prefix,
+            6
+        ) or []
+        
+        # ============================================================
+        # SOURCE 3: OpenStreetMap
+        # ============================================================
+        
+        amenities = circuit_breaker.call(
+            'openstreetmap',
+            OpenStreetMapEnrichment.get_area_amenities,
+            area
+        ) or {}
+        
+        # ============================================================
+        # SOURCE 4: GPT-4 Sentiment
+        # ============================================================
+        
+        news_articles = InstitutionalSentimentAnalysis.fetch_recent_news(area, days=7)
+        
+        sentiment_analysis = circuit_breaker.call(
+            'gpt4_sentiment',
+            InstitutionalSentimentAnalysis.analyze_with_gpt4,
+            news_articles
+        )
+        
+        if not sentiment_analysis:
+            sentiment_analysis = {
+                'sentiment': 'neutral',
+                'confidence': 0.0,
+                'reasoning': 'Sentiment analysis unavailable',
+                'key_themes': []
+            }
+        
+        # ============================================================
+        # CALCULATE METRICS
+        # ============================================================
+        
+        prices = [p['price'] for p in properties if p.get('price')]
+        prices_per_sqft = [p['price_per_sqft'] for p in properties if p.get('price_per_sqft')]
+        
+        metrics = {
+            'property_count': len(properties),
+            'avg_price': round(statistics.mean(prices)) if prices else 0,
+            'median_price': round(statistics.median(prices)) if prices else 0,
+            'min_price': min(prices) if prices else 0,
+            'max_price': max(prices) if prices else 0,
+            'std_dev_price': round(statistics.stdev(prices)) if len(prices) > 1 else 0,
+            'avg_price_per_sqft': round(statistics.mean(prices_per_sqft)) if prices_per_sqft else 0,
+            'median_price_per_sqft': round(statistics.median(prices_per_sqft)) if prices_per_sqft else 0,
+            'total_value': round(sum(prices)) if prices else 0
+        }
+        
+        types = [p['property_type'] for p in properties]
+        if types:
+            type_counts = {}
+            for t in types:
+                type_counts[t] = type_counts.get(t, 0) + 1
+            metrics['most_common_type'] = max(type_counts, key=type_counts.get)
+        else:
+            metrics['most_common_type'] = 'Unknown'
+        
+        agents = [p['agent'] for p in properties if p.get('agent') and p['agent'] != 'Private']
+        agent_counts = {}
+        for agent in agents:
+            agent_counts[agent] = agent_counts.get(agent, 0) + 1
+        
+        top_agents = sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        dom_values = [p['days_on_market'] for p in properties if p.get('days_on_market') is not None]
+        avg_days_on_market = round(statistics.mean(dom_values)) if dom_values else None
+        
+        # ============================================================
+        # BUILD DATASET
+        # ============================================================
+        
+        current_timestamp = datetime.now(timezone.utc).isoformat()
+        is_fresh, freshness_msg = DataQualityValidator.check_data_freshness(current_timestamp, max_age_hours=24)
+        load_time = time.time() - start_time
+        
+        dataset = {
+            'properties': properties,
+            'metrics': metrics,
+            'metadata': {
+                'area': area,
+                'city': 'London',
+                'property_count': len(properties),
+                'analysis_timestamp': current_timestamp,
+                'data_source': 'multi_source_institutional',
+                'sources': ['rightmove', 'land_registry', 'openstreetmap', 'gpt4_sentiment'],
+                'is_fallback': False,
+                'data_quality': 'institutional_grade',
+                'avg_days_on_market': avg_days_on_market,
+                'load_time_seconds': round(load_time, 2),
+                'data_freshness': freshness_msg,
+                'duplicates_removed': rejected_count,
+                'validation_passed': True,
+                'cached': False
+            },
+            'intelligence': {
+                'market_sentiment': sentiment_analysis['sentiment'],
+                'sentiment_confidence': sentiment_analysis.get('confidence', 0.0),
+                'sentiment_reasoning': sentiment_analysis.get('reasoning', ''),
+                'key_themes': sentiment_analysis.get('key_themes', []),
+                'confidence_level': 'high' if len(properties) > 50 else 'medium',
+                'top_agents': [{'name': agent, 'listings': count} for agent, count in top_agents[:5]],
+                'executive_summary': (
+                    f"Institutional-grade intelligence for {area}: "
+                    f"{len(properties)} validated listings, "
+                    f"£{metrics['avg_price']:,.0f} avg, "
+                    f"£{metrics['avg_price_per_sqft']}/sqft, "
+                    f"{sentiment_analysis['sentiment']} sentiment"
+                ),
+                'recent_headlines': [a['title'] for a in news_articles[:5]]
+            },
+            'historical_sales': historical_sales,
+            'amenities': amenities
+        }
+        
+        # ========================================
+        # WAVE 3 INTELLIGENCE LAYERS
         # ========================================
         
         from app.historical_storage import get_historical_snapshots
         
         historical_snapshots = get_historical_snapshots(area, days=30)
-        logger.info(f"📊 Historical snapshots available: {len(historical_snapshots)} (last 30 days)")
-        
-        # ========================================
-        # LIQUIDITY VELOCITY (Wave 3 - Enhanced with Historical Data)
-        # ========================================
+        logger.info(f"📊 Historical snapshots: {len(historical_snapshots)}")
         
         if len(historical_snapshots) >= 2:
-            # Extract property lists from snapshots
             historical_property_lists = [s.get('properties', []) for s in historical_snapshots]
-            
-            velocity_data = calculate_liquidity_velocity(
-                properties=properties,
-                historical_snapshots=historical_property_lists
-            )
-            
+            velocity_data = calculate_liquidity_velocity(properties, historical_property_lists)
             dataset['liquidity_velocity'] = velocity_data
-            
-            if not velocity_data.get('error'):
-                logger.info(f"✅ Liquidity Velocity: {velocity_data['velocity_score']}/100 ({velocity_data['velocity_class']})")
-            else:
-                logger.warning(f"⚠️ Liquidity Velocity: {velocity_data.get('message', 'Unknown error')}")
         else:
             dataset['liquidity_velocity'] = {
                 'error': 'insufficient_history',
-                'message': f'Have {len(historical_snapshots)} snapshots, need 2+. Intelligence improving daily.',
-                'days_until_ready': max(0, 2 - len(historical_snapshots))
+                'message': f'Need 2+ snapshots, have {len(historical_snapshots)}'
             }
-            logger.info(f"⏳ Liquidity Velocity: Unavailable (need 2+ days, have {len(historical_snapshots)})")
-        
-        # ========================================
-        # LIQUIDITY WINDOWS (Wave 3 - Predictive Timing)
-        # ========================================
         
         if len(historical_snapshots) >= 10:
             from app.intelligence.liquidity_window_predictor import predict_liquidity_windows
-            
-            # Need velocity data for window prediction
             if dataset.get('liquidity_velocity') and not dataset['liquidity_velocity'].get('error'):
-                windows_data = predict_liquidity_windows(
-                    area=area,
-                    current_velocity=dataset['liquidity_velocity'],
-                    historical_data=historical_snapshots
-                )
-                
+                windows_data = predict_liquidity_windows(area, dataset['liquidity_velocity'], historical_snapshots)
                 dataset['liquidity_windows'] = windows_data
-                
-                if not windows_data.get('error'):
-                    timing_rec = windows_data.get('timing_recommendation', 'Unknown')
-                    logger.info(f"✅ Liquidity Windows: {timing_rec} ({windows_data.get('total_windows', 0)} windows predicted)")
-                else:
-                    logger.warning(f"⚠️ Liquidity Windows: {windows_data.get('message')}")
-            else:
-                dataset['liquidity_windows'] = {
-                    'error': 'velocity_required',
-                    'message': 'Liquidity velocity data required for window prediction'
-                }
-                logger.info(f"⏭️ Liquidity Windows: Skipped (requires velocity data)")
-        else:
-            dataset['liquidity_windows'] = {
-                'error': 'insufficient_history',
-                'message': f'Have {len(historical_snapshots)} snapshots, need 10+. Intelligence improving daily.',
-                'days_until_ready': max(0, 10 - len(historical_snapshots))
-            }
-            logger.info(f"⏳ Liquidity Windows: Unavailable (need 10+ days, have {len(historical_snapshots)})")
-        
-        # ========================================
-        # AGENT BEHAVIORAL PROFILING (Wave 3)
-        # ========================================
         
         if len(historical_snapshots) >= 30:
             from app.historical_storage import get_agent_behavioral_history
             from app.intelligence.agent_profiler import classify_agent_archetype_v2
             
             agent_profiles = []
-            
-            # Profile top 5 agents
             for agent_name, count in top_agents[:5]:
-                # Get behavioral history for this agent
                 agent_history = get_agent_behavioral_history(agent_name, area, days=60)
-                
                 if len(agent_history) >= 3:
                     profile = classify_agent_archetype_v2(agent_name, agent_history)
-                    
                     if not profile.get('error'):
                         agent_profiles.append({
                             'agent': agent_name,
                             'archetype': profile['primary_archetype'],
-                            'confidence': profile['primary_confidence'],
-                            'behavioral_pattern': profile['archetype_definition']['behavior'],
-                            'prediction_reliability': profile['prediction_reliability']
+                            'confidence': profile['primary_confidence']
                         })
-            
             dataset['agent_profiles'] = agent_profiles
-            
-            if agent_profiles:
-                logger.info(f"✅ Agent Profiling: {len(agent_profiles)} agents profiled")
-            else:
-                logger.info(f"⏭️ Agent Profiling: No agents with sufficient history")
         else:
             dataset['agent_profiles'] = []
-            logger.info(f"⏳ Agent Profiling: Unavailable (need 30+ days, have {len(historical_snapshots)})")
-        
-      # ========================================
-        # BEHAVIORAL CLUSTERING (Wave 3) - FIXED
-        # ========================================
         
         if dataset.get('agent_profiles') and len(dataset['agent_profiles']) >= 3:
             from app.intelligence.behavioral_clustering import cluster_agents_by_behavior
-            
-            # FIX: Pass both area and agent_profiles
             clustering = cluster_agents_by_behavior(area=area, agent_profiles=dataset['agent_profiles'])
-            
             dataset['behavioral_clusters'] = clustering
-            
-            if not clustering.get('error'):
-                logger.info(f"✅ Behavioral Clusters: {len(clustering.get('clusters', []))} clusters identified")
-            else:
-                logger.info(f"⏭️ Behavioral Clustering: {clustering.get('message')}")
-        else:
-            dataset['behavioral_clusters'] = {
-                'error': 'insufficient_profiles',
-                'message': 'Need 3+ agent profiles for clustering'
-            }
-            logger.info(f"⏭️ Behavioral Clustering: Skipped (need 3+ agent profiles)")
-        
-        # ========================================
-        # CASCADE PREDICTION (Wave 3) - DISABLED UNTIL 30 DAYS
-        # ========================================
-        
-        # Skip cascade network building - requires base implementation
-        # Will be available once historical data accumulates
-        logger.info(f"⏳ Cascade Network: Unavailable (requires 30+ days of data for network building)")
-        
-        # ========================================
-        # MICROMARKET SEGMENTATION (Wave 3)
-        # ========================================
         
         from app.intelligence.micromarket_segmenter import segment_micromarkets
-        
         micromarkets = segment_micromarkets(properties, area)
-        
         dataset['micromarkets'] = micromarkets
-        
-        if not micromarkets.get('error'):
-            logger.info(f"✅ Micromarkets: {micromarkets.get('total_micromarkets', 0)} zones identified")
-        else:
-            logger.info(f"⏭️ Micromarkets: {micromarkets.get('message')}")
-        
-        # ========================================
-        # TREND DETECTION (Wave 3) - FIXED
-        # ========================================
         
         if len(historical_snapshots) >= 7:
             from app.intelligence.trend_detector import detect_market_trends
-            
-            # FIX: Use correct function name and signature
             trends = detect_market_trends(area=area, lookback_days=14)
-            
             dataset['detected_trends'] = trends
-            
-            if trends:
-                logger.info(f"✅ Trend Detection: {len(trends)} trends detected")
-            else:
-                logger.info(f"⏭️ Trend Detection: No significant trends")
         else:
             dataset['detected_trends'] = []
-            logger.info(f"⏳ Trend Detection: Unavailable (need 7+ days, have {len(historical_snapshots)})")
         
         # ========================================
-        # CACHE THE DATASET FOR 30 MINUTES
+        # CACHE & STORE
         # ========================================
+        
         cache.set_dataset_cache(area, dataset, vertical="real_estate")
         
-        # ========================================
-        # STORE HISTORICAL SNAPSHOT (Wave 3 - Data Accumulation)
-        # ========================================
-        
         from app.historical_storage import store_daily_snapshot
-        
-        # Store snapshot for future intelligence layer use
         store_daily_snapshot(dataset, area)
         
-        logger.info(f"✅ WORLD-CLASS STACK LOADED in {load_time:.2f}s:")
-        logger.info(f"   • {len(properties)} properties (validated)")
-        logger.info(f"   • {len(historical_sales)} historical sales")
-        logger.info(f"   • {sentiment_analysis['sentiment']} sentiment ({sentiment_analysis.get('confidence', 0)*100:.0f}% confidence)")
-        logger.info(f"   • {amenities.get('walkability_score', 0)}/100 walkability")
-        logger.info(f"   • 💾 Cached for 30 minutes")
+        logger.info(f"✅ Dataset loaded in {load_time:.2f}s")
         
         return dataset
         
     except Exception as e:
-        logger.error(f"Critical dataset load error: {e}", exc_info=True)
+        logger.error(f"Dataset load error: {e}", exc_info=True)
         return _empty_dataset(area)
 
 
 def load_historical_snapshots(area: str, days: int = 30) -> List[Dict]:
-    """
-    Load historical snapshots (DEPRECATED - use historical_storage.get_historical_snapshots)
-    """
+    """Load historical snapshots"""
     from app.historical_storage import get_historical_snapshots
     return get_historical_snapshots(area, days)
 
 
 def _empty_dataset(area: str) -> Dict:
-    """Return empty dataset with error status"""
+    """Return empty dataset"""
     return {
         'properties': [],
         'metrics': {'property_count': 0, 'avg_price': 0},
