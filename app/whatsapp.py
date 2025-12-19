@@ -868,8 +868,8 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 return
 
-        # ========================================
-        # GOVERNANCE LAYER - INSERTED HERE
+       # ========================================
+        # GOVERNANCE LAYER - WORLD-CLASS ENFORCEMENT
         # ========================================
         
         from app.conversational_governor import ConversationalGovernor, Intent
@@ -887,12 +887,17 @@ Standing by."""
             }
         )
         
+        # ========================================
+        # CHECKPOINT 6: AUTHORITY POLICY GATE
+        # ========================================
+        
         # If governance blocks response, stop here
         if governance_result.blocked:
             if governance_result.silence_required:
-                logger.info(f"✅ SILENCE protocol - no response")
+                logger.info(f"✅ SILENCE protocol - no response sent")
                 return
             else:
+                # Send governance-controlled response
                 await send_twilio_message(sender, governance_result.response)
                 
                 # Update conversation session
@@ -917,13 +922,87 @@ Standing by."""
                 logger.info(f"✅ Governance override: {governance_result.intent.value}")
                 return
         
-        # If governance allows, continue to your existing handlers with CONSTRAINTS
+        # ========================================
+        # EXTRACT AND ENFORCE CONSTRAINTS
+        # ========================================
+        
+        # Extract envelope constraints
         allowed_response_shape = governance_result.allowed_shapes
         max_words = governance_result.max_words
         analysis_allowed = governance_result.analysis_allowed
+        data_load_allowed = governance_result.data_load_allowed
         
-        logger.info(f"✅ Governance passed: intent={governance_result.intent.value}, max_words={max_words}, analysis={analysis_allowed}")
+        logger.info(f"✅ Governance passed: intent={governance_result.intent.value}, max_words={max_words}, analysis={analysis_allowed}, data_load={data_load_allowed}")
         
+        # ========================================
+        # ENFORCE DATA LOADING CONSTRAINT (CRITICAL)
+        # ========================================
+        
+        if not data_load_allowed:
+            logger.warning(f"❌ Data loading blocked by governance for intent: {governance_result.intent.value}")
+            
+            # This should only happen if governance passed but restricted operations
+            # Return brief acknowledgment
+            await send_twilio_message(sender, "Standing by.")
+            
+            # Update session
+            try:
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="Standing by.",
+                    metadata={'category': 'data_load_blocked', 'intent': governance_result.intent.value}
+                )
+            except Exception:
+                pass
+            
+            # Log interaction
+            try:
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                log_interaction(sender, message_text, "data_load_blocked", "Standing by.")
+                update_client_history(sender, message_text, "data_load_blocked", preferred_region)
+            except Exception:
+                pass
+            
+            return  # CRITICAL: Stop pipeline here
+        
+        # ========================================
+        # ENFORCE ANALYSIS CONSTRAINT (CRITICAL)
+        # ========================================
+        
+        if not analysis_allowed:
+            logger.warning(f"❌ Analysis blocked by governance for intent: {governance_result.intent.value}")
+            
+            # Return status-only response
+            await send_twilio_message(sender, "Monitoring.")
+            
+            # Update session
+            try:
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="Monitoring.",
+                    metadata={'category': 'analysis_blocked', 'intent': governance_result.intent.value}
+                )
+            except Exception:
+                pass
+            
+            # Log interaction
+            try:
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                log_interaction(sender, message_text, "analysis_blocked", "Monitoring.")
+                update_client_history(sender, message_text, "analysis_blocked", preferred_region)
+            except Exception:
+                pass
+            
+            return  # CRITICAL: Stop pipeline here
+        
+        # ========================================
+        # GOVERNANCE PASSED - CONTINUE WITH CONSTRAINTS
+        # ========================================
+        
+        # Store constraints for downstream enforcement
+        # These will be checked again before LLM call and after response generation
         # ========================================
         # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
         # ========================================
@@ -2015,6 +2094,179 @@ Standing by."""
             # Standard responses get formatted headers
             formatted_response = format_analyst_response(response_text, category)
             logger.info(f"✅ Standard response (with headers): {word_count} words")
+
+        # ========================================
+        # PHASE 4: PROHIBITION ENFORCEMENT (CHECKPOINT 10)
+        # ========================================
+        
+        logger.info(f"🔍 Scanning response for Phase 4 prohibitions...")
+        
+        # Define prohibited patterns with severity levels
+        prohibited_patterns = {
+            # CRITICAL violations (abort response)
+            'hedging_critical': {
+                'patterns': ['might', 'could', 'may', 'possibly', 'perhaps', 'likely', 'probably', 'appears to', 'seems to', 'suggests', 'indicates', 'tends to'],
+                'severity': 'CRITICAL',
+                'category': 'hedging_language'
+            },
+            'disclaimers': {
+                'patterns': ["i'm not a financial advisor", "this is not investment advice", "not financial advice", "consult a professional", "as an ai", "i don't have access to", "i cannot", "based on available data", "according to our analysis"],
+                'severity': 'CRITICAL',
+                'category': 'disclaimers'
+            },
+            'chatbot_tone': {
+                'patterns': ['great question', 'happy to help', 'feel free to', "don't hesitate", 'please let me know', 'absolutely!', 'definitely!', 'would you like me to'],
+                'severity': 'CRITICAL',
+                'category': 'chatbot_tone'
+            },
+            'questions_to_user': {
+                'patterns': ['?'],  # Any question mark (except in REFUSAL/UNKNOWN intents)
+                'severity': 'HIGH',
+                'category': 'question_generation'
+            },
+            
+            # HIGH violations (strip and log)
+            'explanatory_padding': {
+                'patterns': ['i analyzed', 'i looked at', 'i examined', 'i considered', 'let me explain', 'to clarify', 'in other words', 'what this means is'],
+                'severity': 'HIGH',
+                'category': 'explanatory_padding'
+            },
+            'empty_filler': {
+                'patterns': ['at this time', 'currently', 'at present', 'as of now', 'going forward', 'in terms of', 'with regard to', "it's worth noting", 'notably', 'furthermore', 'additionally', 'moreover'],
+                'severity': 'MEDIUM',
+                'category': 'empty_filler'
+            }
+        }
+        
+        violations_found = []
+        response_lower = formatted_response.lower()
+        
+        # Scan for violations
+        for violation_type, config in prohibited_patterns.items():
+            patterns = config['patterns']
+            severity = config['severity']
+            category = config['category']
+            
+            for pattern in patterns:
+                # Special handling for question marks
+                if pattern == '?':
+                    question_count = formatted_response.count('?')
+                    if question_count > 0 and governance_result.intent not in [Intent.UNKNOWN, Intent.SECURITY]:
+                        violations_found.append({
+                            'type': violation_type,
+                            'pattern': f"question_mark (count: {question_count})",
+                            'severity': severity,
+                            'category': category
+                        })
+                        logger.warning(f"⚠️ PROHIBITION VIOLATION: {category} - found {question_count} question marks")
+                # Standard pattern matching
+                elif pattern in response_lower:
+                    violations_found.append({
+                        'type': violation_type,
+                        'pattern': pattern,
+                        'severity': severity,
+                        'category': category
+                    })
+                    logger.warning(f"⚠️ PROHIBITION VIOLATION: {category} - '{pattern}'")
+        
+        # Enforce violations
+        if violations_found:
+            # Check for CRITICAL violations
+            critical_violations = [v for v in violations_found if v['severity'] == 'CRITICAL']
+            
+            if critical_violations:
+                logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
+                
+                # ABORT - send refusal
+                formatted_response = """Response quality check failed.
+
+Please rephrase your query or contact support if this persists."""
+                
+                # Log the failure
+                try:
+                    from pymongo import MongoClient
+                    MONGODB_URI = os.getenv('MONGODB_URI')
+                    if MONGODB_URI:
+                        mongo_client = MongoClient(MONGODB_URI)
+                        db = mongo_client['Voxmill']
+                        
+                        db['prohibition_violations'].insert_one({
+                            'timestamp': datetime.now(timezone.utc),
+                            'sender': sender,
+                            'intent': governance_result.intent.value,
+                            'violations': critical_violations,
+                            'response_snippet': formatted_response[:200],
+                            'severity': 'CRITICAL'
+                        })
+                except Exception as log_error:
+                    logger.error(f"Failed to log violation: {log_error}")
+            
+            else:
+                # HIGH/MEDIUM violations - strip patterns
+                logger.warning(f"⚠️ Non-critical violations ({len(violations_found)}): stripping patterns")
+                
+                for violation in violations_found:
+                    pattern = violation['pattern']
+                    
+                    # Skip question marks (can't strip those easily)
+                    if 'question_mark' in str(pattern):
+                        continue
+                    
+                    # Replace pattern with empty string (case-insensitive)
+                    import re
+                    formatted_response = re.sub(
+                        re.escape(pattern),
+                        '',
+                        formatted_response,
+                        flags=re.IGNORECASE
+                    )
+                
+                # Clean up extra spaces
+                formatted_response = ' '.join(formatted_response.split())
+                
+                logger.info(f"✅ Patterns stripped, response cleaned")
+        
+        else:
+            logger.info(f"✅ No prohibition violations detected")
+        
+        # ========================================
+        # ENVELOPE CONSTRAINT: MAX WORD COUNT
+        # ========================================
+        
+        word_count = len(formatted_response.split())
+        
+        if word_count > max_words and max_words > 0:
+            logger.warning(f"⚠️ Response exceeds max_words: {word_count} > {max_words}")
+            
+            # Truncate at sentence boundary
+            sentences = formatted_response.split('. ')
+            truncated = []
+            current_words = 0
+            
+            for sentence in sentences:
+                sentence_words = len(sentence.split())
+                if current_words + sentence_words <= max_words:
+                    truncated.append(sentence)
+                    current_words += sentence_words
+                else:
+                    break
+            
+            # Reconstruct response
+            if truncated:
+                formatted_response = '. '.join(truncated)
+                # Add period if last sentence was complete
+                if not formatted_response.endswith('.'):
+                    formatted_response += '.'
+                
+                logger.info(f"✅ Response truncated to {len(formatted_response.split())} words")
+            else:
+                # Couldn't truncate intelligently - force hard truncation
+                words = formatted_response.split()[:max_words]
+                formatted_response = ' '.join(words) + '...'
+                logger.warning(f"⚠️ Hard truncation applied")
+        
+        else:
+            logger.info(f"✅ Word count OK: {word_count}/{max_words}")
         
         # ============================================================
         # WAVE 1: Validate response for hallucinations
