@@ -1629,7 +1629,7 @@ What market intelligence can I provide?"""
         
         logger.info(f"🤖 COMPLEX QUERY - Using GPT-4 for: {message_normalized[:50]}")
         
-        # ========================================
+       # ========================================
         # GPT-4 ANALYSIS
         # ========================================
         
@@ -1640,8 +1640,22 @@ What market intelligence can I provide?"""
             comparison_datasets=comparison_datasets if comparison_datasets else None
         )
         
-        # Format response
-        formatted_response = format_analyst_response(response_text, category)
+        # ========================================
+        # FORMAT RESPONSE (STRIP HEADERS FOR AUTHORITY MODE)
+        # ========================================
+        
+        # Check if response is ultra-brief (Authority Mode)
+        word_count = len(response_text.split())
+        is_authority_response = response_metadata.get('authority_mode', False) or word_count < 50
+        
+        if is_authority_response:
+            # NO headers for brief responses - pure institutional authority
+            formatted_response = response_text.strip()
+            logger.info(f"✅ Authority response (no headers): {word_count} words")
+        else:
+            # Standard responses get formatted headers
+            formatted_response = format_analyst_response(response_text, category)
+            logger.info(f"✅ Standard response (with headers): {word_count} words")
         
         # ============================================================
         # WAVE 1: Validate response for hallucinations
