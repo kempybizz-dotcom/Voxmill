@@ -1694,7 +1694,11 @@ What market intelligence can I provide?"""
             logger.critical(f"LLM output failed security validation: {reason}")
             formatted_response = "An error occurred processing your request. Please try again."
         
-        # Add data freshness warning if needed
+        # Add data freshness warning if dataset is stale
+        data_freshness_warning = ""
+        if dataset.get('metadata', {}).get('data_age_hours', 0) > 24:
+            data_freshness_warning = "\n\n⚠️ Data >24hrs old"
+        
         formatted_response += data_freshness_warning
         
         # ========================================
