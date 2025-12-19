@@ -861,7 +861,34 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 return
 
-       # ========================================
+        # ========================================
+        # GREETING DETECTION - PERSONALIZED RESPONSE
+        # ========================================
+        
+        greeting_keywords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'morning', 'afternoon', 'evening']
+        
+        if any(kw == message_lower for kw in greeting_keywords):
+            # User is greeting - respond with personalized greeting
+            client_name = client_profile.get('name', 'there')
+            greeting_response = get_time_appropriate_greeting(client_name)
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            # Update session
+            try:
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=greeting_response,
+                    metadata={'category': 'greeting'}
+                )
+            except Exception:
+                pass
+            
+            logger.info(f"✅ Greeting handled: {greeting_response}")
+            return
+
+        # ========================================
         # GOVERNANCE LAYER - WORLD-CLASS ENFORCEMENT
         # ========================================
         
