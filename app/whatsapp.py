@@ -868,7 +868,7 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 return
 
-# ========================================
+        # ========================================
         # GOVERNANCE LAYER - INSERTED HERE
         # ========================================
         
@@ -2100,7 +2100,6 @@ Standing by."""
                 # Build update payload - ONLY include fields with valid values
                 update_fields = {
                     'Messages Used This Month': int(messages_used),
-                    'Message Limit Remaining': int(max(0, message_limit - messages_used)),
                     'Usage This Month (%)': round(float(usage_pct), 1),
                     'Total Messages Sent': int(total_messages),
                     'Last Message Date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'),
