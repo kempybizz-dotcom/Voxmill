@@ -242,7 +242,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         
-        # ========================================
+     # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -358,14 +358,36 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                                     'preferred_city': fields.get('Preferred City', 'London'),
                                     'competitor_focus': (fields.get('Competitor Focus', 'Medium') or 'Medium').lower(),
                                     'report_depth': (fields.get('Report Depth', 'Detailed') or 'Detailed').lower(),
-                                    'update_frequency': 'weekly'
+                                    'update_frequency': fields.get('Update Frequency', 'weekly'),
+                                    'signal_sensitivity': fields.get('Signal Sensitivity', 'Medium'),
+                                    'risk_tolerance': fields.get('Observed Risk Tolerance', 'Moderate'),
+                                    'decision_style': fields.get('Decision Style', 'Analytical')
                                 },
-                                'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
-                                'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                                'behavioral_profile': {
+                                    'trust_state': fields.get('Trust State', 'Building'),
+                                    'confidence_trajectory': fields.get('Confidence Trajectory', 'Stable'),
+                                    'accumulating_bias': fields.get('Accumulating Bias', 'None'),
+                                    'engagement_level': fields.get('Engagement Level (AI)', 'Medium'),
+                                    'last_strategic_action_taken': fields.get('Last Strategic Action Taken'),
+                                    'last_strategic_action_recommended': fields.get('Last Strategic Action Recommended'),
+                                    'last_decision_mode_trigger': fields.get('Last Decision Mode Trigger')
+                                },
+                                'usage_metrics': {
+                                    'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
+                                    'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                                    'message_limit_remaining': fields.get('Message Limit Remaining', 10000),
+                                    'total_messages_sent': fields.get('Total Messages Sent', 0),
+                                    'total_tokens_used': fields.get('Total Tokens Used', 0),
+                                    'usage_this_month_pct': fields.get('Usage This Month (%)', 0)
+                                },
+                                'team': {
+                                    'team_members': fields.get('Team Members', []),
+                                    'active_team_members': fields.get('Active Team Members', 0)
+                                },
                                 'subscription_status': subscription_status,
-                                'stripe_customer_id': '',
+                                'stripe_customer_id': fields.get('Stripe Customer ID', ''),
                                 'airtable_record_id': records[0]['id'],
-                                'airtable_last_pin_verified': fields.get('Last PIN Verified'),
+                                'airtable_last_pin_verified': fields.get('PIN Last Verified'),
                                 'total_queries': old_total,
                                 'query_history': old_history,
                                 'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
@@ -395,6 +417,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                             
             except Exception as e:
                 logger.error(f"Airtable API error: {e}", exc_info=True)
+                
         
         # ========================================
         # WHITELIST CHECK - BLOCK UNAUTHORIZED NUMBERS
