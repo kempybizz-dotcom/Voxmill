@@ -868,14 +868,70 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 return
 
+# ========================================
+        # GOVERNANCE LAYER - INSERTED HERE
+        # ========================================
+        
+        from app.conversational_governor import ConversationalGovernor, Intent
+        
+        # Classify intent and check if response allowed
+        governance_result = await ConversationalGovernor.govern(
+            message_text=message_text,
+            sender=sender,
+            client_profile=client_profile,
+            system_state={
+                'subscription_active': client_profile.get('subscription_status') == 'Active',
+                'pin_unlocked': True,  # Already checked above
+                'quota_remaining': 100,  # Calculate from usage
+                'monitoring_active': len(client_profile.get('active_monitors', [])) > 0
+            }
+        )
+        
+        # If governance blocks response, stop here
+        if governance_result.blocked:
+            if governance_result.silence_required:
+                logger.info(f"✅ SILENCE protocol - no response")
+                return
+            else:
+                await send_twilio_message(sender, governance_result.response)
+                
+                # Update conversation session
+                try:
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=governance_result.response,
+                        metadata={'category': 'governance_override', 'intent': governance_result.intent.value}
+                    )
+                except Exception as session_error:
+                    logger.warning(f"Session update failed (non-critical): {session_error}")
+                
+                # Log interaction
+                try:
+                    preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                    log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
+                    update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                except Exception as log_error:
+                    logger.warning(f"Logging failed (non-critical): {log_error}")
+                
+                logger.info(f"✅ Governance override: {governance_result.intent.value}")
+                return
+        
+        # If governance allows, continue to your existing handlers with CONSTRAINTS
+        allowed_response_shape = governance_result.allowed_shapes
+        max_words = governance_result.max_words
+        analysis_allowed = governance_result.analysis_allowed
+        
+        logger.info(f"✅ Governance passed: intent={governance_result.intent.value}, max_words={max_words}, analysis={analysis_allowed}")
+        
         # ========================================
         # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
         # ========================================
-
+        
         # Handle "show monitors" / "what am I monitoring" / "monitoring status" queries
         status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 
                            'my monitor', 'active monitor', 'current monitor', 'monitoring']
-
+        
         if any(kw in message_lower for kw in status_keywords):
             try:
                 from app.monitoring import show_monitors
