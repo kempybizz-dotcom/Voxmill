@@ -11,6 +11,7 @@ import hashlib
 import re
 import requests
 import pytz
+from typing import Dict, List, Optional
 from app.instant_response import InstantIntelligence, should_use_instant_response
 import asyncio
 from datetime import datetime, timezone, timedelta
