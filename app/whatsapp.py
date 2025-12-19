@@ -1305,19 +1305,28 @@ Risk mitigated by: timing discipline, exit readiness."""
         query_history = client_profile.get('query_history', [])
         
         # SPAM PROTECTION: Minimum 2 seconds between messages
+        # SPAM PROTECTION: Minimum 2 seconds between messages
         if query_history:
-            last_query_time = query_history[-1].get('timestamp')
-            if last_query_time:
-                # Fix timezone-naive datetime issue
-                if last_query_time.tzinfo is None:
-                    last_query_time = last_query_time.replace(tzinfo=timezone.utc)
-                
-                seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
-                
-                if seconds_since_last < 2:
-                    # Too fast - silently ignore (likely accidental double-tap)
-                    logger.warning(f"Spam protection triggered for {sender} ({seconds_since_last:.1f}s since last)")
-                    return
+            # Get last NON-rate_check query (ignore rate_check sentinel entries)
+            last_real_query = None
+            for q in reversed(query_history):
+                if q.get('category') != 'rate_check':
+                    last_real_query = q
+                    break
+            
+            if last_real_query:
+                last_query_time = last_real_query.get('timestamp')
+                if last_query_time:
+                    # Fix timezone-naive datetime issue
+                    if last_query_time.tzinfo is None:
+                        last_query_time = last_query_time.replace(tzinfo=timezone.utc)
+                    
+                    seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
+                    
+                    if seconds_since_last < 2:
+                        # Too fast - silently ignore (likely accidental double-tap)
+                        logger.warning(f"Spam protection triggered for {sender} ({seconds_since_last:.1f}s since last)")
+                        return
         
         # RATE LIMITING: Queries per hour by tier
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
