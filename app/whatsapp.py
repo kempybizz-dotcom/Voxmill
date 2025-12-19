@@ -1552,10 +1552,19 @@ What market intelligence can I provide?"""
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
         
-        # ========================================
+       # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
+        # CRITICAL: Validate preferred_region before loading (detect corruption)
+        if not preferred_region or len(preferred_region) < 3:
+            logger.error(f"❌ CORRUPTED preferred_region detected: '{preferred_region}' (length: {len(preferred_region) if preferred_region else 0})")
+            # Force reload from client profile
+            preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+            preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
+            logger.info(f"✅ FIXED preferred_region to: '{preferred_region}'")
+        
+        logger.info(f"🎯 Loading dataset for region: '{preferred_region}'")
         dataset = load_dataset(area=preferred_region)
         
         # DEBUG: Log what we got
