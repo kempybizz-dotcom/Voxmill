@@ -58,6 +58,10 @@ Examples:
 
 NO headers, NO bullets, NO multi-part responses unless data justifies it.
 
+CRITICAL: NEVER mention datasets, coverage, data quality, or technical internals.
+NEVER say "based on available data" or "our dataset shows".
+State conclusions directly. You are not explaining your work.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DECISION MODE (PRIORITY 2)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -111,6 +115,7 @@ MANDATORY RULES
 ✘ NEVER use emojis (except Decision Mode 🎯)
 ✘ NEVER thank user
 ✘ NEVER write >150 words (except Decision Mode)
+✘ NEVER mention "dataset", "coverage", "data quality", "based on"
 
 You are world-class. Act like it.
 """
@@ -118,7 +123,7 @@ You are world-class. Act like it.
 
 async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
     """
-    Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE.
+    Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE + AUTHORITY MODE.
     
     Args:
         message: User query
@@ -346,11 +351,116 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         is_timing_query = any(keyword in message_lower for keyword in timing_keywords)
         is_clustering_query = any(keyword in message_lower for keyword in clustering_keywords)
         
+        # ========================================
+        # AUTHORITY MODE DETECTION (NEW - WORLD CLASS)
+        # ========================================
+        
+        # Detect ultra-brief queries that demand authority, not analysis
+        authority_mode_triggers = [
+            # Single-word queries
+            message_lower in ['overview', 'update', 'status', 'thoughts', 'opinion', 'view', 'sentiment'],
+            
+            # Two-word casual queries
+            message_lower in ['whats up', 'what up', 'any news', 'any updates', 'market status', 'market overview'],
+            
+            # Vague/emotional queries (3-6 words)
+            len(message.split()) <= 6 and any(word in message_lower for word in [
+                'feel', 'sense', 'think', 'believe', 'seems', 'looks', 'appears', 'noisy'
+            ]),
+            
+            # Exploratory questions (short)
+            message_lower.startswith('any ') and len(message.split()) <= 4,
+            
+            # Reflective questions
+            any(phrase in message_lower for phrase in [
+                'what am i', 'where am i', 'how am i', 'am i missing', 'what\'s missing', 'whats missing'
+            ]),
+            
+            # Acknowledgments
+            message_lower in ['thanks', 'thank you', 'ok', 'got it', 'noted', 'understood', 'yep', 'yeah', 'cool']
+        ]
+        
+        is_authority_mode = any(authority_mode_triggers) and not is_decision_mode
+        
         # Log detections
         if is_meta_strategic:
             logger.info(f"✅ META-STRATEGIC query detected: {message[:50]}")
         if is_decision_mode:
             logger.info(f"✅ DECISION MODE triggered: {message[:50]}")
+        if is_authority_mode:
+            logger.info(f"✅ AUTHORITY MODE triggered: {message[:50]}")
+        
+        # ========================================
+        # AUTHORITY MODE: ULTRA-BRIEF OVERRIDE (NEW - WORLD CLASS)
+        # ========================================
+        
+        if is_authority_mode:
+            # Don't even call GPT-4 - return hardcoded authority responses
+            # This creates the "already 10 steps ahead" psychological effect
+            
+            area = metadata.get('area', 'Market')
+            sentiment = intelligence.get('market_sentiment', 'Neutral').lower()
+            property_count = len(properties)
+            avg_price = metrics.get('avg_price', 0)
+            
+            authority_responses = {
+                # Market queries
+                'overview': f"{area}: {sentiment}. {property_count} units.",
+                'market overview': f"{area}: {sentiment}. {property_count} units.",
+                'update': f"Inventory: {property_count}. Sentiment: {sentiment}.",
+                'status': "Standing by.",
+                'sentiment': f"{sentiment.capitalize()}.",
+                
+                # Vague queries
+                'whats up': "Activity clustered. Direction unresolved.",
+                'what up': "Quiet.",
+                'any news': "Monitoring.",
+                'any updates': "Holding position.",
+                
+                # Blind spots (most common meta-strategic)
+                'any blind': "Off-market flow. Agent intent.",
+                'blind spot': "Liquidity timing. Entry precision.",
+                'what am i missing': "Who moves first.",
+                'whats missing': "Off-market flow.",
+                'what\'s missing': "Off-market flow.",
+                'am i missing': "Agent positioning.",
+                
+                # Feeling queries
+                'feel': "Noise precedes direction.",
+                'noisy': "Noise precedes direction.",
+                'seems': "Surface volatility. Core stable.",
+                'looks': "Positioning, not panic.",
+                
+                # Acknowledgments
+                'thanks': "Standing by.",
+                'thank you': "Noted.",
+                'ok': "Confirmed.",
+                'got it': "Noted.",
+                'noted': "Standing by.",
+                'understood': "Confirmed.",
+                'yep': "Noted.",
+                'yeah': "Noted.",
+                'cool': "Standing by.",
+            }
+            
+            # Match query to response
+            for trigger, response in authority_responses.items():
+                if trigger in message_lower:
+                    logger.info(f"✅ Authority override: '{trigger}' → {len(response.split())} words")
+                    return "market_overview", response, {
+                        'confidence_level': 'high',
+                        'data_filtered': [],
+                        'recommendation_urgency': 'monitor',
+                        'authority_mode': True
+                    }
+            
+            # Default authority response for unmatched queries
+            return "market_overview", "Noted.", {
+                'confidence_level': 'high',
+                'data_filtered': [],
+                'recommendation_urgency': 'monitor',
+                'authority_mode': True
+            }
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
@@ -574,6 +684,8 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
             mode = "DECISION MODE - EXECUTIVE DIRECTIVE"
         elif is_meta_strategic:
             mode = "META-STRATEGIC ASSESSMENT"
+        elif is_authority_mode:
+            mode = "AUTHORITY MODE"
         elif is_greeting and not is_returning_user:
             mode = "FIRST CONTACT GREETING"
         elif is_greeting and is_returning_user:
@@ -626,7 +738,8 @@ REMEMBER:
 - Default to 2-3 sentences (30-80 words) for standard queries
 - Use bullets ONLY when data justifies structure
 - Keep responses under 150 words unless Decision Mode
-- Be declarative and institutional"""
+- Be declarative and institutional
+- NEVER mention datasets, coverage, data quality, or technical internals"""
         
         # ========================================
         # HARD GATE: UNSUPPORTED REGIONS
