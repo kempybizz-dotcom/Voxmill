@@ -1948,7 +1948,7 @@ Standing by."""
         
         logger.info(f"✅ Shape enforced: {response_shape.value}, {len(formatted_response.split())} words")
 
-        # ========================================
+       # ========================================
         # PHASE 4: PROHIBITION ENFORCEMENT (CHECKPOINT 10)
         # ========================================
         
@@ -2066,7 +2066,6 @@ Please rephrase your query or contact support if this persists."""
                         continue
                     
                     # Replace pattern with empty string (case-insensitive)
-                    import re
                     formatted_response = re.sub(
                         re.escape(pattern),
                         '',
