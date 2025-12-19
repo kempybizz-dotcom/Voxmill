@@ -141,8 +141,9 @@ class ConversationSession:
 
     # In conversation_manager.py, add:
 
-def get_cross_session_summary(self, days: int = 7) -> str:
-    """Get summary of key decisions/topics from past N days"""
+# Should be indented 4 spaces (class method)
+    def get_cross_session_summary(self, days: int = 7) -> str:
+        """Get summary of key decisions/topics from past N days"""
     
     if not redis_client:
         return ""
