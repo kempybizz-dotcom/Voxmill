@@ -3,92 +3,51 @@ VOXMILL ADAPTIVE LLM CONTROLLER
 ================================
 Dynamic temperature selection and confidence-based tone modulation
 
-Makes the LLM genuinely intelligent:
-- Simple queries → Low temp (0.3) for consistency
-- Complex analysis → Higher temp (0.5-0.7) for creativity
-- Low data quality → Hedged language
-- High confidence → Directive language
+FIXED: Always returns temperature=0.2 and max_tokens=350 for institutional brevity
 """
 
 import logging
-from typing import Dict, Tuple
+from typing import Dict
 
 logger = logging.getLogger(__name__)
 
 
-@classmethod
-def determine_optimal_temperature(cls, query: str, query_metadata: Dict) -> float:
-    """
-    Determine optimal temperature based on query characteristics
-    
-    FIXED: Always return 0.2 for institutional brevity
-    Previous adaptive logic (0.3-0.8) was causing verbose responses
-    
-    Args:
-        query: User query text
-        query_metadata: {
-            'category': str,
-            'complexity': str,
-            'is_followup': bool,
-            'data_quality': float
-        }
-    
-    Returns: Temperature value (always 0.2 for institutional brevity)
-    """
-    
-    # INSTITUTIONAL STANDARD: Fixed low temperature for sharp, concise responses
-    # This matches Goldman Sachs / Bridgewater analyst communication style
-    final_temp = 0.2
-    
-    query_lower = query.lower()
-    category = query_metadata.get('category', 'market_overview')
-    complexity = query_metadata.get('complexity', 'medium')
-    data_quality = query_metadata.get('data_quality', 1.0)
-    
-    # Log for debugging (but don't actually use adaptive logic)
-    logger.info(f"Temperature selection: {final_temp:.2f} (base: 0.20, complexity: {complexity}, quality: {data_quality:.2f})")
-    
-    return final_temp
+class AdaptiveLLMController:
+    """Adaptive LLM configuration controller"""
     
     @classmethod
-    def _classify_query_type(cls, query: str, category: str) -> float:
-        """Classify query to determine base temperature"""
+    def determine_optimal_temperature(cls, query: str, query_metadata: Dict) -> float:
+        """
+        Determine optimal temperature based on query characteristics
         
-        # Factual queries (low temperature)
-        factual_keywords = ['what is', 'how many', 'price', 'average', 'total', 'count']
-        if any(kw in query for kw in factual_keywords):
-            return cls.TEMPERATURE_MAP['factual']
+        FIXED: Always return 0.2 for institutional brevity
+        Previous adaptive logic (0.3-0.8) was causing verbose responses
         
-        # Predictive queries (higher temperature)
-        predictive_keywords = ['what if', 'predict', 'forecast', 'scenario', 'will']
-        if any(kw in query for kw in predictive_keywords):
-            return cls.TEMPERATURE_MAP['predictive']
+        Args:
+            query: User query text
+            query_metadata: {
+                'category': str,
+                'complexity': str,
+                'is_followup': bool,
+                'data_quality': float
+            }
         
-        # Strategic queries (high temperature)
-        strategic_keywords = ['strategy', 'recommend', 'should i', 'best approach', 'positioning']
-        if any(kw in query for kw in strategic_keywords):
-            return cls.TEMPERATURE_MAP['strategic']
+        Returns: Temperature value (always 0.2 for institutional brevity)
+        """
         
-        # Analytical queries (medium temperature)
-        analytical_keywords = ['analyze', 'compare', 'evaluate', 'assess', 'competitive']
-        if any(kw in query for kw in analytical_keywords):
-            return cls.TEMPERATURE_MAP['analytical']
+        # INSTITUTIONAL STANDARD: Fixed low temperature for sharp, concise responses
+        # This matches Goldman Sachs / Bridgewater analyst communication style
+        final_temp = 0.2
         
-        # Conversational queries
-        conversational_keywords = ['hello', 'hi', 'thanks', 'thank you', 'great']
-        if any(kw in query for kw in conversational_keywords):
-            return cls.TEMPERATURE_MAP['conversational']
+        query_lower = query.lower()
+        category = query_metadata.get('category', 'market_overview')
+        complexity = query_metadata.get('complexity', 'medium')
+        data_quality = query_metadata.get('data_quality', 1.0)
         
-        # Default: use category-based temperature
-        category_temps = {
-            'market_overview': 0.4,
-            'competitive_landscape': 0.5,
-            'scenario_modelling': 0.6,
-            'strategic_outlook': 0.7,
-            'opportunities': 0.5
-        }
+        # Log for debugging (but don't actually use adaptive logic)
+        logger.info(f"Temperature selection: {final_temp:.2f} (base: 0.20, complexity: {complexity}, quality: {data_quality:.2f})")
         
-        return category_temps.get(category, 0.5)
+        return final_temp
     
     @classmethod
     def calculate_query_complexity(cls, query: str, dataset: Dict) -> str:
@@ -318,36 +277,6 @@ Position aggressively for £3-5M corridor. High conviction."
         score += intelligence_score * 0.30
         
         return round(score, 2)
-    
-    @classmethod
-    def get_optimal_max_tokens(cls, complexity: str, query_type: str) -> int:
-        """Determine optimal max_tokens based on query needs"""
-        
-        # Base token limits by query type
-        base_limits = {
-            'factual': 500,           # Brief, concise answers
-            'analytical': 1200,       # Moderate depth
-            'predictive': 1500,       # Detailed scenarios
-            'strategic': 2000,        # Comprehensive analysis
-            'conversational': 300     # Quick responses
-        }
-        
-        base_limit = base_limits.get(query_type, 1200)
-        
-        # Adjust for complexity
-        complexity_multipliers = {
-            'simple': 0.7,
-            'medium': 1.0,
-            'complex': 1.3,
-            'very_complex': 1.5
-        }
-        
-        multiplier = complexity_multipliers.get(complexity, 1.0)
-        
-        optimal_tokens = int(base_limit * multiplier)
-        
-        # Clamp to reasonable range
-        return max(300, min(optimal_tokens, 2500))
 
 
 def get_adaptive_llm_config(query: str, dataset: Dict, is_followup: bool = False, 
@@ -355,13 +284,14 @@ def get_adaptive_llm_config(query: str, dataset: Dict, is_followup: bool = False
     """
     One-stop function to get all adaptive LLM parameters
     
+    FIXED: Always returns temperature=0.2 and max_tokens=350
+    
     Returns: {
         'temperature': float,
         'max_tokens': int,
         'complexity': str,
         'data_quality': float,
-        'confidence_level': str,
-        'tone_modulation': str
+        'confidence_level': str
     }
     """
     
@@ -379,27 +309,11 @@ def get_adaptive_llm_config(query: str, dataset: Dict, is_followup: bool = False
     else:
         confidence_level = 'low'
     
-    # Build query metadata
-    query_metadata = {
-        'category': category,
-        'complexity': complexity,
-        'is_followup': is_followup,
-        'data_quality': data_quality
-    }
+    # FIXED: Always institutional brevity
+    temperature = 0.2
+    max_tokens = 350
     
-    # Get optimal parameters
-    temperature = controller.determine_optimal_temperature(query, query_metadata)
-    
-    # Classify query type for max_tokens
-    query_type = 'analytical'  # Default
-    if 'what if' in query.lower() or 'scenario' in query.lower():
-        query_type = 'predictive'
-    elif any(kw in query.lower() for kw in ['strategy', 'recommend', 'should']):
-        query_type = 'strategic'
-    elif any(kw in query.lower() for kw in ['what is', 'price', 'count']):
-        query_type = 'factual'
-    
-    max_tokens = controller.get_optimal_max_tokens(complexity, query_type)
+    logger.info(f"LLM Config: temp={temperature}, tokens={max_tokens}, complexity={complexity}, quality={data_quality:.2f}")
     
     return {
         'temperature': temperature,
@@ -407,5 +321,5 @@ def get_adaptive_llm_config(query: str, dataset: Dict, is_followup: bool = False
         'complexity': complexity,
         'data_quality': data_quality,
         'confidence_level': confidence_level,
-        'query_type': query_type
+        'query_type': 'analytical'
     }
