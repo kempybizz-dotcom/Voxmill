@@ -177,34 +177,60 @@ async def check_and_send_alerts_task():
 # STARTUP EVENT (SINGLE COMBINED VERSION)
 # ============================================================================
 
+async def store_daily_snapshots_all_regions():
+    """Store daily snapshots for all core regions"""
+    from app.dataset_loader import load_dataset
+    
+    core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+    
+    for region in core_regions:
+        try:
+            logger.info(f"📸 Storing daily snapshot for {region}...")
+            dataset = load_dataset(area=region, max_properties=100)
+            # Snapshot storage happens automatically inside load_dataset now
+            logger.info(f"✅ Snapshot stored for {region}")
+        except Exception as e:
+            logger.error(f"Failed to store snapshot for {region}: {e}")
+
+
 @app.on_event("startup")
 async def startup_event():
-    """Initialize all services on startup"""
     logger.info("🚀 Starting Voxmill WhatsApp Intelligence Service...")
     
     try:
-        # Start monitor checker (every 15 minutes)
+        # Existing schedulers
         scheduler.add_job(check_all_monitors, 'interval', minutes=15)
         
-        # Start cache warming (daily at 7am GMT)
+        # Daily cache warming + historical snapshot
         scheduler.add_job(warm_cache, 'cron', hour=7, minute=0)
         
-        # Start scheduler
+        # NEW: Daily historical snapshot for ALL core regions
+        scheduler.add_job(
+            store_daily_snapshots_all_regions,
+            'cron',
+            hour=6,
+            minute=30,
+            timezone='Europe/London'
+        )
+        
         scheduler.start()
-        logger.info("✅ Scheduler started: monitors (15min), cache warming (7am)")
+        logger.info("✅ Scheduler started: monitors (15min), cache (7am), snapshots (6:30am)")
         
     except Exception as e:
         logger.error(f"Scheduler startup failed: {e}")
     
-    # Start background data collection
+    # Start background data collection (if scheduler.py exists)
     try:
         from app.scheduler import daily_intelligence_cycle
         asyncio.create_task(daily_intelligence_cycle())
-        logger.info("✅ Background scheduler started")
+        logger.info("✅ Background intelligence cycle started")
+    except ImportError:
+        logger.info("⏭️ Background scheduler not available (app.scheduler not found)")
     except Exception as e:
-        logger.warning(f"⚠️  Scheduler not started: {e}")
+        logger.warning(f"⚠️ Background scheduler not started: {e}")
     
     logger.info("✅ Voxmill service ready")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
