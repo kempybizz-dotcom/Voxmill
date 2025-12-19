@@ -740,22 +740,29 @@ Standing by."""
                 await send_twilio_message(sender, response)
                 
                 # Update conversation session
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'monitoring_status'}
-                )
+                try:
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=response,
+                        metadata={'category': 'monitoring_status'}
+                    )
+                except Exception as session_error:
+                    logger.warning(f"Session update failed (non-critical): {session_error}")
                 
                 # Log interaction
-                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-                log_interaction(sender, message_text, "monitoring_status", response)
-                update_client_history(sender, message_text, "monitoring_status", preferred_region)
+                try:
+                    preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
+                    log_interaction(sender, message_text, "monitoring_status", response)
+                    update_client_history(sender, message_text, "monitoring_status", preferred_region)
+                except Exception as log_error:
+                    logger.warning(f"Logging failed (non-critical): {log_error}")
+                
                 logger.info(f"✅ Monitoring status query handled successfully")
                 return
                 
             except Exception as e:
-                # GUARANTEED FALLBACK - NEVER ERROR
+                # TRULY GUARANTEED FALLBACK
                 logger.error(f"Monitoring query failed: {e}")
                 
                 fallback_response = """MONITORING STATUS
@@ -769,80 +776,95 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"
 
 Standing by."""
                 
-                await send_twilio_message(sender, fallback_response)
+                # CRITICAL: Wrap EVERYTHING in try-except
+                try:
+                    await send_twilio_message(sender, fallback_response)
+                except Exception as twilio_error:
+                    logger.critical(f"Twilio failed in fallback: {twilio_error}")
+                    # Last resort: can't even send message
+                    return
                 
-                # Update conversation session
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=fallback_response,
-                    metadata={'category': 'monitoring_status_fallback'}
-                )
+                # Non-critical operations wrapped separately
+                try:
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=fallback_response,
+                        metadata={'category': 'monitoring_status_fallback'}
+                    )
+                except Exception:
+                    pass  # Silent failure OK
                 
-                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])[0]
-                update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
+                try:
+                    preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+                    preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
+                    update_client_history(sender, message_text, "monitoring_status_fallback", preferred_region)
+                except Exception:
+                    pass  # Silent failure OK
+                
                 logger.info(f"✅ Monitoring status fallback sent")
                 return
 
-    # ========================================
+        # ========================================
         # PORTFOLIO TRACKING COMMANDS
         # ========================================
 
         portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
 
         if any(kw in message_lower for kw in portfolio_keywords):
-            from app.portfolio import get_portfolio_summary, add_property_to_portfolio, parse_property_from_message
-            
-            if 'add property' in message_lower:
-                # Check if user is sending property details
-                parsed_property = parse_property_from_message(message_text)
+            try:
+                from app.portfolio import get_portfolio_summary, add_property_to_portfolio, parse_property_from_message
                 
-                if parsed_property:
-                    # Add property
-                    response = add_property_to_portfolio(sender, parsed_property)
-                    await send_twilio_message(sender, response)
+                if 'add property' in message_lower:
+                    # Check if user is sending property details
+                    parsed_property = parse_property_from_message(message_text)
                     
-                    # Update conversation session
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response=response,
-                        metadata={'category': 'portfolio_add'}
-                    )
-                    
-                    return
-                else:
-                    # Guide user through adding property
-                    response = """ADD PROPERTY TO PORTFOLIO
+                    if parsed_property:
+                        # Add property
+                        response = add_property_to_portfolio(sender, parsed_property)
+                        await send_twilio_message(sender, response)
+                        
+                        # Update conversation session
+                        conversation = ConversationSession(sender)
+                        conversation.update_session(
+                            user_message=message_text,
+                            assistant_response=response,
+                            metadata={'category': 'portfolio_add'}
+                        )
+                        
+                        return
+                    else:
+                        # Guide user through adding property
+                        response = """ADD PROPERTY TO PORTFOLIO
 
 Reply with property details:
 
 Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
 
 Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
-                    
-                    await send_twilio_message(sender, response)
-                    return
-            
-            # Show portfolio summary
-            portfolio = get_portfolio_summary(sender)
-            
-            if portfolio.get('error'):
-                response = """No properties in portfolio.
+                        
+                        await send_twilio_message(sender, response)
+                        return
+                
+                # Show portfolio summary
+                portfolio = get_portfolio_summary(sender)
+                
+                if portfolio.get('error'):
+                    response = """No properties in portfolio.
 
 Add a property: "Add property [details]" """
-                await send_twilio_message(sender, response)
-                return
-            
-            # Format portfolio response
-            prop_list = []
-            for prop in portfolio['properties'][:5]:
-                prop_list.append(
-                    f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
-                    f"({prop['gain_loss_pct']:+.1f}%)"
-                )
-            
-            response = f"""PORTFOLIO SUMMARY
+                    await send_twilio_message(sender, response)
+                    return
+                
+                # Format portfolio response
+                prop_list = []
+                for prop in portfolio['properties'][:5]:
+                    prop_list.append(
+                        f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
+                        f"({prop['gain_loss_pct']:+.1f}%)"
+                    )
+                
+                response = f"""PORTFOLIO SUMMARY
 
 {chr(10).join(prop_list)}
 
@@ -850,18 +872,35 @@ Total Value: £{portfolio['total_current_value']:,.0f}
 Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_loss_pct']:+.1f}%)
 
 Properties: {portfolio['property_count']}"""
-            
-            await send_twilio_message(sender, response)
-            
-            # Update conversation session
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=response,
-                metadata={'category': 'portfolio_summary'}
-            )
-            
-            return
+                
+                await send_twilio_message(sender, response)
+                
+                # Update conversation session
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'portfolio_summary'}
+                )
+                
+                return
+                
+            except Exception as e:
+                logger.error(f"Portfolio command failed: {e}", exc_info=True)
+                
+                # Fallback response
+                fallback_response = """Portfolio system temporarily unavailable.
+
+Your holdings data is safe. Please try again in a moment.
+
+Standing by."""
+                
+                try:
+                    await send_twilio_message(sender, fallback_response)
+                except Exception:
+                    logger.critical(f"Complete portfolio failure for {sender}")
+                
+                return
         
         # ========================================
         # EXPORT/SHARING COMMANDS
