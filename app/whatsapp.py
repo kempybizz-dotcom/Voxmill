@@ -1718,7 +1718,7 @@ What market intelligence can I provide?"""
             metadata=response_metadata
         )
         
-        # ============================================================
+       # ============================================================
         # WAVE 1: Validate response output (no prompt leakage)
         # ============================================================
         
@@ -1743,6 +1743,57 @@ What market intelligence can I provide?"""
         # ========================================
         
         await send_twilio_message(sender, formatted_response)
+        
+        # ========================================
+        # SYNC USAGE METRICS BACK TO AIRTABLE
+        # ========================================
+        
+        try:
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+            
+            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                
+                # Calculate usage percentage
+                messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
+                message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
+                usage_pct = (messages_used / message_limit * 100) if message_limit > 0 else 0
+                
+                # Prepare update payload
+                update_fields = {
+                    'Messages Used This Month': messages_used,
+                    'Message Limit Remaining': max(0, message_limit - messages_used),
+                    'Usage This Month (%)': round(usage_pct, 1),
+                    'Total Messages Sent': client_profile.get('usage_metrics', {}).get('total_messages_sent', 0) + 1,
+                    'Last Message Date': datetime.now(timezone.utc).isoformat(),
+                    'Last Active': datetime.now(timezone.utc).isoformat()
+                }
+                
+                # Add category-specific fields
+                if category == 'decision_mode':
+                    update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).isoformat()
+                    update_fields['Last Strategic Action Recommended'] = response_text[:200]  # First 200 chars
+                
+                # Update Airtable
+                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+                headers = {
+                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {"fields": update_fields}
+                
+                response = requests.patch(url, headers=headers, json=payload, timeout=5)
+                
+                if response.status_code == 200:
+                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages ({usage_pct:.1f}%)")
+                else:
+                    logger.warning(f"⚠️ Airtable sync failed: {response.status_code}")
+                    
+        except Exception as e:
+            logger.error(f"Airtable sync error: {e}")
+            # Don't fail the whole request - just log
         
         # ============================================================
         # WAVE 3: Update conversation session
