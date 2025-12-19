@@ -623,11 +623,22 @@ User context:
 Classify this message and generate {"an executive directive response in DECISION MODE format" if is_decision_mode else "a strategic gap assessment in META-STRATEGIC format" if is_meta_strategic else "an executive analyst response"} with full V3+V4 predictive intelligence.
 
 REMEMBER: 
-- Adapt response length to query complexity
-- Include confidence levels on predictions
-- Reference liquidity windows when discussing timing
-- Reference behavioral clusters when discussing agent dynamics
-- Use intelligent structure (bullets only when needed)"""
+- Default to 2-3 sentences (30-80 words) for standard queries
+- Use bullets ONLY when data justifies structure
+- Keep responses under 150 words unless Decision Mode
+- Be declarative and institutional"""
+        
+        # ========================================
+        # HARD GATE: UNSUPPORTED REGIONS
+        # ========================================
+        core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+        requested_region = metadata.get('area', 'Unknown')
+        property_count_check = len(properties)
+
+        if property_count_check == 0 and requested_region not in core_regions:
+            # Don't let GPT-4 hallucinate - return hardcoded structural commentary
+            logger.info(f"⚠️ Unsupported region {requested_region} - returning structural commentary")
+            return "market_overview", f"{requested_region}: Transactional market. End-user driven demand.", {}
         
         # ============================================================
         # WAVE 3: Add conversation context if available
@@ -640,26 +651,23 @@ REMEMBER:
         except Exception as e:
             logger.debug(f"Session context unavailable: {e}")
         
-       # ============================================================
-        # CALL GPT-4 WITH ADAPTIVE PARAMETERS (WAVE 3) + DECISION MODE
+        # ============================================================
+        # CALL GPT-4 WITH FIXED PARAMETERS (INSTITUTIONAL BREVITY)
         # ============================================================
         
-        # Use lower temperature for decision mode (more definitive)
-        decision_temperature = 0.3 if is_decision_mode else adaptive_config['temperature']
+        temperature = 0.2  # Fixed institutional temperature - always brief
         
-        # WORLD-CLASS FIX: Use GPT-4 Turbo with streaming for complex queries
         if openai_client:
-            # Use gpt-4-turbo (faster, cheaper than gpt-4-turbo-preview)
             response = openai_client.chat.completions.create(
-                model="gpt-4-turbo",  # ← Faster than gpt-4-turbo-preview
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": enhanced_system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                max_tokens=adaptive_config['max_tokens'],
-                temperature=decision_temperature,
-                timeout=90.0,  # ← 90 seconds for complex institutional queries
-                stream=False  # Streaming adds complexity, keep simple for now
+                max_tokens=350,  # Force brevity - institutional standard
+                temperature=temperature,
+                timeout=90.0,
+                stream=False
             )
             
             response_text = response.choices[0].message.content
@@ -705,7 +713,7 @@ Contact support for manual directive."""
             # Log Decision Mode execution
             logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
         
-       # ========================================
+        # ========================================
         # MONITORING LANGUAGE VALIDATOR
         # ========================================
         
