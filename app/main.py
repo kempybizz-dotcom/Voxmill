@@ -316,22 +316,14 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         normalized_sender = normalize_phone_number(sender)
         logger.info(f"📱 Incoming message from {normalized_sender}: {message_body[:100]}")
         
-        # Check rate limit
-        from app.client_manager import check_rate_limit
-        allowed, rate_limit_message = check_rate_limit(normalized_sender)
-        
-        if not allowed:
-            from app.whatsapp import send_twilio_message
-            await send_twilio_message(normalized_sender, f"⚠️ {rate_limit_message}")
-            return PlainTextResponse("", status_code=200)
-        
-        # Process message in background
+        # Process message in background (rate limiting happens in whatsapp.py)
         background_tasks.add_task(process_message_async, normalized_sender, message_body)
         return PlainTextResponse("", status_code=200)
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return PlainTextResponse("", status_code=200)
+
 
 async def process_message_async(sender: str, message_body: str):
     """Process message asynchronously"""
@@ -346,6 +338,7 @@ async def process_message_async(sender: str, message_body: str):
             await send_twilio_message(sender, error_msg)
         except:
             logger.error("Failed to send error message to user")
+
 
 @app.get("/webhook/whatsapp")
 async def whatsapp_webhook_get(request: Request):
