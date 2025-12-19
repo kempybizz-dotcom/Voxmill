@@ -1479,7 +1479,7 @@ What market intelligence can I provide?"""
                 # Update preferred_region to first mentioned
                 preferred_region = mentioned_regions[0]
         
-      # ========================================
+        # ========================================
         # LOAD PRIMARY DATASET FOR ANALYSIS
         # ========================================
         
@@ -1597,6 +1597,52 @@ What market intelligence can I provide?"""
             update_client_history(sender, message_text, category, preferred_region)
             
             logger.info(f"✅ Instant full-intelligence snapshot sent (<3s)")
+            return
+
+        # ========================================
+        # CHECK FOR EMPTY/UNAVAILABLE DATASET
+        # ========================================
+        
+        # CRITICAL: Block LLM call if no data available
+        if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
+            logger.warning(f"No data available for {preferred_region}")
+            
+            # List available regions
+            available_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+            available_list = ', '.join(available_regions)
+            
+            fallback_response = f"""INTELLIGENCE UNAVAILABLE
+
+No market data currently available for {preferred_region}.
+
+Available regions:
+{available_list}
+
+Request a different region or contact support if this persists.
+
+Standing by."""
+            
+            await send_twilio_message(sender, fallback_response)
+            
+            # Update conversation session
+            try:
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=fallback_response,
+                    metadata={'category': 'data_unavailable', 'region': preferred_region}
+                )
+            except Exception:
+                pass  # Non-critical
+            
+            # Log interaction
+            try:
+                log_interaction(sender, message_text, "data_unavailable", fallback_response)
+                update_client_history(sender, message_text, "data_unavailable", preferred_region)
+            except Exception:
+                pass  # Non-critical
+            
+            logger.info(f"✅ Empty dataset handled gracefully for {preferred_region}")
             return
         
         elif is_decision:
@@ -2000,59 +2046,59 @@ def normalize_query(text: str) -> str:
     return normalized
 
 
-async def send_twilio_message(recipient: str, message: str):
-    """Send message via Twilio WhatsApp API with intelligent chunking"""
+async def send_twilio_message(to: str, message: str):
+    """
+    Send WhatsApp message via Twilio with smart chunking
+    """
+    
     try:
-        if not twilio_client:
-            logger.error("Twilio client not initialized")
+        from twilio.rest import Client
+        import asyncio
+        
+        account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+        auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+        from_number = os.getenv('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+        
+        if not account_sid or not auth_token:
+            logger.error("Twilio credentials missing")
             return
         
-        # CRITICAL: Validate message is not None
-        if message is None:
-            logger.error(f"Cannot send None message to {recipient}")
-            message = "An error occurred processing your request. Please try again."
+        client = Client(account_sid, auth_token)
         
-        # Convert to string if needed
-        message = str(message)
+        # Normalize phone number
+        if not to.startswith('whatsapp:'):
+            to = f'whatsapp:{to}'
         
-        # ENSURE WHATSAPP PREFIX
-        from_number = TWILIO_WHATSAPP_NUMBER
-        if not from_number.startswith('whatsapp:'):
-            from_number = f'whatsapp:{from_number}'
-        
-        to_number = recipient
-        if not to_number.startswith('whatsapp:'):
-            to_number = f'whatsapp:{to_number}'
-        
+        # Smart chunking for long messages
         MAX_LENGTH = 1500
         
         if len(message) <= MAX_LENGTH:
-            # Short message - send as-is
-            twilio_client.messages.create(
+            # Single message
+            client.messages.create(
+                body=message,
                 from_=from_number,
-                to=to_number,
-                body=message
+                to=to
             )
-            logger.info(f"Message sent successfully to {to_number} ({len(message)} chars)")
+            logger.info(f"Message sent to {to} ({len(message)} chars)")
         else:
-            # Long message - intelligent splitting
+            # Multi-part message
             chunks = smart_split_message(message, MAX_LENGTH)
             
             for i, chunk in enumerate(chunks, 1):
-                twilio_client.messages.create(
+                client.messages.create(
+                    body=chunk,  # Already has [Part X/Y] from smart_split_message
                     from_=from_number,
-                    to=to_number,
-                    body=chunk
+                    to=to
                 )
                 
-                # Small delay to maintain order
-                import asyncio
-                await asyncio.sleep(0.5)
-            
-            logger.info(f"Multi-part message sent to {to_number} ({len(chunks)} parts, {len(message)} total chars)")
+                logger.info(f"Chunk {i}/{len(chunks)} sent to {to} ({len(chunk)} chars)")
                 
+                # Delay between chunks to preserve order
+                if i < len(chunks):
+                    await asyncio.sleep(0.5)
+        
     except Exception as e:
-        logger.error(f"Error sending Twilio message: {str(e)}", exc_info=True)
+        logger.error(f"Failed to send Twilio message: {e}", exc_info=True)
         raise
 
 
