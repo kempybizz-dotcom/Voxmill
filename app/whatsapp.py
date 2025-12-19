@@ -1744,7 +1744,7 @@ What market intelligence can I provide?"""
             metadata=response_metadata
         )
         
-       # ============================================================
+        # ============================================================
         # WAVE 1: Validate response output (no prompt leakage)
         # ============================================================
         
@@ -1771,50 +1771,62 @@ What market intelligence can I provide?"""
         await send_twilio_message(sender, formatted_response)
         
         # ========================================
-# SYNC USAGE METRICS BACK TO AIRTABLE
-# ========================================
-
-try:
-    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-    AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-    
-    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+        # SYNC USAGE METRICS BACK TO AIRTABLE
+        # ========================================
         
-        # Calculate usage metrics
-        messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
-        message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
-        usage_pct = (messages_used / message_limit * 100) if message_limit > 0 else 0
-        
-        # SAFE: Only update fields that definitely exist and are writable
-        update_fields = {
-            'Last Active': datetime.now(timezone.utc).isoformat()
-        }
-        
-        # Conditionally add fields only if they exist in Airtable
-        # Add other fields only if you've confirmed they exist in your Airtable base
-        
-        # Update Airtable
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {"fields": update_fields}
-        
-        response = requests.patch(url, headers=headers, json=payload, timeout=5)
-        
-        if response.status_code == 200:
-            logger.info(f"✅ Airtable synced: Last Active updated")
-        elif response.status_code == 422:
-            logger.warning(f"⚠️ Airtable 422 - Field validation error: {response.json()}")
-        else:
-            logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
+        try:
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
             
-except Exception as e:
-    logger.error(f"Airtable sync error: {e}")
-    # Don't fail the whole request - just log
+            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                
+                # Calculate usage metrics
+                messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
+                message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
+                usage_pct = (messages_used / message_limit * 100) if message_limit > 0 else 0
+                total_messages = client_profile.get('usage_metrics', {}).get('total_messages_sent', 0) + 1
+                
+                # Build update payload - ONLY include fields with valid values
+                update_fields = {
+                    'Messages Used This Month': int(messages_used),
+                    'Message Limit Remaining': int(max(0, message_limit - messages_used)),
+                    'Usage This Month (%)': round(float(usage_pct), 1),
+                    'Total Messages Sent': int(total_messages),
+                    'Last Message Date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+                    'Last Active': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                }
+                
+                # Add category-specific fields ONLY if they have values
+                if category == 'decision_mode' and response_text:
+                    update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                    # Only update if response exists and isn't empty
+                    if len(response_text.strip()) > 0:
+                        update_fields['Last Strategic Action Recommended'] = response_text[:500]  # Truncate to 500 chars
+                
+                # Update Airtable
+                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+                headers = {
+                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {"fields": update_fields}
+                
+                response = requests.patch(url, headers=headers, json=payload, timeout=5)
+                
+                if response.status_code == 200:
+                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages ({usage_pct:.1f}%)")
+                elif response.status_code == 422:
+                    error_details = response.json()
+                    logger.error(f"⚠️ Airtable 422 error details: {error_details}")
+                    logger.error(f"Payload sent: {payload}")
+                else:
+                    logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
+                    
+        except Exception as e:
+            logger.error(f"Airtable sync error: {e}", exc_info=True)
+            # Don't fail the whole request - just log
         
         # ============================================================
         # WAVE 3: Update conversation session
@@ -1840,7 +1852,6 @@ except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
-
 
 async def send_pdf_report(sender: str, area: str):
     """Generate and send PDF report link to client (NO EMOJIS VERSION)"""
