@@ -42,14 +42,14 @@ def get_client_profile(whatsapp_number: str) -> dict:
         profile = collection.find_one({"whatsapp_number": normalized_number})
         
         if not profile:
-            # ✅ NEW: Create profile WITH email field
+            # Create profile WITH email field
             # Extract email from number or use placeholder
             # Format: +447780565645 → user_447780565645@temp.voxmill.uk
             temp_email = f"user_{normalized_number.replace('+', '')}@temp.voxmill.uk"
             
             default_profile = {
                 "whatsapp_number": normalized_number,
-                "email": temp_email,  # ✅ ADD THIS
+                "email": temp_email,
                 "created_at": datetime.now(timezone.utc),
                 "preferences": {
                     "preferred_regions": ["Mayfair"],
@@ -57,8 +57,8 @@ def get_client_profile(whatsapp_number: str) -> dict:
                     "risk_appetite": "balanced",
                     "budget_range": {"min": 0, "max": 100000000},
                     "insight_depth": "standard",
-                    "competitor_focus": "medium",  # ✅ ADD DEFAULT
-                    "report_depth": "detailed"     # ✅ ADD DEFAULT
+                    "competitor_focus": "medium",
+                    "report_depth": "detailed"
                 },
                 "query_history": [],
                 "last_region_queried": "Mayfair",
@@ -70,7 +70,7 @@ def get_client_profile(whatsapp_number: str) -> dict:
             logger.info(f"Created new client profile: {normalized_number}")
             return default_profile
         
-        # ✅ MIGRATION: If profile exists but missing email, add it
+        # MIGRATION: If profile exists but missing email, add it
         if not profile.get('email'):
             temp_email = f"user_{normalized_number.replace('+', '')}@temp.voxmill.uk"
             collection.update_one(
@@ -80,7 +80,7 @@ def get_client_profile(whatsapp_number: str) -> dict:
             profile['email'] = temp_email
             logger.info(f"Added email to existing profile: {normalized_number}")
         
-        # ✅ MIGRATION: Add default preference fields if missing
+        # MIGRATION: Add default preference fields if missing
         if 'preferences' in profile:
             needs_update = False
             updates = {}
@@ -108,25 +108,13 @@ def get_client_profile(whatsapp_number: str) -> dict:
         return {}
 
 
-def get_client_tier(whatsapp_number: str) -> str:
-    """
-    Get client tier - NOW RETURNS SINGLE TIER FOR ALL
-    """
-    # ✅ V3.1: Everyone gets full access (simplified for startup phase)
-    return "premium_access"
-
-
-def check_rate_limit(whatsapp_number: str) -> tuple[bool, str]:
-    """
-    Check if client has exceeded rate limit
-    ✅ V3.1: Unlimited queries for all clients
-    Returns: (allowed, message)
-    """
-    return (True, "")  # Always allow (no limits during startup)
-
-
 def update_client_history(whatsapp_number: str, query: str, category: str, region: str):
-    """Log query to client history"""
+    """
+    Log query to client history
+    
+    NOTE: This function is called BEFORE rate limiting in whatsapp.py to ensure
+    accurate counter for rate limit enforcement. Do not move this call.
+    """
     try:
         if not mongo_client:
             return
