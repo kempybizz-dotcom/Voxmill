@@ -1071,8 +1071,6 @@ What can I analyze for you today?"""
         # ========================================
         
         brevity_triggers = {
-            'what\'s up': 'Market activity clustered. Direction unresolved.',
-            'whats up': 'Market activity clustered. Direction unresolved.',
             'feels noisy': 'Noise usually precedes directional move.',
             'feels quiet': 'Quiet usually precedes a move. Direction depends on who breaks first.',
             'it feels noisy': 'Noise usually precedes directional move.',
@@ -1087,6 +1085,7 @@ What can I analyze for you today?"""
             'i see': 'Standing by.',
             'ok then': 'Standing by.',
             'fair': 'Standing by.'
+            
         }
         
         # Check if ANY brevity trigger appears IN the message (substring match, not exact)
