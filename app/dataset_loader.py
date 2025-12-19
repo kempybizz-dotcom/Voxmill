@@ -815,7 +815,7 @@ class OpenStreetMapEnrichment:
             dataset['agent_profiles'] = []
             logger.info(f"⏳ Agent Profiling: Unavailable (need 30+ days, have {len(historical_snapshots)})")
         
-        # ========================================
+      # ========================================
         # BEHAVIORAL CLUSTERING (Wave 3) - FIXED
         # ========================================
         
@@ -903,8 +903,8 @@ class OpenStreetMapEnrichment:
         logger.info(f"   • 💾 Cached for 30 minutes")
         
         return dataset
-
-        except Exception as e:
+        
+    except Exception as e:
         logger.error(f"Critical dataset load error: {e}", exc_info=True)
         return _empty_dataset(area)
 
