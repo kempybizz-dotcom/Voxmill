@@ -144,7 +144,7 @@ class MonitorManager:
         if duration_days is None:
             duration_days = 7
         
-       return True, {
+       return True, { 
             'region': region,
             'agent': agent,
             'triggers': triggers,
