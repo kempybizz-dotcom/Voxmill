@@ -292,6 +292,45 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 search_number = '+' + search_number
             
             # ========================================
+            # HELPER: Parse Airtable Regions Field
+            # ========================================
+            def parse_regions(regions_raw):
+                """Parse Airtable Regions field into proper list"""
+                if not regions_raw:
+                    return ['Mayfair']
+                
+                # Airtable returns string, convert to list
+                if isinstance(regions_raw, str):
+                    # Handle comma-separated or single region
+                    regions = [r.strip() for r in regions_raw.split(',') if r.strip()]
+                    
+                    # Expansion map for abbreviations
+                    region_expansion = {
+                        'M': 'Mayfair',
+                        'K': 'Knightsbridge',
+                        'C': 'Chelsea',
+                        'B': 'Belgravia',
+                        'W': 'Kensington'
+                    }
+                    
+                    # Expand single letters
+                    regions = [region_expansion.get(r, r) if len(r) == 1 else r for r in regions]
+                    
+                    # Filter invalid (must be at least 3 chars)
+                    regions = [r for r in regions if len(r) > 2]
+                    
+                    # Fallback
+                    if not regions:
+                        return ['Mayfair']
+                    
+                    return regions
+                elif isinstance(regions_raw, list):
+                    # Already a list (shouldn't happen with Airtable, but safe)
+                    return regions_raw if regions_raw else ['Mayfair']
+                else:
+                    return ['Mayfair']
+            
+            # ========================================
             # CHECK 1: TRIAL USERS TABLE
             # ========================================
             
@@ -332,6 +371,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                                     'table': 'Trial Users'
                                 }
                         
+                        # Parse regions properly
+                        regions = parse_regions(fields.get('Regions'))
+                        
                         # Trial active
                         logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
                         return {
@@ -343,7 +385,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                             'airtable_record_id': trial_record['id'],
                             'table': 'Trial Users',
                             'preferences': {
-                                'preferred_regions': fields.get('Regions', ['Mayfair']) if fields.get('Regions') else ['Mayfair'],
+                                'preferred_regions': regions,
                                 'competitor_focus': 'medium',
                                 'report_depth': 'detailed'
                             },
@@ -357,7 +399,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             except Exception as e:
                 logger.error(f"Error checking Trial Users table: {e}")
             
-         # ========================================
+            # ========================================
             # CHECK 2: MAIN CLIENTS TABLE
             # ========================================
             
@@ -390,6 +432,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         
                         tier = status_to_tier.get(subscription_status, 'tier_1')
                         
+                        # Parse regions properly
+                        regions = parse_regions(fields.get('Regions'))
+                        
                         logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
                         
                         return {
@@ -401,7 +446,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                             'airtable_record_id': client_record['id'],
                             'table': 'Clients',
                             'preferences': {
-                                'preferred_regions': fields.get('Regions', ['Mayfair']) if fields.get('Regions') else ['Mayfair'],
+                                'preferred_regions': regions,
                                 'competitor_focus': fields.get('Competitor Focus', 'medium'),
                                 'report_depth': fields.get('Report Depth', 'detailed')
                             },
@@ -464,7 +509,37 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # ========================================
         
         preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+        
+        # Ensure it's a list (defensive programming)
+        if isinstance(preferred_regions, str):
+            logger.warning(f"⚠️ preferred_regions is string, not list: '{preferred_regions}'")
+            preferred_regions = [preferred_regions] if len(preferred_regions) > 2 else ['Mayfair']
+        
         preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
+        
+        # CRITICAL: Validate and fix corrupted region data
+        if not preferred_region or len(preferred_region) < 3:
+            logger.error(f"❌ CORRUPTED region in client_profile: '{preferred_region}'")
+            
+            # Hard-coded expansion map for single-letter corruptions
+            region_expansion = {
+                'M': 'Mayfair',
+                'K': 'Knightsbridge', 
+                'C': 'Chelsea',
+                'B': 'Belgravia',
+                'W': 'Kensington'
+            }
+            
+            # Try to expand
+            if preferred_region in region_expansion:
+                preferred_region = region_expansion[preferred_region]
+                logger.info(f"✅ EXPANDED '{preferred_regions[0]}' → '{preferred_region}'")
+            else:
+                # Ultimate fallback
+                preferred_region = 'Mayfair'
+                logger.warning(f"❌ Could not expand '{preferred_regions[0]}', defaulting to Mayfair")
+        
+        logger.info(f"✅ Final preferred_region: '{preferred_region}'")
         
         # ========================================
         # HANDLE TRIAL EXPIRATION
