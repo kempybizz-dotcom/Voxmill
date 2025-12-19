@@ -84,6 +84,157 @@ def parse_regions(regions_raw):
         return ['Mayfair']
 
 
+def get_client_from_airtable(sender: str) -> dict:
+    """Check Trial Users table first, then Clients table"""
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+        logger.error("Airtable credentials missing")
+        return None
+    
+    headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+    
+    # Normalize phone for search
+    search_number = sender.replace('whatsapp:', '').replace('whatsapp%3A', '')
+    if not search_number.startswith('+'):
+        search_number = '+' + search_number
+    
+    # ========================================
+    # CHECK 1: TRIAL USERS TABLE
+    # ========================================
+    
+    try:
+        trial_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Trial%20Users"
+        
+        params = {
+            'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
+        }
+        
+        response = requests.get(trial_table_url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            
+            if records:
+                trial_record = records[0]
+                fields = trial_record.get('fields', {})
+                
+                # Check if trial expired
+                trial_end_date = fields.get('Trial End Date')
+                
+                if trial_end_date:
+                    from dateutil import parser
+                    trial_end = parser.parse(trial_end_date)
+                    
+                    if trial_end.tzinfo is None:
+                        trial_end = trial_end.replace(tzinfo=timezone.utc)
+                    
+                    if datetime.now(timezone.utc) > trial_end:
+                        # Trial expired
+                        logger.warning(f"Trial expired for {sender}")
+                        return {
+                            'subscription_status': 'Trial',
+                            'trial_expired': True,
+                            'name': fields.get('Name', 'there'),
+                            'airtable_record_id': None,
+                            'table': 'Trial Users'
+                        }
+                
+                # Parse regions properly
+                regions = parse_regions(fields.get('Regions'))
+                
+                # Trial active
+                logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
+                return {
+                    'name': fields.get('Name', 'there'),
+                    'email': fields.get('Email', ''),
+                    'subscription_status': 'Trial',
+                    'tier': 'tier_2',
+                    'trial_expired': False,
+                    'airtable_record_id': trial_record['id'],
+                    'table': 'Trial Users',
+                    'preferences': {
+                        'preferred_regions': regions,
+                        'competitor_focus': 'medium',
+                        'report_depth': 'detailed'
+                    },
+                    'usage_metrics': {
+                        'messages_used_this_month': 0,
+                        'monthly_message_limit': 50,
+                        'total_messages_sent': 0
+                    }
+                }
+    
+    except Exception as e:
+        logger.error(f"Error checking Trial Users table: {e}")
+    
+    # ========================================
+    # CHECK 2: MAIN CLIENTS TABLE
+    # ========================================
+    
+    try:
+        clients_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Clients"
+        
+        params = {
+            'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
+        }
+        
+        response = requests.get(clients_table_url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            
+            if records:
+                client_record = records[0]
+                fields = client_record.get('fields', {})
+                
+                subscription_status = fields.get('Subscription Status', 'Active')
+                
+                # Map status to tier
+                status_to_tier = {
+                    'Active': 'tier_3',
+                    'Premium': 'tier_3',
+                    'Basic': 'tier_1',
+                    'Cancelled': 'tier_1',
+                    'Suspended': 'tier_1'
+                }
+                
+                tier = status_to_tier.get(subscription_status, 'tier_1')
+                
+                # Parse regions properly
+                regions = parse_regions(fields.get('Regions'))
+                
+                logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
+                
+                return {
+                    'name': fields.get('Name', 'there'),
+                    'email': fields.get('Email', ''),
+                    'subscription_status': subscription_status,
+                    'tier': tier,
+                    'trial_expired': False,
+                    'airtable_record_id': client_record['id'],
+                    'table': 'Clients',
+                    'preferences': {
+                        'preferred_regions': regions,
+                        'competitor_focus': fields.get('Competitor Focus', 'medium'),
+                        'report_depth': fields.get('Report Depth', 'detailed')
+                    },
+                    'usage_metrics': {
+                        'messages_used_this_month': fields.get('Messages Used This Month', 0),
+                        'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
+                        'total_messages_sent': fields.get('Total Messages Sent', 0)
+                    }
+                }
+    
+    except Exception as e:
+        logger.error(f"Error checking Clients table: {e}")
+    
+    # Not found in either table
+    return None
+
+
 def safe_get_last_metadata(conversation) -> dict:
     """Safely get last metadata with fallback for cache issues"""
     try:
@@ -226,7 +377,6 @@ Your dedicated intelligence partner, available 24/7."""
         logger.info(f"Welcome message sent to {sender} (Tier: {tier})")
         
         # Small delay before processing their first query
-        import asyncio
         await asyncio.sleep(1.5)
         
     except Exception as e:
@@ -280,7 +430,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         
-   # ========================================
+        # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
         
@@ -307,160 +457,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 if cache_age_minutes > 60:
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
-        
-        # ========================================
-        # FETCH CLIENT FROM AIRTABLE (TRIAL OR PAID)
-        # ========================================
-        
-        def get_client_from_airtable(sender: str) -> dict:
-            """Check Trial Users table first, then Clients table"""
-            
-            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-            
-            if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
-                logger.error("Airtable credentials missing")
-                return None
-            
-            headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
-            
-            # Normalize phone for search
-            search_number = sender.replace('whatsapp:', '').replace('whatsapp%3A', '')
-            if not search_number.startswith('+'):
-                search_number = '+' + search_number
-            
-            # ========================================
-            # CHECK 1: TRIAL USERS TABLE
-            # ========================================
-            
-            try:
-                trial_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Trial%20Users"
-                
-                params = {
-                    'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
-                }
-                
-                response = requests.get(trial_table_url, headers=headers, params=params, timeout=5)
-                
-                if response.status_code == 200:
-                    records = response.json().get('records', [])
-                    
-                    if records:
-                        trial_record = records[0]
-                        fields = trial_record.get('fields', {})
-                        
-                        # Check if trial expired
-                        trial_end_date = fields.get('Trial End Date')
-                        
-                        if trial_end_date:
-                            from dateutil import parser
-                            trial_end = parser.parse(trial_end_date)
-                            
-                            if trial_end.tzinfo is None:
-                                trial_end = trial_end.replace(tzinfo=timezone.utc)
-                            
-                            if datetime.now(timezone.utc) > trial_end:
-                                # Trial expired
-                                logger.warning(f"Trial expired for {sender}")
-                                return {
-                                    'subscription_status': 'Trial',
-                                    'trial_expired': True,
-                                    'name': fields.get('Name', 'there'),
-                                    'airtable_record_id': None,
-                                    'table': 'Trial Users'
-                                }
-                        
-                        # Parse regions properly
-                        regions = parse_regions(fields.get('Regions'))
-                        
-                        # Trial active
-                        logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
-                        return {
-                            'name': fields.get('Name', 'there'),
-                            'email': fields.get('Email', ''),
-                            'subscription_status': 'Trial',
-                            'tier': 'tier_2',
-                            'trial_expired': False,
-                            'airtable_record_id': trial_record['id'],
-                            'table': 'Trial Users',
-                            'preferences': {
-                                'preferred_regions': regions,
-                                'competitor_focus': 'medium',
-                                'report_depth': 'detailed'
-                            },
-                            'usage_metrics': {
-                                'messages_used_this_month': 0,
-                                'monthly_message_limit': 50,
-                                'total_messages_sent': 0
-                            }
-                        }
-            
-            except Exception as e:
-                logger.error(f"Error checking Trial Users table: {e}")
-            
-            # ========================================
-            # CHECK 2: MAIN CLIENTS TABLE
-            # ========================================
-            
-            try:
-                clients_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Clients"
-                
-                params = {
-                    'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"
-                }
-                
-                response = requests.get(clients_table_url, headers=headers, params=params, timeout=5)
-                
-                if response.status_code == 200:
-                    records = response.json().get('records', [])
-                    
-                    if records:
-                        client_record = records[0]
-                        fields = client_record.get('fields', {})
-                        
-                        subscription_status = fields.get('Subscription Status', 'Active')
-                        
-                        # Map status to tier
-                        status_to_tier = {
-                            'Active': 'tier_3',
-                            'Premium': 'tier_3',
-                            'Basic': 'tier_1',
-                            'Cancelled': 'tier_1',
-                            'Suspended': 'tier_1'
-                        }
-                        
-                        tier = status_to_tier.get(subscription_status, 'tier_1')
-                        
-                        # Parse regions properly
-                        regions = parse_regions(fields.get('Regions'))
-                        
-                        logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
-                        
-                        return {
-                            'name': fields.get('Name', 'there'),
-                            'email': fields.get('Email', ''),
-                            'subscription_status': subscription_status,
-                            'tier': tier,
-                            'trial_expired': False,
-                            'airtable_record_id': client_record['id'],
-                            'table': 'Clients',
-                            'preferences': {
-                                'preferred_regions': regions,
-                                'competitor_focus': fields.get('Competitor Focus', 'medium'),
-                                'report_depth': fields.get('Report Depth', 'detailed')
-                            },
-                            'usage_metrics': {
-                                'messages_used_this_month': fields.get('Messages Used This Month', 0),
-                                'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
-                                'total_messages_sent': fields.get('Total Messages Sent', 0)
-                            }
-                        }
-            
-            except Exception as e:
-                logger.error(f"Error checking Clients table: {e}")
-            
-            # Not found in either table
-            return None
         
         # ALWAYS fetch from Airtable on first message OR if stale
         if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
