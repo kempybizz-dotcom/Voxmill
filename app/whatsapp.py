@@ -784,27 +784,45 @@ Standing by."""
                 logger.info(f"✅ Monitoring status fallback sent")
                 return
 
-        # ========================================
+    # ========================================
         # PORTFOLIO TRACKING COMMANDS
         # ========================================
 
         portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
 
         if any(kw in message_lower for kw in portfolio_keywords):
-            from app.portfolio import get_portfolio_summary, add_property_to_portfolio
+            from app.portfolio import get_portfolio_summary, add_property_to_portfolio, parse_property_from_message
             
             if 'add property' in message_lower:
-                # Guide user through adding property
-                response = """ADD PROPERTY TO PORTFOLIO
+                # Check if user is sending property details
+                parsed_property = parse_property_from_message(message_text)
+                
+                if parsed_property:
+                    # Add property
+                    response = add_property_to_portfolio(sender, parsed_property)
+                    await send_twilio_message(sender, response)
+                    
+                    # Update conversation session
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=response,
+                        metadata={'category': 'portfolio_add'}
+                    )
+                    
+                    return
+                else:
+                    # Guide user through adding property
+                    response = """ADD PROPERTY TO PORTFOLIO
 
 Reply with property details:
 
 Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
 
 Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
-                
-                await send_twilio_message(sender, response)
-                return
+                    
+                    await send_twilio_message(sender, response)
+                    return
             
             # Show portfolio summary
             portfolio = get_portfolio_summary(sender)
@@ -834,8 +852,17 @@ Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_l
 Properties: {portfolio['property_count']}"""
             
             await send_twilio_message(sender, response)
+            
+            # Update conversation session
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'portfolio_summary'}
+            )
+            
             return
-
+        
         # ========================================
         # EXPORT/SHARING COMMANDS
         # ========================================
@@ -887,7 +914,6 @@ Note: This is a shareable snapshot. Real-time updates remain in your WhatsApp in
             
             await send_twilio_message(sender, response)
             return
-
         # ========================================
         # SILENT MONITORING COMMANDS
         # ========================================
