@@ -102,7 +102,7 @@ def get_client_from_airtable(sender: str) -> dict:
     if not search_number.startswith('+'):
         search_number = '+' + search_number
     
-# ========================================
+    # ========================================
     # CHECK 1: TRIAL USERS TABLE
     # ========================================
     
