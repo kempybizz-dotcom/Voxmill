@@ -11,6 +11,8 @@ import hashlib
 import re
 import requests
 import pytz
+from app.instant_response import InstantIntelligence, should_use_instant_response
+import asyncio
 from datetime import datetime, timezone, timedelta
 from twilio.rest import Client
 from app.dataset_loader import load_dataset
@@ -1454,6 +1456,77 @@ What market intelligence can I provide?"""
                 if data_age_hours > 48:  # Data older than 2 days
                     data_freshness_warning = f"\n\n━━━━━━━━━━━━━━━━━━━━\n⚠️ Data last updated {int(data_age_hours)} hours ago"
                     logger.warning(f"Stale data for {preferred_region}: {int(data_age_hours)} hours old")
+
+
+        # ========================================
+        # WORLD-CLASS: INSTANT vs DEEP ANALYSIS
+        # ========================================
+        
+        can_respond_instantly = should_use_instant_response(message_normalized, category)
+        
+        if can_respond_instantly:
+            # TIER 1: INSTANT RESPONSE (0-3 seconds)
+            
+            logger.info(f"✅ INSTANT RESPONSE MODE for: {message_normalized[:50]}")
+            
+            if 'decision' in message_normalized.lower():
+                # Instant decision using rule-based logic
+                formatted_response = InstantIntelligence.get_instant_decision(
+                    preferred_region, 
+                    dataset, 
+                    client_profile
+                )
+                category = "decision_mode"
+            
+            else:
+                # Instant market overview
+                formatted_response = InstantIntelligence.get_instant_market_overview(
+                    preferred_region,
+                    dataset
+                )
+                category = "market_overview"
+            
+            # Send instant response
+            await send_twilio_message(sender, formatted_response)
+            
+            # Update session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=formatted_response,
+                metadata={'category': category, 'response_type': 'instant'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, category, formatted_response)
+            update_client_history(sender, message_text, category, preferred_region)
+            
+            logger.info(f"✅ Instant response sent in <3s")
+            
+            # TIER 2: BACKGROUND GPT-4 ENHANCEMENT (async)
+            # This runs AFTER user gets response, refines it with GPT-4
+            asyncio.create_task(
+                enhance_response_async(
+                    sender, 
+                    message_normalized, 
+                    dataset, 
+                    client_profile, 
+                    formatted_response
+                )
+            )
+            
+            return
+        
+        else:
+            # COMPLEX QUERY: Use full GPT-4 pipeline
+            logger.info(f"📊 DEEP ANALYSIS MODE for: {message_normalized[:50]}")
+            
+            category, response_text, response_metadata = await classify_and_respond(
+                message_normalized,
+                dataset,
+                client_profile=client_profile,
+                comparison_datasets=comparison_datasets if comparison_datasets else None
+            )
+            
         
         # ========================================
         # INTELLIGENT QUERY PRE-PROCESSING
@@ -1911,6 +1984,56 @@ async def send_twilio_message(recipient: str, message: str):
     except Exception as e:
         logger.error(f"Error sending Twilio message: {str(e)}", exc_info=True)
         raise
+
+
+async def enhance_response_async(
+    sender: str,
+    message: str, 
+    dataset: Dict, 
+    client_profile: Dict,
+    instant_response: str
+):
+    """
+    TIER 2: Background GPT-4 enhancement
+    
+    Runs AFTER instant response sent, provides deeper analysis if needed
+    """
+    try:
+        logger.info(f"🔄 Background enhancement started for {sender}")
+        
+        # Give GPT-4 more time since user already has response
+        from app.llm import classify_and_respond
+        
+        category, enhanced_text, metadata = await classify_and_respond(
+            message,
+            dataset,
+            client_profile=client_profile,
+            comparison_datasets=None
+        )
+        
+        # Only send enhanced response if it adds significant value
+        similarity_threshold = 0.7  # Don't send if >70% similar
+        
+        # Simple similarity check (word overlap)
+        instant_words = set(instant_response.lower().split())
+        enhanced_words = set(enhanced_text.lower().split())
+        overlap = len(instant_words & enhanced_words) / max(len(instant_words), 1)
+        
+        if overlap < similarity_threshold and len(enhanced_text) > len(instant_response) * 1.3:
+            # Enhanced response adds value
+            enhancement_msg = f"""━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENHANCED ANALYSIS
+
+{enhanced_text}"""
+            
+            await send_twilio_message(sender, enhancement_msg)
+            logger.info(f"✅ Enhanced analysis sent to {sender}")
+        else:
+            logger.info(f"⏭️ Enhancement skipped (insufficient added value)")
+        
+    except Exception as e:
+        logger.error(f"Background enhancement failed: {e}")
+        # Silent failure - user already has instant response
 
 
 def smart_split_message(message: str, max_length: int) -> list:
