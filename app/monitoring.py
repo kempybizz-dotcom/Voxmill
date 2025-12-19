@@ -151,9 +151,9 @@ class MonitorManager:
             'duration_days': duration_days
         }
     
+    
     @staticmethod
-    @staticmethod
-  async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
+async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
         """
         Create monitor in pending state, awaiting confirmation
         
