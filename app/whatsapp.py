@@ -1380,7 +1380,6 @@ Risk mitigated by: timing discipline, exit readiness."""
         query_history = client_profile.get('query_history', [])
         
         # SPAM PROTECTION: Minimum 2 seconds between messages
-        # SPAM PROTECTION: Minimum 2 seconds between messages
         if query_history:
             # Get last NON-rate_check query (ignore rate_check sentinel entries)
             last_real_query = None
@@ -1409,6 +1408,10 @@ Risk mitigated by: timing discipline, exit readiness."""
         # Fix timezone for all query timestamps in history
         recent_queries = []
         for q in query_history:
+            # Skip rate_check entries when counting queries
+            if q.get('category') == 'rate_check':
+                continue
+                
             timestamp = q.get('timestamp')
             if timestamp:
                 # Make timezone-aware if needed
