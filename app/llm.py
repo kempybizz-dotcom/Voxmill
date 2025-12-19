@@ -192,44 +192,17 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
         # ============================================================
-       def get_adaptive_llm_config(
-    query: str,
-    dataset: dict,
-    is_followup: bool = False,
-    category: str = 'market_overview'
-) -> dict:
-    """
-    Generate adaptive LLM configuration based on query and data characteristics
-    
-    FIXED: Hardcoded temperature=0.2 and max_tokens=350 for institutional brevity
-    """
-    
-    # Analyze data quality
-    data_quality = analyze_data_quality(dataset)
-    
-    # Determine confidence level
-    confidence_level = determine_confidence_level(data_quality, dataset)
-    
-    # Determine complexity
-    complexity = determine_query_complexity(query)
-    
-    # FIXED VALUES (no longer adaptive)
-    temperature = 0.2  # Always institutional brevity
-    max_tokens = 350   # Always force concise responses
-    
-    config = {
-        'temperature': temperature,
-        'max_tokens': max_tokens,
-        'complexity': complexity,
-        'data_quality': data_quality,
-        'confidence_level': confidence_level,
-        'is_followup': is_followup,
-        'category': category
-    }
-    
-    logger.info(f"LLM Config: temp={temperature}, tokens={max_tokens}, complexity={complexity}, quality={data_quality:.2f}")
-    
-    return config
+        adaptive_config = get_adaptive_llm_config(
+            query=message,
+            dataset=dataset,
+            is_followup=False,
+            category='market_overview'
+        )
+        
+        logger.info(f"Adaptive LLM config: temp={adaptive_config['temperature']}, "
+                   f"complexity={adaptive_config['complexity']}, "
+                   f"quality={adaptive_config['data_quality']}, "
+                   f"confidence={adaptive_config['confidence_level']}")
         
         # ============================================================
         # WAVE 3: Apply confidence-based tone modulation
@@ -798,6 +771,37 @@ Confirmation: agent intent
 Conviction: pricing elasticity"""
             
             logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}")
+        
+        # ========================================
+        # FINAL SAFETY: RESPONSE LENGTH VALIDATOR
+        # ========================================
+        
+        word_count = len(response_text.split())
+        
+        # Hard limits: 150 words standard, 250 for Decision Mode
+        max_words = 250 if is_decision_mode else 150
+        
+        if word_count > max_words:
+            logger.warning(f"⚠️ Response too long ({word_count} words), truncating to {max_words}")
+            
+            # Truncate intelligently at sentence boundary
+            sentences = response_text.split('. ')
+            truncated = []
+            current_words = 0
+            
+            for sentence in sentences:
+                sentence_words = len(sentence.split())
+                if current_words + sentence_words <= max_words:
+                    truncated.append(sentence)
+                    current_words += sentence_words
+                else:
+                    break
+            
+            response_text = '. '.join(truncated)
+            if not response_text.endswith('.'):
+                response_text += '.'
+        
+        logger.info(f"✅ Final response: {len(response_text.split())} words, {len(response_text)} chars")
         
         # Parse JSON response
         try:
