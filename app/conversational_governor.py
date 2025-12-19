@@ -145,29 +145,54 @@ class ConversationalGovernor:
     
     @staticmethod
     def _classify_intent(message: str) -> Intent:
-        """Simple intent classification (can be upgraded to LLM later)"""
+        """Intent classification with robust normalization"""
         
+        # Aggressive normalization - strip, lower, remove extra spaces
         message_lower = message.lower().strip()
+        message_normalized = ' '.join(message_lower.split())  # Remove ALL extra whitespace
+        
+        # Remove apostrophes for matching (what's = whats)
+        message_clean = message_normalized.replace("'", "")
         
         # Provocation (silence required)
-        if message_lower in ['lol', 'haha', 'lmao', 'hehe', 'nice', 'wow']:
+        provocation_keywords = ['lol', 'haha', 'lmao', 'hehe', 'nice', 'wow', 'lmfao', 'rofl']
+        if message_clean in provocation_keywords:
             return Intent.PROVOCATION
         
-        # Casual checks
-        if message_lower in ['whats up', "what's up", 'sup', 'any news', 'any updates']:
+        # Casual greetings/checks - use BOTH original and cleaned version
+        casual_exact = [
+            'whats up', 'what up', 'sup', 'wassup', 'whatsup',
+            'any news', 'any updates', 'any update',
+            'hi', 'hello', 'hey', 'yo', 'hiya'
+        ]
+        
+        if message_clean in casual_exact or message_normalized in casual_exact:
             return Intent.CASUAL
         
-        # Acknowledgments (also casual)
-        if message_lower in ['thanks', 'thank you', 'ok', 'noted', 'got it', 'yep', 'yeah']:
+        # Acknowledgments
+        acknowledgments = [
+            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
+            'ok', 'okay', 'noted', 'got it', 'gotit',
+            'yep', 'yeah', 'yup', 'sure', 'cool'
+        ]
+        
+        if message_clean in acknowledgments or message_normalized in acknowledgments:
             return Intent.CASUAL
         
-        # Decision requests
-        if any(kw in message_lower for kw in ['decision mode', 'what should i do', 'recommend action', 'make the call']):
+        # Decision requests (use substring matching)
+        if any(kw in message_clean for kw in ['decision mode', 'what should i do', 'recommend action', 'make the call', 'tell me what to do']):
             return Intent.DECISION_REQUEST
         
-        # Status checks
-        if any(kw in message_lower for kw in ['what am i monitoring', 'monitoring status', 'show monitor']):
+        # Status checks (use substring matching)
+        if any(kw in message_clean for kw in ['what am i monitoring', 'monitoring status', 'show monitor', 'my monitor']):
             return Intent.STATUS_CHECK
+        
+        # Short messages (1-3 words) without strategic keywords = probably casual
+        word_count = len(message_clean.split())
+        strategic_keywords = ['market', 'price', 'opportunity', 'competitive', 'trend', 'forecast', 'analyse', 'analyze', 'overview']
+        
+        if word_count <= 3 and not any(kw in message_clean for kw in strategic_keywords):
+            return Intent.CASUAL
         
         # Default to strategic (allows full analysis)
         return Intent.STRATEGIC
