@@ -144,15 +144,14 @@ class MonitorManager:
         if duration_days is None:
             duration_days = 7
         
-        return True, {
+       return True, {
             'region': region,
             'agent': agent,
             'triggers': triggers,
             'duration_days': duration_days
         }
     
-    
-   @staticmethod
+    @staticmethod  # ✅ Properly aligned with class methods
     async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
         """
         Create monitor in pending state, awaiting confirmation
