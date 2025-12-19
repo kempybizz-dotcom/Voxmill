@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 from pymongo import MongoClient
 import asyncio
+from datetime import timedelta
 from app.dataset_loader import load_dataset
 
 logger = logging.getLogger(__name__)
@@ -157,7 +158,3 @@ async def detect_price_changes(area: str, current_snapshots: dict) -> list:
     except Exception as e:
         logger.error(f"Error detecting price changes: {str(e)}", exc_info=True)
         return []
-
-
-# Add to bottom of file
-from datetime import timedelta
