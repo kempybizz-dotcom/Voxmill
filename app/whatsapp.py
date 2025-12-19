@@ -1119,7 +1119,7 @@ What can I analyze for you today?"""
             logger.info(f"✅ Brevity phrase '{triggered_phrase}' detected in '{message_text[:30]}' (hard-gated, no LLM)")
             return  # ← CRITICAL: Stop here, never call LLM
         
-        # ========================================
+       # ========================================
         # POST-DECISION CONSEQUENCE QUESTIONS
         # ========================================
         
@@ -1188,6 +1188,12 @@ Risk mitigated by: timing discipline, exit readiness."""
         # RATE LIMITING - PREVENT COST EXPLOSION
         # ========================================
         
+        # CRITICAL: Increment counter BEFORE check to prevent off-by-one
+        # Log this message as "rate_check" first
+        update_client_history(sender, message_text, "rate_check", preferred_region)
+        
+        # Reload profile with updated counter
+        client_profile = get_client_profile(sender)
         query_history = client_profile.get('query_history', [])
         
         # SPAM PROTECTION: Minimum 2 seconds between messages
