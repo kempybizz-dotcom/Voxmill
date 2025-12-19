@@ -1124,7 +1124,7 @@ Risk mitigated by: timing discipline, exit readiness."""
         conversation = ConversationSession(sender)
         
         # Check if this is a follow-up query
-        is_followup, context_hints = conversation.detect_followup_query(message_normalized)
+        is_followup, context_hints = safe_detect_followup(conversation, message_normalized)
         
         if is_followup:
             logger.info(f"Follow-up detected: {context_hints}")
