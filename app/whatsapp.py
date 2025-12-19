@@ -1935,6 +1935,27 @@ Standing by."""
             logger.info(f"✅ Standard response (with headers): {word_count} words")
 
         # ========================================
+        # ENFORCE RESPONSE SHAPE (BEFORE PROHIBITION SCAN)
+        # ========================================
+        
+        from app.response_enforcer import ResponseEnforcer, ResponseShape
+        
+        # Select shape based on intent
+        response_shape = ResponseEnforcer.select_shape_before_generation(
+            governance_result.intent,
+            allowed_response_shape
+        )
+        
+        # Enforce shape constraints
+        formatted_response = ResponseEnforcer.enforce_shape(
+            formatted_response,
+            response_shape,
+            max_words
+        )
+        
+        logger.info(f"✅ Shape enforced: {response_shape.value}, {len(formatted_response.split())} words")
+
+        # ========================================
         # PHASE 4: PROHIBITION ENFORCEMENT (CHECKPOINT 10)
         # ========================================
         
