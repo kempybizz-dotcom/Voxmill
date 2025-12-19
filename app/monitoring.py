@@ -27,7 +27,7 @@ class MonitorManager:
         'tier_3': 999  # Unlimited
     }
     
-    @staticmethod
+   @staticmethod
     def parse_monitor_request(message: str, client_profile: dict) -> Tuple[bool, dict]:
         """
         Parse monitoring request and extract parameters with intelligent inference
@@ -144,7 +144,7 @@ class MonitorManager:
         if duration_days is None:
             duration_days = 7
         
-       return True, { 
+        return True, {  # ✅ FIXED: Was 7 spaces, now 8 spaces
             'region': region,
             'agent': agent,
             'triggers': triggers,
@@ -323,7 +323,6 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
                 )
                 
                 return """Confirmation expired (5 minutes).
-
 Please create a new monitoring request."""
         
         # Apply custom duration if provided
