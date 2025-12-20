@@ -276,14 +276,16 @@ class ConversationalGovernor:
             ),
             
             Intent.UNKNOWN: Envelope(
-                silence_required=False,
-                refusal_required=True,
-                max_response_length=50,
                 analysis_allowed=False,
+                max_response_length=50,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=True,
+                refusal_required=True,
+                decision_mode_eligible=False,
                 data_load_allowed=False,
                 llm_call_allowed=False,
-                allowed_shapes=[ResponseShape.REFUSAL],
-                hardcoded_response="No actionable signal. Standing by."
+                allowed_shapes=["REFUSAL"]
             ),
             
             Intent.SECURITY: Envelope(
