@@ -371,13 +371,13 @@ class ConversationalGovernor:
             Intent.SECURITY: 0.95,
             Intent.ADMINISTRATIVE: 0.90,
             Intent.PROVOCATION: 0.85,
-            Intent.CASUAL: 0.90,
+            Intent.CASUAL: 0.80,  # ← Was 0.90, lower to 0.80
             Intent.STATUS_CHECK: 0.92,
-            Intent.STRATEGIC: 0.80,
-            Intent.DECISION_REQUEST: 0.95,
-            Intent.META_STRATEGIC: 0.88,
+            Intent.STRATEGIC: 0.75,  # ← Was 0.80, lower to 0.75
+            Intent.DECISION_REQUEST: 0.90,  # ← Was 0.95, lower to 0.90
+            Intent.META_STRATEGIC: 0.85,  # ← Was 0.88, lower to 0.85
             Intent.MONITORING_DIRECTIVE: 0.93,
-            Intent.UNKNOWN: 0.00  # Always allowed (but will refuse)
+            Intent.UNKNOWN: 0.00
         }
         
         required_confidence = CONFIDENCE_THRESHOLDS.get(intent, 0.80)
