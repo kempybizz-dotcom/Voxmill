@@ -87,6 +87,56 @@ class AutoScopeResult:
 
 class ConversationalGovernor:
     """Main governance controller with Layer 0 mandate relevance"""
+
+    @staticmethod
+def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
+    """
+    Layer -1: Social Absorption
+    
+    Returns: (is_social, response_override)
+    - If is_social=True, use response_override and bypass all other layers
+    - If is_social=False, continue to mandate relevance check
+    """
+    
+    message_lower = message.lower().strip()
+    
+    # CLASS B: POLITENESS TOKENS
+    politeness_exact = ['thanks', 'thank you', 'thankyou', 'thx', 'cheers', 
+                        'appreciated', 'got it', 'noted', 'cool', 'ok', 'okay']
+    
+    if message_lower in politeness_exact:
+        return True, "Standing by."
+    
+    # CLASS C: PHATIC EXPRESSIONS
+    phatic_patterns = ['how are you', 'how r you', 'how are u', 
+                       'what\'s up', 'whats up', 'what up', 'sup', 'wassup',
+                       'how\'s it going', 'hows it going', 'you good', 'all good',
+                       'how you doing', 'how\'s things', 'hows things']
+    
+    if message_lower in phatic_patterns:
+        return True, "Standing by."
+    
+    # CLASS D: MOOD STATEMENTS (non-market)
+    # If mood statement has NO market keywords, treat as social
+    mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange']
+    
+    if any(pattern in message_lower for pattern in mood_patterns):
+        # Non-market mood statement → silence or brief acknowledge
+        return True, None  # None = silence
+    
+    # CLASS F: META-CONVERSATIONAL
+    # These should be reframed as DECISION_REQUEST, not refused
+    # Return False to pass through to normal intent classification
+    # But flag them for special handling
+    meta_patterns = ['what would you do', 'if you were me', 'your thoughts',
+                     'what do you think', 'your view', 'your opinion']
+    
+    if any(pattern in message_lower for pattern in meta_patterns):
+        # Pass through but will force to DECISION_REQUEST
+        return False, None
+    
+    # NOT SOCIAL - pass to mandate relevance
+    return False, None
     
     # ========================================
     # LAYER 0: MANDATE RELEVANCE CHECK
@@ -604,14 +654,61 @@ class ConversationalGovernor:
     # MAIN GOVERNANCE ENTRY POINT
     # ========================================
     
-    @staticmethod
-    async def govern(message_text: str, sender: str, client_profile: dict, 
-                    system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
-        """
-        Main governance entry point with Layer 0 mandate relevance
+@staticmethod
+async def govern(message_text: str, sender: str, client_profile: dict, 
+                system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
+    """
+    Main governance entry point with Social Absorption Layer
+    """
+    
+    # ========================================
+    # LAYER -1: SOCIAL ABSORPTION (NEW)
+    # ========================================
+    
+    client_name = client_profile.get('name', 'there')
+    
+    is_social, social_response = ConversationalGovernor._absorb_social_input(
+        message_text,
+        client_name
+    )
+    
+    if is_social:
+        logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
         
-        Returns: GovernanceResult with intent, constraints, and optional response
-        """
+        if social_response is None:
+            # Silence
+            return GovernanceResult(
+                intent=Intent.CASUAL,
+                confidence=1.0,
+                blocked=True,
+                silence_required=True,
+                response=None,
+                allowed_shapes=["SILENCE"],
+                max_words=0,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category="social"
+            )
+        else:
+            # Brief acknowledgment
+            return GovernanceResult(
+                intent=Intent.CASUAL,
+                confidence=1.0,
+                blocked=True,
+                silence_required=False,
+                response=social_response,
+                allowed_shapes=["ACKNOWLEDGMENT"],
+                max_words=10,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category="social"
+            )
+    
+    # Continue to Layer 0 (existing mandate relevance check)...
         
         # ========================================
         # LAYER 0: MANDATE RELEVANCE CHECK
