@@ -892,7 +892,26 @@ Standing by."""
         # GOVERNANCE LAYER - WORLD-CLASS ENFORCEMENT
         # ========================================
         
-        from app.conversational_governor import ConversationalGovernor, Intent
+    from app.conversational_governor import ConversationalGovernor, Intent
+        
+        # ========================================
+        # PREPARE CONVERSATION CONTEXT FOR AUTO-SCOPING
+        # ========================================
+        
+        conversation = ConversationSession(sender)
+        conversation_entities = conversation.get_last_mentioned_entities()
+        
+        conversation_context = {
+            'regions': conversation_entities.get('regions', []),
+            'agents': conversation_entities.get('agents', []),
+            'topics': conversation_entities.get('topics', [])
+        }
+        
+        logger.info(f"📍 Conversation context for governance: {conversation_context}")
+        
+        # ========================================
+        # GOVERNANCE LAYER - WITH MANDATE AWARENESS
+        # ========================================
         
         # Classify intent and check if response allowed
         governance_result = await ConversationalGovernor.govern(
@@ -904,8 +923,13 @@ Standing by."""
                 'pin_unlocked': True,  # Already checked above
                 'quota_remaining': 100,  # Calculate from usage
                 'monitoring_active': len(client_profile.get('active_monitors', [])) > 0
-            }
+            },
+            conversation_context=conversation_context  # NEW: Pass context for auto-scoping
         )
+        
+        # Log auto-scoping results
+        if governance_result.auto_scoped:
+            logger.info(f"✅ Auto-scoped query: semantic_category={governance_result.semantic_category}")
         
         # ========================================
         # CHECKPOINT 6: AUTHORITY POLICY GATE
@@ -918,8 +942,11 @@ Standing by."""
                 return
             else:
                 # Send governance-controlled response
-                await send_twilio_message(sender, governance_result.response)
+                logger.info(f"🚫 Governance blocked: intent={governance_result.intent.value}, "
+                           f"semantic_category={governance_result.semantic_category}, "
+                           f"response='{governance_result.response}'")
                 
+                await send_twilio_message(sender, governance_result.response)
                 # Update conversation session
                 try:
                     conversation = ConversationSession(sender)
@@ -943,16 +970,21 @@ Standing by."""
                 return
         
         # ========================================
-        # EXTRACT AND ENFORCE CONSTRAINTS
+        # EXTRACT GOVERNANCE CONSTRAINTS
         # ========================================
         
-        # Extract envelope constraints
         allowed_response_shape = governance_result.allowed_shapes
         max_words = governance_result.max_words
         analysis_allowed = governance_result.analysis_allowed
         data_load_allowed = governance_result.data_load_allowed
         
-        logger.info(f"✅ Governance passed: intent={governance_result.intent.value}, max_words={max_words}, analysis={analysis_allowed}, data_load={data_load_allowed}")
+        logger.info(f"✅ Governance passed: intent={governance_result.intent.value}, "
+                   f"confidence={governance_result.confidence:.2f}, "
+                   f"semantic_category={governance_result.semantic_category}, "
+                   f"auto_scoped={governance_result.auto_scoped}, "
+                   f"max_words={max_words}, "
+                   f"analysis={analysis_allowed}, "
+                   f"data_load={data_load_allowed}")
         
         # ========================================
         # ENFORCE DATA LOADING CONSTRAINT (CRITICAL)
@@ -1016,6 +1048,24 @@ Standing by."""
                 pass
             
             return  # CRITICAL: Stop pipeline here
+            
+        # ========================================
+        # DOWNSTREAM PROTECTION: BLOCK "QUERY UNCLEAR" FOR MANDATE-RELEVANT
+        # ========================================
+        
+        # This is a safety net - should never be needed if governance works correctly
+        if governance_result.semantic_category and governance_result.semantic_category != 'non_domain':
+            # Query is mandate-relevant
+            if not governance_result.blocked and governance_result.intent == Intent.UNKNOWN:
+                logger.critical(f"⚠️ SAFETY NET TRIGGERED: Intent.UNKNOWN leaked through for mandate-relevant query")
+                # This should NEVER happen after governance fixes
+                # Force to STRATEGIC as last resort
+                from app.conversational_governor import Intent
+                governance_result.intent = Intent.STRATEGIC
+                governance_result.confidence = 0.75
+                logger.warning(f"🔄 Forced Intent.UNKNOWN → Intent.STRATEGIC (downstream protection)")
+
+
         
         # ========================================
         # GOVERNANCE PASSED - CONTINUE WITH CONSTRAINTS
@@ -2286,7 +2336,14 @@ Please rephrase your query or contact support if this persists."""
         log_interaction(sender, message_text, category, formatted_response)
         update_client_history(sender, message_text, category, preferred_region)
         
-        logger.info(f"Message processed: {category} | Confidence: {response_metadata.get('confidence_level')} | Urgency: {response_metadata.get('recommendation_urgency')}")
+        logger.info(f"✅ Message processed successfully: "
+                   f"category={category}, "
+                   f"intent={governance_result.intent.value}, "
+                   f"semantic_category={governance_result.semantic_category}, "
+                   f"confidence={response_metadata.get('confidence_level')}, "
+                   f"urgency={response_metadata.get('recommendation_urgency')}, "
+                   f"auto_scoped={governance_result.auto_scoped}")
+
         
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
