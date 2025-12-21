@@ -7,6 +7,9 @@ Enables natural dialogue:
 - "What about Chelsea?" (remembers discussing Mayfair)
 - "Compare that to last week" (remembers what "that" refers to)
 - "Show me more like that" (remembers recent analysis)
+
+WORLD-CLASS UPDATE:
+- Added get_last_mentioned_entities() for auto-scoping integration
 """
 
 import os
@@ -137,6 +140,41 @@ class ConversationSession:
                 context_parts.append(f"• Topics: {topics}")
         
         return "\n".join(context_parts)
+    
+    def get_last_mentioned_entities(self) -> Dict[str, List[str]]:
+        """
+        Get last-mentioned entities for auto-scoping
+        
+        Returns: {
+            'regions': [...],
+            'agents': [...],
+            'topics': [...]
+        }
+        
+        NEW METHOD - Used by conversational_governor for auto-scoping
+        """
+        
+        session = self.get_session()
+        
+        if not session or not session.get('context_entities'):
+            return {
+                'regions': [],
+                'agents': [],
+                'topics': []
+            }
+        
+        entities = session['context_entities']
+        
+        logger.info(f"Retrieved entities for {self.client_id}: "
+                   f"regions={entities.get('regions', [])}, "
+                   f"agents={entities.get('agents', [])}, "
+                   f"topics={entities.get('topics', [])}")
+        
+        return {
+            'regions': entities.get('regions', []),
+            'agents': entities.get('agents', []),
+            'topics': entities.get('topics', [])
+        }
 
     def get_cross_session_summary(self, days: int = 7) -> str:
         """Get summary of key decisions/topics from past N days"""
@@ -277,18 +315,25 @@ class ConversationSession:
             if len(entities[key]) > 3:
                 entities[key] = entities[key][-3:]
         
-        # Extract agents
+        # Extract agents (expanded list with fuzzy matching)
         agents = ['Knight Frank', 'Savills', 'Hamptons', 'Chestertons', 
-                 'Foxtons', 'JLL', 'CBRE', 'Strutt & Parker']
+                 'Foxtons', 'JLL', 'CBRE', 'Strutt & Parker', 'Strutt and Parker']
         
         for agent in agents:
-            if agent.lower() in message.lower():
-                if agent not in entities['agents']:
-                    entities['agents'].append(agent)
+            # Fuzzy matching (handle typos like "Knightsfrank")
+            agent_normalized = agent.lower().replace(' ', '').replace('&', '')
+            message_normalized = message.lower().replace(' ', '').replace('&', '')
+            
+            if agent_normalized in message_normalized:
+                # Store canonical name
+                canonical_name = agent.replace('Strutt and Parker', 'Strutt & Parker')
+                if canonical_name not in entities['agents']:
+                    entities['agents'].append(canonical_name)
         
         # Extract topics
         topics = ['price', 'inventory', 'cascade', 'opportunity', 'competitive', 
-                 'trend', 'velocity', 'liquidity', 'forecast']
+                 'trend', 'velocity', 'liquidity', 'forecast', 'segment', 'breakdown',
+                 'competitor', 'agent', 'strategic']
         
         for topic in topics:
             if topic in message.lower():
