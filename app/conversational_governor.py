@@ -4,15 +4,16 @@ VOXMILL CONVERSATIONAL GOVERNOR
 Intent classification → Authority envelopes → Response constraints
 
 WORLD-CLASS UPDATE:
+- Layer 0: Mandate relevance check (semantic analysis)
+- Auto-scoping (market, timeframe, entities)
 - Intent confidence scoring with thresholds
-- Robust normalization (handles apostrophes, whitespace, case)
-- No phrase-based triggers (intent-only routing)
-- Structural enforcement before LLM generation
+- Force best-fit intent for mandate-relevant queries
+- NO "query unclear" for mandate-relevant queries
 """
 
 import logging
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Tuple, Dict
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,16 @@ class Intent(Enum):
     META_STRATEGIC = "meta_strategic"  # Blind spot analysis
     MONITORING_DIRECTIVE = "monitoring_directive"  # Setup/modify/cancel monitoring
     UNKNOWN = "unknown"  # Unclassifiable → refusal
+
+
+class SemanticCategory(Enum):
+    """Semantic categories for mandate relevance"""
+    COMPETITIVE_INTELLIGENCE = "competitive_intelligence"
+    MARKET_DYNAMICS = "market_dynamics"
+    STRATEGIC_POSITIONING = "strategic_positioning"
+    TEMPORAL_ANALYSIS = "temporal_analysis"
+    SURVEILLANCE = "surveillance"
+    NON_DOMAIN = "non_domain"
 
 
 @dataclass
@@ -60,10 +71,248 @@ class GovernanceResult:
     analysis_allowed: bool
     data_load_allowed: bool
     llm_call_allowed: bool = True
+    auto_scoped: bool = False
+    semantic_category: Optional[str] = None
+
+
+@dataclass
+class AutoScopeResult:
+    """Result of auto-scoping"""
+    market: Optional[str]
+    timeframe: Optional[str]
+    entities: List[str]
+    confidence: float
+    inferred_from: str  # "user_preference", "conversation_context", "default"
 
 
 class ConversationalGovernor:
-    """Main governance controller"""
+    """Main governance controller with Layer 0 mandate relevance"""
+    
+    # ========================================
+    # LAYER 0: MANDATE RELEVANCE CHECK
+    # ========================================
+    
+    @staticmethod
+    def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
+        """
+        Determine if query is within analyst mandate
+        
+        Returns: (is_mandate_relevant, semantic_category, confidence)
+        """
+        
+        message_lower = message.lower().strip()
+        
+        # Category A: COMPETITIVE INTELLIGENCE
+        competitive_keywords = [
+            'competitor', 'agent', 'player', 'firm', 'rival', 'entity', 
+            'participant', 'knight frank', 'savills', 'hamptons', 'chestertons',
+            'foxtons', 'jll', 'cbre', 'strutt', 'doing', 'activity', 'behavior',
+            'positioning', 'strategy', 'moving', 'active'
+        ]
+        
+        if any(kw in message_lower for kw in competitive_keywords):
+            return True, SemanticCategory.COMPETITIVE_INTELLIGENCE, 0.90
+        
+        # Category B: MARKET DYNAMICS
+        market_keywords = [
+            'market', 'sector', 'segment', 'region', 'area', 'territory',
+            'mayfair', 'chelsea', 'knightsbridge', 'belgravia', 'kensington',
+            'london', 'real estate', 'property', 'properties', 'inventory',
+            'conditions', 'trends', 'movement', 'sentiment', 'outlook', 'state',
+            'overview', 'snapshot', 'update', 'status', 'dynamics'
+        ]
+        
+        if any(kw in message_lower for kw in market_keywords):
+            return True, SemanticCategory.MARKET_DYNAMICS, 0.88
+        
+        # Category C: STRATEGIC POSITIONING
+        strategic_keywords = [
+            'action', 'move', 'strategy', 'opportunity', 'timing', 'window',
+            'entry', 'exit', 'buy', 'sell', 'acquire', 'position', 'leverage',
+            'recommend', 'advise', 'should i', 'what do i', 'next step',
+            'best', 'optimal', 'strategic', 'tactical', 'directive'
+        ]
+        
+        if any(kw in message_lower for kw in strategic_keywords):
+            return True, SemanticCategory.STRATEGIC_POSITIONING, 0.92
+        
+        # Category D: TEMPORAL ANALYSIS
+        temporal_keywords = [
+            'trend', 'change', 'movement', 'shift', 'pattern', 'trajectory',
+            'forecast', 'predict', 'outlook', 'forecast', 'historical',
+            'this week', 'this month', 'recently', 'lately', 'changed',
+            'different', 'new', 'emerging'
+        ]
+        
+        if any(kw in message_lower for kw in temporal_keywords):
+            return True, SemanticCategory.TEMPORAL_ANALYSIS, 0.85
+        
+        # Category E: SURVEILLANCE & MONITORING
+        surveillance_keywords = [
+            'monitor', 'track', 'watch', 'alert', 'notify', 'monitoring',
+            'tracking', 'surveillance', 'flag', 'keep eye', 'observe',
+            'what am i monitoring', 'my monitors', 'active monitors'
+        ]
+        
+        if any(kw in message_lower for kw in surveillance_keywords):
+            return True, SemanticCategory.SURVEILLANCE, 0.93
+        
+        # Category F: NON-DOMAIN (outside mandate)
+        return False, SemanticCategory.NON_DOMAIN, 0.95
+    
+    # ========================================
+    # AUTO-SCOPING LOGIC
+    # ========================================
+    
+    @staticmethod
+    def _auto_scope(message: str, client_profile: Dict, conversation_context: Dict = None) -> AutoScopeResult:
+        """
+        Infer market, timeframe, and entities from context
+        
+        Never ask for clarification - always infer
+        """
+        
+        message_lower = message.lower().strip()
+        
+        # ========================================
+        # MARKET/DOMAIN INFERENCE
+        # ========================================
+        
+        market = None
+        market_source = "default"
+        
+        # Rule 1: Embedded entity resolution (highest priority)
+        regions = ['mayfair', 'knightsbridge', 'chelsea', 'belgravia', 'kensington']
+        for region in regions:
+            if region in message_lower:
+                market = region.title()
+                market_source = "explicit_mention"
+                break
+        
+        # Rule 2: User preference default
+        if not market and client_profile:
+            preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+            if preferred_regions:
+                market = preferred_regions[0]
+                market_source = "user_preference"
+        
+        # Rule 3: Conversation context
+        if not market and conversation_context:
+            last_regions = conversation_context.get('regions', [])
+            if last_regions:
+                market = last_regions[-1]
+                market_source = "conversation_context"
+        
+        # Rule 4: Default fallback
+        if not market:
+            market = "Mayfair"
+            market_source = "default"
+        
+        # ========================================
+        # TIMEFRAME INFERENCE
+        # ========================================
+        
+        timeframe = None
+        
+        # Explicit temporal markers
+        if 'this week' in message_lower or 'past week' in message_lower:
+            timeframe = "7d"
+        elif 'this month' in message_lower or 'past month' in message_lower:
+            timeframe = "30d"
+        elif 'recently' in message_lower or 'lately' in message_lower:
+            timeframe = "14d"
+        elif 'today' in message_lower or 'now' in message_lower:
+            timeframe = "current"
+        
+        # Implicit defaults
+        elif any(kw in message_lower for kw in ['trend', 'movement', 'change']):
+            timeframe = "14d"  # Trends default to 14-day window
+        elif any(kw in message_lower for kw in ['overview', 'snapshot', 'status']):
+            timeframe = "current"  # State queries = current
+        else:
+            timeframe = "current+7d"  # Default: current + recent trend
+        
+        # ========================================
+        # ENTITY INFERENCE
+        # ========================================
+        
+        entities = []
+        
+        # Known agents
+        agents = ['knight frank', 'savills', 'hamptons', 'chestertons', 'foxtons', 
+                 'jll', 'cbre', 'strutt & parker', 'strutt and parker']
+        
+        for agent in agents:
+            # Handle typos with fuzzy matching
+            if agent.replace(' ', '') in message_lower.replace(' ', ''):
+                entities.append(agent.title())
+        
+        # Implicit entity categories
+        if 'competitor' in message_lower or 'agent' in message_lower:
+            entities.append("ALL_AGENTS")  # Flag to load all agents
+        
+        # Conversation context entities
+        if conversation_context:
+            last_agents = conversation_context.get('agents', [])
+            if last_agents and not entities:
+                entities = [last_agents[-1]]  # Assume continuation
+        
+        # Calculate confidence
+        confidence = 0.95 if market_source == "explicit_mention" else 0.85 if market_source == "user_preference" else 0.70
+        
+        return AutoScopeResult(
+            market=market,
+            timeframe=timeframe,
+            entities=entities if entities else [],
+            confidence=confidence,
+            inferred_from=market_source
+        )
+    
+    # ========================================
+    # FORCE INTENT FROM SEMANTIC CATEGORY
+    # ========================================
+    
+    @staticmethod
+    def _force_intent_from_semantic_category(semantic_category: SemanticCategory, message: str) -> Intent:
+        """
+        Map semantic category to best-fit intent when UNKNOWN would occur
+        Preserves nuance while blocking non-answers
+        """
+        
+        message_lower = message.lower()
+        
+        # Action/recommendation signals
+        action_signals = ['what should', 'recommend', 'advise', 'tell me what', 
+                          'best action', 'next step', 'what do i', 'give me']
+        has_action_signal = any(sig in message_lower for sig in action_signals)
+        
+        # State/status signals  
+        state_signals = ['what is', 'what are', 'current', 'now', 'status', 
+                         'how is', 'where is', 'show me']
+        has_state_signal = any(sig in message_lower for sig in state_signals)
+        
+        # Map category to intent
+        if semantic_category == SemanticCategory.COMPETITIVE_INTELLIGENCE:
+            return Intent.STATUS_CHECK if has_state_signal else Intent.STRATEGIC
+        
+        elif semantic_category == SemanticCategory.MARKET_DYNAMICS:
+            return Intent.STATUS_CHECK if has_state_signal else Intent.STRATEGIC
+        
+        elif semantic_category == SemanticCategory.STRATEGIC_POSITIONING:
+            return Intent.DECISION_REQUEST if has_action_signal else Intent.STRATEGIC
+        
+        elif semantic_category == SemanticCategory.TEMPORAL_ANALYSIS:
+            return Intent.STRATEGIC  # Trends always strategic
+        
+        elif semantic_category == SemanticCategory.SURVEILLANCE:
+            return Intent.STATUS_CHECK if has_state_signal else Intent.MONITORING_DIRECTIVE
+        
+        else:
+            return Intent.STRATEGIC  # Safe default for mandate-relevant
+    
+    # ========================================
+    # INTENT CLASSIFICATION (EXISTING)
+    # ========================================
     
     @staticmethod
     def _classify_intent(message: str) -> tuple[Intent, float]:
@@ -114,7 +363,8 @@ class ConversationalGovernor:
         acknowledgments = [
             'thanks', 'thank you', 'thankyou', 'thx', 'ty',
             'ok', 'okay', 'noted', 'got it', 'gotit',
-            'yep', 'yeah', 'yup', 'sure', 'cool', 'right'
+            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
+            'cheers'  # Added
         ]
         
         if message_clean in acknowledgments:
@@ -131,7 +381,8 @@ class ConversationalGovernor:
         # ========================================
         
         decision_keywords = ['decision mode', 'what should i do', 'make the call', 
-                             'recommend action', 'tell me what to do', 'your recommendation']
+                             'recommend action', 'tell me what to do', 'your recommendation',
+                             'what are my best', 'give me 5', 'next steps', 'what do i']
         
         if any(kw in message_clean for kw in decision_keywords):
             return Intent.DECISION_REQUEST, 0.95
@@ -172,7 +423,8 @@ class ConversationalGovernor:
         
         strategic_keywords = ['market', 'overview', 'analysis', 'competitive', 'landscape',
                              'opportunity', 'opportunities', 'trend', 'forecast', 'outlook',
-                             'price', 'inventory', 'agent', 'liquidity', 'timing']
+                             'price', 'inventory', 'agent', 'liquidity', 'timing',
+                             'segment', 'breakdown', 'real estate', 'property']
         
         strategic_match_count = sum(1 for kw in strategic_keywords if kw in message_clean)
         
@@ -335,30 +587,79 @@ class ConversationalGovernor:
         """
         Get hardcoded response for simple intents
         
-        REMOVED: Phrase-based overrides
-        Now returns intent-based responses only
+        Intent-based responses only (no phrase matching)
         """
         
-        # Intent-based responses (no phrase matching)
+        # Intent-based responses
         intent_responses = {
             Intent.CASUAL: "Standing by.",
             Intent.STATUS_CHECK: "Monitoring.",
-            Intent.UNKNOWN: "Query unclear. Rephrase for analysis.",
+            Intent.UNKNOWN: "Outside intelligence scope.",  # Updated
             Intent.SECURITY: "Enter your 4-digit code.",
         }
         
         return intent_responses.get(intent)
     
+    # ========================================
+    # MAIN GOVERNANCE ENTRY POINT
+    # ========================================
+    
     @staticmethod
     async def govern(message_text: str, sender: str, client_profile: dict, 
-                    system_state: dict) -> GovernanceResult:
+                    system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
         """
-        Main governance entry point with confidence enforcement
+        Main governance entry point with Layer 0 mandate relevance
         
         Returns: GovernanceResult with intent, constraints, and optional response
         """
         
-        # Classify intent with confidence
+        # ========================================
+        # LAYER 0: MANDATE RELEVANCE CHECK
+        # ========================================
+        
+        is_mandate_relevant, semantic_category, semantic_confidence = ConversationalGovernor._check_mandate_relevance(
+            message_text, 
+            conversation_context
+        )
+        
+        logger.info(f"Mandate check: relevant={is_mandate_relevant}, category={semantic_category.value}, confidence={semantic_confidence:.2f}")
+        
+        # If NOT mandate-relevant, refuse immediately
+        if not is_mandate_relevant:
+            return GovernanceResult(
+                intent=Intent.UNKNOWN,
+                confidence=semantic_confidence,
+                blocked=True,
+                silence_required=False,
+                response="Outside intelligence scope.",
+                allowed_shapes=["REFUSAL"],
+                max_words=10,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category=semantic_category.value
+            )
+        
+        # ========================================
+        # AUTO-SCOPING (for mandate-relevant queries)
+        # ========================================
+        
+        auto_scope_result = ConversationalGovernor._auto_scope(
+            message_text,
+            client_profile,
+            conversation_context
+        )
+        
+        logger.info(f"Auto-scoped: market={auto_scope_result.market}, "
+                   f"timeframe={auto_scope_result.timeframe}, "
+                   f"entities={auto_scope_result.entities}, "
+                   f"source={auto_scope_result.inferred_from}")
+        
+        # ========================================
+        # INTENT CLASSIFICATION
+        # ========================================
+        
         intent, confidence = ConversationalGovernor._classify_intent(message_text)
         
         logger.info(f"Intent classified: {intent.value} (confidence: {confidence:.2f})")
@@ -371,26 +672,48 @@ class ConversationalGovernor:
             Intent.SECURITY: 0.95,
             Intent.ADMINISTRATIVE: 0.90,
             Intent.PROVOCATION: 0.85,
-            Intent.CASUAL: 0.80,  # ← Was 0.90, lower to 0.80
+            Intent.CASUAL: 0.80,  # Lowered from 0.90
             Intent.STATUS_CHECK: 0.92,
-            Intent.STRATEGIC: 0.75,  # ← Was 0.80, lower to 0.75
-            Intent.DECISION_REQUEST: 0.90,  # ← Was 0.95, lower to 0.90
-            Intent.META_STRATEGIC: 0.85,  # ← Was 0.88, lower to 0.85
+            Intent.STRATEGIC: 0.75,  # Lowered from 0.80
+            Intent.DECISION_REQUEST: 0.90,  # Lowered from 0.95
+            Intent.META_STRATEGIC: 0.85,  # Lowered from 0.88
             Intent.MONITORING_DIRECTIVE: 0.93,
-            Intent.UNKNOWN: 0.00
+            Intent.UNKNOWN: 0.00  # Always allowed (but will be forced if mandate-relevant)
         }
         
         required_confidence = CONFIDENCE_THRESHOLDS.get(intent, 0.80)
         
         if confidence < required_confidence:
-            logger.warning(f"Confidence too low: {confidence:.2f} < {required_confidence:.2f}, defaulting to UNKNOWN")
+            logger.warning(f"Confidence too low: {confidence:.2f} < {required_confidence:.2f}")
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-        # Get envelope for intent
+        # ========================================
+        # CRITICAL: FORCE BEST-FIT INTENT FOR MANDATE-RELEVANT QUERIES
+        # ========================================
+        
+        if is_mandate_relevant and intent == Intent.UNKNOWN:
+            # Force to best-fit intent based on semantic category
+            forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
+                semantic_category,
+                message_text
+            )
+            
+            logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
+            
+            intent = forced_intent
+            confidence = 0.75  # Override confidence
+        
+        # ========================================
+        # GET ENVELOPE FOR INTENT
+        # ========================================
+        
         envelope = ConversationalGovernor._get_envelope(intent)
         
-        # Check for hardcoded response
+        # ========================================
+        # CHECK FOR HARDCODED RESPONSE
+        # ========================================
+        
         hardcoded_response = ConversationalGovernor._get_hardcoded_response(intent, message_text)
         
         if hardcoded_response:
@@ -404,10 +727,15 @@ class ConversationalGovernor:
                 max_words=envelope.max_response_length // 5,
                 analysis_allowed=False,
                 data_load_allowed=False,
-                llm_call_allowed=False
+                llm_call_allowed=False,
+                auto_scoped=True,
+                semantic_category=semantic_category.value
             )
         
-        # Check if silence required
+        # ========================================
+        # CHECK IF SILENCE REQUIRED
+        # ========================================
+        
         if envelope.silence_required:
             return GovernanceResult(
                 intent=intent,
@@ -419,25 +747,35 @@ class ConversationalGovernor:
                 max_words=0,
                 analysis_allowed=False,
                 data_load_allowed=False,
-                llm_call_allowed=False
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category=semantic_category.value
             )
         
-        # Check if refusal required
-        if envelope.refusal_required:
+        # ========================================
+        # CHECK IF REFUSAL REQUIRED (should not happen for mandate-relevant)
+        # ========================================
+        
+        if envelope.refusal_required and not is_mandate_relevant:
             return GovernanceResult(
                 intent=intent,
                 confidence=confidence,
                 blocked=True,
                 silence_required=False,
-                response="Query unclear. Rephrase for analysis.",
+                response="Outside intelligence scope.",
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=20,
                 analysis_allowed=False,
                 data_load_allowed=False,
-                llm_call_allowed=False
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category=semantic_category.value
             )
         
-        # Governance passed - return constraints
+        # ========================================
+        # GOVERNANCE PASSED - RETURN CONSTRAINTS
+        # ========================================
+        
         return GovernanceResult(
             intent=intent,
             confidence=confidence,
@@ -448,5 +786,7 @@ class ConversationalGovernor:
             max_words=envelope.max_response_length // 5,
             analysis_allowed=envelope.analysis_allowed,
             data_load_allowed=envelope.data_load_allowed,
-            llm_call_allowed=envelope.llm_call_allowed
+            llm_call_allowed=envelope.llm_call_allowed,
+            auto_scoped=True,
+            semantic_category=semantic_category.value
         )
