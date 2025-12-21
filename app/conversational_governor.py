@@ -4,6 +4,7 @@ VOXMILL CONVERSATIONAL GOVERNOR
 Intent classification → Authority envelopes → Response constraints
 
 WORLD-CLASS UPDATE:
+- Layer -1: Social absorption (politeness, phatic expressions)
 - Layer 0: Mandate relevance check (semantic analysis)
 - Auto-scoping (market, timeframe, entities)
 - Intent confidence scoring with thresholds
@@ -40,6 +41,7 @@ class SemanticCategory(Enum):
     STRATEGIC_POSITIONING = "strategic_positioning"
     TEMPORAL_ANALYSIS = "temporal_analysis"
     SURVEILLANCE = "surveillance"
+    SOCIAL = "social"
     NON_DOMAIN = "non_domain"
 
 
@@ -86,57 +88,60 @@ class AutoScopeResult:
 
 
 class ConversationalGovernor:
-    """Main governance controller with Layer 0 mandate relevance"""
-
+    """Main governance controller with Layer -1 social absorption"""
+    
+    # ========================================
+    # LAYER -1: SOCIAL ABSORPTION
+    # ========================================
+    
     @staticmethod
-def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
-    """
-    Layer -1: Social Absorption
-    
-    Returns: (is_social, response_override)
-    - If is_social=True, use response_override and bypass all other layers
-    - If is_social=False, continue to mandate relevance check
-    """
-    
-    message_lower = message.lower().strip()
-    
-    # CLASS B: POLITENESS TOKENS
-    politeness_exact = ['thanks', 'thank you', 'thankyou', 'thx', 'cheers', 
-                        'appreciated', 'got it', 'noted', 'cool', 'ok', 'okay']
-    
-    if message_lower in politeness_exact:
-        return True, "Standing by."
-    
-    # CLASS C: PHATIC EXPRESSIONS
-    phatic_patterns = ['how are you', 'how r you', 'how are u', 
-                       'what\'s up', 'whats up', 'what up', 'sup', 'wassup',
-                       'how\'s it going', 'hows it going', 'you good', 'all good',
-                       'how you doing', 'how\'s things', 'hows things']
-    
-    if message_lower in phatic_patterns:
-        return True, "Standing by."
-    
-    # CLASS D: MOOD STATEMENTS (non-market)
-    # If mood statement has NO market keywords, treat as social
-    mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange']
-    
-    if any(pattern in message_lower for pattern in mood_patterns):
-        # Non-market mood statement → silence or brief acknowledge
-        return True, None  # None = silence
-    
-    # CLASS F: META-CONVERSATIONAL
-    # These should be reframed as DECISION_REQUEST, not refused
-    # Return False to pass through to normal intent classification
-    # But flag them for special handling
-    meta_patterns = ['what would you do', 'if you were me', 'your thoughts',
-                     'what do you think', 'your view', 'your opinion']
-    
-    if any(pattern in message_lower for pattern in meta_patterns):
-        # Pass through but will force to DECISION_REQUEST
+    def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
+        """
+        Layer -1: Social Absorption
+        
+        Returns: (is_social, response_override)
+        - If is_social=True, use response_override and bypass all other layers
+        - If is_social=False, continue to mandate relevance check
+        """
+        
+        message_lower = message.lower().strip()
+        
+        # CLASS B: POLITENESS TOKENS
+        politeness_exact = ['thanks', 'thank you', 'thankyou', 'thx', 'cheers', 
+                            'appreciated', 'got it', 'noted', 'cool', 'ok', 'okay']
+        
+        if message_lower in politeness_exact:
+            return True, "Standing by."
+        
+        # CLASS C: PHATIC EXPRESSIONS
+        phatic_patterns = ['how are you', 'how r you', 'how are u', 
+                           'what\'s up', 'whats up', 'what up', 'sup', 'wassup',
+                           'how\'s it going', 'hows it going', 'you good', 'all good',
+                           'how you doing', 'how\'s things', 'hows things']
+        
+        if message_lower in phatic_patterns:
+            return True, "Standing by."
+        
+        # CLASS D: MOOD STATEMENTS (non-market)
+        # If mood statement has NO market keywords, treat as social
+        mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange']
+        
+        if any(pattern in message_lower for pattern in mood_patterns):
+            # Non-market mood statement → silence
+            return True, None  # None = silence
+        
+        # CLASS F: META-CONVERSATIONAL
+        # These should be reframed as DECISION_REQUEST, not refused
+        # Return False to pass through to normal intent classification
+        meta_patterns = ['what would you do', 'if you were me', 'your thoughts',
+                         'what do you think', 'your view', 'your opinion']
+        
+        if any(pattern in message_lower for pattern in meta_patterns):
+            # Pass through but will force to DECISION_REQUEST
+            return False, None
+        
+        # NOT SOCIAL - pass to mandate relevance
         return False, None
-    
-    # NOT SOCIAL - pass to mandate relevance
-    return False, None
     
     # ========================================
     # LAYER 0: MANDATE RELEVANCE CHECK
@@ -154,10 +159,10 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         
         # Category A: COMPETITIVE INTELLIGENCE
         competitive_keywords = [
-            'competitor', 'agent', 'player', 'firm', 'rival', 'entity', 
+            'competitor', 'competitors', 'agent', 'agents', 'player', 'firm', 'rival', 'entity', 
             'participant', 'knight frank', 'savills', 'hamptons', 'chestertons',
             'foxtons', 'jll', 'cbre', 'strutt', 'doing', 'activity', 'behavior',
-            'positioning', 'strategy', 'moving', 'active'
+            'positioning', 'strategy', 'moving', 'active', 'up to'
         ]
         
         if any(kw in message_lower for kw in competitive_keywords):
@@ -177,10 +182,11 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         
         # Category C: STRATEGIC POSITIONING
         strategic_keywords = [
-            'action', 'move', 'strategy', 'opportunity', 'timing', 'window',
+            'action', 'actions', 'move', 'strategy', 'opportunity', 'timing', 'window',
             'entry', 'exit', 'buy', 'sell', 'acquire', 'position', 'leverage',
             'recommend', 'advise', 'should i', 'what do i', 'next step',
-            'best', 'optimal', 'strategic', 'tactical', 'directive'
+            'best', 'optimal', 'strategic', 'tactical', 'directive', 'risk',
+            'if i did nothing', 'what if', 'scenario'
         ]
         
         if any(kw in message_lower for kw in strategic_keywords):
@@ -189,9 +195,9 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         # Category D: TEMPORAL ANALYSIS
         temporal_keywords = [
             'trend', 'change', 'movement', 'shift', 'pattern', 'trajectory',
-            'forecast', 'predict', 'outlook', 'forecast', 'historical',
+            'forecast', 'predict', 'outlook', 'historical',
             'this week', 'this month', 'recently', 'lately', 'changed',
-            'different', 'new', 'emerging'
+            'different', 'new', 'emerging', '30 days', 'next week'
         ]
         
         if any(kw in message_lower for kw in temporal_keywords):
@@ -199,9 +205,10 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         
         # Category E: SURVEILLANCE & MONITORING
         surveillance_keywords = [
-            'monitor', 'track', 'watch', 'alert', 'notify', 'monitoring',
-            'tracking', 'surveillance', 'flag', 'keep eye', 'observe',
-            'what am i monitoring', 'my monitors', 'active monitors'
+            'monitor', 'monitoring', 'track', 'tracking', 'watch', 'watching',
+            'alert', 'notify', 'surveillance', 'flag', 'keep eye', 'observe',
+            'what am i monitoring', 'who am i monitoring', 'my monitors', 
+            'active monitors', 'currently monitoring', 'investments'
         ]
         
         if any(kw in message_lower for kw in surveillance_keywords):
@@ -273,6 +280,8 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
             timeframe = "14d"
         elif 'today' in message_lower or 'now' in message_lower:
             timeframe = "current"
+        elif '30 days' in message_lower:
+            timeframe = "30d"
         
         # Implicit defaults
         elif any(kw in message_lower for kw in ['trend', 'movement', 'change']):
@@ -333,12 +342,13 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         
         # Action/recommendation signals
         action_signals = ['what should', 'recommend', 'advise', 'tell me what', 
-                          'best action', 'next step', 'what do i', 'give me']
+                          'best action', 'next step', 'what do i', 'give me',
+                          'i need', 'what would you']
         has_action_signal = any(sig in message_lower for sig in action_signals)
         
         # State/status signals  
         state_signals = ['what is', 'what are', 'current', 'now', 'status', 
-                         'how is', 'where is', 'show me']
+                         'how is', 'where is', 'show me', 'what am i', 'who am i']
         has_state_signal = any(sig in message_lower for sig in state_signals)
         
         # Map category to intent
@@ -414,7 +424,7 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
             'thanks', 'thank you', 'thankyou', 'thx', 'ty',
             'ok', 'okay', 'noted', 'got it', 'gotit',
             'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-            'cheers'  # Added
+            'cheers'
         ]
         
         if message_clean in acknowledgments:
@@ -427,15 +437,17 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
                 return Intent.CASUAL, 0.85
         
         # ========================================
-        # DECISION_REQUEST (95% threshold)
+        # DECISION_REQUEST (90% threshold - lowered)
         # ========================================
         
         decision_keywords = ['decision mode', 'what should i do', 'make the call', 
                              'recommend action', 'tell me what to do', 'your recommendation',
-                             'what are my best', 'give me 5', 'next steps', 'what do i']
+                             'what are my best', 'give me 5', 'give me', 'i need',
+                             'next steps', 'what do i', 'what would you do',
+                             'if you were me', 'what if i']
         
         if any(kw in message_clean for kw in decision_keywords):
-            return Intent.DECISION_REQUEST, 0.95
+            return Intent.DECISION_REQUEST, 0.92
         
         # ========================================
         # META_STRATEGIC (88% threshold)
@@ -461,20 +473,21 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         # STATUS_CHECK (92% threshold)
         # ========================================
         
-        status_keywords = ['status', 'monitoring status', 'what am i monitoring',
-                          'active monitors', 'my monitors']
+        status_keywords = ['monitoring status', 'what am i monitoring', 'who am i monitoring',
+                          'active monitors', 'my monitors', 'current monitoring',
+                          'currently monitoring', 'my investments', 'current investments']
         
         if any(kw in message_clean for kw in status_keywords):
-            return Intent.STATUS_CHECK, 0.92
+            return Intent.STATUS_CHECK, 0.94
         
         # ========================================
-        # STRATEGIC (80% threshold - lowest for analysis)
+        # STRATEGIC (75% threshold - lowest for analysis)
         # ========================================
         
         strategic_keywords = ['market', 'overview', 'analysis', 'competitive', 'landscape',
                              'opportunity', 'opportunities', 'trend', 'forecast', 'outlook',
                              'price', 'inventory', 'agent', 'liquidity', 'timing',
-                             'segment', 'breakdown', 'real estate', 'property']
+                             'segment', 'breakdown', 'real estate', 'property', 'risk']
         
         strategic_match_count = sum(1 for kw in strategic_keywords if kw in message_clean)
         
@@ -526,15 +539,15 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
             ),
             
             Intent.STATUS_CHECK: Envelope(
-                analysis_allowed=False,
-                max_response_length=200,
+                analysis_allowed=True,
+                max_response_length=400,
                 silence_allowed=False,
                 silence_required=False,
                 refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
+                data_load_allowed=True,
+                llm_call_allowed=True,
                 allowed_shapes=["STATUS_LINE", "STRUCTURED_BRIEF"]
             ),
             
@@ -643,8 +656,7 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
         # Intent-based responses
         intent_responses = {
             Intent.CASUAL: "Standing by.",
-            Intent.STATUS_CHECK: "Monitoring.",
-            Intent.UNKNOWN: "Outside intelligence scope.",  # Updated
+            Intent.UNKNOWN: "Outside intelligence scope.",
             Intent.SECURITY: "Enter your 4-digit code.",
         }
         
@@ -654,61 +666,61 @@ def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool
     # MAIN GOVERNANCE ENTRY POINT
     # ========================================
     
-@staticmethod
-async def govern(message_text: str, sender: str, client_profile: dict, 
-                system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
-    """
-    Main governance entry point with Social Absorption Layer
-    """
-    
-    # ========================================
-    # LAYER -1: SOCIAL ABSORPTION (NEW)
-    # ========================================
-    
-    client_name = client_profile.get('name', 'there')
-    
-    is_social, social_response = ConversationalGovernor._absorb_social_input(
-        message_text,
-        client_name
-    )
-    
-    if is_social:
-        logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
+    @staticmethod
+    async def govern(message_text: str, sender: str, client_profile: dict, 
+                    system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
+        """
+        Main governance entry point with Layer -1 social absorption
         
-        if social_response is None:
-            # Silence
-            return GovernanceResult(
-                intent=Intent.CASUAL,
-                confidence=1.0,
-                blocked=True,
-                silence_required=True,
-                response=None,
-                allowed_shapes=["SILENCE"],
-                max_words=0,
-                analysis_allowed=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                auto_scoped=False,
-                semantic_category="social"
-            )
-        else:
-            # Brief acknowledgment
-            return GovernanceResult(
-                intent=Intent.CASUAL,
-                confidence=1.0,
-                blocked=True,
-                silence_required=False,
-                response=social_response,
-                allowed_shapes=["ACKNOWLEDGMENT"],
-                max_words=10,
-                analysis_allowed=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                auto_scoped=False,
-                semantic_category="social"
-            )
-    
-    # Continue to Layer 0 (existing mandate relevance check)...
+        Returns: GovernanceResult with intent, constraints, and optional response
+        """
+        
+        # ========================================
+        # LAYER -1: SOCIAL ABSORPTION (NEW)
+        # ========================================
+        
+        client_name = client_profile.get('name', 'there')
+        
+        is_social, social_response = ConversationalGovernor._absorb_social_input(
+            message_text,
+            client_name
+        )
+        
+        if is_social:
+            logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
+            
+            if social_response is None:
+                # Silence
+                return GovernanceResult(
+                    intent=Intent.CASUAL,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=True,
+                    response=None,
+                    allowed_shapes=["SILENCE"],
+                    max_words=0,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="social"
+                )
+            else:
+                # Brief acknowledgment
+                return GovernanceResult(
+                    intent=Intent.CASUAL,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=False,
+                    response=social_response,
+                    allowed_shapes=["ACKNOWLEDGMENT"],
+                    max_words=10,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="social"
+                )
         
         # ========================================
         # LAYER 0: MANDATE RELEVANCE CHECK
@@ -769,13 +781,13 @@ async def govern(message_text: str, sender: str, client_profile: dict,
             Intent.SECURITY: 0.95,
             Intent.ADMINISTRATIVE: 0.90,
             Intent.PROVOCATION: 0.85,
-            Intent.CASUAL: 0.80,  # Lowered from 0.90
-            Intent.STATUS_CHECK: 0.92,
-            Intent.STRATEGIC: 0.75,  # Lowered from 0.80
-            Intent.DECISION_REQUEST: 0.90,  # Lowered from 0.95
-            Intent.META_STRATEGIC: 0.85,  # Lowered from 0.88
+            Intent.CASUAL: 0.80,
+            Intent.STATUS_CHECK: 0.90,
+            Intent.STRATEGIC: 0.75,
+            Intent.DECISION_REQUEST: 0.90,
+            Intent.META_STRATEGIC: 0.85,
             Intent.MONITORING_DIRECTIVE: 0.93,
-            Intent.UNKNOWN: 0.00  # Always allowed (but will be forced if mandate-relevant)
+            Intent.UNKNOWN: 0.00
         }
         
         required_confidence = CONFIDENCE_THRESHOLDS.get(intent, 0.80)
@@ -799,7 +811,7 @@ async def govern(message_text: str, sender: str, client_profile: dict,
             logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
             
             intent = forced_intent
-            confidence = 0.75  # Override confidence
+            confidence = 0.75
         
         # ========================================
         # GET ENVELOPE FOR INTENT
@@ -813,7 +825,7 @@ async def govern(message_text: str, sender: str, client_profile: dict,
         
         hardcoded_response = ConversationalGovernor._get_hardcoded_response(intent, message_text)
         
-        if hardcoded_response:
+        if hardcoded_response and intent not in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST]:
             return GovernanceResult(
                 intent=intent,
                 confidence=confidence,
