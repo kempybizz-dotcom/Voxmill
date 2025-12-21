@@ -624,7 +624,7 @@ Thank you for trying our service."""
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
-        # ========================================
+    # ========================================
         # PIN AUTHENTICATION - SECURITY LAYER
         # ========================================
 
@@ -892,7 +892,7 @@ Standing by."""
         # GOVERNANCE LAYER - WORLD-CLASS ENFORCEMENT
         # ========================================
         
-    from app.conversational_governor import ConversationalGovernor, Intent
+        from app.conversational_governor import ConversationalGovernor, Intent
         
         # ========================================
         # PREPARE CONVERSATION CONTEXT FOR AUTO-SCOPING
@@ -1065,14 +1065,13 @@ Standing by."""
                 governance_result.confidence = 0.75
                 logger.warning(f"🔄 Forced Intent.UNKNOWN → Intent.STRATEGIC (downstream protection)")
 
-
-        
         # ========================================
         # GOVERNANCE PASSED - CONTINUE WITH CONSTRAINTS
         # ========================================
         
         # Store constraints for downstream enforcement
         # These will be checked again before LLM call and after response generation
+        
         # ========================================
         # MONITORING STATUS QUERIES - GUARANTEED SUCCESS PATH
         # ========================================
