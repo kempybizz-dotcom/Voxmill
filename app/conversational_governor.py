@@ -370,14 +370,11 @@ class ConversationalGovernor:
         else:
             return Intent.STRATEGIC  # Safe default for mandate-relevant
     
-    # ========================================
-    # INTENT CLASSIFICATION (EXISTING)
-    # ========================================
-    
     @staticmethod
     def _classify_intent(message: str) -> tuple[Intent, float]:
         """
         Intent classification with confidence scoring
+        UPDATED: Added deterministic fallbacks for vague queries
         
         Returns: (intent, confidence_score)
         """
@@ -387,6 +384,42 @@ class ConversationalGovernor:
         message_normalized = ' '.join(message_lower.split())
         message_clean = message_normalized.replace("'", "").replace("'", "")
         word_count = len(message_clean.split())
+        
+        # ========================================
+        # DETERMINISTIC FALLBACKS (NEW - HIGHEST PRIORITY)
+        # ========================================
+        
+        # Vague temporal queries → STATUS_CHECK
+        vague_temporal_patterns = [
+            'anything new', 'whats new', 'any news', 'any updates', 'any update',
+            'anything changed', 'whats changed', 'what changed',
+            'anything happening', 'whats happening', 'what happening',
+            'latest', 'recent', 'recently'
+        ]
+        
+        if any(pattern in message_clean for pattern in vague_temporal_patterns):
+            logger.info(f"✅ Deterministic match: vague temporal → STATUS_CHECK")
+            return Intent.STATUS_CHECK, 0.92
+        
+        # Vague monitoring queries → STATUS_CHECK
+        vague_monitoring_patterns = [
+            'what am i monitoring', 'who am i monitoring', 'my monitors',
+            'active monitors', 'current monitoring', 'monitoring status'
+        ]
+        
+        if any(pattern in message_clean for pattern in vague_monitoring_patterns):
+            logger.info(f"✅ Deterministic match: monitoring status → STATUS_CHECK")
+            return Intent.STATUS_CHECK, 0.94
+        
+        # Vague competitive queries → STRATEGIC
+        vague_competitive_patterns = [
+            'competitors', 'competition', 'what are they doing',
+            'agent activity', 'market activity'
+        ]
+        
+        if any(pattern in message_clean for pattern in vague_competitive_patterns):
+            logger.info(f"✅ Deterministic match: vague competitive → STRATEGIC")
+            return Intent.STRATEGIC, 0.88
         
         # ========================================
         # SECURITY (95% threshold)
@@ -411,7 +444,6 @@ class ConversationalGovernor:
         # Exact matches = very high confidence
         casual_exact = [
             'whats up', 'what up', 'sup', 'wassup', 'whatsup',
-            'any news', 'any updates', 'any update',
             'hi', 'hello', 'hey', 'yo', 'hiya',
             'good morning', 'good afternoon', 'good evening'
         ]
@@ -434,10 +466,13 @@ class ConversationalGovernor:
         if word_count <= 3:
             casual_words = ['up', 'news', 'update', 'status', 'thoughts', 'view']
             if any(w in message_clean for w in casual_words):
+                # But check if it's actually asking for market update
+                if any(w in message_clean for w in ['market', 'agent', 'property']):
+                    return Intent.STATUS_CHECK, 0.88
                 return Intent.CASUAL, 0.85
         
         # ========================================
-        # DECISION_REQUEST (90% threshold - lowered)
+        # DECISION_REQUEST (90% threshold)
         # ========================================
         
         decision_keywords = ['decision mode', 'what should i do', 'make the call', 
@@ -466,16 +501,17 @@ class ConversationalGovernor:
         monitoring_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me',
                                'stop monitor', 'cancel monitor', 'show monitor']
         
-        if any(kw in message_clean for kw in monitoring_keywords):
+        # Exclude "what am i monitoring" (handled above as STATUS_CHECK)
+        if any(kw in message_clean for kw in monitoring_keywords) and 'what am i' not in message_clean:
             return Intent.MONITORING_DIRECTIVE, 0.93
         
         # ========================================
         # STATUS_CHECK (92% threshold)
         # ========================================
         
-        status_keywords = ['monitoring status', 'what am i monitoring', 'who am i monitoring',
-                          'active monitors', 'my monitors', 'current monitoring',
-                          'currently monitoring', 'my investments', 'current investments']
+        # Already handled by deterministic fallbacks above
+        # But keep explicit patterns for direct matches
+        status_keywords = ['current status', 'investment status', 'portfolio status']
         
         if any(kw in message_clean for kw in status_keywords):
             return Intent.STATUS_CHECK, 0.94
@@ -494,13 +530,26 @@ class ConversationalGovernor:
         if strategic_match_count >= 2:
             return Intent.STRATEGIC, 0.88
         elif strategic_match_count == 1:
-            return Intent.STRATEGIC, 0.82
+            # INCREASED from 0.82 to 0.85 to reduce UNKNOWN classifications
+            return Intent.STRATEGIC, 0.85
+        
+        # ========================================
+        # LAST RESORT: Check for single region mention
+        # ========================================
+        
+        regions = ['mayfair', 'knightsbridge', 'chelsea', 'belgravia', 'kensington']
+        
+        if any(region in message_clean for region in regions):
+            # Region mentioned but no clear intent → assume STATUS_CHECK
+            logger.info(f"✅ Fallback: region mentioned → STATUS_CHECK")
+            return Intent.STATUS_CHECK, 0.80
         
         # ========================================
         # UNKNOWN (catch-all - REFUSAL)
         # ========================================
         
-        # If we get here, intent is unclear
+        # If we get here, intent is truly unclear
+        logger.warning(f"⚠️ Could not classify intent: '{message_clean[:50]}...'")
         return Intent.UNKNOWN, 0.50
     
     @staticmethod
