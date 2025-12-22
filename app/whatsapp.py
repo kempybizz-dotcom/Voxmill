@@ -1969,13 +1969,13 @@ Standing by."""
             logger.info(f"✅ Instant agent analysis sent (<3s)")
             return
         
-        # ========================================
+      # ========================================
         # FALLBACK: COMPLEX QUERIES USE GPT-4
         # ========================================
         
         logger.info(f"🤖 COMPLEX QUERY - Using GPT-4 for: {message_normalized[:50]}")
         
-       # ========================================
+        # ========================================
         # GPT-4 ANALYSIS
         # ========================================
         
@@ -2024,7 +2024,7 @@ Standing by."""
         
         logger.info(f"✅ Shape enforced: {response_shape.value}, {len(formatted_response.split())} words")
 
-       # ========================================
+        # ========================================
         # PHASE 4: PROHIBITION ENFORCEMENT (CHECKPOINT 10)
         # ========================================
         
@@ -2274,13 +2274,12 @@ Please rephrase your query or contact support if this persists."""
                 # Calculate usage metrics
                 messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
                 message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
-                usage_pct = (messages_used / message_limit * 100) if message_limit > 0 else 0
                 total_messages = client_profile.get('usage_metrics', {}).get('total_messages_sent', 0) + 1
                 
                 # Build update payload - ONLY include fields with valid values
                 update_fields = {
                     'Messages Used This Month': int(messages_used),
-                    'Usage This Month (%)': round(float(usage_pct), 1),
+                    # 'Usage This Month (%)' is a FORMULA field - don't write to it (causes 422 errors)
                     'Total Messages Sent': int(total_messages),
                     'Last Message Date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'),
                     'Last Active': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
@@ -2305,7 +2304,7 @@ Please rephrase your query or contact support if this persists."""
                 response = requests.patch(url, headers=headers, json=payload, timeout=5)
                 
                 if response.status_code == 200:
-                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages ({usage_pct:.1f}%)")
+                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
                 elif response.status_code == 422:
                     error_details = response.json()
                     logger.error(f"⚠️ Airtable 422 error details: {error_details}")
@@ -2317,16 +2316,17 @@ Please rephrase your query or contact support if this persists."""
             logger.error(f"Airtable sync error: {e}", exc_info=True)
             # Don't fail the whole request - just log
         
-        # ============================================================
-        # WAVE 3: Update conversation session
-        # ============================================================
+        # ========================================
+        # UPDATE CONVERSATION SESSION
+        # ========================================
+        # Entity extraction happens automatically inside update_session()
         conversation.update_session(
             user_message=message_text,
             assistant_response=formatted_response,
             metadata={
-                'category': category if 'category' in locals() else 'unknown',
+                'category': category,
                 'region': preferred_region,
-                'confidence': confidence_score if 'confidence_score' in locals() else None,
+                'confidence': confidence_score,
                 'cached': False
             }
         )
