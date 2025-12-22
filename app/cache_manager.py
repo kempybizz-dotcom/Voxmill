@@ -1,44 +1,128 @@
 """
-VOXMILL CACHE MANAGER
-======================
-Redis-based caching for GPT-4 responses and dataset queries
+VOXMILL CACHE MANAGER V2
+=========================
+Redis-based caching with in-memory fallback for 99.9% uptime
 Target: 70% cost reduction via intelligent caching
+
+FEATURES:
+- Dual-layer caching: Redis (primary) + in-memory (fallback)
+- Graceful degradation if Redis unavailable
+- Thread-safe in-memory cache with automatic expiry cleanup
+- Zero downtime even if Redis crashes mid-operation
 """
 
 import os
 import json
 import logging
 import hashlib
+import time
+import threading
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
-import redis
 
 logger = logging.getLogger(__name__)
 
-# Redis connection
+# ============================================================
+# REDIS CONNECTION (Primary Cache)
+# ============================================================
+
 REDIS_URL = os.getenv("REDIS_URL")
-redis_client = redis.from_url(REDIS_URL, decode_responses=True) if REDIS_URL else None
+redis_client = None
+redis_available = False
+
+try:
+    if REDIS_URL:
+        import redis
+        redis_client = redis.from_url(
+            REDIS_URL, 
+            decode_responses=True,
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            retry_on_timeout=True,
+            health_check_interval=30
+        )
+        # Test connection
+        redis_client.ping()
+        redis_available = True
+        logger.info("✅ Redis connected successfully")
+    else:
+        logger.warning("⚠️ REDIS_URL not configured - using in-memory cache only")
+        logger.warning("⚠️ Set REDIS_URL environment variable for production caching")
+except ImportError:
+    logger.error("❌ Redis library not installed (pip install redis)")
+    logger.warning("⚠️ Falling back to in-memory cache only")
+except Exception as e:
+    logger.error(f"❌ Redis connection failed: {e}")
+    logger.warning("⚠️ Falling back to in-memory cache only")
+
+# ============================================================
+# IN-MEMORY CACHE (Fallback)
+# ============================================================
+
+_memory_cache = {}  # {cache_key: {'data': ..., 'expiry': timestamp}}
+_memory_cache_lock = threading.Lock()
+_last_cleanup = time.time()
+CLEANUP_INTERVAL = 300  # Clean expired entries every 5 minutes
+
+def _cleanup_expired_entries():
+    """Remove expired entries from memory cache (housekeeping)"""
+    global _last_cleanup
+    
+    now = time.time()
+    
+    # Only run cleanup every CLEANUP_INTERVAL seconds
+    if now - _last_cleanup < CLEANUP_INTERVAL:
+        return
+    
+    with _memory_cache_lock:
+        expired_keys = [
+            key for key, entry in _memory_cache.items() 
+            if now > entry['expiry']
+        ]
+        
+        for key in expired_keys:
+            del _memory_cache[key]
+        
+        _last_cleanup = now
+        
+        if expired_keys:
+            logger.debug(f"🗑️ Cleaned {len(expired_keys)} expired memory cache entries")
 
 
 class CacheManager:
-    """Intelligent caching for Voxmill intelligence queries"""
+    """
+    Intelligent caching with automatic failover
+    
+    Cache hierarchy:
+    1. Redis (distributed, survives restarts)
+    2. In-memory (process-local, fast fallback)
+    3. Database/API (original source)
+    """
     
     # Cache TTL settings (in seconds)
-    RESPONSE_CACHE_TTL = 300  # 5 minutes for GPT-4 responses
-    DATASET_CACHE_TTL = 1800  # 30 minutes for MongoDB datasets
-    CLIENT_PROFILE_TTL = 600  # 10 minutes for client profiles
-    DEDUPLICATION_TTL = 60    # 1 minute for webhook deduplication
+    RESPONSE_CACHE_TTL = 300   # 5 minutes for GPT-4 responses
+    DATASET_CACHE_TTL = 1800   # 30 minutes for datasets (CRITICAL FOR PERFORMANCE)
+    CLIENT_PROFILE_TTL = 600   # 10 minutes for client profiles
+    DEDUPLICATION_TTL = 60     # 1 minute for webhook deduplication
     
     @classmethod
     def _generate_cache_key(cls, prefix: str, *args) -> str:
-        """Generate consistent cache key from arguments"""
-        # Create deterministic hash from arguments
+        """
+        Generate consistent cache key from arguments
+        
+        Example: _generate_cache_key("dataset", "Mayfair", "real_estate")
+        Returns: "voxmill:dataset:a3f2c9b1e8d4"
+        """
         key_data = ":".join(str(arg) for arg in args)
         key_hash = hashlib.md5(key_data.encode()).hexdigest()[:12]
         return f"voxmill:{prefix}:{key_hash}"
     
+    # ============================================================
+    # RESPONSE CACHE (GPT-4 responses)
+    # ============================================================
+    
     @classmethod
-    def get_response_cache(cls, query: str, region: str, client_tier: str) -> Optional[Dict]:
+    def get_response_cache(cls, query: str, region: str, client_tier: str) -> Optional[str]:
         """
         Get cached GPT-4 response
         
@@ -47,185 +131,278 @@ class CacheManager:
             region: Market region
             client_tier: Client tier (affects response depth)
         
-        Returns: Cached response dict or None
+        Returns: Cached response text or None
         """
-        if not redis_client:
-            return None
+        cache_key = cls._generate_cache_key("response", query.lower().strip(), region, client_tier)
         
-        try:
-            cache_key = cls._generate_cache_key("response", query.lower().strip(), region, client_tier)
-            cached_data = redis_client.get(cache_key)
-            
-            if cached_data:
-                result = json.loads(cached_data)
+        # TRY REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                cached_data = redis_client.get(cache_key)
                 
-                # Check freshness
-                cached_time = datetime.fromisoformat(result['cached_at'])
-                age_seconds = (datetime.now(timezone.utc) - cached_time).total_seconds()
+                if cached_data:
+                    result = json.loads(cached_data)
+                    cached_time = datetime.fromisoformat(result['cached_at'])
+                    age_seconds = (datetime.now(timezone.utc) - cached_time).total_seconds()
+                    
+                    logger.info(f"✅ REDIS CACHE HIT: Response ({int(age_seconds)}s old, saved GPT-4 call)")
+                    return result['response']
                 
-                logger.info(f"✅ Cache HIT: Response cached {int(age_seconds)}s ago (saved GPT-4 call)")
+            except Exception as e:
+                logger.warning(f"Redis read failed: {e}, trying memory cache")
+        
+        # FALLBACK TO IN-MEMORY CACHE
+        _cleanup_expired_entries()
+        
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                entry = _memory_cache[cache_key]
                 
-                return result
-            
-            return None
-            
-        except Exception as e:
-            logger.error(f"Cache retrieval error: {e}")
-            return None
+                if time.time() < entry['expiry']:
+                    age_seconds = int(time.time() - (entry['expiry'] - cls.RESPONSE_CACHE_TTL))
+                    logger.info(f"✅ MEMORY CACHE HIT: Response ({age_seconds}s old)")
+                    return entry['data']['response']
+                else:
+                    # Expired
+                    del _memory_cache[cache_key]
+        
+        return None
     
     @classmethod
     def set_response_cache(cls, query: str, region: str, client_tier: str, 
                           category: str, response_text: str, metadata: Dict) -> bool:
-        """
-        Cache GPT-4 response
+        """Cache GPT-4 response in Redis + memory"""
+        cache_key = cls._generate_cache_key("response", query.lower().strip(), region, client_tier)
         
-        Returns: True if cached successfully
-        """
-        if not redis_client:
-            return False
+        cache_data = {
+            "query": query,
+            "region": region,
+            "client_tier": client_tier,
+            "category": category,
+            "response": response_text,
+            "metadata": metadata,
+            "cached_at": datetime.now(timezone.utc).isoformat()
+        }
         
-        try:
-            cache_key = cls._generate_cache_key("response", query.lower().strip(), region, client_tier)
-            
-            cache_data = {
-                "query": query,
-                "region": region,
-                "client_tier": client_tier,
-                "category": category,
-                "response": response_text,
-                "metadata": metadata,
-                "cached_at": datetime.now(timezone.utc).isoformat()
+        success = False
+        
+        # TRY REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                redis_client.setex(
+                    cache_key,
+                    cls.RESPONSE_CACHE_TTL,
+                    json.dumps(cache_data, default=str)
+                )
+                logger.info(f"💾 Response cached in REDIS ({cls.RESPONSE_CACHE_TTL}s TTL)")
+                success = True
+            except Exception as e:
+                logger.warning(f"Redis write failed: {e}, using memory cache only")
+        
+        # ALWAYS CACHE IN MEMORY AS BACKUP
+        with _memory_cache_lock:
+            _memory_cache[cache_key] = {
+                'data': cache_data,
+                'expiry': time.time() + cls.RESPONSE_CACHE_TTL
             }
-            
-            redis_client.setex(
-                cache_key,
-                cls.RESPONSE_CACHE_TTL,
-                json.dumps(cache_data)
-            )
-            
-            logger.info(f"💾 Response cached for {cls.RESPONSE_CACHE_TTL}s")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Cache storage error: {e}")
-            return False
+            logger.info(f"💾 Response cached in MEMORY ({cls.RESPONSE_CACHE_TTL}s TTL)")
+            success = True
+        
+        return success
+    
+    # ============================================================
+    # DATASET CACHE (Critical for performance)
+    # ============================================================
     
     @classmethod
     def get_dataset_cache(cls, area: str, vertical: str = "real_estate") -> Optional[Dict]:
         """
-        Get cached dataset from MongoDB query
-        Reduces MongoDB load
-        """
-        if not redis_client:
-            return None
+        Get cached dataset - CRITICAL FOR PERFORMANCE
         
-        try:
-            cache_key = cls._generate_cache_key("dataset", area, vertical)
-            cached_data = redis_client.get(cache_key)
-            
-            if cached_data:
-                result = json.loads(cached_data)
+        Without this working, every query loads fresh data (10-15s latency)
+        With this working, repeated queries take <1s
+        
+        Args:
+            area: Region name (e.g., "Mayfair")
+            vertical: Market vertical (default: "real_estate")
+        
+        Returns: Cached dataset dict or None
+        """
+        cache_key = cls._generate_cache_key("dataset", area, vertical)
+        
+        # TRY REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                cached_data = redis_client.get(cache_key)
                 
-                cached_time = datetime.fromisoformat(result['cached_at'])
-                age_seconds = (datetime.now(timezone.utc) - cached_time).total_seconds()
+                if cached_data:
+                    result = json.loads(cached_data)
+                    cached_time = datetime.fromisoformat(result['cached_at'])
+                    age_seconds = (datetime.now(timezone.utc) - cached_time).total_seconds()
+                    age_minutes = int(age_seconds / 60)
+                    
+                    logger.info(f"✅ REDIS CACHE HIT: Dataset for {area} ({age_minutes}m old, saved 10-15s load)")
+                    return result['dataset']
                 
-                logger.info(f"✅ Cache HIT: Dataset cached {int(age_seconds)}s ago (saved MongoDB query)")
+            except Exception as e:
+                logger.warning(f"Redis read failed: {e}, trying memory cache")
+        
+        # FALLBACK TO IN-MEMORY CACHE
+        _cleanup_expired_entries()
+        
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                entry = _memory_cache[cache_key]
                 
-                return result['dataset']
-            
-            return None
-            
-        except Exception as e:
-            logger.error(f"Dataset cache retrieval error: {e}")
-            return None
+                if time.time() < entry['expiry']:
+                    age_seconds = time.time() - (entry['expiry'] - cls.DATASET_CACHE_TTL)
+                    age_minutes = int(age_seconds / 60)
+                    logger.info(f"✅ MEMORY CACHE HIT: Dataset for {area} ({age_minutes}m old)")
+                    return entry['data']
+                else:
+                    # Expired
+                    del _memory_cache[cache_key]
+        
+        # MISS ON BOTH
+        logger.info(f"❌ CACHE MISS: Dataset for {area} (will load fresh, ~15s)")
+        return None
     
     @classmethod
     def set_dataset_cache(cls, area: str, dataset: Dict, vertical: str = "real_estate") -> bool:
-        """Cache dataset from MongoDB"""
-        if not redis_client:
-            return False
+        """
+        Cache dataset in Redis + memory
         
-        try:
-            cache_key = cls._generate_cache_key("dataset", area, vertical)
-            
-            cache_data = {
-                "area": area,
-                "vertical": vertical,
-                "dataset": dataset,
-                "cached_at": datetime.now(timezone.utc).isoformat()
+        CRITICAL: This must succeed for performance
+        If this fails, every query triggers 15s load
+        """
+        cache_key = cls._generate_cache_key("dataset", area, vertical)
+        
+        success = False
+        
+        # TRY REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                cache_data = {
+                    "area": area,
+                    "vertical": vertical,
+                    "dataset": dataset,
+                    "cached_at": datetime.now(timezone.utc).isoformat()
+                }
+                
+                redis_client.setex(
+                    cache_key,
+                    cls.DATASET_CACHE_TTL,
+                    json.dumps(cache_data, default=str)  # default=str handles datetime/ObjectId
+                )
+                
+                ttl_minutes = int(cls.DATASET_CACHE_TTL / 60)
+                logger.info(f"💾 Dataset cached in REDIS for {ttl_minutes}m (distributed cache)")
+                success = True
+                
+            except Exception as e:
+                logger.warning(f"Redis write failed: {e}, using memory cache only")
+        
+        # ALWAYS CACHE IN MEMORY AS BACKUP
+        with _memory_cache_lock:
+            _memory_cache[cache_key] = {
+                'data': dataset,
+                'expiry': time.time() + cls.DATASET_CACHE_TTL
             }
-            
-            redis_client.setex(
-                cache_key,
-                cls.DATASET_CACHE_TTL,
-                json.dumps(cache_data)
-            )
-            
-            logger.info(f"💾 Dataset cached for {cls.DATASET_CACHE_TTL}s")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Dataset cache storage error: {e}")
-            return False
+            ttl_minutes = int(cls.DATASET_CACHE_TTL / 60)
+            logger.info(f"💾 Dataset cached in MEMORY for {ttl_minutes}m (process-local)")
+            success = True
+        
+        return success
+    
+    # ============================================================
+    # CLIENT PROFILE CACHE
+    # ============================================================
     
     @classmethod
     def get_client_profile_cache(cls, whatsapp_number: str) -> Optional[Dict]:
         """Get cached client profile"""
-        if not redis_client:
-            return None
+        cache_key = cls._generate_cache_key("profile", whatsapp_number)
         
-        try:
-            cache_key = cls._generate_cache_key("profile", whatsapp_number)
-            cached_data = redis_client.get(cache_key)
-            
-            if cached_data:
-                logger.info(f"✅ Cache HIT: Client profile")
-                return json.loads(cached_data)
-            
-            return None
-            
-        except Exception as e:
-            logger.error(f"Profile cache retrieval error: {e}")
-            return None
+        # TRY REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                cached_data = redis_client.get(cache_key)
+                if cached_data:
+                    logger.info(f"✅ REDIS CACHE HIT: Client profile")
+                    return json.loads(cached_data)
+            except Exception as e:
+                logger.warning(f"Redis read failed: {e}")
+        
+        # FALLBACK TO MEMORY
+        _cleanup_expired_entries()
+        
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                entry = _memory_cache[cache_key]
+                if time.time() < entry['expiry']:
+                    logger.info(f"✅ MEMORY CACHE HIT: Client profile")
+                    return entry['data']
+                else:
+                    del _memory_cache[cache_key]
+        
+        return None
     
     @classmethod
     def set_client_profile_cache(cls, whatsapp_number: str, profile: Dict) -> bool:
         """Cache client profile"""
-        if not redis_client:
-            return False
+        cache_key = cls._generate_cache_key("profile", whatsapp_number)
         
-        try:
-            cache_key = cls._generate_cache_key("profile", whatsapp_number)
-            
-            # Remove MongoDB _id before caching
-            if '_id' in profile:
-                profile = profile.copy()
-                del profile['_id']
-            
-            redis_client.setex(
-                cache_key,
-                cls.CLIENT_PROFILE_TTL,
-                json.dumps(profile, default=str)  # default=str handles datetime
-            )
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Profile cache storage error: {e}")
-            return False
+        # Remove MongoDB _id before caching
+        if '_id' in profile:
+            profile = profile.copy()
+            del profile['_id']
+        
+        success = False
+        
+        # TRY REDIS
+        if redis_available and redis_client:
+            try:
+                redis_client.setex(
+                    cache_key,
+                    cls.CLIENT_PROFILE_TTL,
+                    json.dumps(profile, default=str)
+                )
+                success = True
+            except Exception as e:
+                logger.warning(f"Redis write failed: {e}")
+        
+        # MEMORY BACKUP
+        with _memory_cache_lock:
+            _memory_cache[cache_key] = {
+                'data': profile,
+                'expiry': time.time() + cls.CLIENT_PROFILE_TTL
+            }
+            success = True
+        
+        return success
     
     @classmethod
     def invalidate_client_cache(cls, whatsapp_number: str):
         """Invalidate client profile cache (e.g., after preference update)"""
-        if not redis_client:
-            return
+        cache_key = cls._generate_cache_key("profile", whatsapp_number)
         
-        try:
-            cache_key = cls._generate_cache_key("profile", whatsapp_number)
-            redis_client.delete(cache_key)
-            logger.info(f"🗑️  Client profile cache invalidated")
-        except Exception as e:
-            logger.error(f"Cache invalidation error: {e}")
+        # Clear from Redis
+        if redis_available and redis_client:
+            try:
+                redis_client.delete(cache_key)
+                logger.info(f"🗑️ Redis cache invalidated for client")
+            except Exception as e:
+                logger.warning(f"Redis delete failed: {e}")
+        
+        # Clear from memory
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                del _memory_cache[cache_key]
+                logger.info(f"🗑️ Memory cache invalidated for client")
+    
+    # ============================================================
+    # WEBHOOK DEDUPLICATION
+    # ============================================================
     
     @classmethod
     def check_webhook_duplicate(cls, message_sid: str) -> bool:
@@ -234,97 +411,157 @@ class CacheManager:
         
         Returns: True if duplicate (already processed)
         """
-        if not redis_client:
-            return False
+        cache_key = f"voxmill:webhook:{message_sid}"
         
-        try:
-            cache_key = f"voxmill:webhook:{message_sid}"
-            
-            # Check if exists
-            if redis_client.exists(cache_key):
-                logger.warning(f"⚠️  Duplicate webhook: {message_sid}")
-                return True
+        # CHECK REDIS FIRST
+        if redis_available and redis_client:
+            try:
+                if redis_client.exists(cache_key):
+                    logger.warning(f"⚠️ DUPLICATE WEBHOOK (Redis): {message_sid}")
+                    return True
+                
+                # Mark as processed
+                redis_client.setex(cache_key, cls.DEDUPLICATION_TTL, "1")
+                return False
+            except Exception as e:
+                logger.warning(f"Redis duplicate check failed: {e}, using memory")
+        
+        # FALLBACK TO MEMORY
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                entry = _memory_cache[cache_key]
+                if time.time() < entry['expiry']:
+                    logger.warning(f"⚠️ DUPLICATE WEBHOOK (Memory): {message_sid}")
+                    return True
             
             # Mark as processed
-            redis_client.setex(cache_key, cls.DEDUPLICATION_TTL, "1")
+            _memory_cache[cache_key] = {
+                'data': True,
+                'expiry': time.time() + cls.DEDUPLICATION_TTL
+            }
             return False
-            
-        except Exception as e:
-            logger.error(f"Webhook deduplication error: {e}")
-            return False
+    
+    # ============================================================
+    # CACHE MANAGEMENT & DIAGNOSTICS
+    # ============================================================
     
     @classmethod
     def get_cache_stats(cls) -> Dict:
         """Get cache performance statistics"""
-        if not redis_client:
-            return {"error": "Redis not connected"}
+        stats = {
+            "redis_available": redis_available,
+            "memory_cache_entries": len(_memory_cache),
+        }
         
-        try:
-            info = redis_client.info('stats')
-            
-            return {
-                "connected": True,
-                "keyspace_hits": info.get('keyspace_hits', 0),
-                "keyspace_misses": info.get('keyspace_misses', 0),
-                "hit_rate": round(
-                    info.get('keyspace_hits', 0) / 
-                    max(info.get('keyspace_hits', 0) + info.get('keyspace_misses', 0), 1) * 100, 
-                    2
-                ),
-                "total_keys": redis_client.dbsize(),
-                "memory_used": info.get('used_memory_human', 'Unknown')
-            }
-            
-        except Exception as e:
-            logger.error(f"Cache stats error: {e}")
-            return {"error": str(e)}
+        if redis_available and redis_client:
+            try:
+                info = redis_client.info('stats')
+                
+                hits = info.get('keyspace_hits', 0)
+                misses = info.get('keyspace_misses', 0)
+                total = hits + misses
+                
+                stats.update({
+                    "redis_connected": True,
+                    "redis_keyspace_hits": hits,
+                    "redis_keyspace_misses": misses,
+                    "redis_hit_rate_pct": round((hits / total * 100) if total > 0 else 0, 2),
+                    "redis_total_keys": redis_client.dbsize(),
+                    "redis_memory_used": info.get('used_memory_human', 'Unknown')
+                })
+            except Exception as e:
+                stats["redis_error"] = str(e)
+        else:
+            stats["redis_connected"] = False
+            stats["redis_reason"] = "REDIS_URL not configured or connection failed"
+        
+        return stats
     
     @classmethod
     def warm_cache_for_region(cls, area: str):
         """
         Pre-warm cache for a region
-        Useful before high-traffic periods
+        Useful before high-traffic periods or after deployment
         """
-        if not redis_client:
-            return
-        
         try:
             from app.dataset_loader import load_dataset
             
-            # Load and cache dataset
+            logger.info(f"🔥 Cache warming started for {area}...")
             dataset = load_dataset(area=area)
-            if dataset and not dataset.get('error'):
+            
+            if dataset and not dataset.get('metadata', {}).get('is_fallback'):
                 cls.set_dataset_cache(area, dataset)
-                logger.info(f"🔥 Cache warmed for {area}")
+                logger.info(f"✅ Cache warmed for {area}")
+                return True
+            else:
+                logger.warning(f"⚠️ Cache warming failed for {area} (no valid dataset)")
+                return False
+                
         except Exception as e:
-            logger.error(f"Cache warming error: {e}")
+            logger.error(f"❌ Cache warming error for {area}: {e}")
+            return False
     
     @classmethod
     def clear_all_caches(cls):
-        """Clear all Voxmill caches (emergency use only)"""
-        if not redis_client:
-            return
+        """
+        Clear all Voxmill caches (emergency use only)
         
-        try:
-            # Get all Voxmill keys
-            keys = redis_client.keys("voxmill:*")
-            
-            if keys:
-                redis_client.delete(*keys)
-                logger.warning(f"🗑️  Cleared {len(keys)} cache keys")
-            else:
-                logger.info("No cache keys to clear")
+        WARNING: This will cause latency spike as all queries reload fresh data
+        """
+        # Clear Redis
+        if redis_available and redis_client:
+            try:
+                keys = redis_client.keys("voxmill:*")
                 
-        except Exception as e:
-            logger.error(f"Cache clearing error: {e}")
-
-
-class CacheMetrics:
-    """Track cache performance metrics"""
+                if keys:
+                    redis_client.delete(*keys)
+                    logger.warning(f"🗑️ Cleared {len(keys)} Redis cache keys")
+                else:
+                    logger.info("No Redis cache keys to clear")
+            except Exception as e:
+                logger.error(f"Redis clear failed: {e}")
+        
+        # Clear memory
+        with _memory_cache_lock:
+            count = len(_memory_cache)
+            _memory_cache.clear()
+            logger.warning(f"🗑️ Cleared {count} memory cache entries")
     
     @classmethod
-    def log_cache_event(cls, event_type: str, details: Dict = None):
-        """Log cache events for analytics"""
+    def get_memory_cache_size(cls) -> Dict:
+        """Get memory cache statistics"""
+        import sys
+        
+        with _memory_cache_lock:
+            total_entries = len(_memory_cache)
+            
+            # Estimate memory usage (rough)
+            try:
+                memory_bytes = sys.getsizeof(_memory_cache)
+                for key, value in _memory_cache.items():
+                    memory_bytes += sys.getsizeof(key)
+                    memory_bytes += sys.getsizeof(value)
+                
+                memory_mb = memory_bytes / (1024 * 1024)
+            except:
+                memory_mb = 0
+            
+            return {
+                "total_entries": total_entries,
+                "estimated_memory_mb": round(memory_mb, 2)
+            }
+
+
+# ============================================================
+# CACHE METRICS (Optional - for cost tracking)
+# ============================================================
+
+class CacheMetrics:
+    """Track cache performance for cost analysis"""
+    
+    @classmethod
+    def log_cache_hit(cls, cache_type: str, details: Dict = None):
+        """Log cache hit for analytics (saves API costs)"""
         try:
             from pymongo import MongoClient
             
@@ -333,15 +570,14 @@ class CacheMetrics:
                 mongo_client = MongoClient(MONGODB_URI)
                 db = mongo_client['Voxmill']
                 
-                cache_log = {
-                    "event_type": event_type,
+                db['cache_metrics'].insert_one({
+                    "event_type": "cache_hit",
+                    "cache_type": cache_type,
                     "timestamp": datetime.now(timezone.utc),
                     "details": details or {}
-                }
-                
-                db['cache_metrics'].insert_one(cache_log)
+                })
         except Exception as e:
-            logger.debug(f"Cache metrics logging error: {e}")
+            logger.debug(f"Cache metrics logging skipped: {e}")
     
     @classmethod
     def get_cost_savings(cls, days: int = 7) -> Dict:
@@ -370,10 +606,8 @@ class CacheMetrics:
                 "timestamp": {"$gte": cutoff_date}
             })
             
-            # Cost per GPT-4 query
-            COST_PER_QUERY = 0.095
-            
-            estimated_savings = cache_hits * COST_PER_QUERY
+            COST_PER_GPT4_QUERY = 0.095
+            estimated_savings = cache_hits * COST_PER_GPT4_QUERY
             
             return {
                 "period_days": days,
