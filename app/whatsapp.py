@@ -2032,12 +2032,7 @@ Standing by."""
         
         # Define prohibited patterns with severity levels
         prohibited_patterns = {
-            # CRITICAL violations (abort response)
-            'hedging_critical': {
-                'patterns': ['might', 'could', 'may', 'possibly', 'perhaps', 'likely', 'probably', 'appears to', 'seems to', 'suggests', 'indicates', 'tends to'],
-                'severity': 'CRITICAL',
-                'category': 'hedging_language'
-            },
+            # CRITICAL violations (only truly unacceptable content)
             'disclaimers': {
                 'patterns': ["i'm not a financial advisor", "this is not investment advice", "not financial advice", "consult a professional", "as an ai", "i don't have access to", "i cannot", "based on available data", "according to our analysis"],
                 'severity': 'CRITICAL',
@@ -2048,18 +2043,25 @@ Standing by."""
                 'severity': 'CRITICAL',
                 'category': 'chatbot_tone'
             },
+            
+            # HIGH violations (strip and continue - including hedge words)
+            'hedging_language': {
+                'patterns': ['might', 'could', 'may', 'possibly', 'perhaps', 'likely', 'probably', 'appears to', 'seems to', 'suggests', 'indicates', 'tends to'],
+                'severity': 'HIGH',
+                'category': 'hedging_language'
+            },
             'questions_to_user': {
                 'patterns': ['?'],  # Any question mark (except in REFUSAL/UNKNOWN intents)
                 'severity': 'HIGH',
                 'category': 'question_generation'
             },
-            
-            # HIGH violations (strip and log)
             'explanatory_padding': {
                 'patterns': ['i analyzed', 'i looked at', 'i examined', 'i considered', 'let me explain', 'to clarify', 'in other words', 'what this means is'],
                 'severity': 'HIGH',
                 'category': 'explanatory_padding'
             },
+            
+            # MEDIUM violations (strip quietly)
             'empty_filler': {
                 'patterns': ['at this time', 'currently', 'at present', 'as of now', 'going forward', 'in terms of', 'with regard to', "it's worth noting", 'notably', 'furthermore', 'additionally', 'moreover'],
                 'severity': 'MEDIUM',
@@ -2067,7 +2069,7 @@ Standing by."""
             }
         }
         
-       violations_found = []
+        violations_found = []
         response_lower = formatted_response.lower()
         
         # Scan for violations
