@@ -41,6 +41,7 @@ class SemanticCategory(Enum):
     STRATEGIC_POSITIONING = "strategic_positioning"
     TEMPORAL_ANALYSIS = "temporal_analysis"
     SURVEILLANCE = "surveillance"
+    ADMINISTRATIVE = "administrative"
     SOCIAL = "social"
     NON_DOMAIN = "non_domain"
 
