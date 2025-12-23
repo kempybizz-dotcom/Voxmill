@@ -2106,10 +2106,8 @@ Standing by."""
             if critical_violations:
                 logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
                 
-                # ABORT - send refusal
-                formatted_response = """Response quality check failed.
-
-Please rephrase your query or contact support if this persists."""
+# Use safe fallback instead of exposing internal error
+formatted_response = "Standing by."
                 
                 # Log the failure
                 try:
