@@ -105,28 +105,32 @@ class ConversationalGovernor:
         """
         
         message_lower = message.lower().strip()
+        # Remove trailing punctuation for better matching
+        message_clean = message_lower.rstrip('?!.,;:')
         
         # CLASS B: POLITENESS TOKENS
         politeness_exact = ['thanks', 'thank you', 'thankyou', 'thx', 'cheers', 
                             'appreciated', 'got it', 'noted', 'cool', 'ok', 'okay']
         
-        if message_lower in politeness_exact:
+        if message_clean in politeness_exact:
             return True, "Standing by."
         
         # CLASS C: PHATIC EXPRESSIONS
-        phatic_patterns = ['how are you', 'how r you', 'how are u', 
-                           'what\'s up', 'whats up', 'what up', 'sup', 'wassup',
-                           'how\'s it going', 'hows it going', 'you good', 'all good',
-                           'how you doing', 'how\'s things', 'hows things']
+        phatic_patterns = [
+            'how are you', 'how r you', 'how are u',
+            'what\'s up', 'whats up', 'what up', 'sup', 'wassup',
+            'how\'s it going', 'hows it going', 'you good', 'all good',
+            'how you doing', 'how\'s things', 'hows things'
+        ]
         
-        if message_lower in phatic_patterns:
+        if message_clean in phatic_patterns:
             return True, "Standing by."
         
         # CLASS D: MOOD STATEMENTS (non-market)
         # If mood statement has NO market keywords, treat as social
-        mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange']
+        mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange', 'feels noisy']
         
-        if any(pattern in message_lower for pattern in mood_patterns):
+        if any(pattern in message_clean for pattern in mood_patterns):
             # Non-market mood statement → silence
             return True, None  # None = silence
         
@@ -136,7 +140,7 @@ class ConversationalGovernor:
         meta_patterns = ['what would you do', 'if you were me', 'your thoughts',
                          'what do you think', 'your view', 'your opinion']
         
-        if any(pattern in message_lower for pattern in meta_patterns):
+        if any(pattern in message_clean for pattern in meta_patterns):
             # Pass through but will force to DECISION_REQUEST
             return False, None
         
