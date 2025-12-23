@@ -2067,7 +2067,7 @@ Standing by."""
             }
         }
         
-        violations_found = []
+       violations_found = []
         response_lower = formatted_response.lower()
         
         # Scan for violations
@@ -2103,24 +2103,24 @@ Standing by."""
             # Check for CRITICAL violations
             critical_violations = [v for v in violations_found if v['severity'] == 'CRITICAL']
             
-           if critical_violations:
-    logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
-    
-    # Use safe fallback - strip violations and continue
-    logger.warning(f"⚠️ Stripping {len(critical_violations)} critical violations from response")
-    
-    for violation in critical_violations:
-        pattern = violation['pattern']
-        # Remove the problematic word
-        formatted_response = re.sub(
-            r'\b' + re.escape(pattern) + r'\b',
-            '',
-            formatted_response,
-            flags=re.IGNORECASE
-        )
-    
-    # Clean up extra spaces
-    formatted_response = ' '.join(formatted_response.split())
+            if critical_violations:
+                logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
+                
+                # Use safe fallback - strip violations and continue
+                logger.warning(f"⚠️ Stripping {len(critical_violations)} critical violations from response")
+                
+                for violation in critical_violations:
+                    pattern = violation['pattern']
+                    # Remove the problematic word
+                    formatted_response = re.sub(
+                        r'\b' + re.escape(pattern) + r'\b',
+                        '',
+                        formatted_response,
+                        flags=re.IGNORECASE
+                    )
+                
+                # Clean up extra spaces
+                formatted_response = ' '.join(formatted_response.split())
                 
                 # Log the failure
                 try:
@@ -2167,7 +2167,6 @@ Standing by."""
         
         else:
             logger.info(f"✅ No prohibition violations detected")
-        
         # ========================================
         # ENVELOPE CONSTRAINT: MAX WORD COUNT
         # ========================================
@@ -2271,7 +2270,7 @@ Standing by."""
         
         await send_twilio_message(sender, formatted_response)
         
-        # ========================================
+     # ========================================
         # SYNC USAGE METRICS BACK TO AIRTABLE
         # ========================================
         
@@ -2290,8 +2289,7 @@ Standing by."""
                 # Build update payload - ONLY include fields with valid values
                 update_fields = {
                     'Messages Used This Month': int(messages_used),
-                    # 'Usage This Month (%)' is a FORMULA field - don't write to it (causes 422 errors)
-                    'Total Messages Sent': int(total_messages),
+                    # 'Total Messages Sent' is ALSO a FORMULA field - don't write to it
                     'Last Message Date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'),
                     'Last Active': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
                 }
