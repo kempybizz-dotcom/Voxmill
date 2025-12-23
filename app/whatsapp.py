@@ -1986,7 +1986,7 @@ Standing by."""
             comparison_datasets=comparison_datasets if comparison_datasets else None
         )
         
-        # ========================================
+# ========================================
         # FORMAT RESPONSE (STRIP HEADERS FOR AUTHORITY MODE)
         # ========================================
         
@@ -2100,7 +2100,47 @@ Standing by."""
                     })
                     logger.warning(f"⚠️ PROHIBITION VIOLATION: {category} - '{pattern}'")
         
-        # Enforce violations
+        # ========================================
+        # SAFE HEDGING WORD STRIPPER (FIX 1)
+        # ========================================
+        
+        def strip_hedging_safely(response: str) -> str:
+            """Strip hedging words WITHOUT destroying proper nouns like Mayfair"""
+            
+            # Protected words that contain hedging patterns
+            PROTECTED_WORDS = {
+                'mayfair', 'mayor', 'mayhem', 'maybe',
+                'likelihood', 'unlikely',  # contains 'likely'
+            }
+            
+            hedging_patterns = ['may', 'might', 'could', 'possibly', 'likely', 'perhaps', 'probably']
+            
+            words = response.split()
+            cleaned_words = []
+            
+            for word in words:
+                # Strip punctuation for matching
+                word_lower = word.lower().strip('.,!?;:\'"')
+                
+                # Keep protected words
+                if word_lower in PROTECTED_WORDS:
+                    cleaned_words.append(word)
+                    continue
+                
+                # Skip standalone hedging words
+                if word_lower in hedging_patterns:
+                    logger.debug(f"Stripped hedging word: '{word_lower}'")
+                    continue
+                
+                # Keep everything else
+                cleaned_words.append(word)
+            
+            return ' '.join(cleaned_words)
+        
+        # ========================================
+        # ENFORCE VIOLATIONS
+        # ========================================
+        
         if violations_found:
             # Check for CRITICAL violations
             critical_violations = [v for v in violations_found if v['severity'] == 'CRITICAL']
@@ -2111,18 +2151,8 @@ Standing by."""
                 # Use safe fallback - strip violations and continue
                 logger.warning(f"⚠️ Stripping {len(critical_violations)} critical violations from response")
                 
-                for violation in critical_violations:
-                    pattern = violation['pattern']
-                    # Remove the problematic word
-                    formatted_response = re.sub(
-                        r'\b' + re.escape(pattern) + r'\b',
-                        '',
-                        formatted_response,
-                        flags=re.IGNORECASE
-                    )
-                
-                # Clean up extra spaces
-                formatted_response = ' '.join(formatted_response.split())
+                # Use safe stripper for all violations
+                formatted_response = strip_hedging_safely(formatted_response)
                 
                 # Log the failure
                 try:
@@ -2144,31 +2174,17 @@ Standing by."""
                     logger.error(f"Failed to log violation: {log_error}")
             
             else:
-                # HIGH/MEDIUM violations - strip patterns
+                # HIGH/MEDIUM violations - use safe stripper
                 logger.warning(f"⚠️ Non-critical violations ({len(violations_found)}): stripping patterns")
                 
-                for violation in violations_found:
-                    pattern = violation['pattern']
-                    
-                    # Skip question marks (can't strip those easily)
-                    if 'question_mark' in str(pattern):
-                        continue
-                    
-                    # Replace pattern with empty string (case-insensitive)
-                    formatted_response = re.sub(
-                        re.escape(pattern),
-                        '',
-                        formatted_response,
-                        flags=re.IGNORECASE
-                    )
-                
-                # Clean up extra spaces
-                formatted_response = ' '.join(formatted_response.split())
+                # Use safe word-level stripper instead of regex
+                formatted_response = strip_hedging_safely(formatted_response)
                 
                 logger.info(f"✅ Patterns stripped, response cleaned")
         
         else:
             logger.info(f"✅ No prohibition violations detected")
+        
         # ========================================
         # ENVELOPE CONSTRAINT: MAX WORD COUNT
         # ========================================
@@ -2272,56 +2288,75 @@ Standing by."""
         
         await send_twilio_message(sender, formatted_response)
         
-     # ========================================
-        # SYNC USAGE METRICS BACK TO AIRTABLE
-        # ========================================
+# ========================================
+# SYNC USAGE METRICS BACK TO AIRTABLE
+# ========================================
+
+try:
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+    
+    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
         
-        try:
-            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+        # Calculate usage metrics
+        messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
+        message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
+        
+        # ========================================
+        # CRITICAL: ONLY UPDATE WRITABLE FIELDS
+        # ========================================
+        # DO NOT update formula/computed fields:
+        # - 'Total Messages Sent' (formula)
+        # - 'Last Message Date' (formula)
+        # - 'Last Active' (formula/last modified)
+        # These are automatically calculated by Airtable
+        
+        update_fields = {
+            'Messages Used This Month': int(messages_used)
+        }
+        
+        # REMOVED: 'Last Message Date' - formula field (causes 422 errors)
+        # REMOVED: 'Last Active' - formula/computed field (causes 422 errors)
+        # REMOVED: 'Total Messages Sent' - formula field (causes 422 errors)
+        
+        # Optional: Add decision mode tracking (only if field is confirmed writable)
+        # UNCOMMENT ONLY IF YOU'VE VERIFIED THESE ARE NOT FORMULA FIELDS IN AIRTABLE:
+        # if category == 'decision_mode' and response_text:
+        #     update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        #     if len(response_text.strip()) > 0:
+        #         update_fields['Last Strategic Action Recommended'] = response_text[:500]
+        
+        # Update Airtable
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+        headers = {
+            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {"fields": update_fields}
+        
+        response = requests.patch(url, headers=headers, json=payload, timeout=5)
+        
+        if response.status_code == 200:
+            logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
+        elif response.status_code == 422:
+            # Enhanced error logging for formula field issues
+            error_details = response.json()
+            error_message = error_details.get('error', {}).get('message', 'Unknown error')
+            error_type = error_details.get('error', {}).get('type', 'Unknown type')
             
-            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                
-                # Calculate usage metrics
-                messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
-                message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
-                
-                # Build update payload - ONLY writable fields
-                update_fields = {
-                    'Messages Used This Month': int(messages_used)
-                }
-                
-                # Add category-specific fields ONLY if they have values
-                if category == 'decision_mode' and response_text:
-                    update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
-                    # Only update if response exists and isn't empty
-                    if len(response_text.strip()) > 0:
-                        update_fields['Last Strategic Action Recommended'] = response_text[:500]  # Truncate to 500 chars
-                
-                # Update Airtable
-                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
-                headers = {
-                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                    "Content-Type": "application/json"
-                }
-                
-                payload = {"fields": update_fields}
-                
-                response = requests.patch(url, headers=headers, json=payload, timeout=5)
-                
-                if response.status_code == 200:
-                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
-                elif response.status_code == 422:
-                    error_details = response.json()
-                    logger.error(f"⚠️ Airtable 422 error details: {error_details}")
-                    logger.error(f"Payload sent: {payload}")
-                else:
-                    logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
-                    
-        except Exception as e:
-            logger.error(f"Airtable sync error: {e}", exc_info=True)
-            # Don't fail the whole request - just log
+            logger.error(f"⚠️ Airtable 422 ERROR - FORMULA FIELD DETECTED")
+            logger.error(f"   Error Type: {error_type}")
+            logger.error(f"   Error Message: {error_message}")
+            logger.error(f"   Payload sent: {payload}")
+            logger.error(f"   Action: Check Airtable schema - a field in the payload is computed/formula")
+        else:
+            logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
+            
+except Exception as e:
+    logger.error(f"Airtable sync error: {e}", exc_info=True)
+    # Don't fail the whole request - just log
 
         
         # ========================================
