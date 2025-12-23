@@ -90,7 +90,7 @@ class AutoScopeResult:
 class ConversationalGovernor:
     """Main governance controller with Layer -1 social absorption"""
     
-    # ========================================
+# ========================================
     # LAYER -1: SOCIAL ABSORPTION
     # ========================================
     
@@ -175,7 +175,7 @@ class ConversationalGovernor:
         # Category B: MARKET DYNAMICS
         market_keywords = [
             'market', 'sector', 'segment', 'region', 'area', 'territory',
-            'mayfair', 'chelsea', 'knightsbridge', 'belgravia', 'kensington',
+            'mayfair', 'chelsea', 'knightsbridge', 'knight bridge', 'belgravia', 'kensington',
             'london', 'real estate', 'property', 'properties', 'inventory',
             'conditions', 'trends', 'movement', 'sentiment', 'outlook', 'state',
             'overview', 'snapshot', 'update', 'status', 'dynamics'
@@ -184,13 +184,18 @@ class ConversationalGovernor:
         if any(kw in message_lower for kw in market_keywords):
             return True, SemanticCategory.MARKET_DYNAMICS, 0.88
         
-        # Category C: STRATEGIC POSITIONING
+        # Category C: STRATEGIC POSITIONING (EXPANDED - CRITICAL)
         strategic_keywords = [
             'action', 'actions', 'move', 'strategy', 'opportunity', 'timing', 'window',
             'entry', 'exit', 'buy', 'sell', 'acquire', 'position', 'leverage',
             'recommend', 'advise', 'should i', 'what do i', 'next step',
-            'best', 'optimal', 'strategic', 'tactical', 'directive', 'risk',
-            'if i did nothing', 'what if', 'scenario'
+            'best', 'optimal', 'strategic', 'tactical', 'directive', 'risk', 'risks',
+            'if i did nothing', 'what if', 'scenario',
+            # BLIND SPOT ANALYSIS (THIS IS YOUR MONEY)
+            'blind spot', 'blind spots', 'what am i missing', 'what else', 'missing',
+            'gaps', 'gap', 'weakness', 'weaknesses', 'downside', 'downsides',
+            'pre-mortem', 'second order', 'unknown unknowns', 'not seeing',
+            'overlooking', 'overlooked', 'hidden risk', 'hidden risks'
         ]
         
         if any(kw in message_lower for kw in strategic_keywords):
@@ -207,18 +212,34 @@ class ConversationalGovernor:
         if any(kw in message_lower for kw in temporal_keywords):
             return True, SemanticCategory.TEMPORAL_ANALYSIS, 0.85
         
-        # Category E: SURVEILLANCE & MONITORING
+        # Category E: SURVEILLANCE & MONITORING (EXPANDED - PORTFOLIO)
         surveillance_keywords = [
             'monitor', 'monitoring', 'track', 'tracking', 'watch', 'watching',
             'alert', 'notify', 'surveillance', 'flag', 'keep eye', 'observe',
             'what am i monitoring', 'who am i monitoring', 'my monitors', 
-            'active monitors', 'currently monitoring', 'investments'
+            'active monitors', 'currently monitoring',
+            # PORTFOLIO & INVESTMENT TRACKING
+            'investments', 'investment', 'portfolio', 'my portfolio', 'holdings',
+            'my investments', 'current investments', 'what do i own', 'my holdings',
+            'my positions', 'positions', 'what am i invested in'
         ]
         
         if any(kw in message_lower for kw in surveillance_keywords):
             return True, SemanticCategory.SURVEILLANCE, 0.93
         
-        # Category F: NON-DOMAIN (outside mandate)
+        # Category F: ADMINISTRATIVE (NEW - PDF/EMAIL/DELIVERY)
+        administrative_keywords = [
+            'pdf', 'report', 'send report', 'send pdf', 'email report', 
+            'email it', 'email me', 'send it', 'send me',
+            'this weeks report', 'weekly report', 'weekly brief', 'weekly briefing',
+            'deliver', 'delivery', 'generate report', 'create report',
+            'export', 'download', 'link', 'share'
+        ]
+        
+        if any(kw in message_lower for kw in administrative_keywords):
+            return True, SemanticCategory.ADMINISTRATIVE, 0.88
+        
+        # Category G: NON-DOMAIN (outside mandate)
         return False, SemanticCategory.NON_DOMAIN, 0.95
     
     # ========================================
