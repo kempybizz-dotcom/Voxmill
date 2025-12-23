@@ -2286,14 +2286,10 @@ Standing by."""
                 # Calculate usage metrics
                 messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
                 message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
-                total_messages = client_profile.get('usage_metrics', {}).get('total_messages_sent', 0) + 1
                 
-                # Build update payload - ONLY include fields with valid values
+                # Build update payload - ONLY writable fields
                 update_fields = {
-                    'Messages Used This Month': int(messages_used),
-                    # 'Total Messages Sent' is ALSO a FORMULA field - don't write to it
-                    'Last Message Date': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z'),
-                    'Last Active': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                    'Messages Used This Month': int(messages_used)
                 }
                 
                 # Add category-specific fields ONLY if they have values
@@ -2326,6 +2322,7 @@ Standing by."""
         except Exception as e:
             logger.error(f"Airtable sync error: {e}", exc_info=True)
             # Don't fail the whole request - just log
+
         
         # ========================================
         # UPDATE CONVERSATION SESSION
