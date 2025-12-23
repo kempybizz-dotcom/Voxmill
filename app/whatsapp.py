@@ -2103,11 +2103,24 @@ Standing by."""
             # Check for CRITICAL violations
             critical_violations = [v for v in violations_found if v['severity'] == 'CRITICAL']
             
-            if critical_violations:
-                logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
-                
-# Use safe fallback instead of exposing internal error
-formatted_response = "Standing by."
+           if critical_violations:
+    logger.error(f"🚫 CRITICAL PROHIBITION VIOLATIONS ({len(critical_violations)}): {[v['pattern'] for v in critical_violations]}")
+    
+    # Use safe fallback - strip violations and continue
+    logger.warning(f"⚠️ Stripping {len(critical_violations)} critical violations from response")
+    
+    for violation in critical_violations:
+        pattern = violation['pattern']
+        # Remove the problematic word
+        formatted_response = re.sub(
+            r'\b' + re.escape(pattern) + r'\b',
+            '',
+            formatted_response,
+            flags=re.IGNORECASE
+        )
+    
+    # Clean up extra spaces
+    formatted_response = ' '.join(formatted_response.split())
                 
                 # Log the failure
                 try:
