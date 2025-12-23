@@ -2288,76 +2288,75 @@ Standing by."""
         
         await send_twilio_message(sender, formatted_response)
         
-# ========================================
-# SYNC USAGE METRICS BACK TO AIRTABLE
-# ========================================
-
-try:
-    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-    AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-    
-    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-        
-        # Calculate usage metrics
-        messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
-        message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
-        
         # ========================================
-        # CRITICAL: ONLY UPDATE WRITABLE FIELDS
+        # SYNC USAGE METRICS BACK TO AIRTABLE
         # ========================================
-        # DO NOT update formula/computed fields:
-        # - 'Total Messages Sent' (formula)
-        # - 'Last Message Date' (formula)
-        # - 'Last Active' (formula/last modified)
-        # These are automatically calculated by Airtable
         
-        update_fields = {
-            'Messages Used This Month': int(messages_used)
-        }
-        
-        # REMOVED: 'Last Message Date' - formula field (causes 422 errors)
-        # REMOVED: 'Last Active' - formula/computed field (causes 422 errors)
-        # REMOVED: 'Total Messages Sent' - formula field (causes 422 errors)
-        
-        # Optional: Add decision mode tracking (only if field is confirmed writable)
-        # UNCOMMENT ONLY IF YOU'VE VERIFIED THESE ARE NOT FORMULA FIELDS IN AIRTABLE:
-        # if category == 'decision_mode' and response_text:
-        #     update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
-        #     if len(response_text.strip()) > 0:
-        #         update_fields['Last Strategic Action Recommended'] = response_text[:500]
-        
-        # Update Airtable
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {"fields": update_fields}
-        
-        response = requests.patch(url, headers=headers, json=payload, timeout=5)
-        
-        if response.status_code == 200:
-            logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
-        elif response.status_code == 422:
-            # Enhanced error logging for formula field issues
-            error_details = response.json()
-            error_message = error_details.get('error', {}).get('message', 'Unknown error')
-            error_type = error_details.get('error', {}).get('type', 'Unknown type')
+        try:
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
             
-            logger.error(f"⚠️ Airtable 422 ERROR - FORMULA FIELD DETECTED")
-            logger.error(f"   Error Type: {error_type}")
-            logger.error(f"   Error Message: {error_message}")
-            logger.error(f"   Payload sent: {payload}")
-            logger.error(f"   Action: Check Airtable schema - a field in the payload is computed/formula")
-        else:
-            logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
-            
-except Exception as e:
-    logger.error(f"Airtable sync error: {e}", exc_info=True)
-    # Don't fail the whole request - just log
-
+            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                
+                # Calculate usage metrics
+                messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
+                message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
+                
+                # ========================================
+                # CRITICAL: ONLY UPDATE WRITABLE FIELDS
+                # ========================================
+                # DO NOT update formula/computed fields:
+                # - 'Total Messages Sent' (formula)
+                # - 'Last Message Date' (formula)
+                # - 'Last Active' (formula/last modified)
+                # These are automatically calculated by Airtable
+                
+                update_fields = {
+                    'Messages Used This Month': int(messages_used)
+                }
+                
+                # REMOVED: 'Last Message Date' - formula field (causes 422 errors)
+                # REMOVED: 'Last Active' - formula/computed field (causes 422 errors)
+                # REMOVED: 'Total Messages Sent' - formula field (causes 422 errors)
+                
+                # Optional: Add decision mode tracking (only if field is confirmed writable)
+                # UNCOMMENT ONLY IF YOU'VE VERIFIED THESE ARE NOT FORMULA FIELDS IN AIRTABLE:
+                # if category == 'decision_mode' and response_text:
+                #     update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                #     if len(response_text.strip()) > 0:
+                #         update_fields['Last Strategic Action Recommended'] = response_text[:500]
+                
+                # Update Airtable
+                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
+                headers = {
+                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {"fields": update_fields}
+                
+                response = requests.patch(url, headers=headers, json=payload, timeout=5)
+                
+                if response.status_code == 200:
+                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
+                elif response.status_code == 422:
+                    # Enhanced error logging for formula field issues
+                    error_details = response.json()
+                    error_message = error_details.get('error', {}).get('message', 'Unknown error')
+                    error_type = error_details.get('error', {}).get('type', 'Unknown type')
+                    
+                    logger.error(f"⚠️ Airtable 422 ERROR - FORMULA FIELD DETECTED")
+                    logger.error(f"   Error Type: {error_type}")
+                    logger.error(f"   Error Message: {error_message}")
+                    logger.error(f"   Payload sent: {payload}")
+                    logger.error(f"   Action: Check Airtable schema - a field in the payload is computed/formula")
+                else:
+                    logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
+                    
+        except Exception as e:
+            logger.error(f"Airtable sync error: {e}", exc_info=True)
+            # Don't fail the whole request - just log
         
         # ========================================
         # UPDATE CONVERSATION SESSION
