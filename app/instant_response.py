@@ -1,9 +1,13 @@
 """
-VOXMILL INSTANT RESPONSE LAYER
-==============================
-Sub-3-second responses using ALL intelligence layers
+VOXMILL INSTANT RESPONSE LAYER - WORLD-CLASS v2.0
+==================================================
+Sub-3-second responses with executive-grade formatting
 
-World-class principle: Surface ALL available intelligence, always.
+FORMATTING PHILOSOPHY:
+- Assume intelligent client (no explanations)
+- End on insight, not status
+- Dense > decorated
+- Authority > helpfulness
 """
 
 import logging
@@ -15,26 +19,18 @@ logger = logging.getLogger(__name__)
 
 class InstantIntelligence:
     """
-    Lightning-fast responses that USE ALL INTELLIGENCE LAYERS
+    Lightning-fast responses with institutional formatting
     
-    No GPT-4 delays - structured templates with full data utilization
+    No GPT-4 delays - structured templates with executive brevity
     """
     
     @staticmethod
     def get_full_market_snapshot(area: str, dataset: Dict, client_profile: Dict) -> str:
         """
-        WORLD-CLASS MARKET SNAPSHOT - Uses ALL intelligence layers
+        WORLD-CLASS MARKET SNAPSHOT
         
-        Returns structured response with:
-        - Core metrics
-        - Detected trends (if available)
-        - Agent behavioral signals (if available)
-        - Liquidity velocity (if available)
-        - Liquidity windows (if available)
-        - Micromarket breakdown (if available)
-        - Behavioral clusters (if available)
-        - Cascade prediction (if available)
-        - Proactive suggestions
+        Format: State → Interpretation → Key Focus
+        No filler, no system voice, ends strong
         """
         
         metrics = dataset.get('metrics', {})
@@ -46,70 +42,23 @@ class InstantIntelligence:
         price_per_sqft = metrics.get('avg_price_per_sqft', 0)
         sentiment = intelligence.get('market_sentiment', 'neutral').upper()
         
+        # Convert price to millions for readability
+        avg_price_m = avg_price / 1_000_000
+        
         # Build response sections
         sections = []
         
         # ========================================
-        # SECTION 1: CORE SNAPSHOT (Always shown)
+        # SECTION 1: CORE STATE (Always shown)
         # ========================================
-        sections.append(f"""{area.upper()} SNAPSHOT
-────────────────────────────────────────
-Inventory: {inventory} units
-Avg: £{avg_price:,.0f} | £{price_per_sqft:,.0f}/sqft
-Sentiment: {sentiment}""")
+        sections.append(f"""{area.upper()} — CURRENT STATE
+
+- Inventory: {inventory} units  
+- Avg pricing: £{avg_price_m:.2f}m  
+- Sentiment: {sentiment}""")
         
         # ========================================
-        # SECTION 2: DETECTED TRENDS (Show if available)
-        # ========================================
-        if 'detected_trends' in dataset and dataset['detected_trends']:
-            trends = dataset['detected_trends'][:3]  # Top 3
-            
-            trend_bullets = []
-            for trend in trends:
-                insight = trend.get('insight', '')
-                magnitude = trend.get('magnitude', 0)
-                
-                # Add magnitude indicator
-                if magnitude > 0:
-                    indicator = f"(↑{abs(magnitude):.1f}%)"
-                elif magnitude < 0:
-                    indicator = f"(↓{abs(magnitude):.1f}%)"
-                else:
-                    indicator = ""
-                
-                trend_bullets.append(f"• {insight} {indicator}")
-            
-            sections.append(f"""
-🔍 DETECTED TRENDS (14d)
-{chr(10).join(trend_bullets)}""")
-        
-        # ========================================
-        # SECTION 3: AGENT BEHAVIORAL SIGNALS (Show if available)
-        # ========================================
-        if 'agent_profiles' in dataset and dataset['agent_profiles']:
-            agent_profiles = dataset['agent_profiles'][:5]
-            
-            # Detect aggressive/defensive agents
-            aggressive = [a for a in agent_profiles if 'aggressive' in a.get('archetype', '').lower()]
-            defensive = [a for a in agent_profiles if 'defensive' in a.get('archetype', '').lower()]
-            
-            if aggressive or defensive:
-                agent_signals = []
-                
-                for agent in aggressive[:2]:
-                    pattern = agent.get('behavioral_pattern', '')
-                    agent_signals.append(f"• {agent['agent']}: {pattern}")
-                
-                for agent in defensive[:2]:
-                    pattern = agent.get('behavioral_pattern', '')
-                    agent_signals.append(f"• {agent['agent']}: {pattern}")
-                
-                sections.append(f"""
-⚡ AGENT BEHAVIORAL SIGNALS
-{chr(10).join(agent_signals)}""")
-        
-        # ========================================
-        # SECTION 4: LIQUIDITY VELOCITY (Show if available)
+        # SECTION 2: LIQUIDITY VELOCITY (If available)
         # ========================================
         if 'liquidity_velocity' in dataset and dataset['liquidity_velocity']:
             velocity = dataset['liquidity_velocity']
@@ -119,44 +68,10 @@ Sentiment: {sentiment}""")
                 velocity_class = velocity.get('velocity_class', 'Unknown')
                 market_health = velocity.get('market_health', 'Unknown')
                 
-                sections.append(f"""
-💧 LIQUIDITY VELOCITY
-Score: {velocity_score}/100 ({velocity_class})
-Market health: {market_health}""")
+                sections.append(f"""• Velocity: {velocity_score}/100 ({velocity_class})""")
         
         # ========================================
-        # SECTION 5: LIQUIDITY WINDOWS (Show if available)
-        # ========================================
-        if 'liquidity_windows' in dataset and dataset['liquidity_windows']:
-            windows = dataset['liquidity_windows']
-            
-            if not windows.get('error'):
-                timing_score = windows.get('timing_score', 0)
-                timing_rec = windows.get('timing_recommendation', 'Monitor')
-                velocity_momentum = windows.get('velocity_momentum', 0)
-                
-                # Get next window
-                predicted_windows = windows.get('predicted_windows', [])
-                if predicted_windows:
-                    next_window = predicted_windows[0]
-                    window_type = next_window.get('type', 'Unknown')
-                    window_status = next_window.get('status', 'Unknown')
-                    window_timing = next_window.get('timing', 'Unknown')
-                    window_rec = next_window.get('recommendation', '')
-                    
-                    momentum_indicator = f"({'↑' if velocity_momentum > 0 else '↓'}{abs(velocity_momentum):.1f}%)"
-                    
-                    sections.append(f"""
-⏰ TIMING SIGNAL
-Timing score: {timing_score}/100 ({timing_rec})
-Momentum: {momentum_indicator}
-
-Next window: {window_type.upper()} - {window_status}
-Timing: {window_timing}
-Action: {window_rec}""")
-        
-        # ========================================
-        # SECTION 6: MICROMARKET BREAKDOWN (Show if available)
+        # SECTION 3: MICROMARKET BREAKDOWN (If available)
         # ========================================
         if 'micromarkets' in dataset and dataset['micromarkets']:
             micromarkets = dataset['micromarkets']
@@ -165,106 +80,82 @@ Action: {window_rec}""")
                 zones = micromarkets.get('micromarkets', [])[:3]  # Top 3
                 
                 if zones:
-                    zone_bullets = []
+                    sections.append("\nTop zones:")
                     for zone in zones:
                         zone_name = zone.get('name', 'Unknown')
-                        zone_avg = zone.get('avg_price', 0)
+                        zone_avg = zone.get('avg_price', 0) / 1_000_000
                         zone_count = zone.get('property_count', 0)
                         
-                        zone_bullets.append(f"• {zone_name}: £{zone_avg:,.0f} ({zone_count} units)")
-                    
-                    sections.append(f"""
-🗺️ MICROMARKET ZONES
-{chr(10).join(zone_bullets)}""")
+                        sections.append(f"• {zone_name}: £{zone_avg:.2f}m ({zone_count} units)")
         
         # ========================================
-        # SECTION 7: BEHAVIORAL CLUSTERS (Show if available)
+        # SECTION 4: INTERPRETATION (Always show)
         # ========================================
-        if 'behavioral_clusters' in dataset and dataset['behavioral_clusters']:
-            clusters = dataset['behavioral_clusters']
-            
-            if not clusters.get('error'):
-                cluster_list = clusters.get('clusters', [])[:2]  # Top 2
-                
-                if cluster_list:
-                    cluster_bullets = []
-                    for cluster in cluster_list:
-                        archetype = cluster.get('archetype', 'Unknown')
-                        agents = ', '.join(cluster.get('agents', [])[:3])
-                        cohesion = cluster.get('cohesion', 0)
-                        
-                        cluster_bullets.append(f"• {archetype}: {agents} (cohesion: {cohesion*100:.0f}%)")
-                    
-                    # Leader-follower relationships
-                    leader_follower = clusters.get('leader_follower_pairs', [])[:2]
-                    if leader_follower:
-                        for pair in leader_follower:
-                            leader = pair.get('leader', '')
-                            follower = pair.get('follower', '')
-                            correlation = pair.get('correlation', 0)
-                            
-                            cluster_bullets.append(f"• {leader} → {follower} ({correlation*100:.0f}% correlation)")
-                    
-                    sections.append(f"""
-🔗 BEHAVIORAL CLUSTERS
-{chr(10).join(cluster_bullets)}""")
         
-        # ========================================
-        # SECTION 8: CASCADE PREDICTION (Show if available)
-        # ========================================
-        if 'cascade_prediction' in dataset and dataset['cascade_prediction']:
-            cascade = dataset['cascade_prediction']
-            
-            if not cascade.get('error'):
-                initiating_agent = cascade.get('initiating_agent', '')
-                initial_magnitude = cascade.get('initial_magnitude', 0)
-                cascade_probability = cascade.get('cascade_probability', 0)
-                affected_agents = cascade.get('total_affected_agents', 0)
-                duration = cascade.get('expected_duration_days', 0)
-                market_impact = cascade.get('market_impact', 'unknown').upper()
-                
-                sections.append(f"""
-🌊 CASCADE PREDICTION
-Initiator: {initiating_agent} ({initial_magnitude:+.1f}%)
-Cascade probability: {cascade_probability*100:.0f}%
-Affected agents: {affected_agents}
-Timeline: {duration} days
-Market impact: {market_impact}""")
+        # Derive interpretation from velocity + sentiment
+        interpretation = ""
         
-        # ========================================
-        # SECTION 9: PROACTIVE SUGGESTIONS (Always show)
-        # ========================================
-        suggestions = []
-        
-        # Suggest monitoring if velocity declining
         if 'liquidity_velocity' in dataset and dataset['liquidity_velocity']:
             velocity_data = dataset['liquidity_velocity']
             if not velocity_data.get('error'):
                 velocity_score = velocity_data.get('velocity_score', 50)
                 
                 if velocity_score < 40:
-                    suggestions.append("Monitor liquidity: Currently low, may signal entry opportunity when it recovers")
+                    if sentiment.lower() == 'bearish':
+                        interpretation = "Demand is weak, transactions are slow. Risk is entry timing—illiquid declining assets lock capital."
+                    else:
+                        interpretation = "Demand is stable, but transactions are slow. Risk is timing, not pricing."
                 elif velocity_score > 70:
-                    suggestions.append("Monitor liquidity: Currently high, window may be closing soon")
+                    interpretation = "Transactions are accelerating. Window is open but narrowing—momentum will reverse."
+                else:
+                    interpretation = "Standard market conditions. No urgency, no major red flags."
+        else:
+            # Fallback interpretation from sentiment only
+            if sentiment.lower() == 'bearish':
+                interpretation = "Sentiment is bearish. Monitor for trend reversal before entry."
+            elif sentiment.lower() == 'bullish':
+                interpretation = "Sentiment is bullish. Watch for overheating signals."
+            else:
+                interpretation = "Market is balanced. Standard entry conditions."
         
-        # Suggest cascade analysis if aggressive agents detected
+        if interpretation:
+            sections.append(f"\nInterpretation:\n{interpretation}")
+        
+        # ========================================
+        # SECTION 5: KEY FOCUS (Always show - ends strong)
+        # ========================================
+        
+        key_focus = ""
+        
+        # Determine focus based on available intelligence
+        if 'liquidity_velocity' in dataset and dataset['liquidity_velocity']:
+            velocity_data = dataset['liquidity_velocity']
+            if not velocity_data.get('error'):
+                velocity_score = velocity_data.get('velocity_score', 50)
+                
+                if velocity_score < 40:
+                    key_focus = "Watch velocity inflection—that's where leverage returns."
+                elif velocity_score > 70:
+                    key_focus = "Monitor velocity peak—window closes when momentum reverses."
+                else:
+                    key_focus = "Track velocity shifts—positioning matters more than timing."
+        
+        # Add cascade warning if aggressive agents detected
         if 'agent_profiles' in dataset and dataset['agent_profiles']:
             aggressive = [a for a in dataset['agent_profiles'] if 'aggressive' in a.get('archetype', '').lower()]
-            if aggressive and not ('cascade_prediction' in dataset):
-                suggestions.append(f"Cascade analysis available: {aggressive[0]['agent']} showing aggressive pattern")
+            if aggressive and not key_focus:
+                agent_name = aggressive[0]['agent']
+                key_focus = f"Monitor {agent_name}—aggressive pricing may trigger cascade."
         
-        # Suggest portfolio tracking
-        suggestions.append("Portfolio tracking available: Track your holdings with real-time valuations")
+        # Fallback if no specific focus identified
+        if not key_focus:
+            key_focus = "Monitor for structural shifts—timing beats precision here."
         
-        if suggestions:
-            sections.append(f"""
-💡 AVAILABLE INTELLIGENCE
-{chr(10).join(['• ' + s for s in suggestions[:3]])}""")
+        sections.append(f"\nKey focus:\n{key_focus}")
         
         # ========================================
-        # FINAL ASSEMBLY
+        # FINAL ASSEMBLY (NO "Standing by.")
         # ========================================
-        sections.append("\nStanding by.")
         
         return "\n".join(sections)
     
@@ -273,7 +164,7 @@ Market impact: {market_impact}""")
         """
         INSTANT DECISION using liquidity windows + velocity + sentiment
         
-        Uses rule-based logic for speed, GPT-4 enhancement optional
+        Format: Recommendation → Risk → Counterfactual → Action
         """
         
         intelligence = dataset.get('intelligence', {})
@@ -370,11 +261,7 @@ ACTION:
             return f"""{area.upper()} TRENDS
 
 No significant trends detected in last 14 days.
-
-Market activity: Stable
-Movement: Minimal
-
-Standing by."""
+Market activity: Stable, minimal movement."""
         
         trends = dataset['detected_trends']
         
@@ -396,11 +283,8 @@ Standing by."""
             trend_bullets.append(f"• {insight} ({indicator}, {confidence*100:.0f}% confidence)")
         
         response = f"""{area.upper()} TREND ANALYSIS (14d)
-────────────────────────────────────────
 
-{chr(10).join(trend_bullets)}
-
-Standing by."""
+{chr(10).join(trend_bullets)}"""
         
         return response
     
@@ -414,19 +298,14 @@ Standing by."""
             return f"""{area.upper()} TIMING ANALYSIS
 
 Liquidity window data unavailable.
-
-Requires historical velocity tracking (30+ days).
-
-Standing by."""
+Requires 30+ days historical tracking."""
         
         windows = dataset['liquidity_windows']
         
         if windows.get('error'):
             return f"""{area.upper()} TIMING ANALYSIS
 
-{windows['error']}
-
-Standing by."""
+{windows['error']}"""
         
         # Extract data
         timing_score = windows.get('timing_score', 0)
@@ -439,13 +318,13 @@ Standing by."""
         
         # Build response
         sections = [f"""{area.upper()} TIMING ANALYSIS
-────────────────────────────────────────
+
 Current velocity: {current_velocity}/100
 Momentum: {'↑' if velocity_momentum > 0 else '↓'}{abs(velocity_momentum):.1f}%
 Timing score: {timing_score}/100 ({timing_rec})"""]
         
         if predicted_windows:
-            sections.append("\nPREDICTED WINDOWS:")
+            sections.append("\nPredicted windows:")
             for window in predicted_windows[:3]:
                 window_type = window.get('type', 'Unknown')
                 status = window.get('status', 'Unknown')
@@ -459,8 +338,6 @@ Timing score: {timing_score}/100 ({timing_rec})"""]
   Action: {recommendation}
   Confidence: {confidence*100:.0f}%""")
         
-        sections.append("\nStanding by.")
-        
         return "\n".join(sections)
     
     @staticmethod
@@ -473,16 +350,12 @@ Timing score: {timing_score}/100 ({timing_rec})"""]
             return f"""{area.upper()} AGENT ANALYSIS
 
 No agent behavioral data available.
-
-Requires 30+ days of tracking.
-
-Standing by."""
+Requires 30+ days of tracking."""
         
         agent_profiles = dataset['agent_profiles']
         
         # Build response
-        sections = [f"""{area.upper()} AGENT BEHAVIORAL ANALYSIS
-────────────────────────────────────────"""]
+        sections = [f"""{area.upper()} AGENT BEHAVIORAL ANALYSIS"""]
         
         for agent in agent_profiles[:5]:
             agent_name = agent.get('agent', 'Unknown')
@@ -503,8 +376,6 @@ Standing by."""
 {aggressive[0]['agent']} showing aggressive pricing.
 Cascade analysis available: "What if {aggressive[0]['agent']} drops 5%?"
 """)
-        
-        sections.append("Standing by.")
         
         return "\n".join(sections)
 
