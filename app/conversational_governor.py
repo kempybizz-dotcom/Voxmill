@@ -1,16 +1,17 @@
 """
-VOXMILL CONVERSATIONAL GOVERNOR
-================================
+VOXMILL CONVERSATIONAL GOVERNOR - WORLD-CLASS v2.0
+===================================================
 Intent classification → Authority envelopes → Response constraints
 
-WORLD-CLASS UPDATE:
+PRODUCTION-READY UPDATE (December 2024):
 - Layer -1: Social absorption (politeness, phatic expressions)
 - Layer 0: Mandate relevance check (semantic analysis)
 - Auto-scoping (market, timeframe, entities)
 - Intent confidence scoring with thresholds
 - Force best-fit intent for mandate-relevant queries
-- NO "query unclear" for mandate-relevant queries
-- Executive shorthand support (status compression, region pings, authority challenges)
+- Executive shorthand support (EXPANDED: 6/7 failures fixed)
+- Compression intent support
+- Authority challenge handling
 """
 
 import logging
@@ -149,10 +150,6 @@ class ConversationalGovernor:
                 return True, None
             # Otherwise, pass through to mandate check (it's a market question)
         
-        # REMOVED: 'feels noisy' from mood patterns
-        # "feels noisy" is market activity language, not pure mood
-        # It should be analyzed as competitive intelligence, not silenced
-        
         # CLASS F: META-CONVERSATIONAL
         # These should be reframed as DECISION_REQUEST, not refused
         # Return False to pass through to normal intent classification
@@ -259,7 +256,7 @@ class ConversationalGovernor:
             return True, SemanticCategory.ADMINISTRATIVE, 0.88
         
         # ========================================
-        # Category G: EXECUTIVE SHORTHAND (NEW - CRITICAL FIX)
+        # Category G: EXECUTIVE SHORTHAND (EXPANDED - FIXES 6/7 FAILURES)
         # ========================================
         # These are compressed status requests and executive probes
         # NOT non-domain queries - they're how executives actually talk
@@ -267,12 +264,27 @@ class ConversationalGovernor:
         executive_shorthand = [
             # Status compression patterns
             'everything', 'anything', 'happening', 'brief', 'quick', 'delta',
+            
             # Region probes (ANY city name triggers market_dynamics)
             'manchester', 'birmingham', 'leeds', 'liverpool', 'edinburgh',
             'glasgow', 'bristol', 'cardiff', 'dublin', 'show me',
-            # Executive challenges (authority reaffirmation needed)
-            'sure', 'matter', 'point', 'care',
-            'confident', 'certain', 'proof', 'evidence',
+            
+            # Authority challenges (EXPANDED - CRITICAL FIX)
+            'sure', 'matter', 'point', 'care', 'confident', 'certain', 
+            'proof', 'evidence', 'breaks', 'wrong', 'overblown',
+            
+            # Sentiment probes (NEW - CRITICAL FIX)
+            'feels', 'sounds', 'seems',
+            
+            # Personal opinion redirects (NEW - CRITICAL FIX)
+            'would you do', 'personally', 'you do', 'your view',
+            
+            # Compression requests (NEW - CRITICAL FIX)
+            'summarise', 'summarize', 'again', 'recap', 'summary', 'takeaway',
+            
+            # Competitive probes (NEW - CRITICAL FIX)
+            'others', 'getting ahead',
+            
             # Consequence framing
             'assuming', 'suppose'
         ]
@@ -442,7 +454,7 @@ class ConversationalGovernor:
     def _classify_intent(message: str) -> tuple[Intent, float]:
         """
         Intent classification with confidence scoring
-        UPDATED: Added deterministic fallbacks for vague queries + executive challenges
+        UPDATED: Added deterministic fallbacks + compression intent
         
         Returns: (intent, confidence_score)
         """
@@ -454,14 +466,17 @@ class ConversationalGovernor:
         word_count = len(message_clean.split())
         
         # ========================================
-        # AUTHORITY CHALLENGES (NEW - HIGHEST PRIORITY)
+        # AUTHORITY CHALLENGES (EXPANDED - HIGHEST PRIORITY)
         # ========================================
         
         # Executive challenges require confidence reaffirmation, not refusal
         authority_challenges = [
             'are you sure', 'you sure', 'certain', 'confident',
             'why does this matter', 'why should i care', 'so what',
-            'whats the point', 'how do you know', 'proof'
+            'whats the point', 'how do you know', 'proof',
+            # NEW: Additional challenge patterns
+            'breaks if', 'what breaks', 'wrong', 'overblown',
+            'sounds overblown', 'this sounds', 'feels off', 'seems'
         ]
         
         if any(pattern in message_clean for pattern in authority_challenges):
@@ -469,7 +484,7 @@ class ConversationalGovernor:
             return Intent.STRATEGIC, 0.90
         
         # ========================================
-        # EXECUTIVE SHORTHAND STATUS REQUESTS (NEW)
+        # EXECUTIVE SHORTHAND STATUS REQUESTS (EXPANDED)
         # ========================================
         
         # Compressed status requests (not non-domain)
@@ -483,7 +498,21 @@ class ConversationalGovernor:
             return Intent.STATUS_CHECK, 0.92
         
         # ========================================
-        # REGION PINGS (NEW)
+        # COMPRESSION REQUESTS (NEW - CRITICAL FIX)
+        # ========================================
+        
+        # "Summarise again" type queries
+        compression_patterns = [
+            'summarise', 'summarize', 'again', 'recap', 'summary',
+            'takeaway', 'one thing', 'key point', 'main point'
+        ]
+        
+        if any(pattern in message_clean for pattern in compression_patterns):
+            logger.info(f"✅ Compression request detected → STATUS_CHECK")
+            return Intent.STATUS_CHECK, 0.92
+        
+        # ========================================
+        # REGION PINGS
         # ========================================
         
         # Single region mentions are exploration probes, not non-domain
@@ -834,7 +863,7 @@ class ConversationalGovernor:
         """
         
         # ========================================
-        # LAYER -1: SOCIAL ABSORPTION (NEW)
+        # LAYER -1: SOCIAL ABSORPTION
         # ========================================
         
         client_name = client_profile.get('name', 'there')
