@@ -235,7 +235,7 @@ class InstantIntelligence:
             action = "Continue monitoring, set velocity alert at 60+"
         
         # Build response
-        response = f"""🎯 DECISION MODE
+        response = f"""DECISION MODE
 
 RECOMMENDATION:
 {recommendation}
@@ -372,7 +372,7 @@ Requires 30+ days of tracking."""
         aggressive = [a for a in agent_profiles if 'aggressive' in a.get('archetype', '').lower()]
         if aggressive:
             sections.append(f"""
-⚠️ TACTICAL SIGNAL
+  TACTICAL SIGNAL
 {aggressive[0]['agent']} showing aggressive pricing.
 Cascade analysis available: "What if {aggressive[0]['agent']} drops 5%?"
 """)
