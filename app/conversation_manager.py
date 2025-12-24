@@ -333,7 +333,7 @@ class ConversationSession:
             logger.warning(f"Cross-session summary failed: {e}")
             return ""
     
-    def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
+def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
         """
         Detect if current query is a follow-up to previous conversation
         
@@ -345,12 +345,31 @@ class ConversationSession:
         if not session['messages']:
             return False, {}
         
-        # Follow-up indicators
+        # Follow-up indicators (EXPANDED - covers all executive shorthand)
         followup_patterns = [
+            # Explicit continuation
             'what about', 'how about', 'compare', 'vs', 'versus',
-            'that', 'those', 'them', 'it', 'same', 'similar',
+            
+            # Implicit references
+            'that', 'those', 'them', 'it', 'this', 'these',
+            'same', 'similar',
+            
+            # Temporal references
             'more', 'also', 'and', 'but', 'however',
-            'last time', 'before', 'previously', 'earlier'
+            'last time', 'before', 'previously', 'earlier',
+            
+            # NEW: Implication/consequence triggers
+            'so what', 'why', 'meaning', 'significance',
+            'if i do nothing', 'if nothing', 'consequence',
+            
+            # NEW: Clarification requests
+            'explain', 'clarify', 'elaborate', 'break down',
+            
+            # NEW: Challenge/verification
+            'doesnt add up', 'seems off', 'make sense',
+            
+            # NEW: Single-word probes (only if >1 prior message)
+            'why?', 'how?', 'when?', 'where?', 'who?'
         ]
         
         query_lower = current_query.lower()
