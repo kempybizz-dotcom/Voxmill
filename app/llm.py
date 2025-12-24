@@ -101,11 +101,10 @@ DECISION MODE (PRIORITY 2)
 Triggers: "decision mode", "what should i do", "make the call"
 
 Format (EXACT):
-🎯 DECISION MODE
+DECISION MODE
 
 RECOMMENDATION:
 [One directive. 30 words max. Definitive.]
-
 PRIMARY RISK:
 [15 words max.]
 
@@ -145,7 +144,7 @@ MANDATORY RULES
 
 ✘ NEVER say "as an AI" or "unable to parse"
 ✘ NEVER apologize
-✘ NEVER use emojis (except Decision Mode 🎯)
+✘ NEVER use emojis 
 ✘ NEVER thank user
 ✘ NEVER write >150 words (except Decision Mode)
 ✘ NEVER mention "dataset", "coverage", "data quality", "based on"
@@ -841,7 +840,7 @@ REMEMBER:
                 
                 # Strip everything except core Decision Mode sections
                 # This is a safety fallback - LLM should never hit this
-                response_text = f"""🎯 DECISION MODE
+                response_text = f"""DECISION MODE
 
 RECOMMENDATION:
 [Structure violation detected - response sanitized]
