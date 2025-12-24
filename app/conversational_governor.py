@@ -969,6 +969,35 @@ class ConversationalGovernor:
         
         logger.info(f"Mandate check: relevant={is_mandate_relevant}, category={semantic_category.value}, confidence={semantic_confidence:.2f}")
         
+        # ========================================
+        # CRITICAL: IMPLICIT REFERENCE OVERRIDE
+        # ========================================
+        # If query was marked non-domain BUT contains implicit references AND context exists,
+        # force to mandate-relevant (it's likely a compressed follow-up)
+        
+        if not is_mandate_relevant and conversation_context:
+            # Check for implicit reference words
+            implicit_refs = ['that', 'it', 'this', 'these', 'those', 'them']
+            query_words = message_text.lower().split()
+            
+            # If query starts with implicit reference or is very short with context
+            has_implicit_ref = any(ref in query_words[:3] for ref in implicit_refs)
+            is_ultra_short = len(query_words) <= 3
+            has_context = bool(conversation_context.get('regions') or 
+                               conversation_context.get('agents') or 
+                               conversation_context.get('topics'))
+            
+            if has_context and (has_implicit_ref or is_ultra_short):
+                # Force to mandate-relevant
+                is_mandate_relevant = True
+                semantic_category = SemanticCategory.STRATEGIC_POSITIONING
+                semantic_confidence = 0.80
+                logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
+        
+        # ========================================
+        # REFUSAL CHECK (AFTER IMPLICIT REFERENCE OVERRIDE)
+        # ========================================
+        
         # If NOT mandate-relevant, refuse immediately
         if not is_mandate_relevant:
             return GovernanceResult(
