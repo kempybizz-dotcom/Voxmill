@@ -293,7 +293,56 @@ class ConversationalGovernor:
             return True, SemanticCategory.MARKET_DYNAMICS, 0.85
         
         # ========================================
-        # Category H: NON-DOMAIN (ONLY after all above checks fail)
+        # Category H: IMPLICIT CONTINUATION (NEW - CRITICAL FIX)
+        # ========================================
+        # These queries assume prior context and are ALWAYS mandate-relevant
+        # They're executive shorthand for "apply my previous question to this new angle"
+        
+        implicit_continuation = [
+            # Implication probes
+            'so what', 'why', 'why does this matter', 'meaning', 'significance',
+            
+            # Consequence queries
+            'if i do nothing', 'if nothing changes', 'what if i wait',
+            'downside of waiting', 'cost of inaction',
+            
+            # Comparative probes
+            'compare that', 'vs that', 'versus', 'difference',
+            'how does that compare', 'compare',
+            
+            # Clarification requests (NOT refusals)
+            'explain that', 'break that down', 'clarify',
+            'walk me through', 'elaborate', 'details',
+            
+            # Challenge/verification
+            'this doesnt add up', 'this seems off', 'doesnt make sense',
+            'what am i missing here', 'whats the catch',
+            
+            # Leading indicators
+            'who moves first', 'first mover', 'leading indicator',
+            'whos positioning', 'early signals'
+        ]
+        
+        if any(kw in message_lower for kw in implicit_continuation):
+            return True, SemanticCategory.STRATEGIC_POSITIONING, 0.90
+        
+        # ========================================
+        # Category I: SINGLE-WORD PROBES (NEW - ULTRA-COMPRESSED)
+        # ========================================
+        # Ultra-compressed executive queries (1-3 words)
+        # "Why?" "How?" "When?" are NOT off-domain - they're follow-up compression
+        
+        single_word_probes = message_lower.strip().rstrip('?!.,')
+        
+        if single_word_probes in ['why', 'how', 'when', 'where', 'who', 'what']:
+            # Only if conversation context exists (otherwise it's unclear)
+            if conversation_context and (conversation_context.get('regions') or 
+                                          conversation_context.get('agents') or 
+                                          conversation_context.get('topics')):
+                return True, SemanticCategory.STRATEGIC_POSITIONING, 0.85
+        
+        # ========================================
+        # Category J: NON-DOMAIN (ONLY after all above checks fail)
         # ========================================
         return False, SemanticCategory.NON_DOMAIN, 0.95
     
