@@ -498,7 +498,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 
                 logger.info(f"✅ Client refreshed from Airtable: {client_profile['name']} ({client_profile['airtable_table']})")
         
-        # ========================================
+       # ========================================
         # GET PREFERRED REGION (EARLY DEFINITION)
         # ========================================
         
@@ -571,6 +571,20 @@ Thank you for trying our service."""
             return
         
         # ========================================
+        # CANCELLED SUBSCRIPTION - HARD GATE (NEW)
+        # ========================================
+        
+        if client_profile and client_profile.get('subscription_status') == 'Cancelled':
+            logger.warning(f"🚫 CANCELLED SUBSCRIPTION: {sender}")
+            
+            cancelled_msg = """Your Voxmill subscription has been cancelled.
+
+Reactivate at voxmill.uk/reactivate or contact ollys@voxmill.uk"""
+            
+            await send_twilio_message(sender, cancelled_msg)
+            return  # ← CRITICAL: Stop all processing
+        
+        # ========================================
         # FORCE SYNC PIN TIMESTAMP FROM AIRTABLE (EVEN IF CACHED)
         # ========================================
         
@@ -624,7 +638,7 @@ Thank you for trying our service."""
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
-    # ========================================
+        # ========================================
         # PIN AUTHENTICATION - SECURITY LAYER
         # ========================================
 
