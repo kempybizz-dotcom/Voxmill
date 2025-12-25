@@ -176,7 +176,6 @@ async def check_and_send_alerts_task():
 # ============================================================================
 # STARTUP EVENT (SINGLE COMBINED VERSION)
 # ============================================================================
-
 async def store_daily_snapshots_all_regions():
     """Store daily snapshots for all core regions"""
     from app.dataset_loader import load_dataset
@@ -197,6 +196,21 @@ async def store_daily_snapshots_all_regions():
 async def startup_event():
     logger.info("🚀 Starting Voxmill WhatsApp Intelligence Service...")
     
+    # ========================================
+    # START AIRTABLE QUEUE PROCESSOR (CRITICAL FOR PRODUCTION)
+    # ========================================
+    try:
+        from app.airtable_queue import start_queue_processor
+        await start_queue_processor()
+        logger.info("✅ Airtable queue processor started (prevents rate limit crashes)")
+    except ImportError:
+        logger.warning("⚠️ airtable_queue.py not found - Airtable writes will be synchronous (slower)")
+    except Exception as e:
+        logger.error(f"❌ Airtable queue processor failed to start: {e}")
+    
+    # ========================================
+    # START SCHEDULERS
+    # ========================================
     try:
         # Existing schedulers
         scheduler.add_job(check_all_monitors, 'interval', minutes=15)
@@ -219,7 +233,9 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Scheduler startup failed: {e}")
     
-    # Start background data collection (if scheduler.py exists)
+    # ========================================
+    # START BACKGROUND INTELLIGENCE CYCLE
+    # ========================================
     try:
         from app.scheduler import daily_intelligence_cycle
         asyncio.create_task(daily_intelligence_cycle())
@@ -236,11 +252,28 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("🛑 Shutting down Voxmill service...")
+    
+    # ========================================
+    # GRACEFUL AIRTABLE QUEUE SHUTDOWN
+    # ========================================
+    try:
+        from app.airtable_queue import stop_queue_processor
+        await stop_queue_processor()
+        logger.info("✅ Airtable queue drained and stopped")
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.error(f"Airtable queue shutdown failed: {e}")
+    
+    # ========================================
+    # STOP SCHEDULERS
+    # ========================================
     try:
         scheduler.shutdown()
         logger.info("✅ Scheduler stopped")
     except Exception as e:
         logger.error(f"Scheduler shutdown failed: {e}")
+    
     logger.info("✅ Shutdown complete")
 
 # ============================================================================
