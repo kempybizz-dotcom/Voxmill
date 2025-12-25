@@ -21,28 +21,103 @@ import json
 logger = logging.getLogger(__name__)
 
 # ============================================================
-# REDIS CONNECTION (Primary Storage)
+# UPSTASH REDIS CONNECTION (REST API)
 # ============================================================
 
-REDIS_URL = os.getenv("REDIS_URL")
+UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
+UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 redis_client = None
 redis_available = False
 
 try:
-    if REDIS_URL:
-        import redis
-        redis_client = redis.from_url(REDIS_URL, decode_responses=True, socket_connect_timeout=5)
-        redis_client.ping()
-        redis_available = True
-        logger.info("✅ Redis connected for conversation storage")
+    if UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN:
+        # Upstash uses HTTP REST API, not standard Redis protocol
+        import httpx
+        
+        class UpstashRedisClient:
+            """REST API client for Upstash Redis"""
+            
+            def __init__(self, url: str, token: str):
+                self.url = url.rstrip('/')
+                self.token = token
+                self.client = httpx.Client(timeout=5.0)
+            
+            def _execute(self, command: list):
+                """Execute Redis command via REST API"""
+                try:
+                    response = self.client.post(
+                        self.url,
+                        headers={"Authorization": f"Bearer {self.token}"},
+                        json=command
+                    )
+                    response.raise_for_status()
+                    result = response.json()
+                    return result.get("result")
+                except Exception as e:
+                    logger.debug(f"Upstash command failed: {e}")
+                    return None
+            
+            def ping(self):
+                """Test connection"""
+                result = self._execute(["PING"])
+                return result == "PONG"
+            
+            def get(self, key: str):
+                """Get value"""
+                return self._execute(["GET", key])
+            
+            def setex(self, key: str, seconds: int, value: str):
+                """Set value with expiry"""
+                result = self._execute(["SETEX", key, seconds, value])
+                return result == "OK"
+            
+            def delete(self, *keys):
+                """Delete keys"""
+                if not keys:
+                    return 0
+                return self._execute(["DEL", *keys])
+            
+            def exists(self, key: str):
+                """Check if key exists"""
+                result = self._execute(["EXISTS", key])
+                return result == 1
+            
+            def keys(self, pattern: str):
+                """Get keys matching pattern"""
+                result = self._execute(["KEYS", pattern])
+                return result if result else []
+            
+            def dbsize(self):
+                """Get database size"""
+                result = self._execute(["DBSIZE"])
+                return result if result else 0
+            
+            def info(self, section: str = 'stats'):
+                """Get info (limited in Upstash)"""
+                # Upstash doesn't support full INFO, return minimal stats
+                return {
+                    'keyspace_hits': 0,
+                    'keyspace_misses': 0,
+                    'used_memory_human': 'Unknown (Upstash)'
+                }
+        
+        redis_client = UpstashRedisClient(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)
+        
+        # Test connection
+        if redis_client.ping():
+            redis_available = True
+            logger.info("✅ Upstash Redis connected successfully (REST API)")
+        else:
+            redis_client = None
+            logger.warning("⚠️ Upstash Redis ping failed")
     else:
-        logger.warning("⚠️ REDIS_URL not configured - using in-memory conversation storage")
+        logger.warning("⚠️ UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not configured - using in-memory cache only")
 except ImportError:
-    logger.error("❌ Redis library not installed")
-    logger.warning("⚠️ Using in-memory conversation storage only")
+    logger.error("❌ httpx library not installed (required for Upstash)")
+    logger.warning("⚠️ Falling back to in-memory cache only")
 except Exception as e:
-    logger.error(f"❌ Redis connection failed: {e}")
-    logger.warning("⚠️ Using in-memory conversation storage only")
+    logger.error(f"❌ Upstash Redis connection failed: {e}")
+    logger.warning("⚠️ Falling back to in-memory cache only")
 
 # ============================================================
 # IN-MEMORY STORAGE (Fallback)
