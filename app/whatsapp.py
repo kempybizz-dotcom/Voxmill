@@ -325,6 +325,16 @@ Voxmill Intelligence - Precision at Scale"""
         
     except Exception as e:
         logger.error(f"Error sending welcome message: {str(e)}", exc_info=True)
+
+
+async def handle_whatsapp_message(sender: str, message_text: str):
+    """
+    Main message handler with V3 predictive intelligence + edge case handling + 
+    PDF delivery + welcome messages + rate limiting + spam protection + Airtable API integration
+    """
+    
+    try:
+        logger.info(f"Processing message from {sender}: {message_text}")
         
         # ========================================
         # EDGE CASE HANDLING - FIRST LINE OF DEFENSE
