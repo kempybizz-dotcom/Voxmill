@@ -274,44 +274,7 @@ class ConversationSession:
             'agents': entities.get('agents', []),
             'topics': entities.get('topics', [])
         }
-
-def get_last_mentioned_entities(self) -> Dict[str, List[str]]:
-        """
-        Get last-mentioned entities for auto-scoping
-        
-        Returns: {
-            'regions': [...],
-            'agents': [...],
-            'topics': [...]
-        }
-        
-        CRITICAL FOR MULTI-TURN CONVERSATIONS
-        Used by conversational_governor for auto-scoping
-        """
-        
-        session = self.get_session()
-        
-        if not session or not session.get('context_entities'):
-            logger.debug(f"No entities found for {self.client_id}")
-            return {
-                'regions': [],
-                'agents': [],
-                'topics': []
-            }
-        
-        entities = session['context_entities']
-        
-        logger.info(f"✅ Retrieved entities for {self.client_id}: "
-                   f"regions={entities.get('regions', [])}, "
-                   f"agents={entities.get('agents', [])}, "
-                   f"topics={entities.get('topics', [])}")
-        
-        return {
-            'regions': entities.get('regions', []),
-            'agents': entities.get('agents', []),
-            'topics': entities.get('topics', [])
-        }
-
+    
     def get_cross_session_summary(self, days: int = 7) -> str:
         """Get summary of key decisions/topics from past N days"""
         
