@@ -275,7 +275,7 @@ class ConversationSession:
             'topics': entities.get('topics', [])
         }
 
-    def get_cross_session_summary(self, days: int = 7) -> str:
+def get_cross_session_summary(self, days: int = 7) -> str:
         """Get summary of key decisions/topics from past N days"""
         
         # This requires Redis pattern matching, skip if unavailable
@@ -333,7 +333,7 @@ class ConversationSession:
             logger.warning(f"Cross-session summary failed: {e}")
             return ""
     
-def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
+    def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
         """
         Detect if current query is a follow-up to previous conversation
         
