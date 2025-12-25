@@ -397,7 +397,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
                 
                 # Refresh if older than 60 minutes
-                if cache_age_minutes > 60:
+                if cache_age_minutes > 360:
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
@@ -528,57 +528,93 @@ To reactivate, contact intel@voxmill.uk"""
             await send_twilio_message(sender, cancelled_msg)
             return  # ← CRITICAL: Stop all processing
         
-        # ========================================
-        # FORCE SYNC PIN TIMESTAMP FROM AIRTABLE (EVEN IF CACHED)
+# ========================================
+        # LAZY PIN SYNC - Only sync if >24 hours stale
         # ========================================
         
-        # Always check Airtable for PIN verification status (lightweight call)
+        # Check if we need to sync PIN from Airtable
         try:
-            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            from pymongo import MongoClient
             
-            # Get correct table name
-            airtable_table = client_profile.get('airtable_table', 'Clients')
-            
-            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                # Fetch only the PIN field from Airtable (lightweight)
-                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
-                headers = {
-                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                }
+            MONGODB_URI = os.getenv('MONGODB_URI')
+            if MONGODB_URI:
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
                 
-                response = requests.get(url, headers=headers, timeout=5)
+                pin_record = db['pin_auth'].find_one({'phone_number': sender})
                 
-                if response.status_code == 200:
-                    fields = response.json().get('fields', {})
-                    airtable_last_pin = fields.get('PIN Last Verified')
+                # Determine if sync is needed
+                needs_sync = False
+                
+                if not pin_record:
+                    # No PIN record exists - must sync
+                    needs_sync = True
+                    logger.debug(f"PIN sync needed: no record exists for {sender}")
+                else:
+                    # Check last sync time
+                    last_synced = pin_record.get('updated_at')
+                    if last_synced:
+                        # Make timezone-aware if needed
+                        if last_synced.tzinfo is None:
+                            last_synced = last_synced.replace(tzinfo=timezone.utc)
+                        
+                        # Calculate hours since last sync
+                        hours_since_sync = (datetime.now(timezone.utc) - last_synced).total_seconds() / 3600
+                        
+                        if hours_since_sync > 24:
+                            needs_sync = True
+                            logger.debug(f"PIN sync needed: last sync {int(hours_since_sync)}h ago")
+                        else:
+                            logger.debug(f"⏭️ PIN sync skipped: last sync {int(hours_since_sync)}h ago (<24h)")
+                    else:
+                        # No timestamp - must sync
+                        needs_sync = True
+                        logger.debug(f"PIN sync needed: no timestamp in record")
+                
+                # ONLY fetch from Airtable if sync is needed
+                if needs_sync:
+                    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
                     
-                    if airtable_last_pin:
-                        # Sync to MongoDB pin_auth
-                        last_verified_dt = dateutil_parser.parse(airtable_last_pin)
+                    # Get correct table name
+                    airtable_table = client_profile.get('airtable_table', 'Clients')
+                    
+                    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                        # Fetch only the PIN field from Airtable (lightweight)
+                        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
+                        headers = {
+                            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        }
                         
-                        if last_verified_dt.tzinfo is None:
-                            last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                        response = requests.get(url, headers=headers, timeout=5)
                         
-                        from pymongo import MongoClient
-                        MONGODB_URI = os.getenv('MONGODB_URI')
-                        if MONGODB_URI:
-                            mongo_client = MongoClient(MONGODB_URI)
-                            db = mongo_client['Voxmill']
+                        if response.status_code == 200:
+                            fields = response.json().get('fields', {})
+                            airtable_last_pin = fields.get('PIN Last Verified')
                             
-                            db['pin_auth'].update_one(
-                                {'phone_number': sender},
-                                {
-                                    '$set': {
-                                        'last_verified_at': last_verified_dt,
-                                        'synced_from_airtable': True,
-                                        'updated_at': datetime.now(timezone.utc)
-                                    }
-                                },
-                                upsert=False
-                            )
+                            if airtable_last_pin:
+                                # Sync to MongoDB pin_auth
+                                last_verified_dt = dateutil_parser.parse(airtable_last_pin)
+                                
+                                if last_verified_dt.tzinfo is None:
+                                    last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                                
+                                db['pin_auth'].update_one(
+                                    {'phone_number': sender},
+                                    {
+                                        '$set': {
+                                            'last_verified_at': last_verified_dt,
+                                            'synced_from_airtable': True,
+                                            'updated_at': datetime.now(timezone.utc)
+                                        }
+                                    },
+                                    upsert=False
+                                )
+                                
+                                logger.info(f"✅ PIN synced from Airtable (was >24h stale): {last_verified_dt}")
+                        else:
+                            logger.warning(f"Airtable PIN sync failed: {response.status_code}")
                             
-                            logger.info(f"✅ PIN timestamp synced from Airtable: {last_verified_dt}")
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
@@ -1455,7 +1491,7 @@ To upgrade, contact intel@voxmill.uk"""
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
             return
         
-        # ========================================
+# ========================================
         # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
         # ========================================
         
@@ -1471,29 +1507,36 @@ To upgrade, contact intel@voxmill.uk"""
             return
         
         # ========================================
-        # PREFERENCE SELF-SERVICE
+        # PREFERENCE SELF-SERVICE (OPTIMIZED)
         # ========================================
         
         try:
-            logger.info(f"🔍 BEFORE preference check - preferred_region: '{preferred_region}'")
-            logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
+            # Quick keyword check first (avoid GPT-4 call if obvious non-preference)
+            pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region', 
+                             'detailed', 'executive', 'brief', 'summary', 'bullet', 
+                             'memo', 'one line']
             
-            pref_response = handle_whatsapp_preference_message(sender, message_text)
+            looks_like_pref = any(kw in message_text.lower() for kw in pref_keywords)
             
-            logger.info(f"🔍 AFTER preference check - preferred_region: '{preferred_region}'")
-            
-            if pref_response:
-                logger.info(f"✅ Preference request detected, sending confirmation")
-                await send_twilio_message(sender, pref_response)
+            if looks_like_pref:
+                logger.info(f"🔍 Checking if message is preference request: {message_text[:50]}")
                 
-                # Log the preference change
-                update_client_history(sender, message_text, "preference_update", "Self-Service")
+                pref_response = handle_whatsapp_preference_message(sender, message_text)
                 
-                logger.info(f"✅ Preference updated via WhatsApp for {sender}")
-                return
+                if pref_response:
+                    logger.info(f"✅ Preference request detected, sending confirmation")
+                    await send_twilio_message(sender, pref_response)
+                    
+                    # Log the preference change
+                    update_client_history(sender, message_text, "preference_update", "Self-Service")
+                    
+                    logger.info(f"✅ Preference updated via WhatsApp for {sender}")
+                    return
+                else:
+                    logger.info(f"❌ Not a preference request, continuing to normal analyst")
             else:
-                logger.info(f"❌ Not a preference request, continuing to normal analyst")
-                
+                logger.debug(f"⏭️ Skipping preference check (no keywords)")
+                    
         except Exception as e:
             logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
             # Continue to normal processing
