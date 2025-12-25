@@ -1344,7 +1344,7 @@ Risk mitigated by: timing discipline, exit readiness."""
             logger.info(f"Duplicate webhook ignored: {webhook_key}")
             return {"status": "duplicate_ignored"}
         
-        # ============================================================
+# ============================================================
         # WAVE 3: Initialize conversation session
         # ============================================================
         conversation = ConversationSession(sender)
@@ -1454,7 +1454,7 @@ To upgrade, contact intel@voxmill.uk"""
         if len(message_text) > MAX_MESSAGE_LENGTH:
             await send_twilio_message(
                 sender,
-                f"Message too long ({len(message_text)) characters). "
+                f"Message too long ({len(message_text)} characters). "
                 f"Please keep queries under {MAX_MESSAGE_LENGTH} characters for optimal analysis."
             )
             logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
