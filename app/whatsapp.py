@@ -298,77 +298,39 @@ async def send_first_time_welcome(sender: str, client_profile: dict):
 
 Welcome to Voxmill Intelligence.
 
-Your Tier 1 access is now active.
+Your private intelligence line is now active.
 
-You have access to:
-- Real-time market overview
-- Competitive intelligence
-- Opportunity identification
-- Price corridor analysis
+This desk provides real-time market intelligence, competitive awareness, and strategic signal detection across luxury markets.
 
-Ask me anything about luxury markets. Try:
-- "Market overview"
-- "Top opportunities"
-- "Competitive landscape"
+You can use this channel to:
 
-Available 24/7 at this number.""",
+Monitor market conditions and shifts
 
-            "tier_2": f"""{greeting}
+Track competitive behaviour
 
-Welcome to Voxmill Intelligence.
+Identify emerging risk and opportunity
 
-Your Tier 2 Analyst Desk is now active.
+Pressure-test decisions before you act
 
-You have full access to:
-- Real-time market intelligence
-- Competitive dynamics analysis
-- Trend detection (14-day windows)
-- Strategic recommendations
-- Liquidity velocity tracking
-- Up to 50 analyses per hour
+The system is designed for executive shorthand.
+You don’t need to be precise — clarity is inferred.
 
-Your intelligence is personalized to your preferences and will learn from our conversations.
+Try:
 
-Ask me anything. Try:
-- "What's the market outlook?"
-- "Analyze competitive positioning"
-- "Show me liquidity trends"
+“Market overview”
 
-Available 24/7.""",
+“What’s changed since last week?”
 
-            "tier_3": f"""{greeting}
+“Where is risk building?”
 
-Welcome to Voxmill Intelligence.
+“Who’s moving first?”
 
-Your Tier 3 Strategic Partner access is now active.
+“Summarise the market in one line”
 
-You have unlimited access to our complete intelligence suite:
+Available 24/7.
+This line is for decisions, not noise.
 
-REAL-TIME ANALYSIS:
-- Market overview & trends
-- Competitive landscape
-- Opportunity identification
-
-PREDICTIVE INTELLIGENCE:
-- Agent behavioral profiling (85-91% confidence)
-- Multi-wave cascade forecasting
-- Liquidity velocity tracking
-- Micromarket segmentation
-
-SCENARIO MODELING:
-- "What if Knight Frank drops 10%?"
-- Strategic response recommendations
-- Risk/opportunity mapping
-
-No message limits. Full institutional-grade intelligence.
-
-Ask me anything, anytime. Examples:
-- "Strategic outlook for Mayfair"
-- "What if Savills raises prices 8%?"
-- "Analyze liquidity velocity"
-- "Predict cascade effects"
-
-Your dedicated intelligence partner, available 24/7."""
+Voxmill Intelligence — Precision at Scale
         }
         
         message = welcome_messages.get(tier, welcome_messages["tier_1"])
@@ -540,16 +502,20 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         # ========================================
         
         if client_profile and client_profile.get('trial_expired'):
-            logger.warning(f"🚫 TRIAL EXPIRED: {sender}")
+            logger.warning(f" TRIAL EXPIRED: {sender}")
             
             trial_expired_msg = """TRIAL PERIOD EXPIRED
 
-Your 24-hour trial access has concluded.
+Voxmill Intelligence — Access Update
 
-To continue using Voxmill Intelligence, contact:
-📧 info@voxmill.uk
+Your 24-hour trial access has now concluded.
 
-Thank you for trying our service."""
+To continue receiving intelligence updates, contact:
+intel@voxmill.uk
+
+Alternatively, your Voxmill operator will be in touch to discuss next steps.
+
+Thank you for engaging with Voxmill Intelligence."""
             
             await send_twilio_message(sender, trial_expired_msg)
             return
@@ -560,13 +526,13 @@ Thank you for trying our service."""
         
         # If no Airtable record found, block access
         if not client_profile or not client_profile.get('airtable_record_id'):
-            logger.warning(f"🚫 UNAUTHORIZED ACCESS ATTEMPT: {sender}")
+            logger.warning(f" UNAUTHORIZED ACCESS ATTEMPT: {sender}")
             
             await send_twilio_message(
                 sender,
                 "This number is not authorized for Voxmill Intelligence.\n\n"
                 "For institutional access, contact:\n"
-                "📧 ollys@voxmill.uk"
+                "intel@voxmill.uk"
             )
             return
         
@@ -575,11 +541,16 @@ Thank you for trying our service."""
         # ========================================
         
         if client_profile and client_profile.get('subscription_status') == 'Cancelled':
-            logger.warning(f"🚫 CANCELLED SUBSCRIPTION: {sender}")
+            logger.warning(f" CANCELLED SUBSCRIPTION: {sender}")
             
-            cancelled_msg = """Your Voxmill subscription has been cancelled.
+            cancelled_msg = """Voxmill Intelligence — Access Update
 
-Reactivate at voxmill.uk/reactivate or contact ollys@voxmill.uk"""
+Your Voxmill subscription has been cancelled.
+
+To reactivate access, contact:
+intel@voxmill.uk
+
+Alternatively, your Voxmill operator can assist with reinstatement."""
             
             await send_twilio_message(sender, cancelled_msg)
             return  # ← CRITICAL: Stop all processing
@@ -956,7 +927,7 @@ Standing by."""
                 return
             else:
                 # Send governance-controlled response
-                logger.info(f"🚫 Governance blocked: intent={governance_result.intent.value}, "
+                logger.info(f" Governance blocked: intent={governance_result.intent.value}, "
                            f"semantic_category={governance_result.semantic_category}, "
                            f"response='{governance_result.response}'")
                 
@@ -1077,7 +1048,7 @@ Standing by."""
                 from app.conversational_governor import Intent
                 governance_result.intent = Intent.STRATEGIC
                 governance_result.confidence = 0.75
-                logger.warning(f"🔄 Forced Intent.UNKNOWN → Intent.STRATEGIC (downstream protection)")
+                logger.warning(f" Forced Intent.UNKNOWN → Intent.STRATEGIC (downstream protection)")
 
         # ========================================
         # GOVERNANCE PASSED - CONTINUE WITH CONSTRAINTS
@@ -1347,7 +1318,7 @@ Note: This is a shareable snapshot. Real-time updates remain in your WhatsApp in
             logger.warning(f"Security violation detected from {sender}: {threats}")
             await send_twilio_message(
                 sender,
-                "⚠️ Your message contains suspicious content and cannot be processed. Please rephrase your query."
+                "Your message contains suspicious content and cannot be processed. Please rephrase your query."
             )
             return {"status": "blocked", "reason": "security_violation"}
 
@@ -1499,14 +1470,12 @@ Risk mitigated by: timing discipline, exit readiness."""
             time_until_reset = (oldest_timestamp + timedelta(hours=1) - datetime.now(timezone.utc))
             minutes_until_reset = int(time_until_reset.total_seconds() / 60)
             
-            rate_limit_msg = f"""⚠️ RATE LIMIT REACHED
-
-Your {tier.replace('_', ' ').title()} plan allows {max_queries} queries per hour.
+            rate_limit_msg = f"""RATE LIMIT REACHED Your current access permits {max_queries} intelligence requests per hour.
 
 Reset in: {minutes_until_reset} minutes
 
-Need more queries? Upgrade or contact:
-📧 info@voxmill.uk"""
+For continued or expanded access, contact:
+intel@voxmill.uk
             
             await send_twilio_message(sender, rate_limit_msg)
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
@@ -1599,7 +1568,7 @@ Service Tier: {tier_display}
 Preferred Region: {preferred_region}
 Contact: {client_email}
 
-Your intelligence is personalized to your preferences and tier.
+Your intelligence is personalized and tailored to your exact preferences.
 
 What market intelligence can I provide?"""
             
@@ -1697,17 +1666,17 @@ What market intelligence can I provide?"""
         
         # CRITICAL: Validate preferred_region before loading (detect corruption)
         if not preferred_region or len(preferred_region) < 3:
-            logger.error(f"❌ CORRUPTED preferred_region detected: '{preferred_region}' (length: {len(preferred_region) if preferred_region else 0})")
+            logger.error(f"CORRUPTED preferred_region detected: '{preferred_region}' (length: {len(preferred_region) if preferred_region else 0})")
             # Force reload from client profile
             preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
             preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
-            logger.info(f"✅ FIXED preferred_region to: '{preferred_region}'")
+            logger.info(f"FIXED preferred_region to: '{preferred_region}'")
         
-        logger.info(f"🎯 Loading dataset for region: '{preferred_region}'")
+        logger.info(f"Loading dataset for region: '{preferred_region}'")
         dataset = load_dataset(area=preferred_region)
         
         # DEBUG: Log what we got
-        logger.info(f"📊 Dataset loaded: area={dataset.get('metadata', {}).get('area')}, "
+        logger.info(f"Dataset loaded: area={dataset.get('metadata', {}).get('area')}, "
                    f"properties={len(dataset.get('properties', []))}")
         
         # Check if data exists
@@ -1745,7 +1714,7 @@ What market intelligence can I provide?"""
         
         # If we have data, log and continue normally
         if property_count > 0:
-            logger.info(f"✅ Dataset loaded for {requested_region}: {property_count} properties")
+            logger.info(f"Dataset loaded for {requested_region}: {property_count} properties")
         
         # ========================================
         # WORLD-CLASS: DETECT QUERY TYPE & USE INSTANT RESPONSE
@@ -1793,7 +1762,7 @@ What market intelligence can I provide?"""
         
         if is_overview:
             # INSTANT MARKET SNAPSHOT (uses all intelligence)
-            logger.info(f"🚀 INSTANT MARKET SNAPSHOT for: {message_normalized[:50]}")
+            logger.info(f"INSTANT MARKET SNAPSHOT for: {message_normalized[:50]}")
             
             formatted_response = InstantIntelligence.get_full_market_snapshot(
                 preferred_region,
@@ -1817,7 +1786,7 @@ What market intelligence can I provide?"""
             log_interaction(sender, message_text, category, formatted_response)
             update_client_history(sender, message_text, category, preferred_region)
             
-            logger.info(f"✅ Instant full-intelligence snapshot sent (<3s)")
+            logger.info(f"Instant full-intelligence snapshot sent (<3s)")
             return
 
         # ========================================
@@ -1834,12 +1803,13 @@ What market intelligence can I provide?"""
             
             fallback_response = f"""INTELLIGENCE UNAVAILABLE
 
-No market data currently available for {preferred_region}.
+No active market data is currently available for {preferred_region}.
 
-Available regions:
+Available coverage:
 {available_list}
 
-Request a different region or contact support if this persists.
+Request an alternate region or contact intel@voxmill.uk
+if this persists.
 
 Standing by."""
             
@@ -1863,12 +1833,12 @@ Standing by."""
             except Exception:
                 pass  # Non-critical
             
-            logger.info(f"✅ Empty dataset handled gracefully for {preferred_region}")
+            logger.info(f"Empty dataset handled gracefully for {preferred_region}")
             return
         
         elif is_decision:
             # INSTANT DECISION MODE (rule-based)
-            logger.info(f"🎯 INSTANT DECISION MODE for: {message_normalized[:50]}")
+            logger.info(f"INSTANT DECISION MODE for: {message_normalized[:50]}")
             
             formatted_response = InstantIntelligence.get_instant_decision(
                 preferred_region,
@@ -1892,7 +1862,7 @@ Standing by."""
             log_interaction(sender, message_text, category, formatted_response)
             update_client_history(sender, message_text, category, preferred_region)
             
-            logger.info(f"✅ Instant decision sent (<3s)")
+            logger.info(f"Instant decision sent (<3s)")
             
             # OPTIONAL: Background GPT-4 enhancement
             import asyncio
@@ -1910,7 +1880,7 @@ Standing by."""
         
         elif is_trend:
             # INSTANT TREND ANALYSIS
-            logger.info(f"📈 INSTANT TREND ANALYSIS for: {message_normalized[:50]}")
+            logger.info(f"INSTANT TREND ANALYSIS for: {message_normalized[:50]}")
             
             formatted_response = InstantIntelligence.get_trend_analysis(
                 preferred_region,
@@ -1930,12 +1900,12 @@ Standing by."""
             log_interaction(sender, message_text, category, formatted_response)
             update_client_history(sender, message_text, category, preferred_region)
             
-            logger.info(f"✅ Instant trend analysis sent (<3s)")
+            logger.info(f"Instant trend analysis sent (<3s)")
             return
         
         elif is_timing:
             # INSTANT TIMING ANALYSIS
-            logger.info(f"⏰ INSTANT TIMING ANALYSIS for: {message_normalized[:50]}")
+            logger.info(f"INSTANT TIMING ANALYSIS for: {message_normalized[:50]}")
             
             formatted_response = InstantIntelligence.get_timing_analysis(
                 preferred_region,
@@ -1955,7 +1925,7 @@ Standing by."""
             log_interaction(sender, message_text, category, formatted_response)
             update_client_history(sender, message_text, category, preferred_region)
             
-            logger.info(f"✅ Instant timing analysis sent (<3s)")
+            logger.info(f"Instant timing analysis sent (<3s)")
             return
         
         elif is_agent:
