@@ -608,7 +608,7 @@ To reactivate, contact intel@voxmill.uk"""
                                             'updated_at': datetime.now(timezone.utc)
                                         }
                                     },
-                                    upsert=False
+                                    upsert=True  # ← CRITICAL FIX: Create record if doesn't exist
                                 )
                                 
                                 logger.info(f"✅ PIN synced from Airtable (was >24h stale): {last_verified_dt}")
