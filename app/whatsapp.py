@@ -1422,7 +1422,7 @@ Risk mitigated by: timing discipline, exit readiness."""
         
         max_queries = limits.get(tier, 10)
         
-if len(recent_queries) >= max_queries:
+        if len(recent_queries) >= max_queries:
             # Calculate time until reset
             oldest_timestamp = min(q['timestamp'] for q in recent_queries)
             
@@ -1454,7 +1454,7 @@ To upgrade, contact intel@voxmill.uk"""
         if len(message_text) > MAX_MESSAGE_LENGTH:
             await send_twilio_message(
                 sender,
-                f"Message too long ({len(message_text)} characters). "
+                f"Message too long ({len(message_text)) characters). "
                 f"Please keep queries under {MAX_MESSAGE_LENGTH} characters for optimal analysis."
             )
             logger.warning(f"Message too long from {sender}: {len(message_text)} chars")
