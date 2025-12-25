@@ -2281,23 +2281,18 @@ Standing by."""
         
         formatted_response += data_freshness_warning
         
-        # ========================================
+# ========================================
         # SEND RESPONSE
         # ========================================
         
         await send_twilio_message(sender, formatted_response)
         
         # ========================================
-        # SYNC USAGE METRICS BACK TO AIRTABLE
+        # SYNC USAGE METRICS BACK TO AIRTABLE (NON-BLOCKING QUEUE)
         # ========================================
         
         try:
-            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-            AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-            
-            if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                
+            if client_profile.get('airtable_record_id'):
                 # Calculate usage metrics
                 messages_used = client_profile.get('usage_metrics', {}).get('messages_used_this_month', 0) + 1
                 message_limit = client_profile.get('usage_metrics', {}).get('monthly_message_limit', 10000)
@@ -2321,40 +2316,25 @@ Standing by."""
                 
                 # Optional: Add decision mode tracking (only if field is confirmed writable)
                 # UNCOMMENT ONLY IF YOU'VE VERIFIED THESE ARE NOT FORMULA FIELDS IN AIRTABLE:
-                # if category == 'decision_mode' and response_text:
+                # if category == 'decision_mode' and formatted_response:
                 #     update_fields['Last Decision Mode Trigger'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.000Z')
-                #     if len(response_text.strip()) > 0:
-                #         update_fields['Last Strategic Action Recommended'] = response_text[:500]
+                #     if len(formatted_response.strip()) > 0:
+                #         update_fields['Last Strategic Action Recommended'] = formatted_response[:500]
                 
-                # Update Airtable
-                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{client_profile['airtable_record_id']}"
-                headers = {
-                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                    "Content-Type": "application/json"
-                }
+                # Queue the write (non-blocking - prevents rate limit crashes)
+                from app.airtable_queue import queue_airtable_update
                 
-                payload = {"fields": update_fields}
+                await queue_airtable_update(
+                    table_name=client_profile.get('airtable_table', 'Clients'),
+                    record_id=client_profile['airtable_record_id'],
+                    fields=update_fields,
+                    priority='normal'
+                )
                 
-                response = requests.patch(url, headers=headers, json=payload, timeout=5)
-                
-                if response.status_code == 200:
-                    logger.info(f"✅ Airtable synced: {messages_used}/{message_limit} messages")
-                elif response.status_code == 422:
-                    # Enhanced error logging for formula field issues
-                    error_details = response.json()
-                    error_message = error_details.get('error', {}).get('message', 'Unknown error')
-                    error_type = error_details.get('error', {}).get('type', 'Unknown type')
-                    
-                    logger.error(f"⚠️ Airtable 422 ERROR - FORMULA FIELD DETECTED")
-                    logger.error(f"   Error Type: {error_type}")
-                    logger.error(f"   Error Message: {error_message}")
-                    logger.error(f"   Payload sent: {payload}")
-                    logger.error(f"   Action: Check Airtable schema - a field in the payload is computed/formula")
-                else:
-                    logger.warning(f"⚠️ Airtable sync failed: {response.status_code} - {response.text}")
+                logger.debug(f"📋 Airtable update queued (non-blocking): {messages_used}/{message_limit} messages")
                     
         except Exception as e:
-            logger.error(f"Airtable sync error: {e}", exc_info=True)
+            logger.error(f"Airtable queue error: {e}", exc_info=True)
             # Don't fail the whole request - just log
         
         # ========================================
