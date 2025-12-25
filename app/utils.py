@@ -10,6 +10,7 @@ def format_analyst_response(response_text: str, category: str, response_metadata
     Format analyst response with intelligent header detection.
     
     WORLD-CLASS UPDATE: Respects authority mode - NO headers for brief institutional responses
+    Elite format: Clean headers, no decoration, ends with insight not status
     """
     
     # Try to parse as JSON first (V3 format)
@@ -57,8 +58,7 @@ def format_analyst_response(response_text: str, category: str, response_metadata
         'PIN',
         'LOCKED',
         'VERIFICATION',
-        'DECISION MODE',
-        '🎯'
+        'DECISION MODE'
     ])
     
     # ============================================================
@@ -97,6 +97,7 @@ def format_analyst_response(response_text: str, category: str, response_metadata
     
     # ============================================================
     # Add category-based header for market analysis only
+    # ELITE FORMAT: Clean header, no divider lines
     # ============================================================
     
     category_headers = {
@@ -108,15 +109,16 @@ def format_analyst_response(response_text: str, category: str, response_metadata
         "analysis_snapshot": "MARKET SNAPSHOT",
         "comparative_analysis": "COMPARATIVE INTELLIGENCE",
         "weekly_briefing": "WEEKLY INTELLIGENCE BRIEF",
-        "decision_mode": "EXECUTIVE DIRECTIVE"
+        "decision_mode": "DECISION MODE"
     }
     
     header = category_headers.get(category, None)
     
     # Only add header if we have a specific one for this category
     if header:
+        # ELITE FORMAT: Header + blank line + content (no decorative dividers)
         formatted = f"""{header}
-————————————————————————————————————————
+
 {prose_response}"""
         return formatted
     
@@ -135,3 +137,41 @@ def log_interaction(sender: str, message: str, category: str, response: str):
     }
     
     logger.info(f"Interaction logged: {log_entry}")
+```
+
+---
+
+## **KEY CHANGES:**
+
+1. ✅ **Removed emoji from header detection** (line 50) - Removed `'🎯'`
+2. ✅ **Elite format headers** (line 115) - No divider lines (`————————`), just clean header + blank line
+3. ✅ **Changed "EXECUTIVE DIRECTIVE"** → **"DECISION MODE"** (line 108) - Matches ChatGPT recommendation
+
+---
+
+## **BEFORE vs AFTER:**
+
+### **BEFORE (System Voice):**
+```
+MARKET INTELLIGENCE
+————————————————————————————————————————
+Inventory: 61 units
+Avg: £24.39m
+
+Standing by.
+```
+
+### **AFTER (Elite Format):**
+```
+MARKET INTELLIGENCE
+
+Inventory: 61 units
+Avg: £24.39m
+Sentiment: Neutral
+Velocity: 32.9/100 (cooling)
+
+Interpretation:
+Demand stable, transactions slow. Risk is timing, not pricing.
+
+Key focus:
+Watch velocity inflection—that's where leverage returns.
