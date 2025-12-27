@@ -8,6 +8,17 @@ from app.conversation_manager import generate_contextualized_prompt, Conversatio
 
 logger = logging.getLogger(__name__)
 
+# ========================================
+# INDUSTRY ENFORCEMENT (NEW - CRITICAL)
+# ========================================
+try:
+    from app.industry_enforcer import IndustryEnforcer
+    INDUSTRY_ENFORCEMENT_ENABLED = True
+    logger.info("✅ Industry enforcement enabled")
+except ImportError:
+    INDUSTRY_ENFORCEMENT_ENABLED = False
+    logger.warning("⚠️ Industry enforcement not available")
+
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -37,9 +48,24 @@ IDENTITY:
 You are a £6,000/month institutional analyst. Goldman Sachs-level insights via WhatsApp.
 NOT a chatbot. A professional intelligence desk.
 
-CLIENT: {client_name} | {client_company} | {client_tier}
+CLIENT: {client_name} | {client_company} | {client_tier} | INDUSTRY: {industry}
 REGION: {preferred_region}
 TIME: {current_time_uk}, {current_date}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INDUSTRY VOCABULARY (PRIORITY 0.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{industry_context}
+
+CRITICAL: Use ONLY industry-appropriate terminology:
+- Real Estate: agents, properties, asking prices, £/sqft
+- Automotive: dealerships, vehicles, sticker prices, inventory
+- Healthcare: clinics, treatments, treatment prices, services
+- Hospitality: hotels, rooms, occupancy, room rates
+- Luxury Retail: boutiques, products, retail prices, collections
+
+NEVER use generic terms when industry-specific terms exist.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXECUTIVE BREVITY (PRIORITY 1)
@@ -158,6 +184,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     """
     Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE + AUTHORITY MODE.
     
+    UPDATED: Industry vocabulary enforcement
+    
     Args:
         message: User query
         dataset: Primary dataset (current region)
@@ -180,6 +208,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         client_company = ""
         client_tier_display = "institutional"
         preferred_region = "Mayfair"
+        industry = "Real Estate"  # NEW - CRITICAL
         
         # Override with real data if available
         if client_profile:
@@ -207,9 +236,21 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 pref_regions = prefs.get('preferred_regions', ['Mayfair'])
                 if pref_regions and len(pref_regions) > 0:
                     preferred_region = pref_regions[0]
+                
+                # Industry (NEW - CRITICAL)
+                industry = client_profile.get('industry', 'Real Estate')
+                
             except Exception as e:
                 logger.error(f"Error extracting client context: {e}")
                 # Defaults already set above
+        
+        # ========================================
+        # GET INDUSTRY-SPECIFIC CONTEXT (NEW)
+        # ========================================
+        if INDUSTRY_ENFORCEMENT_ENABLED:
+            industry_context = IndustryEnforcer.get_industry_context(industry)
+        else:
+            industry_context = "MARKET CONTEXT: General market intelligence"
         
         # Get UK time for context
         uk_tz = pytz.timezone('Europe/London')
@@ -217,14 +258,16 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         current_time_uk = uk_now.strftime('%H:%M GMT')
         current_date = uk_now.strftime('%A, %B %d, %Y')
         
-        # Format system prompt with client context
+        # Format system prompt with client context + industry
         system_prompt_personalized = SYSTEM_PROMPT.format(
             current_time_uk=current_time_uk,
             current_date=current_date,
             client_name=first_name,
             client_company=client_company if client_company else "your organization",
             client_tier=client_tier_display,
-            preferred_region=preferred_region
+            preferred_region=preferred_region,
+            industry=industry,  # NEW
+            industry_context=industry_context  # NEW
         )
         
         # ============================================================
@@ -589,13 +632,14 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                     "sentiment": comp_dataset.get('intelligence', {}).get('market_sentiment', 'Unknown')
                 }, indent=2))
         
-        # Add client profile with query history
+        # Add client profile with query history + industry
         if client_profile:
             client_context = {
                 'preferred_regions': client_profile.get('preferences', {}).get('preferred_regions', []),
                 'risk_appetite': client_profile.get('preferences', {}).get('risk_appetite', 'balanced'),
                 'budget_range': client_profile.get('preferences', {}).get('budget_range', {}),
-                'tier': client_profile.get('tier', 'unknown')
+                'tier': client_profile.get('tier', 'unknown'),
+                'industry': industry  # NEW
             }
             context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
 
@@ -796,6 +840,13 @@ REMEMBER:
             logger.info("Added conversation context to prompt")
         except Exception as e:
             logger.debug(f"Session context unavailable: {e}")
+        
+        # ========================================
+        # APPLY INDUSTRY VOCABULARY (NEW - CRITICAL)
+        # ========================================
+        if INDUSTRY_ENFORCEMENT_ENABLED:
+            user_prompt = IndustryEnforcer.apply_vocabulary_to_prompt(user_prompt, industry)
+            logger.info(f"✅ Applied {industry} vocabulary to prompt")
         
         # ============================================================
         # CALL GPT-4 WITH FIXED PARAMETERS (INSTITUTIONAL BREVITY)
