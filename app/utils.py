@@ -3,7 +3,7 @@ Voxmill Utility Functions
 ==========================
 Logging, formatting, and helper functions
 
-UPDATED: Airtable Usage Logs integration
+UPDATED: Airtable Usage Logs integration + format_analyst_response
 """
 
 import logging
@@ -127,6 +127,42 @@ def calculate_tokens_estimate(message: str, response: str) -> int:
     """
     total_chars = len(message) + len(response)
     return int(total_chars / 4)
+
+
+def format_analyst_response(text: str, category: str) -> str:
+    """
+    Format response with institutional headers (for standard responses only)
+    
+    Args:
+        text: Response text from LLM
+        category: Category of analysis
+    
+    Returns:
+        Formatted response with headers
+    """
+    
+    # Category to header mapping
+    headers = {
+        'market_overview': 'MARKET INTELLIGENCE',
+        'competitive_intelligence': 'COMPETITIVE ANALYSIS',
+        'predictive_intelligence': 'PREDICTIVE INTELLIGENCE',
+        'risk_analysis': 'RISK ASSESSMENT',
+        'decision_mode': 'DECISION INTELLIGENCE',
+        'trend_analysis': 'TREND ANALYSIS',
+        'timing_analysis': 'TIMING INTELLIGENCE',
+        'agent_analysis': 'AGENT INTELLIGENCE',
+        'opportunity_analysis': 'OPPORTUNITY INTELLIGENCE',
+        'portfolio_summary': 'PORTFOLIO INTELLIGENCE',
+        'monitoring_status': 'MONITORING STATUS'
+    }
+    
+    # Get header (default to category if not in mapping)
+    header = headers.get(category, category.upper().replace('_', ' '))
+    
+    # Format with header
+    formatted = f"{header}\n\n{text}"
+    
+    return formatted
 
 
 def normalize_phone_number(phone: str) -> str:
