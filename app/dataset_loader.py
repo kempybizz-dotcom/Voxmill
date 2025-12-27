@@ -33,6 +33,74 @@ logger = logging.getLogger(__name__)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
+# ============================================================
+# PATCH FOR dataset_loader.py
+# ============================================================
+# Add this at the TOP of the file (after imports, before classes)
+
+"""
+INDUSTRY ROUTING INTEGRATION
+Add these lines after line 30 (after imports)
+"""
+
+# Import industry enforcer
+try:
+    from app.industry_enforcer import route_dataset_loader, IndustryEnforcer
+    INDUSTRY_ROUTING_ENABLED = True
+    logger.info("✅ Industry routing enabled")
+except ImportError:
+    INDUSTRY_ROUTING_ENABLED = False
+    logger.warning("⚠️ Industry routing not available")
+
+
+# ============================================================
+# MODIFY load_dataset() FUNCTION SIGNATURE
+# ============================================================
+# Change line 1150 from:
+# def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
+
+# TO:
+def load_dataset(area: str = "Mayfair", max_properties: int = 100, industry: str = "Real Estate") -> Dict:
+    """
+    Load institutional-grade dataset with all intelligence layers
+    
+    UPDATED: Now supports industry routing
+    
+    Args:
+        area: Geographic area
+        max_properties: Maximum items to fetch
+        industry: Industry vertical (Real Estate, Automotive, Healthcare, etc.)
+    
+    Returns:
+        Dataset dict with intelligence layers
+    """
+    
+    # ========================================
+    # INDUSTRY ROUTING (NEW - CRITICAL)
+    # ========================================
+    if INDUSTRY_ROUTING_ENABLED and industry != "Real Estate":
+        logger.info(f"🔀 Routing to {industry} dataset loader")
+        return route_dataset_loader(industry, area, max_properties)
+    
+    # ========================================
+    # EXISTING REAL ESTATE LOADER (UNCHANGED)
+    # ========================================
+    # Rest of function continues as-is...
+    
+    try:
+        # Existing Redis cache check...
+        from app.cache_manager import CacheManager
+        
+        cache = CacheManager()
+        cached_dataset = cache.get_dataset_cache(area, vertical="real_estate")
+        
+        if cached_dataset:
+            logger.info(f"✅ CACHE HIT: Dataset for {area}")
+            return cached_dataset
+        
+        logger.info(f"📊 Loading dataset for {area}...")
+
+
 
 # ============================================================
 # ENTERPRISE-GRADE UTILITIES
