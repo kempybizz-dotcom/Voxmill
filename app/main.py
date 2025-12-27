@@ -767,6 +767,203 @@ except ImportError as e:
     logger.warning(f"⚠️  Could not load additional routes: {e}")
 
 
+# ============================================================================
+# AIRTABLE SYNC ENDPOINTS
+# ============================================================================
+
+@app.post("/api/airtable/sync-client")
+async def sync_client_from_airtable(request: Request):
+    """Webhook: Airtable → MongoDB client sync"""
+    try:
+        # Get content type
+        content_type = request.headers.get('content-type', '')
+        
+        # Try JSON first
+        if 'json' in content_type.lower():
+            try:
+                data = await request.json()
+            except:
+                logger.error("❌ JSON parse failed")
+                return {"success": False, "error": "Invalid JSON"}
+        else:
+            # Try form data
+            try:
+                form = await request.form()
+                data = dict(form)
+            except:
+                # Last resort: get raw body
+                body = await request.body()
+                if not body or len(body) == 0:
+                    logger.error("❌ Empty body received")
+                    return {"success": False, "error": "Empty payload"}
+                logger.error(f"❌ Could not parse. Body: {body[:200]}")
+                return {"success": False, "error": "Could not parse payload"}
+        
+        logger.info(f"📥 Received keys: {list(data.keys())}")
+        
+        # Extract email
+        email = (
+            data.get('Email') or 
+            data.get('email') or 
+            data.get('EMAIL')
+        )
+        
+        if not email:
+            logger.error(f"❌ No email. Keys: {list(data.keys())}")
+            return {"success": False, "error": "Email required"}
+        
+        # Extract WhatsApp
+        whatsapp_raw = (
+            data.get('WhatsApp_Number') or 
+            data.get('WhatsApp Number') or 
+            data.get('whatsapp_number') or 
+            ''
+        )
+        whatsapp_clean = str(whatsapp_raw).replace(' ', '').replace('+', '').replace('whatsapp:', '')
+        whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
+        
+        # Build profile
+        client_profile = {
+            'email': email,
+            'whatsapp_number': whatsapp_formatted,
+            'name': str(data.get('Name') or data.get('name') or 'Unknown'),
+            'company': str(data.get('Company') or data.get('company') or ''),
+            'tier': str(data.get('Tier') or data.get('tier') or 'trial').lower(),
+            'preferences': {
+                'preferred_region': str(
+                    data.get('Preferred_Region') or 
+                    data.get('Preferred Region') or 
+                    'London'
+                ),
+                'preferred_city': str(
+                    data.get('Preferred_City') or 
+                    data.get('Preferred City') or 
+                    'London'
+                ),
+                'competitor_focus': str(
+                    data.get('Competitor_Focus') or 
+                    data.get('Competitor Focus') or 
+                    'medium'
+                ).lower(),
+                'report_depth': str(
+                    data.get('Report_Depth') or 
+                    data.get('Report Depth') or 
+                    'detailed'
+                ).lower(),
+                'update_frequency': str(
+                    data.get('Update_Frequency') or 
+                    data.get('Update Frequency') or 
+                    'weekly'
+                ).lower()
+            },
+            'monthly_message_limit': int(
+                data.get('Monthly_Message_Limit') or 
+                data.get('Monthly Message Limit') or 
+                100
+            ),
+            'messages_used_this_month': int(
+                data.get('Messages_Used_This_Month') or 
+                data.get('Messages Used This Month') or 
+                0
+            ),
+            'subscription_status': str(
+                data.get('Subscription_Status') or 
+                data.get('Subscription Status') or 
+                'trial'
+            ).lower(),
+            'stripe_customer_id': str(
+                data.get('Stripe_Customer_ID') or 
+                data.get('Stripe Customer ID') or 
+                ''
+            ),
+            'airtable_record_id': str(data.get('id') or data.get('record_id') or 'unknown'),
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save to MongoDB
+        result = db['client_profiles'].update_one(
+            {'email': email},
+            {'$set': client_profile},
+            upsert=True
+        )
+        
+        action = "updated" if result.matched_count > 0 else "created"
+        
+        logger.info(f"✅ Client {action}: {email}")
+        logger.info(f"   Name: {client_profile['name']}")
+        logger.info(f"   WhatsApp: {whatsapp_formatted}")
+        logger.info(f"   Tier: {client_profile['tier']}")
+        
+        return {
+            "success": True,
+            "action": action,
+            "email": email
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Webhook error: {e}", exc_info=True)
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/airtable/sync-team-member")
+async def sync_team_member_from_airtable(request: Request):
+    """Webhook endpoint for Airtable → MongoDB team member sync"""
+    try:
+        data = await request.json()
+        fields = data.get('fields', {})
+        
+        # Get client email from linked record
+        client_link = fields.get('Client', [])
+        if not client_link:
+            return {"success": False, "error": "No client linked"}
+        
+        # Fetch client record from Airtable to get email
+        client_airtable_id = client_link[0]
+        
+        # Find MongoDB client by Airtable record ID
+        client = db['client_profiles'].find_one({
+            'airtable_record_id': client_airtable_id
+        })
+        
+        if not client:
+            return {"success": False, "error": "Client not found in MongoDB"}
+        
+        # Build team member object
+        team_member = {
+            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
+            'name': fields.get('Name'),
+            'role': fields.get('Role', 'Team Member'),
+            'access_level': fields.get('Access Level', 'full').lower(),
+            'status': fields.get('Status', 'active').lower(),
+            'added_date': fields.get('Added Date', datetime.now().isoformat())
+        }
+        
+        # Add to client's team_members array (avoid duplicates)
+        result = db['client_profiles'].update_one(
+            {'email': client['email']},
+            {
+                '$addToSet': {'team_members': team_member},
+                '$set': {'updated_at': datetime.now().isoformat()}
+            }
+        )
+        
+        logger.info(f"✅ Team member added: {team_member['name']} → {client['email']}")
+        
+        return {
+            "success": True,
+            "client_email": client['email'],
+            "team_member": team_member['name']
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Team member sync error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
