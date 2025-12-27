@@ -1,6 +1,8 @@
 """
 Voxmill WhatsApp Intelligence Service - Main Application
 FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence stack
+
+UPDATED: Industry routing support
 """
 import json 
 import os
@@ -100,11 +102,13 @@ async def check_all_monitors():
         logger.error(f"Monitor check failed: {e}")
 
 async def warm_cache():
-    """Pre-warm cache at 7am"""
+    """Pre-warm cache at 7am - UPDATED with industry parameter"""
     try:
         from app.dataset_loader import load_dataset
+        
+        # Warm Real Estate cache (primary vertical)
         for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
-            load_dataset(area)
+            load_dataset(area, max_properties=100, industry="Real Estate")
             logger.info(f"✅ Cache warmed for {area}")
     except Exception as e:
         logger.error(f"Cache warming failed: {e}")
@@ -177,7 +181,7 @@ async def check_and_send_alerts_task():
 # STARTUP EVENT (SINGLE COMBINED VERSION)
 # ============================================================================
 async def store_daily_snapshots_all_regions():
-    """Store daily snapshots for all core regions"""
+    """Store daily snapshots for all core regions - UPDATED with industry parameter"""
     from app.dataset_loader import load_dataset
     
     core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
@@ -185,7 +189,7 @@ async def store_daily_snapshots_all_regions():
     for region in core_regions:
         try:
             logger.info(f"📸 Storing daily snapshot for {region}...")
-            dataset = load_dataset(area=region, max_properties=100)
+            dataset = load_dataset(area=region, max_properties=100, industry="Real Estate")
             # Snapshot storage happens automatically inside load_dataset now
             logger.info(f"✅ Snapshot stored for {region}")
         except Exception as e:
@@ -484,9 +488,7 @@ async def get_preferences(email: str):
 
 @app.post("/admin/broadcast")
 async def admin_broadcast(request: Request):
-    """
-    Admin endpoint to send broadcast messages
-    """
+    """Admin endpoint to send broadcast messages"""
     try:
         data = await request.json()
         
@@ -521,20 +523,27 @@ async def admin_broadcast(request: Request):
 
 
 @app.get("/data/latest")
-async def get_latest_data(area: Optional[str] = None):
+async def get_latest_data(area: Optional[str] = None, industry: Optional[str] = "Real Estate"):
     """
     Get latest market data for testing/debugging
+    
+    UPDATED: Now supports industry parameter
     """
     try:
         from app.dataset_loader import load_dataset
         
-        dataset = load_dataset(area if area else "Mayfair")
+        dataset = load_dataset(
+            area=area if area else "Mayfair",
+            max_properties=100,
+            industry=industry
+        )
         
         if not dataset or dataset.get('error'):
-            return {"error": "No data found", "area": area}
+            return {"error": "No data found", "area": area, "industry": industry}
         
         return {
             "area": dataset.get("metadata", {}).get("area"),
+            "industry": dataset.get("metadata", {}).get("industry", industry),
             "timestamp": dataset.get("metadata", {}).get("analysis_timestamp"),
             "property_count": len(dataset.get("properties", [])),
             "has_intelligence": "intelligence" in dataset
@@ -547,9 +556,7 @@ async def get_latest_data(area: Optional[str] = None):
 
 @app.get("/pdf/{file_id}")
 async def serve_pdf(file_id: str):
-    """
-    Serve PDF from GridFS (fallback if Cloudflare not configured)
-    """
+    """Serve PDF from GridFS (fallback if Cloudflare not configured)"""
     try:
         from bson.objectid import ObjectId
         import gridfs
@@ -576,9 +583,7 @@ async def serve_pdf(file_id: str):
 
 @app.get("/client/{phone}")
 async def get_client_info(phone: str):
-    """
-    Get client profile for testing/debugging
-    """
+    """Get client profile for testing/debugging"""
     try:
         from app.client_manager import get_client_profile
         
@@ -608,10 +613,7 @@ async def get_client_info(phone: str):
 
 @app.post("/api/regenerate")
 async def emergency_regenerate(request: Request):
-    """
-    Emergency regeneration triggered by operator.
-    Only callable with API key for security.
-    """
+    """Emergency regeneration triggered by operator. Only callable with API key for security."""
     import subprocess
     
     # Verify API key
@@ -653,10 +655,6 @@ async def emergency_regenerate(request: Request):
     }
 
 
-# ============================================================================
-# REAL-TIME ALERTS SYSTEM
-# ============================================================================
-
 @app.get("/internal/run-alert-checker")
 async def run_alert_checker_endpoint(background_tasks: BackgroundTasks, secret: str = None):
     """
@@ -684,103 +682,6 @@ async def run_alert_checker_endpoint(background_tasks: BackgroundTasks, secret: 
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
-
-async def check_and_send_alerts_task():
-    """Background task to check and send alerts"""
-    
-    try:
-        from app.intelligence.alert_detector import detect_alerts_for_region, format_alert_message
-        from app.whatsapp import send_twilio_message
-        
-        logger.info("="*70)
-        logger.info("ALERT CHECKER - Starting")
-        logger.info("="*70)
-        
-        # Get all active clients (Tier 2 and Tier 3 have alerts)
-        clients = list(db['client_profiles'].find({
-            "tier": {"$in": ["tier_2", "tier_3"]},
-            "whatsapp_number": {"$exists": True}
-        }))
-        
-        logger.info(f"Found {len(clients)} clients eligible for alerts")
-        
-        total_alerts_sent = 0
-        
-        for client in clients:
-            client_name = client.get('name', 'Unknown')
-            whatsapp_number = client.get('whatsapp_number')
-            preferred_regions = client.get('preferences', {}).get('preferred_regions', [])
-            
-            # Check if alerts are enabled for this client
-            alert_preferences = client.get('alert_preferences', {})
-            alerts_enabled = alert_preferences.get('enabled', True)  # Default: enabled
-            
-            if not alerts_enabled:
-                logger.info(f"Alerts disabled for {client_name} - skipping")
-                continue
-            
-            if not whatsapp_number:
-                logger.warning(f"Client {client_name} has no WhatsApp number")
-                continue
-            
-            if not preferred_regions:
-                logger.info(f"Client {client_name} has no preferred regions - skipping")
-                continue
-            
-            logger.info(f"\nChecking alerts for {client_name} ({len(preferred_regions)} regions)")
-            
-            for region in preferred_regions:
-                try:
-                    # Detect alerts for this region
-                    alerts = detect_alerts_for_region(region)
-                    
-                    if not alerts:
-                        logger.info(f"  - {region}: No alerts")
-                        continue
-                    
-                    logger.info(f"  - {region}: {len(alerts)} alerts detected")
-                    
-                    # Send each alert
-                    for alert in alerts:
-                        # Format message
-                        message = format_alert_message(alert)
-                        
-                        # Send via WhatsApp
-                        try:
-                            await send_twilio_message(whatsapp_number, message)
-                            logger.info(f"    ✅ Sent {alert['type']} alert to {client_name}")
-                            
-                            # Log alert sent
-                            db['alerts_sent'].insert_one({
-                                "client_id": client.get('_id'),
-                                "client_name": client_name,
-                                "whatsapp_number": whatsapp_number,
-                                "alert_type": alert['type'],
-                                "region": region,
-                                "urgency": alert['urgency'],
-                                "timestamp": datetime.now(timezone.utc),
-                                "alert_data": alert
-                            })
-                            
-                            total_alerts_sent += 1
-                            
-                        except Exception as e:
-                            logger.error(f"    ❌ Failed to send alert to {client_name}: {e}")
-                    
-                except Exception as e:
-                    logger.error(f"  - {region}: Error detecting alerts: {e}", exc_info=True)
-        
-        logger.info(f"\n{'='*70}")
-        logger.info(f"ALERT CHECKER COMPLETE - Sent {total_alerts_sent} total alerts")
-        logger.info(f"{'='*70}\n")
-        
-    except Exception as e:
-        logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
-
-
-# ============================================================================
-# WAVE 1 & WAVE 3: CACHE AND SESSION ENDPOINTS
-# ============================================================================
 
 @app.get("/metrics/cache")
 async def get_cache_metrics():
@@ -864,333 +765,6 @@ try:
     logger.info("✅ Additional routes loaded")
 except ImportError as e:
     logger.warning(f"⚠️  Could not load additional routes: {e}")
-
-
-# ============================================================================
-# MAIN ENTRY POINT
-# ============================================================================
-
-if __name__ == "__main__":
-    import uvicorn
-    
-    port = int(os.getenv("PORT", 8000))
-    
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=port,
-        reload=False,
-        log_level="info"
-    )
-
-
-# ============================================================================
-# AIRTABLE SYNC ENDPOINTS
-# ============================================================================
-
-@app.post("/api/airtable/sync-client")
-async def sync_client_from_airtable(request: Request):
-    """Webhook: Airtable → MongoDB client sync"""
-    try:
-        # Get content type
-        content_type = request.headers.get('content-type', '')
-        
-        # Try JSON first
-        if 'json' in content_type.lower():
-            try:
-                data = await request.json()
-            except:
-                logger.error("❌ JSON parse failed")
-                return {"success": False, "error": "Invalid JSON"}
-        else:
-            # Try form data
-            try:
-                form = await request.form()
-                data = dict(form)
-            except:
-                # Last resort: get raw body
-                body = await request.body()
-                if not body or len(body) == 0:
-                    logger.error("❌ Empty body received")
-                    return {"success": False, "error": "Empty payload"}
-                logger.error(f"❌ Could not parse. Body: {body[:200]}")
-                return {"success": False, "error": "Could not parse payload"}
-        
-        logger.info(f"📥 Received keys: {list(data.keys())}")
-        
-        # Extract email
-        email = (
-            data.get('Email') or 
-            data.get('email') or 
-            data.get('EMAIL')
-        )
-        
-        if not email:
-            logger.error(f"❌ No email. Keys: {list(data.keys())}")
-            return {"success": False, "error": "Email required"}
-        
-        # Extract WhatsApp
-        whatsapp_raw = (
-            data.get('WhatsApp_Number') or 
-            data.get('WhatsApp Number') or 
-            data.get('whatsapp_number') or 
-            ''
-        )
-        whatsapp_clean = str(whatsapp_raw).replace(' ', '').replace('+', '').replace('whatsapp:', '')
-        whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
-        
-        # Build profile
-        client_profile = {
-            'email': email,
-            'whatsapp_number': whatsapp_formatted,
-            'name': str(data.get('Name') or data.get('name') or 'Unknown'),
-            'company': str(data.get('Company') or data.get('company') or ''),
-            'tier': str(data.get('Tier') or data.get('tier') or 'trial').lower(),
-            'preferences': {
-                'preferred_region': str(
-                    data.get('Preferred_Region') or 
-                    data.get('Preferred Region') or 
-                    'London'
-                ),
-                'preferred_city': str(
-                    data.get('Preferred_City') or 
-                    data.get('Preferred City') or 
-                    'London'
-                ),
-                'competitor_focus': str(
-                    data.get('Competitor_Focus') or 
-                    data.get('Competitor Focus') or 
-                    'medium'
-                ).lower(),
-                'report_depth': str(
-                    data.get('Report_Depth') or 
-                    data.get('Report Depth') or 
-                    'detailed'
-                ).lower(),
-                'update_frequency': str(
-                    data.get('Update_Frequency') or 
-                    data.get('Update Frequency') or 
-                    'weekly'
-                ).lower()
-            },
-            'monthly_message_limit': int(
-                data.get('Monthly_Message_Limit') or 
-                data.get('Monthly Message Limit') or 
-                100
-            ),
-            'messages_used_this_month': int(
-                data.get('Messages_Used_This_Month') or 
-                data.get('Messages Used This Month') or 
-                0
-            ),
-            'subscription_status': str(
-                data.get('Subscription_Status') or 
-                data.get('Subscription Status') or 
-                'trial'
-            ).lower(),
-            'stripe_customer_id': str(
-                data.get('Stripe_Customer_ID') or 
-                data.get('Stripe Customer ID') or 
-                ''
-            ),
-            'airtable_record_id': str(data.get('id') or data.get('record_id') or 'unknown'),
-            'created_at': datetime.now(timezone.utc).isoformat(),
-            'updated_at': datetime.now(timezone.utc).isoformat()
-        }
-        
-        # Save to MongoDB
-        result = db['client_profiles'].update_one(
-            {'email': email},
-            {'$set': client_profile},
-            upsert=True
-        )
-        
-        action = "updated" if result.matched_count > 0 else "created"
-        
-        logger.info(f"✅ Client {action}: {email}")
-        logger.info(f"   Name: {client_profile['name']}")
-        logger.info(f"   WhatsApp: {whatsapp_formatted}")
-        logger.info(f"   Tier: {client_profile['tier']}")
-        
-        return {
-            "success": True,
-            "action": action,
-            "email": email
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Webhook error: {e}", exc_info=True)
-        return {"success": False, "error": str(e)}
-
-@app.post("/api/airtable/sync-team-member")
-async def sync_team_member_from_airtable(request: Request):
-    """
-    Webhook endpoint for Airtable → MongoDB team member sync
-    
-    Triggered when: New team member added in Airtable
-    """
-    try:
-        data = await request.json()
-        fields = data.get('fields', {})
-        
-        # Get client email from linked record
-        client_link = fields.get('Client', [])
-        if not client_link:
-            return {"success": False, "error": "No client linked"}
-        
-        # Fetch client record from Airtable to get email
-        client_airtable_id = client_link[0]
-        
-        # Find MongoDB client by Airtable record ID
-        client = db['client_profiles'].find_one({
-            'airtable_record_id': client_airtable_id
-        })
-        
-        if not client:
-            return {"success": False, "error": "Client not found in MongoDB"}
-        
-        # Build team member object
-        team_member = {
-            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
-            'name': fields.get('Name'),
-            'role': fields.get('Role', 'Team Member'),
-            'access_level': fields.get('Access Level', 'full').lower(),
-            'status': fields.get('Status', 'active').lower(),
-            'added_date': fields.get('Added Date', datetime.now().isoformat())
-        }
-        
-        # Add to client's team_members array (avoid duplicates)
-        result = db['client_profiles'].update_one(
-            {'email': client['email']},
-            {
-                '$addToSet': {'team_members': team_member},
-                '$set': {'updated_at': datetime.now().isoformat()}
-            }
-        )
-        
-        logger.info(f"✅ Team member added: {team_member['name']} → {client['email']}")
-        
-        return {
-            "success": True,
-            "client_email": client['email'],
-            "team_member": team_member['name']
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Team member sync error: {e}", exc_info=True)
-        return {
-            "success": False,
-            "error": str(e)
-        }
-
-
-@app.post("/api/airtable/update-usage")
-async def update_usage_in_airtable(
-    client_email: str,
-    messages_used: int
-):
-    """
-    Update message usage counter in Airtable
-    
-    Called by: WhatsApp handler after each message
-    """
-    try:
-        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
-            logger.warning("Airtable not configured, skipping usage update")
-            return {"success": False, "error": "Airtable not configured"}
-        
-        # Find client in MongoDB to get Airtable record ID
-        client = db['client_profiles'].find_one({'email': client_email})
-        
-        if not client or 'airtable_record_id' not in client:
-            return {"success": False, "error": "Client not found or no Airtable ID"}
-        
-        airtable_record_id = client['airtable_record_id']
-        
-        # Update Airtable record
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_CLIENTS_TABLE}/{airtable_record_id}"
-        
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "fields": {
-                "Messages Used This Month": messages_used
-            }
-        }
-        
-        async with httpx.AsyncClient() as client_http:
-            response = await client_http.patch(url, headers=headers, json=payload, timeout=10)
-        
-        if response.status_code == 200:
-            logger.info(f"✅ Airtable usage updated: {client_email} → {messages_used}")
-            return {"success": True}
-        else:
-            logger.error(f"❌ Airtable update failed: {response.status_code}")
-            return {"success": False, "error": f"Status {response.status_code}"}
-        
-    except Exception as e:
-        logger.error(f"❌ Airtable usage update error: {e}")
-        return {"success": False, "error": str(e)}
-
-
-@app.post("/api/airtable/log-usage")
-async def log_usage_to_airtable(
-    client_email: str,
-    whatsapp_number: str,
-    message_query: str,
-    response_summary: str,
-    category: str,
-    tokens_used: int
-):
-    """
-    Log message interaction to Airtable Usage Log
-    
-    Called by: WhatsApp handler after successful response
-    """
-    try:
-        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
-            return {"success": False, "error": "Airtable not configured"}
-        
-        # Find client to get Airtable record ID
-        client = db['client_profiles'].find_one({'email': client_email})
-        
-        if not client or 'airtable_record_id' not in client:
-            return {"success": False, "error": "Client not found"}
-        
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Usage%20Log"
-        
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "fields": {
-                "Client": [client['airtable_record_id']],
-                "WhatsApp Number": whatsapp_number.replace('whatsapp:', ''),
-                "Message Query": message_query[:500],  # Truncate if too long
-                "Response Summary": response_summary[:500],
-                "Category": category.replace('_', ' ').title(),
-                "Tokens Used": tokens_used
-            }
-        }
-        
-        async with httpx.AsyncClient() as client_http:
-            response = await client_http.post(url, headers=headers, json=payload, timeout=10)
-        
-        if response.status_code == 200:
-            logger.info(f"✅ Usage logged to Airtable: {client_email}")
-            return {"success": True}
-        else:
-            logger.warning(f"⚠️ Airtable log failed: {response.status_code}")
-            return {"success": False}
-        
-    except Exception as e:
-        logger.error(f"❌ Airtable logging error: {e}")
-        return {"success": False, "error": str(e)}
 
 
 if __name__ == "__main__":
