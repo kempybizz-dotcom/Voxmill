@@ -2,7 +2,7 @@
 Voxmill WhatsApp Intelligence Service - Main Application
 FastAPI backend handling Twilio webhooks, MongoDB data, and 5-layer intelligence stack
 
-UPDATED: Industry routing support
+UPDATED: Industry routing support + Monthly message counter reset
 """
 import json 
 import os
@@ -177,9 +177,6 @@ async def check_and_send_alerts_task():
     except Exception as e:
         logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
 
-# ============================================================================
-# STARTUP EVENT (SINGLE COMBINED VERSION)
-# ============================================================================
 async def store_daily_snapshots_all_regions():
     """Store daily snapshots for all core regions - UPDATED with industry parameter"""
     from app.dataset_loader import load_dataset
@@ -195,6 +192,65 @@ async def store_daily_snapshots_all_regions():
         except Exception as e:
             logger.error(f"Failed to store snapshot for {region}: {e}")
 
+async def reset_monthly_message_counters():
+    """
+    Reset Messages Used This Month to 0 for all clients
+    Runs on the 1st of each month at midnight
+    """
+    try:
+        logger.info("="*70)
+        logger.info("MONTHLY MESSAGE COUNTER RESET - Starting")
+        logger.info("="*70)
+        
+        # Reset MongoDB
+        from pymongo import MongoClient
+        MONGODB_URI = os.getenv('MONGODB_URI')
+        
+        if MONGODB_URI:
+            mongo_client = MongoClient(MONGODB_URI)
+            db = mongo_client['Voxmill']
+            
+            # Reset all client profiles
+            result = db['client_profiles'].update_many(
+                {},
+                {'$set': {'messages_used_this_month': 0}}
+            )
+            
+            logger.info(f"✅ Reset MongoDB: {result.modified_count} clients")
+        
+        # Reset Airtable (via queue)
+        from app.airtable_queue import queue_airtable_write
+        
+        # Get all clients with Airtable IDs
+        clients = list(db['client_profiles'].find({
+            'airtable_record_id': {'$exists': True}
+        }))
+        
+        for client in clients:
+            airtable_table = client.get('airtable_table', 'Clients')
+            airtable_record_id = client.get('airtable_record_id')
+            
+            if airtable_record_id:
+                queue_airtable_write(
+                    table_name=airtable_table,
+                    record_data={
+                        "Messages Used This Month": 0
+                    },
+                    operation="update",
+                    record_id=airtable_record_id
+                )
+        
+        logger.info(f"✅ Queued Airtable reset for {len(clients)} clients")
+        logger.info("="*70)
+        logger.info("MONTHLY RESET COMPLETE")
+        logger.info("="*70)
+        
+    except Exception as e:
+        logger.error(f"Monthly reset failed: {e}", exc_info=True)
+
+# ============================================================================
+# STARTUP EVENT (SINGLE COMBINED VERSION)
+# ============================================================================
 
 @app.on_event("startup")
 async def startup_event():
@@ -231,8 +287,18 @@ async def startup_event():
             timezone='Europe/London'
         )
         
+        # NEW: Monthly message counter reset
+        scheduler.add_job(
+            reset_monthly_message_counters,
+            'cron',
+            day=1,
+            hour=0,
+            minute=0,
+            timezone='Europe/London'
+        )
+        
         scheduler.start()
-        logger.info("✅ Scheduler started: monitors (15min), cache (7am), snapshots (6:30am)")
+        logger.info("✅ Scheduler started: monitors (15min), cache (7am), snapshots (6:30am), monthly reset (1st/midnight)")
         
     except Exception as e:
         logger.error(f"Scheduler startup failed: {e}")
