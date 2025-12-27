@@ -99,7 +99,24 @@ def load_dataset(area: str = "Mayfair", max_properties: int = 100, industry: str
             return cached_dataset
         
         logger.info(f"📊 Loading dataset for {area}...")
-
+        
+        # CONTINUE WITH YOUR EXISTING load_dataset() CODE HERE
+        # (All the Rightmove API calls, intelligence layers, etc.)
+        
+        # ... existing code ...
+        
+    except Exception as e:
+        logger.error(f"Dataset loading failed: {e}")
+        return {
+            "metadata": {
+                "area": area,
+                "industry": industry,
+                "error": str(e),
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            },
+            "properties": [],
+            "intelligence": {}
+        }
 
 
 # ============================================================
@@ -169,7 +186,6 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
             return None
         return wrapper
     return decorator
-
 
 class DataQualityValidator:
     """Enterprise-grade data validation"""
