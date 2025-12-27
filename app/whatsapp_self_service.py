@@ -431,10 +431,10 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
 Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 AM UTC.
 
 ━━━━━━━━━━━━━━━━━━━━
-⚡ NEED THIS URGENTLY?
+NEED THIS URGENTLY?
 
 Contact your Voxmill operator for immediate regeneration:
-📧 ollys@voxmill.uk
+Intel@voxmill.uk
 
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -592,3 +592,43 @@ if __name__ == "__main__":
             print(f"Changes: {result.get('changes')}")
             print(f"Response: {result.get('confirmation_message')}")
         print("-" * 70)
+
+def log_interaction(sender: str, message: str, category: str, response: str):
+    """
+    Log interaction to BOTH MongoDB AND Airtable Usage Logs
+    
+    CRITICAL: Must NOT log blocked queries as valid usage
+    """
+    
+    # ONLY log if query was ALLOWED (not blocked by governance)
+    blocked_categories = ['governance_override', 'data_load_blocked', 
+                          'analysis_blocked', 'rate_check']
+    
+    if category in blocked_categories:
+        logger.info(f"⏭️ Skipping usage log for blocked query: {category}")
+        return
+    
+    # Log to MongoDB
+    if mongo_client:
+        db = mongo_client['Voxmill']
+        db['usage_logs'].insert_one({
+            'timestamp': datetime.now(timezone.utc),
+            'whatsapp_number': sender,
+            'message_query': message[:500],  # Truncate
+            'response_summary': response[:500],
+            'category': category,
+            'tokens_used': estimate_tokens(response)
+        })
+    
+    # Queue Airtable write (non-blocking)
+    from app.airtable_queue import queue_airtable_update
+    asyncio.create_task(queue_airtable_update(
+        table_name='Usage Logs',
+        fields={
+            'WhatsApp Number': sender,
+            'Message Query': message[:500],
+            'Response Summary': response[:500],
+            'Category': category,
+            'Tokens Used': estimate_tokens(response)
+        }
+    ))
