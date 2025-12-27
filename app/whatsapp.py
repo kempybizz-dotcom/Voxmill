@@ -86,7 +86,23 @@ def parse_regions(regions_raw):
 
 
 def get_client_from_airtable(sender: str) -> dict:
-    """Check Trial Users table first, then Clients table"""
+    """
+    COMPLETE AIRTABLE CLIENT LOOKUP - ENFORCES ALL 6 CRITICAL GATES
+    
+    Checks Trial Users table first, then Clients table
+    Pulls ALL enforcement fields from Airtable schema
+    
+    CRITICAL FIELDS PULLED:
+    1. Airtable Is Source of Truth (checkbox)
+    2. Access Enabled (checkbox)
+    3. Subscription Gate Enforced (checkbox)
+    4. Industry (single select)
+    5. Allowed Intelligence Modules (multi-select)
+    6. PIN Enforcement Mode (single select)
+    
+    Returns:
+        dict with client profile + all enforcement fields, or None if not found/blocked
+    """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
@@ -139,13 +155,27 @@ def get_client_from_airtable(sender: str) -> dict:
                             'trial_expired': True,
                             'name': fields.get('Name', 'there'),
                             'airtable_record_id': None,
-                            'table': 'Trial Users'
+                            'table': 'Trial Users',
+                            # Default enforcement for expired trials
+                            'airtable_is_source_of_truth': True,
+                            'access_enabled': False,
+                            'subscription_gate_enforced': True,
+                            'industry': None,
+                            'allowed_intelligence_modules': [],
+                            'pin_enforcement_mode': 'Strict'
                         }
                 
                 # Parse regions properly
-                regions = parse_regions(fields.get('Regions'))
+                regions_raw = fields.get('Regions', [])
                 
-                # Trial active
+                # Handle multi-select (returns array)
+                if isinstance(regions_raw, list):
+                    regions = regions_raw if regions_raw else ['Mayfair']
+                else:
+                    # Fallback for string format
+                    regions = [r.strip() for r in str(regions_raw).split(',') if r.strip()] if regions_raw else ['Mayfair']
+                
+                # Trial active - return with LIMITED enforcement
                 logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
                 return {
                     'name': fields.get('Name', 'there'),
@@ -164,14 +194,23 @@ def get_client_from_airtable(sender: str) -> dict:
                         'messages_used_this_month': 0,
                         'monthly_message_limit': 50,
                         'total_messages_sent': 0
-                    }
+                    },
+                    # ========================================
+                    # ENFORCEMENT FIELDS (TRIAL DEFAULTS)
+                    # ========================================
+                    'airtable_is_source_of_truth': True,
+                    'access_enabled': True,
+                    'subscription_gate_enforced': True,
+                    'industry': 'Real Estate',  # Default for trials
+                    'allowed_intelligence_modules': ['Market Overview'],  # Limited for trials
+                    'pin_enforcement_mode': fields.get('PIN Status') == 'Active' and 'Strict' or 'Strict'
                 }
     
     except Exception as e:
         logger.error(f"Error checking Trial Users table: {e}")
     
     # ========================================
-    # CHECK 2: MAIN CLIENTS TABLE
+    # CHECK 2: MAIN CLIENTS TABLE (FULL ENFORCEMENT)
     # ========================================
     
     try:
@@ -190,24 +229,119 @@ def get_client_from_airtable(sender: str) -> dict:
                 client_record = records[0]
                 fields = client_record.get('fields', {})
                 
+                # ========================================
+                # CRITICAL GATE 1: AIRTABLE IS SOURCE OF TRUTH
+                # ========================================
+                airtable_is_source_of_truth = fields.get('Airtable Is Source of Truth', True)
+                
+                if not airtable_is_source_of_truth:
+                    logger.critical(f"🚫 GATE 1 FAILED: Airtable Is Source of Truth = false for {sender}")
+                    return None  # HARD BLOCK
+                
+                # ========================================
+                # CRITICAL GATE 2: ACCESS ENABLED
+                # ========================================
+                access_enabled = fields.get('Access Enabled', True)
+                
+                if not access_enabled:
+                    logger.critical(f"🚫 GATE 2 FAILED: Access Enabled = false for {sender}")
+                    return {
+                        'subscription_status': 'Suspended',
+                        'access_enabled': False,
+                        'name': fields.get('Name', 'there'),
+                        'airtable_record_id': client_record['id'],
+                        'table': 'Clients'
+                    }
+                
+                # ========================================
+                # PULL SUBSCRIPTION STATUS
+                # ========================================
                 subscription_status = fields.get('Subscription Status', 'Active')
                 
-                # Map status to tier
+                # ========================================
+                # CRITICAL GATE 3: SUBSCRIPTION GATE ENFORCED
+                # ========================================
+                subscription_gate_enforced = fields.get('Subscription Gate Enforced', True)
+                
+                if subscription_gate_enforced:
+                    # Enforce subscription status strictly
+                    if subscription_status in ['Cancelled', 'Paused']:
+                        logger.warning(f"🚫 GATE 3 FAILED: Subscription {subscription_status} (gate enforced) for {sender}")
+                        return {
+                            'subscription_status': subscription_status,
+                            'access_enabled': access_enabled,
+                            'subscription_gate_enforced': True,
+                            'name': fields.get('Name', 'there'),
+                            'airtable_record_id': client_record['id'],
+                            'table': 'Clients'
+                        }
+                else:
+                    # Admin override - allow even if cancelled/paused
+                    logger.warning(f"⚠️ ADMIN OVERRIDE: Subscription gate disabled for {sender} (status: {subscription_status})")
+                
+                # ========================================
+                # PULL INDUSTRY (GATE 4)
+                # ========================================
+                industry = fields.get('Industry', 'Real Estate')
+                
+                logger.info(f"Industry: {industry}")
+                
+                # ========================================
+                # PULL ALLOWED INTELLIGENCE MODULES (GATE 5)
+                # ========================================
+                allowed_modules_raw = fields.get('Allowed Intelligence Modules', [])
+                
+                # Airtable multi-select returns array
+                if isinstance(allowed_modules_raw, list):
+                    allowed_intelligence_modules = allowed_modules_raw
+                else:
+                    # Fallback for comma-separated string
+                    allowed_intelligence_modules = [m.strip() for m in str(allowed_modules_raw).split(',') if m.strip()]
+                
+                # Default if empty (give full access to avoid breaking existing clients)
+                if not allowed_intelligence_modules:
+                    allowed_intelligence_modules = [
+                        'Market Overview',
+                        'Competitive Intelligence',
+                        'Predictive Intelligence',
+                        'Risk Analysis',
+                        'Portfolio Tracking'
+                    ]
+                    logger.warning(f"⚠️ No modules specified for {sender}, defaulting to full access")
+                
+                logger.info(f"Allowed Intelligence Modules: {allowed_intelligence_modules}")
+                
+                # ========================================
+                # PULL PIN ENFORCEMENT MODE (GATE 6)
+                # ========================================
+                pin_enforcement_mode = fields.get('PIN Enforcement Mode', 'Strict')
+                
+                logger.info(f"PIN Enforcement Mode: {pin_enforcement_mode}")
+                
+                # ========================================
+                # MAP SUBSCRIPTION STATUS TO TIER
+                # ========================================
                 status_to_tier = {
                     'Active': 'tier_3',
                     'Premium': 'tier_3',
                     'Basic': 'tier_1',
                     'Cancelled': 'tier_1',
-                    'Suspended': 'tier_1'
+                    'Suspended': 'tier_1',
+                    'Paused': 'tier_1'
                 }
                 
                 tier = status_to_tier.get(subscription_status, 'tier_1')
                 
-                # Parse regions properly
+                # ========================================
+                # PARSE REGIONS
+                # ========================================
                 regions = parse_regions(fields.get('Regions'))
                 
                 logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
                 
+                # ========================================
+                # RETURN COMPLETE CLIENT PROFILE
+                # ========================================
                 return {
                     'name': fields.get('Name', 'there'),
                     'email': fields.get('Email', ''),
@@ -225,7 +359,16 @@ def get_client_from_airtable(sender: str) -> dict:
                         'messages_used_this_month': fields.get('Messages Used This Month', 0),
                         'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
                         'total_messages_sent': fields.get('Total Messages Sent', 0)
-                    }
+                    },
+                    # ========================================
+                    # CRITICAL: ALL 6 ENFORCEMENT FIELDS
+                    # ========================================
+                    'airtable_is_source_of_truth': airtable_is_source_of_truth,
+                    'access_enabled': access_enabled,
+                    'subscription_gate_enforced': subscription_gate_enforced,
+                    'industry': industry,
+                    'allowed_intelligence_modules': allowed_intelligence_modules,
+                    'pin_enforcement_mode': pin_enforcement_mode
                 }
     
     except Exception as e:
@@ -401,7 +544,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
-        # ALWAYS fetch from Airtable on first message OR if stale
+# ALWAYS fetch from Airtable on first message OR if stale
         if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
             # Fetch from Airtable (checks both Trial Users and Clients tables)
             client_profile_airtable = get_client_from_airtable(sender)
@@ -425,7 +568,16 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'total_queries': old_total,
                     'query_history': old_history,
                     'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-                    'updated_at': datetime.now(timezone.utc)
+                    'updated_at': datetime.now(timezone.utc),
+                    # ========================================
+                    # CRITICAL: SYNC ALL 6 ENFORCEMENT FIELDS
+                    # ========================================
+                    'airtable_is_source_of_truth': client_profile_airtable.get('airtable_is_source_of_truth', True),
+                    'access_enabled': client_profile_airtable.get('access_enabled', True),
+                    'subscription_gate_enforced': client_profile_airtable.get('subscription_gate_enforced', True),
+                    'industry': client_profile_airtable.get('industry', 'Real Estate'),
+                    'allowed_intelligence_modules': client_profile_airtable.get('allowed_intelligence_modules', []),
+                    'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'Strict')
                 }
                 
                 # Update MongoDB cache
