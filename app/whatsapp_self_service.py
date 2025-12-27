@@ -176,6 +176,8 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     """
     Apply preference changes to BOTH MongoDB AND Airtable
     
+    UPDATED: Now supports Industry and Allowed Intelligence Modules
+    
     Flow:
     1. Find client in MongoDB
     2. Update Airtable (source of truth) 
@@ -184,7 +186,7 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     
     Args:
         whatsapp_number: Client's WhatsApp number (with or without 'whatsapp:' prefix)
-        changes: Dict with keys like 'competitor_focus', 'report_depth', 'regions'
+        changes: Dict with keys like 'competitor_focus', 'report_depth', 'regions', 'industry', 'allowed_modules'
     
     Returns:
         True if successful
@@ -229,7 +231,7 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
             }
             
             params = {
-                'filterByFormula': f"{{WhatsApp}}='{normalized_number}'",
+                'filterByFormula': f"{{WhatsApp Number}}='{normalized_number}'",
                 'maxRecords': 1
             }
             
@@ -242,16 +244,21 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
                 if records:
                     record_id = records[0]['id']
                     
-                    # Build update payload
+                    # ========================================
+                    # BUILD UPDATE PAYLOAD (WRITABLE FIELDS ONLY)
+                    # ========================================
                     airtable_updates = {}
                     
+                    # Existing fields
                     if 'competitor_focus' in changes:
-                        # Map to Airtable values
-                        airtable_updates['Competitor Focus'] = changes['competitor_focus']
+                        # Map to Airtable single select values: Low | Medium | High
+                        value = changes['competitor_focus'].capitalize()
+                        airtable_updates['Competitor Focus'] = value
                     
                     if 'report_depth' in changes:
-                        # Map to Airtable values
-                        airtable_updates['Report Depth'] = changes['report_depth']
+                        # Map to Airtable single select values: Executive | Detailed | Deep
+                        value = changes['report_depth'].capitalize()
+                        airtable_updates['Report Depth'] = value
                     
                     if 'regions' in changes:
                         # Get current regions from Airtable
@@ -262,7 +269,64 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
                         new_regions = list(set(current_regions + changes['regions']))
                         airtable_updates['Regions'] = ', '.join(new_regions)
                     
-                    # Update Airtable record
+                    # ========================================
+                    # NEW: INDUSTRY FIELD (SINGLE SELECT)
+                    # ========================================
+                    if 'industry' in changes:
+                        # Validate against Airtable options
+                        valid_industries = [
+                            'Real Estate', 'Private Equity', 'Venture Capital', 
+                            'Public Markets', 'Luxury Retail', 'Automotive', 
+                            'Aviation', 'Yachting', 'Hospitality', 'Healthcare',
+                            'Energy', 'Logistics', 'Manufacturing', 'Technology',
+                            'Media', 'Sports', 'Government'
+                        ]
+                        
+                        industry_value = changes['industry']
+                        
+                        # Normalize case
+                        if industry_value.lower() == 'real estate':
+                            industry_value = 'Real Estate'
+                        elif industry_value.lower() == 'private equity':
+                            industry_value = 'Private Equity'
+                        # ... (add other mappings as needed)
+                        
+                        if industry_value in valid_industries:
+                            airtable_updates['Industry'] = industry_value
+                            logger.info(f"Setting industry to: {industry_value}")
+                        else:
+                            logger.warning(f"Invalid industry: {industry_value}, must be one of {valid_industries}")
+                    
+                    # ========================================
+                    # NEW: ALLOWED INTELLIGENCE MODULES (MULTI-SELECT)
+                    # ========================================
+                    if 'allowed_modules' in changes:
+                        # Validate against Airtable options
+                        valid_modules = [
+                            'Market Overview',
+                            'Competitive Intelligence',
+                            'Predictive Intelligence',
+                            'Risk Analysis',
+                            'Portfolio Tracking'
+                        ]
+                        
+                        # Ensure it's a list
+                        modules = changes['allowed_modules']
+                        if isinstance(modules, str):
+                            modules = [m.strip() for m in modules.split(',')]
+                        
+                        # Validate each module
+                        validated_modules = [m for m in modules if m in valid_modules]
+                        
+                        if validated_modules:
+                            airtable_updates['Allowed Intelligence Modules'] = validated_modules
+                            logger.info(f"Setting allowed modules to: {validated_modules}")
+                        else:
+                            logger.warning(f"No valid modules in: {modules}")
+                    
+                    # ========================================
+                    # UPDATE AIRTABLE RECORD
+                    # ========================================
                     if airtable_updates:
                         update_url = f"{url}/{record_id}"
                         update_payload = {"fields": airtable_updates}
@@ -303,13 +367,27 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     if 'competitor_focus' in changes:
         update_data['preferences.competitor_focus'] = changes['competitor_focus']
     
-    # Handle delivery time
     if 'delivery_time' in changes:
         update_data['delivery_preferences.delivery_time'] = changes['delivery_time']
     
+    # ========================================
+    # NEW: SYNC INDUSTRY TO MONGODB
+    # ========================================
+    if 'industry' in changes:
+        update_data['industry'] = changes['industry']
+    
+    # ========================================
+    # NEW: SYNC ALLOWED MODULES TO MONGODB
+    # ========================================
+    if 'allowed_modules' in changes:
+        modules = changes['allowed_modules']
+        if isinstance(modules, str):
+            modules = [m.strip() for m in modules.split(',')]
+        update_data['allowed_intelligence_modules'] = modules
+    
     # Handle any other custom fields
     for key, value in changes.items():
-        if key not in ['regions', 'report_depth', 'competitor_focus', 'delivery_time']:
+        if key not in ['regions', 'report_depth', 'competitor_focus', 'delivery_time', 'industry', 'allowed_modules']:
             update_data[f'preferences.{key}'] = value
     
     mongodb_success = False
