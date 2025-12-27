@@ -2120,7 +2120,7 @@ Standing by."""
             logger.info(f"✅ Instant agent analysis sent (<3s)")
             return
         
-      # ========================================
+# ========================================
         # FALLBACK: COMPLEX QUERIES USE GPT-4
         # ========================================
         
@@ -2136,6 +2136,76 @@ Standing by."""
             client_profile=client_profile,
             comparison_datasets=comparison_datasets if comparison_datasets else None
         )
+        
+        # ========================================
+        # CRITICAL: TRACK MESSAGE USAGE (NEW)
+        # ========================================
+        
+        # Calculate tokens used
+        from app.utils import calculate_tokens_estimate
+        tokens_used = calculate_tokens_estimate(message_text, response_text)
+        
+        # Update client metrics in MongoDB
+        try:
+            from pymongo import MongoClient
+            MONGODB_URI = os.getenv('MONGODB_URI')
+            if MONGODB_URI:
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
+                
+                # Increment usage counters
+                db['client_profiles'].update_one(
+                    {'whatsapp_number': sender},
+                    {
+                        '$inc': {
+                            'messages_used_this_month': 1,
+                            'total_messages_sent': 1,
+                            'total_tokens_used': tokens_used
+                        },
+                        '$set': {
+                            'last_active': datetime.now(timezone.utc),
+                            'last_message_date': datetime.now(timezone.utc)
+                        }
+                    }
+                )
+                
+                logger.info(f"✅ Updated usage metrics for {sender}: +1 message, +{tokens_used} tokens")
+        except Exception as e:
+            logger.error(f"Failed to update usage metrics: {e}")
+        
+        # ========================================
+        # CRITICAL: SYNC TO AIRTABLE (NEW)
+        # ========================================
+        
+        try:
+            from app.airtable_queue import queue_airtable_write
+            
+            # Get updated counts from MongoDB
+            updated_profile = db['client_profiles'].find_one({'whatsapp_number': sender})
+            
+            if updated_profile and updated_profile.get('airtable_record_id'):
+                airtable_record_id = updated_profile['airtable_record_id']
+                
+                # Determine which table (Clients or Trial Users)
+                airtable_table = updated_profile.get('airtable_table', 'Clients')
+                
+                # Queue update to Airtable
+                queue_airtable_write(
+                    table_name=airtable_table,
+                    record_data={
+                        "Messages Used This Month": updated_profile.get('messages_used_this_month', 1),
+                        "Total Messages Sent": updated_profile.get('total_messages_sent', 1),
+                        "Total Tokens Used": updated_profile.get('total_tokens_used', tokens_used),
+                        "Last Active": datetime.now(timezone.utc).isoformat(),
+                        "Last Message Date": datetime.now(timezone.utc).isoformat()
+                    },
+                    operation="update",
+                    record_id=airtable_record_id
+                )
+                
+                logger.info(f"✅ Queued Airtable update: {airtable_table}/{airtable_record_id}")
+        except Exception as e:
+            logger.error(f"Failed to queue Airtable update: {e}")
         
 # ========================================
         # FORMAT RESPONSE (STRIP HEADERS FOR AUTHORITY MODE)
@@ -2504,8 +2574,20 @@ Standing by."""
             }
         )
         
-        # Log interaction and update client history
-        log_interaction(sender, message_text, category, formatted_response)
+        # ========================================
+        # LOG INTERACTION WITH FULL CONTEXT (UPDATED)
+        # ========================================
+        
+        # CRITICAL: Pass tokens_used and client_profile for Airtable Usage Logs
+        log_interaction(
+            sender=sender,
+            message=message_text,
+            category=category,
+            response=formatted_response,
+            tokens_used=tokens_used,
+            client_profile=client_profile
+        )
+        
         update_client_history(sender, message_text, category, preferred_region)
         
         logger.info(f"✅ Message processed successfully: "
