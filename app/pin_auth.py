@@ -57,7 +57,7 @@ class PINAuthenticator:
             logger.error(f"PIN verification error: {e}")
             return False
     
-   @staticmethod
+    @staticmethod
     def set_pin(whatsapp_number: str, pin: str) -> Tuple[bool, str]:
         """
         Set new PIN for user
