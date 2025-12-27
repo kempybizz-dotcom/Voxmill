@@ -516,6 +516,33 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             )
             return
         
+        # ========================================
+        # GREETING DETECTION - ULTRA-FAST RESPONSE (NEW)
+        # ========================================
+        
+        message_lower = message_text.lower().strip()
+        greeting_keywords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'morning', 'afternoon', 'evening']
+        
+        if any(kw == message_lower for kw in greeting_keywords):
+            # INSTANT greeting - no database lookup needed
+            import pytz
+            
+            uk_tz = pytz.timezone('Europe/London')
+            hour = datetime.now(uk_tz).hour
+            
+            if 5 <= hour < 12:
+                greeting_response = "Good morning."
+            elif 12 <= hour < 17:
+                greeting_response = "Good afternoon."
+            elif 17 <= hour < 22:
+                greeting_response = "Good evening."
+            else:
+                greeting_response = "Evening."
+            
+            await send_twilio_message(sender, greeting_response)
+            
+            logger.info(f"✅ INSTANT greeting handled (<1s): {greeting_response}")
+            return  # CRITICAL: Exit immediately, skip all other processing
         
         # ========================================
         # LOAD CLIENT PROFILE WITH AIRTABLE API
@@ -865,7 +892,6 @@ To reactivate, contact intel@voxmill.uk"""
                     response = get_pin_status_message(reason, client_name)
                     await send_twilio_message(sender, response)
                     return
-
         # ========================================
         # PIN COMMANDS - MANUAL LOCK/RESET
         # ========================================
