@@ -898,7 +898,7 @@ class ConversationalGovernor:
         
         return intent_responses.get(intent)
     
-    # ========================================
+# ========================================
     # MAIN GOVERNANCE ENTRY POINT
     # ========================================
     
@@ -907,6 +907,8 @@ class ConversationalGovernor:
                     system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
         """
         Main governance entry point with Layer -1 social absorption
+        
+        UPDATED: Enforces Allowed Intelligence Modules from Airtable
         
         Returns: GovernanceResult with intent, constraints, and optional response
         """
@@ -1077,6 +1079,61 @@ class ConversationalGovernor:
             
             intent = forced_intent
             confidence = 0.75
+        
+        # ========================================
+        # CRITICAL NEW: ALLOWED INTELLIGENCE MODULES CHECK
+        # ========================================
+        
+        # Map Intent to required modules (Airtable field names)
+        INTENT_TO_MODULES = {
+            Intent.STRATEGIC: ['Market Overview', 'Competitive Intelligence'],
+            Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
+            Intent.STATUS_CHECK: ['Market Overview'],
+            Intent.META_STRATEGIC: ['Risk Analysis'],
+            Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
+        }
+        
+        # Get required modules for this intent
+        required_modules = INTENT_TO_MODULES.get(intent, [])
+        
+        if required_modules:
+            # Get client's allowed modules from Airtable (via client_profile)
+            allowed_modules = client_profile.get('allowed_intelligence_modules', [])
+            
+            # Normalize module names (handle case differences)
+            allowed_modules_normalized = [m.lower().strip() for m in allowed_modules] if allowed_modules else []
+            required_modules_normalized = [m.lower().strip() for m in required_modules]
+            
+            # Check if client has permission for ALL required modules
+            missing_modules = [
+                m for m in required_modules 
+                if m.lower().strip() not in allowed_modules_normalized
+            ]
+            
+            if missing_modules:
+                logger.warning(f"🚫 MODULE ACCESS DENIED: {sender} missing {missing_modules}")
+                logger.warning(f"   Required: {required_modules}")
+                logger.warning(f"   Allowed: {allowed_modules}")
+                
+                # Format module names for user message
+                missing_display = ', '.join(missing_modules)
+                
+                return GovernanceResult(
+                    intent=Intent.UNKNOWN,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=False,
+                    response=f"Module access required: {missing_display}\n\nContact intel@voxmill.uk to upgrade.",
+                    allowed_shapes=["REFUSAL"],
+                    max_words=30,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category=semantic_category.value
+                )
+            else:
+                logger.info(f"✅ Module access granted: {required_modules}")
         
         # ========================================
         # GET ENVELOPE FOR INTENT
