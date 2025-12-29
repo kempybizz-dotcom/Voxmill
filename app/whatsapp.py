@@ -378,28 +378,6 @@ def get_client_from_airtable(sender: str) -> dict:
     return None
 
 
-def safe_get_last_metadata(conversation) -> dict:
-    """Safely get last metadata with fallback for cache issues"""
-    try:
-        return conversation.get_last_metadata()
-    except (AttributeError, Exception):
-        try:
-            session = conversation.get_session()
-            messages = session.get('messages', [])
-            return messages[-1].get('metadata', {}) if messages else {}
-        except:
-            return {}
-
-
-def safe_detect_followup(conversation, message_normalized):
-    """Safely detect followup with fallback"""
-    try:
-        return conversation.detect_followup_query(message_normalized)
-    except (AttributeError, Exception):
-        # Method not available - skip followup detection
-        return False, {}
-
-
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
     """Generate time-appropriate greeting based on UK time"""
     # Get current time in UK
@@ -517,34 +495,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 sender,
                 "I specialise in market intelligence analysis. What would you like to explore? (Market overview, opportunities, competitive landscape, scenario modelling)"
             )
-            return
-        
-        # ========================================
-        # GREETING DETECTION - ULTRA-FAST RESPONSE
-        # ========================================
-        
-        message_lower = message_text.lower().strip()
-        greeting_keywords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'morning', 'afternoon', 'evening']
-        
-        if any(kw == message_lower for kw in greeting_keywords):
-            # INSTANT greeting - no database lookup needed
-            import pytz
-            
-            uk_tz = pytz.timezone('Europe/London')
-            hour = datetime.now(uk_tz).hour
-            
-            if 5 <= hour < 12:
-                greeting_response = "Good morning."
-            elif 12 <= hour < 17:
-                greeting_response = "Good afternoon."
-            elif 17 <= hour < 22:
-                greeting_response = "Good evening."
-            else:
-                greeting_response = "Evening."
-            
-            await send_twilio_message(sender, greeting_response)
-            
-            logger.info(f"✅ INSTANT greeting handled (<1s): {greeting_response}")
             return
         
         # ========================================
@@ -1492,103 +1442,6 @@ Standing by."""
                     pass  # Silent failure OK
                 
                 logger.info(f"✅ Monitoring status fallback sent")
-                return
-
-        # ========================================
-        # PORTFOLIO TRACKING COMMANDS
-        # ========================================
-
-        portfolio_keywords = ['my portfolio', 'my properties', 'add property', 'portfolio summary']
-
-        if any(kw in message_lower for kw in portfolio_keywords):
-            try:
-                from app.portfolio import get_portfolio_summary, add_property_to_portfolio, parse_property_from_message
-                
-                if 'add property' in message_lower:
-                    # Check if user is sending property details
-                    parsed_property = parse_property_from_message(message_text)
-                    
-                    if parsed_property:
-                        # Add property
-                        response = add_property_to_portfolio(sender, parsed_property)
-                        await send_twilio_message(sender, response)
-                        
-                        # Update conversation session
-                        conversation = ConversationSession(sender)
-                        conversation.update_session(
-                            user_message=message_text,
-                            assistant_response=response,
-                            metadata={'category': 'portfolio_add'}
-                        )
-                        
-                        return
-                    else:
-                        # Guide user through adding property
-                        response = """ADD PROPERTY TO PORTFOLIO
-
-Reply with property details:
-
-Format: "Property: [address], Purchase: £[amount], Date: [YYYY-MM-DD], Region: [region]"
-
-Example: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair" """
-                        
-                        await send_twilio_message(sender, response)
-                        return
-                
-                # Show portfolio summary
-                portfolio = get_portfolio_summary(sender)
-                
-                if portfolio.get('error'):
-                    response = """No properties in portfolio.
-
-Add a property: "Add property [details]" """
-                    await send_twilio_message(sender, response)
-                    return
-                
-                # Format portfolio response
-                prop_list = []
-                for prop in portfolio['properties'][:5]:
-                    prop_list.append(
-                        f"• {prop['address']}: £{prop['current_estimate']:,.0f} "
-                        f"({prop['gain_loss_pct']:+.1f}%)"
-                    )
-                
-                response = f"""PORTFOLIO SUMMARY
-
-{chr(10).join(prop_list)}
-
-Total Value: £{portfolio['total_current_value']:,.0f}
-Total Gain/Loss: £{portfolio['total_gain_loss']:,.0f} ({portfolio['total_gain_loss_pct']:+.1f}%)
-
-Properties: {portfolio['property_count']}"""
-                
-                await send_twilio_message(sender, response)
-                
-                # Update conversation session
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'portfolio_summary'}
-                )
-                
-                return
-                
-            except Exception as e:
-                logger.error(f"Portfolio command failed: {e}", exc_info=True)
-                
-                # Fallback response
-                fallback_response = """Portfolio system temporarily unavailable.
-
-Your holdings data is safe. Please try again in a moment.
-
-Standing by."""
-                
-                try:
-                    await send_twilio_message(sender, fallback_response)
-                except Exception:
-                    logger.critical(f"Complete portfolio failure for {sender}")
-                
                 return
         
         # ========================================
@@ -2859,74 +2712,6 @@ Standing by."""
         error_msg = "System encountered an error processing your request. Please try rephrasing your query or contact support if this persists."
         await send_twilio_message(sender, error_msg)
 
-async def send_pdf_report(sender: str, area: str):
-    """Generate and send PDF report link to client (NO EMOJIS VERSION)"""
-    try:
-        logger.info(f"PDF report requested by {sender} for {area}")
-        
-        # Check if PDF storage is configured
-        try:
-            from app.pdf_storage import get_latest_pdf_for_client, upload_pdf_to_cloud
-            storage_available = True
-        except ImportError:
-            storage_available = False
-        
-        if not storage_available:
-            logger.warning("PDF storage module not configured")
-            message = (
-                "PDF delivery is being configured for your account.\n\n"
-                "In the meantime, I can provide comprehensive intelligence via text.\n\n"
-                "Ask me about market overview, opportunities, or strategic outlook."
-            )
-            await send_twilio_message(sender, message)
-            return
-        
-        # Try to get existing PDF URL
-        pdf_url = get_latest_pdf_for_client(sender, area)
-        
-        if not pdf_url:
-            # No existing PDF found, check temp directory
-            pdf_path = "/tmp/Voxmill_Executive_Intelligence_Deck.pdf"
-            
-            if os.path.exists(pdf_path):
-                pdf_url = upload_pdf_to_cloud(pdf_path, sender, area)
-            else:
-                # No PDF available
-                await send_twilio_message(
-                    sender,
-                    f"Your {area} executive briefing is being prepared.\n\n"
-                    "Reports are generated daily at midnight GMT. "
-                    "The latest report will be available shortly.\n\n"
-                    "In the meantime, I can provide real-time intelligence. "
-                    "Ask me about market overview, opportunities, or competitive landscape."
-                )
-                return
-        
-        if pdf_url:
-            date_str = datetime.now().strftime('%B %d, %Y')
-            
-            # NO EMOJIS VERSION - Professional institutional format
-            message = (
-    "EXECUTIVE INTELLIGENCE BRIEFING\n\n"
-    f"{area} Market Analysis\n"
-    f"Generated: {date_str}\n\n"
-    f"View your report:\n{pdf_url}\n\n"
-    "Link valid for 7 days\n"
-    "14-page institutional-grade analysis"
-)
-            
-            await send_twilio_message(sender, message)
-            logger.info(f"PDF report sent successfully to {sender}")
-        else:
-            await send_twilio_message(
-                sender,
-                f"Unable to access your {area} report at this time. "
-                "Our team has been notified and will resolve this shortly."
-            )
-            
-    except Exception as e:
-        logger.error(f"Error sending PDF report: {str(e)}", exc_info=True)
-        await send_twilio_message(sender, "Error generating report link. Our team has been notified.")
 
 
 def normalize_query(text: str) -> str:
@@ -3016,55 +2801,6 @@ async def send_twilio_message(to: str, message: str):
         logger.error(f"Failed to send Twilio message: {e}", exc_info=True)
         raise
 
-
-async def enhance_response_async(
-    sender: str,
-    message: str, 
-    dataset: Dict, 
-    client_profile: Dict,
-    instant_response: str
-):
-    """
-    TIER 2: Background GPT-4 enhancement
-    
-    Runs AFTER instant response sent, provides deeper analysis if needed
-    """
-    try:
-        logger.info(f"🔄 Background enhancement started for {sender}")
-        
-        # Give GPT-4 more time since user already has response
-        from app.llm import classify_and_respond
-        
-        category, enhanced_text, metadata = await classify_and_respond(
-            message,
-            dataset,
-            client_profile=client_profile,
-            comparison_datasets=None
-        )
-        
-        # Only send enhanced response if it adds significant value
-        similarity_threshold = 0.7  # Don't send if >70% similar
-        
-        # Simple similarity check (word overlap)
-        instant_words = set(instant_response.lower().split())
-        enhanced_words = set(enhanced_text.lower().split())
-        overlap = len(instant_words & enhanced_words) / max(len(instant_words), 1)
-        
-        if overlap < similarity_threshold and len(enhanced_text) > len(instant_response) * 1.3:
-            # Enhanced response adds value
-            enhancement_msg = f"""━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ENHANCED ANALYSIS
-
-{enhanced_text}"""
-            
-            await send_twilio_message(sender, enhancement_msg)
-            logger.info(f"✅ Enhanced analysis sent to {sender}")
-        else:
-            logger.info(f"⏭️ Enhancement skipped (insufficient added value)")
-        
-    except Exception as e:
-        logger.error(f"Background enhancement failed: {e}")
-        # Silent failure - user already has instant response
 
 
 def smart_split_message(message: str, max_length: int) -> list:
