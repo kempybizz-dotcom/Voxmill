@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Intent(Enum):
-    """Finite intent taxonomy (13 classes)"""
+    """Finite intent taxonomy (18 classes)"""
     SECURITY = "security"
     ADMINISTRATIVE = "administrative"
     PROVOCATION = "provocation"
@@ -31,7 +31,12 @@ class Intent(Enum):
     MONITORING_DIRECTIVE = "monitoring_directive"
     META_AUTHORITY = "meta_authority"  # NEW
     PROFILE_STATUS = "profile_status"  # NEW
+    VALUE_JUSTIFICATION = "value_justification"
+    TRUST_AUTHORITY = "trust_authority"  # NEW
+    STATUS_MONITORING = "status_monitoring"  # NEW
+    PORTFOLIO_MANAGEMENT = "portfolio_management"
     PORTFOLIO_STATUS = "portfolio_status"  # NEW
+    DELIVERY_REQUEST = "delivery_request"  # NEW
     UNKNOWN = "unknown"
 
 
@@ -308,14 +313,14 @@ class ConversationalGovernor:
             if regions or agents or topics:
                 context_str = f"\n\nConversation context:\n- Recent regions: {regions}\n- Recent agents: {agents}\n- Recent topics: {topics}"
         
-        # Single LLM call for intent classification
+# Single LLM call for intent classification
         prompt = f"""Classify this message for a luxury property market intelligence analyst.
 
 Message: "{message}"{context_str}
 
 Return ONLY valid JSON (no markdown, no explanation):
 {{
-  "intent_type": "market_query|meta_authority|profile_status|portfolio_status|preference_change|profanity|gibberish|follow_up",
+  "intent_type": "market_query|meta_authority|profile_status|portfolio_status|portfolio_management|value_justification|trust_authority|status_monitoring|delivery_request|preference_change|profanity|gibberish|follow_up",
   "is_mandate_relevant": true|false,
   "semantic_category": "competitive_intelligence|market_dynamics|strategic_positioning|temporal_analysis|surveillance|administrative|non_domain",
   "confidence": 0.0-1.0,
@@ -328,26 +333,31 @@ Classification rules:
 1. PROFANITY ALONE = gibberish (e.g. "Fuck Chelsea", "Go fuck yourself")
 2. PERSONAL ANECDOTES = gibberish (e.g. "My dog is from London")
 3. META QUESTIONS = meta_authority (e.g. "What is Voxmill?", "What can you do?", "Tell me your capabilities")
-4. IDENTITY QUESTIONS = profile_status (e.g. "What's my name?", "Who am I?", "I'm a hedge fund investor")
-5. PORTFOLIO QUESTIONS = portfolio_status (e.g. "Show me my portfolio", "How's my portfolio?", "Portfolio summary")
-6. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
-7. REGION CHANGES = preference_change (e.g. "Switch to Lincoln", "Show me Manchester")
-8. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening in Chelsea?")
-9. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
-10. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
-11. OFF-TOPIC = gibberish (anything not about property markets)
+4. IDENTITY QUESTIONS = profile_status (e.g. "What's my name?", "Who am I?", "I'm a hedge fund investor", "Am I on trial?")
+5. PORTFOLIO VIEWING = portfolio_status (e.g. "Show me my portfolio", "How's my portfolio?", "Portfolio summary")
+6. PORTFOLIO ACTIONS = portfolio_management (e.g. "Can I add properties?", "How do I add?", "I want to add properties")
+7. VALUE QUESTIONS = value_justification (e.g. "Why Voxmill?", "Why should I use this?", "Why is this the best?")
+8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you reliable?")
+9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?", "What's my status?")
+10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF", "Send this weeks report")
+11. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
+12. REGION CHANGES = preference_change (e.g. "Switch to Lincoln", "Show me Manchester")
+13. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening in Chelsea?")
+14. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
+15. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
+16. OFF-TOPIC = gibberish (anything not about property markets)
 
 Examples:
 - "What is Voxmill?" → meta_authority (about system capabilities)
+- "Why should I use Voxmill?" → value_justification (about value proposition)
+- "Can I trust you?" → trust_authority (about reliability)
+- "What am I waiting for?" → status_monitoring (about user's status)
+- "Can I add properties?" → portfolio_management (portfolio action)
+- "PDF?" → delivery_request (report delivery)
 - "What's my name?" → profile_status (about user identity)
-- "Show me my portfolio" → portfolio_status (portfolio query)
+- "Show me my portfolio" → portfolio_status (portfolio viewing)
 - "Fuck Chelsea" → gibberish (profanity, not market query)
-- "My dog is from London" → gibberish (personal anecdote)
-- "Can I trust you?" → meta_authority (about capabilities)
-- "So what?" → follow_up (implicit continuation)
 - "Market overview" → market_query (legitimate query)
-- "ahsh" → gibberish (nonsense)
-- "Switch to Lincoln" → preference_change (region change)
 
 JSON:"""
         
@@ -511,7 +521,7 @@ JSON:"""
         Preserves nuance while blocking non-answers
         """
         
-        # PRIORITY: Use LLM's intent_type if provided
+        # PRIORITY: Use LLM's intent_type if provided (NEW - EXPANDED)
         if intent_type == "meta_authority":
             return Intent.META_AUTHORITY
         
@@ -520,6 +530,21 @@ JSON:"""
         
         if intent_type == "portfolio_status":
             return Intent.PORTFOLIO_STATUS
+        
+        if intent_type == "portfolio_management":
+            return Intent.PORTFOLIO_MANAGEMENT
+        
+        if intent_type == "value_justification":
+            return Intent.VALUE_JUSTIFICATION
+        
+        if intent_type == "trust_authority":
+            return Intent.TRUST_AUTHORITY
+        
+        if intent_type == "status_monitoring":
+            return Intent.STATUS_MONITORING
+        
+        if intent_type == "delivery_request":
+            return Intent.DELIVERY_REQUEST
         
         # Original logic for other categories
         message_lower = message.lower()
@@ -744,6 +769,71 @@ JSON:"""
                 data_load_allowed=True,
                 llm_call_allowed=True,
                 allowed_shapes=["STRUCTURED_BRIEF"]
+            ),
+            
+            Intent.PORTFOLIO_MANAGEMENT: Envelope(
+                analysis_allowed=False,
+                max_response_length=100,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.VALUE_JUSTIFICATION: Envelope(
+                analysis_allowed=False,
+                max_response_length=100,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.TRUST_AUTHORITY: Envelope(
+                analysis_allowed=False,
+                max_response_length=80,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.STATUS_MONITORING: Envelope(
+                analysis_allowed=True,
+                max_response_length=150,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=True,
+                llm_call_allowed=False,  # Read from monitoring module
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.DELIVERY_REQUEST: Envelope(
+                analysis_allowed=False,
+                max_response_length=150,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
             ),
             
             Intent.UNKNOWN: Envelope(
