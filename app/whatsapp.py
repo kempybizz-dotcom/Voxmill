@@ -1642,7 +1642,7 @@ To upgrade, contact intel@voxmill.uk"""
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
             return
         
-# ========================================
+        # ========================================
         # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
         # ========================================
         
@@ -1676,6 +1676,65 @@ To upgrade, contact intel@voxmill.uk"""
                 
                 if pref_response:
                     logger.info(f"✅ Preference request detected, sending confirmation")
+                    
+                    # ========================================
+                    # CRITICAL FIX: RELOAD CLIENT PROFILE FROM AIRTABLE
+                    # ========================================
+                    logger.info(f"🔄 Reloading client profile from Airtable after preference change...")
+                    
+                    # Fetch fresh data from Airtable
+                    client_profile_airtable = get_client_from_airtable(sender)
+                    
+                    if client_profile_airtable:
+                        # Update MongoDB cache with fresh data
+                        old_history = client_profile.get('query_history', [])
+                        old_total = client_profile.get('total_queries', 0)
+                        
+                        client_profile = {
+                            'whatsapp_number': sender,
+                            'name': client_profile_airtable['name'],
+                            'email': client_profile_airtable['email'],
+                            'tier': client_profile_airtable['tier'],
+                            'subscription_status': client_profile_airtable['subscription_status'],
+                            'airtable_record_id': client_profile_airtable['airtable_record_id'],
+                            'airtable_table': client_profile_airtable['table'],
+                            'preferences': client_profile_airtable['preferences'],
+                            'usage_metrics': client_profile_airtable['usage_metrics'],
+                            'trial_expired': client_profile_airtable.get('trial_expired', False),
+                            'total_queries': old_total,
+                            'query_history': old_history,
+                            'created_at': client_profile.get('created_at', datetime.now(timezone.utc)),
+                            'updated_at': datetime.now(timezone.utc),
+                            'airtable_is_source_of_truth': client_profile_airtable.get('airtable_is_source_of_truth', True),
+                            'access_enabled': client_profile_airtable.get('access_enabled', True),
+                            'subscription_gate_enforced': client_profile_airtable.get('subscription_gate_enforced', True),
+                            'industry': client_profile_airtable.get('industry', 'Real Estate'),
+                            'allowed_intelligence_modules': client_profile_airtable.get('allowed_intelligence_modules', []),
+                            'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'Strict')
+                        }
+                        
+                        # Update MongoDB cache
+                        from pymongo import MongoClient
+                        MONGODB_URI = os.getenv('MONGODB_URI')
+                        if MONGODB_URI:
+                            mongo_client = MongoClient(MONGODB_URI)
+                            db = mongo_client['Voxmill']
+                            db['client_profiles'].update_one(
+                                {'whatsapp_number': sender},
+                                {'$set': client_profile},
+                                upsert=True
+                            )
+                        
+                        # ========================================
+                        # CRITICAL: REFRESH preferred_region VARIABLE
+                        # ========================================
+                        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+                        preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
+                        
+                        logger.info(f"✅ Client profile reloaded: new preferred_region = '{preferred_region}'")
+                    else:
+                        logger.error(f"❌ Failed to reload client profile from Airtable")
+                    
                     await send_twilio_message(sender, pref_response)
                     
                     # Log the preference change
@@ -1687,7 +1746,7 @@ To upgrade, contact intel@voxmill.uk"""
                     logger.info(f"❌ Not a preference request, continuing to normal analyst")
             else:
                 logger.debug(f"⏭️ Skipping preference check (no keywords)")
-                    
+                        
         except Exception as e:
             logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
             # Continue to normal processing
