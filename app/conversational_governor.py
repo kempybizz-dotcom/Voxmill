@@ -256,7 +256,24 @@ class ConversationalGovernor:
             return True, SemanticCategory.ADMINISTRATIVE, 0.88
         
         # ========================================
-        # Category G: EXECUTIVE SHORTHAND (EXPANDED - FIXES 6/7 FAILURES)
+        # Category G: META-AUTHORITY QUESTIONS (NEW - CRITICAL FIX)
+        # ========================================
+        # Questions about Voxmill's capabilities, not intelligence requests
+        # Should bypass module checks and return institutional statements
+        
+        meta_authority_keywords = [
+            'what can you do', 'what do you do', 'capabilities', 'what are you',
+            'who are you', 'who is voxmill', 'what is voxmill', 'whos voxmill',
+            'can i trust you', 'trust you', 'how confident', 'how accurate', 'how reliable',
+            'what capabilities', 'your capabilities', 'what services',
+            'what modules', 'what features', 'what access', 'do you have'
+        ]
+        
+        if any(kw in message_lower for kw in meta_authority_keywords):
+            return True, SemanticCategory.ADMINISTRATIVE, 0.92
+        
+        # ========================================
+        # Category H: EXECUTIVE SHORTHAND (EXPANDED - FIXES 6/7 FAILURES)
         # ========================================
         # These are compressed status requests and executive probes
         # NOT non-domain queries - they're how executives actually talk
@@ -293,7 +310,7 @@ class ConversationalGovernor:
             return True, SemanticCategory.MARKET_DYNAMICS, 0.85
         
         # ========================================
-        # Category H: IMPLICIT CONTINUATION (NEW - CRITICAL FIX)
+        # Category I: IMPLICIT CONTINUATION (NEW - CRITICAL FIX)
         # ========================================
         # These queries assume prior context and are ALWAYS mandate-relevant
         # They're executive shorthand for "apply my previous question to this new angle"
@@ -327,7 +344,7 @@ class ConversationalGovernor:
             return True, SemanticCategory.STRATEGIC_POSITIONING, 0.90
         
         # ========================================
-        # Category I: SINGLE-WORD PROBES (NEW - ULTRA-COMPRESSED)
+        # Category J: SINGLE-WORD PROBES (NEW - ULTRA-COMPRESSED)
         # ========================================
         # Ultra-compressed executive queries (1-3 words)
         # "Why?" "How?" "When?" are NOT off-domain - they're follow-up compression
@@ -342,7 +359,7 @@ class ConversationalGovernor:
                 return True, SemanticCategory.STRATEGIC_POSITIONING, 0.85
         
         # ========================================
-        # Category J: NON-DOMAIN (ONLY after all above checks fail)
+        # Category K: NON-DOMAIN (ONLY after all above checks fail)
         # ========================================
         return False, SemanticCategory.NON_DOMAIN, 0.95
     
@@ -560,7 +577,7 @@ class ConversationalGovernor:
             logger.info(f"✅ Compression request detected → STATUS_CHECK")
             return Intent.STATUS_CHECK, 0.92
         
-        # ========================================
+# ========================================
         # REGION PINGS
         # ========================================
         
