@@ -99,7 +99,7 @@ class PINAuthenticator:
                     upsert=True
                 )
                 
-                logger.info(f"✅ PIN set for {whatsapp_number}")
+                logger.info(f" PIN set for {whatsapp_number}")
                 return True, "PIN set successfully"
             else:
                 logger.error("MongoDB not available")
@@ -160,7 +160,7 @@ class PINAuthenticator:
                     }
                 )
                 
-                logger.info(f"✅ PIN verified for {whatsapp_number}")
+                logger.info(f" PIN verified for {whatsapp_number}")
                 return True, "Access granted"
             else:
                 # Failed attempt
@@ -174,11 +174,11 @@ class PINAuthenticator:
                 if failed_attempts >= PINAuthenticator.MAX_FAILED_ATTEMPTS:
                     if pin_enforcement_mode == 'Strict':
                         update_data['pin_locked'] = True
-                        logger.warning(f"🚫 STRICT MODE: PIN locked for {whatsapp_number} after {failed_attempts} attempts")
+                        logger.warning(f" STRICT MODE: PIN locked for {whatsapp_number} after {failed_attempts} attempts")
                         return False, "locked"
                     else:
                         # Soft mode: log warning but don't lock
-                        logger.warning(f"⚠️ SOFT MODE: {failed_attempts} failed attempts for {whatsapp_number}, but NOT locking")
+                        logger.warning(f" SOFT MODE: {failed_attempts} failed attempts for {whatsapp_number}, but NOT locking")
                 
                 db['client_profiles'].update_one(
                     {'whatsapp_number': whatsapp_number},
@@ -186,7 +186,7 @@ class PINAuthenticator:
                 )
                 
                 attempts_remaining = PINAuthenticator.MAX_FAILED_ATTEMPTS - failed_attempts
-                logger.warning(f"❌ Failed PIN attempt for {whatsapp_number} ({attempts_remaining} remaining)")
+                logger.warning(f" Failed PIN attempt for {whatsapp_number} ({attempts_remaining} remaining)")
                 
                 return False, f"{attempts_remaining}"
                 
@@ -364,7 +364,7 @@ class PINAuthenticator:
                 }
             )
             
-            logger.info(f"🔓 Admin unlock for {whatsapp_number}")
+            logger.info(f" Admin unlock for {whatsapp_number}")
             return True, "Account unlocked - PIN verification required"
             
         except Exception as e:
@@ -406,7 +406,7 @@ def get_pin_status_message(reason: str, client_name: str = "there") -> str:
     first_name = client_name.split()[0] if client_name != "there" else "there"
     
     if reason == "not_set":
-        return f"""🔐 VOXMILL INTELLIGENCE ACCESS
+        return f""" VOXMILL INTELLIGENCE ACCESS
 
 Welcome to your private intelligence line.
 
@@ -417,7 +417,7 @@ This protects your classified briefings and market intelligence.
 Reply with 4 digits (e.g., 1234):"""
     
     elif reason == "inactivity":
-        return f"""🔐 ACCESS CODE REQUIRED
+        return f""" ACCESS CODE REQUIRED
 
 Good evening, {first_name}.
 
@@ -426,7 +426,7 @@ Intelligence line locked after 7 days of inactivity.
 Enter your 4-digit code:"""
     
     elif reason == "subscription_change":
-        return f"""🔐 ACCESS CODE REQUIRED
+        return f""" ACCESS CODE REQUIRED
 
 Welcome back, {first_name}.
 
@@ -445,7 +445,7 @@ Contact support:
 📧 ollys@voxmill.uk"""
     
     else:
-        return f"""🔐 ACCESS CODE REQUIRED
+        return f""" ACCESS CODE REQUIRED
 
 Enter your 4-digit code:"""
 
@@ -473,7 +473,7 @@ def get_pin_response_message(success: bool, message: str, client_name: str = "th
             greeting = f"Evening, {first_name}."
         
         if message == "PIN set successfully":
-            return f"""✅ ACCESS CODE CONFIRMED
+            return f""" ACCESS CODE CONFIRMED
 
 Your intelligence line is now secured.
 
@@ -481,7 +481,7 @@ Your intelligence line is now secured.
 
 What can I analyze for you today?"""
         else:
-            return f"""✅ ACCESS GRANTED
+            return f""" ACCESS GRANTED
 
 {greeting}
 
@@ -495,9 +495,9 @@ What can I analyze for you?"""
         attempts_remaining = int(message)
         
         if attempts_remaining == 1:
-            return f"""❌ INCORRECT CODE
+            return f""" INCORRECT CODE
 
-⚠️ FINAL ATTEMPT REMAINING
+FINAL ATTEMPT REMAINING
 
 Your intelligence line will lock after one more incorrect attempt."""
         else:
@@ -581,9 +581,9 @@ async def sync_pin_status_to_airtable(whatsapp_number: str, status: str, reason:
             response = await client.patch(url, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
-            logger.info(f"✅ Airtable PIN status synced: {whatsapp_number} → {status}")
+            logger.info(f" Airtable PIN status synced: {whatsapp_number} → {status}")
         else:
-            logger.warning(f"⚠️ Airtable sync failed: {response.status_code}")
+            logger.warning(f" Airtable sync failed: {response.status_code}")
             
     except Exception as e:
         logger.error(f"Airtable PIN sync error: {e}")
