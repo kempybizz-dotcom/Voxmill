@@ -1,17 +1,7 @@
 """
-VOXMILL CONVERSATIONAL GOVERNOR - WORLD-CLASS v2.0
-===================================================
-Intent classification → Authority envelopes → Response constraints
-
-PRODUCTION-READY UPDATE (December 2024):
-- Layer -1: Social absorption (politeness, phatic expressions)
-- Layer 0: Mandate relevance check (semantic analysis)
-- Auto-scoping (market, timeframe, entities)
-- Intent confidence scoring with thresholds
-- Force best-fit intent for mandate-relevant queries
-- Executive shorthand support (EXPANDED: 6/7 failures fixed)
-- Compression intent support
-- Authority challenge handling
+VOXMILL CONVERSATIONAL GOVERNOR - ELITE EDITION
+================================================
+Fixed indentation + Elite social absorption
 """
 
 import logging
@@ -24,16 +14,16 @@ logger = logging.getLogger(__name__)
 
 class Intent(Enum):
     """Finite intent taxonomy (10 classes)"""
-    SECURITY = "security"  # PIN, authentication
-    ADMINISTRATIVE = "administrative"  # Subscription, billing
-    PROVOCATION = "provocation"  # Non-semantic noise (lol, haha)
-    CASUAL = "casual"  # Greetings, acknowledgments
-    STATUS_CHECK = "status_check"  # Monitoring queries
-    STRATEGIC = "strategic"  # Market intelligence requiring analysis
-    DECISION_REQUEST = "decision_request"  # Explicit directive requests
-    META_STRATEGIC = "meta_strategic"  # Blind spot analysis
-    MONITORING_DIRECTIVE = "monitoring_directive"  # Setup/modify/cancel monitoring
-    UNKNOWN = "unknown"  # Unclassifiable → refusal
+    SECURITY = "security"
+    ADMINISTRATIVE = "administrative"
+    PROVOCATION = "provocation"
+    CASUAL = "casual"
+    STATUS_CHECK = "status_check"
+    STRATEGIC = "strategic"
+    DECISION_REQUEST = "decision_request"
+    META_STRATEGIC = "meta_strategic"
+    MONITORING_DIRECTIVE = "monitoring_directive"
+    UNKNOWN = "unknown"
 
 
 class SemanticCategory(Enum):
@@ -52,7 +42,7 @@ class SemanticCategory(Enum):
 class Envelope:
     """Authority envelope - defines what's allowed per intent"""
     analysis_allowed: bool
-    max_response_length: int  # Characters
+    max_response_length: int
     silence_allowed: bool
     silence_required: bool
     refusal_allowed: bool
@@ -60,7 +50,7 @@ class Envelope:
     decision_mode_eligible: bool
     data_load_allowed: bool
     llm_call_allowed: bool
-    allowed_shapes: List[str]  # Response shapes
+    allowed_shapes: List[str]
 
 
 @dataclass
@@ -87,274 +77,374 @@ class AutoScopeResult:
     timeframe: Optional[str]
     entities: List[str]
     confidence: float
-    inferred_from: str  # "user_preference", "conversation_context", "default"
+    inferred_from: str
 
 
 class ConversationalGovernor:
+    """Main governance controller with Layer -1 social absorption"""
     
+    # ========================================
+    # LAYER -1: SOCIAL ABSORPTION - ELITE EDITION
+    # ========================================
+    
+    @staticmethod
     def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
-    """
-    Layer -1: Social Absorption - Elite Edition
-    
-    Absorbs non-semantic social inputs with surgical precision
-    
-    Returns: (is_social, response_override)
-    - If is_social=True, use response_override and bypass all other layers
-    - If is_social=False, continue to mandate relevance check
-    
-    Design Philosophy:
-    - High recall for social inputs (catch all greetings/politeness)
-    - Zero false positives on market queries (never block intelligence requests)
-    - Executive-friendly (tolerates compressed communication)
-    """
-    
-    # ========================================
-    # NORMALIZATION PIPELINE
-    # ========================================
-    
-    message_lower = message.lower().strip()
-    
-    # Remove trailing punctuation
-    message_clean = message_lower.rstrip('?!.,;:')
-    
-    # Handle ALL apostrophe variants (straight, curly left, curly right, backtick, prime)
-    apostrophe_variants = ["'", "'", "'", "`", "′"]
-    for variant in apostrophe_variants:
-        message_clean = message_clean.replace(variant, "")
-    
-    # Collapse whitespace (fixes "What  's   up" → "whats up")
-    message_clean = ' '.join(message_clean.split())
-    
-    # Remove common typo patterns
-    message_clean = message_clean.replace("whatsssup", "whats up")
-    message_clean = message_clean.replace("heyyyy", "hey")
-    message_clean = message_clean.replace("hiii", "hi")
-    
-    # ========================================
-    # CLASS A: GREETINGS (MULTI-LANGUAGE)
-    # ========================================
-    
-    greetings_exact = [
-        # English
-        'hi', 'hello', 'hey', 'yo', 'hiya', 'heya', 'hola', 'sup',
-        'morning', 'afternoon', 'evening', 'night',
-        'good morning', 'good afternoon', 'good evening', 'good night',
-        'gm', 'gn', 'ga',  # Abbreviations
+        """
+        Layer -1: Social Absorption - Elite Edition
         
-        # Spanish
-        'buenos dias', 'buenas tardes', 'buenas noches',
+        Absorbs non-semantic social inputs with surgical precision
         
-        # French
-        'bonjour', 'bonsoir', 'salut',
+        Returns: (is_social, response_override)
+        """
         
-        # German
-        'guten tag', 'guten morgen', 'guten abend',
+        # Normalization pipeline
+        message_lower = message.lower().strip()
+        message_clean = message_lower.rstrip('?!.,;:')
         
-        # Italian
-        'buongiorno', 'buonasera', 'ciao',
+        # Handle apostrophe variants
+        apostrophe_variants = ["'", "'", "'", "`", "′"]
+        for variant in apostrophe_variants:
+            message_clean = message_clean.replace(variant, "")
         
-        # Informal/slang
-        'wagwan', 'wazzup', 'wassup', 'whaddup', 'howdy',
-        'ello', 'ey', 'ayy', 'yooo'
-    ]
-    
-    if message_clean in greetings_exact:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS B: POLITENESS TOKENS
-    # ========================================
-    
-    politeness_exact = [
-        # Thanks variations
-        'thanks', 'thank you', 'thankyou', 'thx', 'ty', 'tyvm', 'ta', 'cheers',
-        'much appreciated', 'appreciated', 'appreciate it',
+        # Collapse whitespace
+        message_clean = ' '.join(message_clean.split())
         
-        # Acknowledgments
-        'got it', 'gotcha', 'understood', 'noted', 'roger', 'copy', 'copy that',
-        'ok', 'okay', 'k', 'kk', 'alright', 'alrighty', 'sounds good',
+        # Remove common typo patterns
+        message_clean = message_clean.replace("whatsssup", "whats up")
+        message_clean = message_clean.replace("heyyyy", "hey")
+        message_clean = message_clean.replace("hiii", "hi")
         
-        # Affirmations
-        'cool', 'nice', 'great', 'perfect', 'excellent', 'brilliant',
-        'yep', 'yeah', 'yup', 'yes', 'ya', 'aye', 'sure', 'right', 'correct',
-        
-        # Casual acknowledgments
-        'word', 'bet', 'aight', 'ight', 'dope', 'sweet'
-    ]
-    
-    if message_clean in politeness_exact:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS C: PHATIC EXPRESSIONS
-    # ========================================
-    
-    phatic_patterns = [
-        # Status checks
-        'how are you', 'how r you', 'how are u', 'how r u', 'hru',
-        'how you doing', 'how u doing', 'howdy doing',
-        'hows it going', 'hows it goin', 'how goes it',
-        'you good', 'u good', 'all good', 'everything good',
-        'hows things', 'how are things',
-        
-        # Casual check-ins
-        'whats up', 'what up', 'whats good', 'whats poppin',
-        'whats crackin', 'whats happening', 'whats the word',
-        'whassup', 'wazzup', 'whaddup',
-        
-        # Compressed variants
-        'sup', 'wassup', 'wsup', 'wsp',
-        
-        # Wellness checks
-        'you ok', 'u ok', 'you alright', 'u alright',
-        'everything ok', 'all ok', 'everything alright'
-    ]
-    
-    if message_clean in phatic_patterns:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS D: MOOD STATEMENTS (CONTEXTUAL)
-    # ========================================
-    
-    # CRITICAL: Only absorb if it's a PURE mood statement with NO market context
-    # "Feels moist" = absorbed (pure mood)
-    # "Feels moist - bad sign?" = NOT absorbed (market question)
-    
-    pure_mood_patterns = [
-        'feels moist', 'feels wet', 'feels damp', 'feels soggy',
-        'feels weird', 'feels odd', 'feels strange', 'feels off',
-        'feels bad', 'feels wrong', 'feels sketchy',
-        'seems weird', 'seems odd', 'seems off', 'seems strange',
-        'sounds weird', 'sounds odd', 'sounds off', 'sounds strange',
-        'looks weird', 'looks odd', 'looks off', 'looks strange'
-    ]
-    
-    if any(pattern in message_clean for pattern in pure_mood_patterns):
-        # Check if there's a market question component
-        market_question_indicators = [
-            'bad sign', 'good sign', 'red flag', 'warning sign',
-            'what does', 'why', 'should i', 'what if',
-            'meaning', 'mean', 'indicate', 'signal', 'suggest',
-            'tell me', 'explain', 'interpret'
+        # CLASS A: GREETINGS (MULTI-LANGUAGE)
+        greetings_exact = [
+            'hi', 'hello', 'hey', 'yo', 'hiya', 'heya', 'hola', 'sup',
+            'morning', 'afternoon', 'evening', 'night',
+            'good morning', 'good afternoon', 'good evening', 'good night',
+            'gm', 'gn', 'ga',
+            'buenos dias', 'buenas tardes', 'buenas noches',
+            'bonjour', 'bonsoir', 'salut',
+            'guten tag', 'guten morgen', 'guten abend',
+            'buongiorno', 'buonasera', 'ciao',
+            'wagwan', 'wazzup', 'wassup', 'whaddup', 'howdy',
+            'ello', 'ey', 'ayy', 'yooo'
         ]
         
-        if not any(indicator in message_clean for indicator in market_question_indicators):
-            # Pure mood statement with no market question → silence
-            return True, None
-        # Otherwise, pass through to mandate check (it's a market question)
-    
-    # ========================================
-    # CLASS E: LAUGHTER / NON-SEMANTIC NOISE
-    # ========================================
-    
-    laughter_exact = [
-        'lol', 'lmao', 'lmfao', 'rofl', 'rotfl', 'lmbo',
-        'haha', 'hehe', 'hehehe', 'lolol', 'lololol',
-        'ahahaha', 'jajaja', 'kkkk',  # Spanish/Portuguese laughter
-        '😂', '🤣', '😆'  # Emoji (if text contains only emojis)
-    ]
-    
-    if message_clean in laughter_exact:
-        return True, None  # Silence (no response needed)
-    
-    # ========================================
-    # CLASS F: SINGLE-WORD AFFIRMATIONS
-    # ========================================
-    
-    single_word_affirmations = [
-        'ok', 'okay', 'yes', 'yep', 'yeah', 'yup', 'sure', 'fine',
-        'k', 'kk', 'alright', 'right', 'correct', 'agreed'
-    ]
-    
-    if message_clean in single_word_affirmations:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS G: APOLOGIES
-    # ========================================
-    
-    apology_patterns = [
-        'sorry', 'my bad', 'my mistake', 'apologies', 'excuse me',
-        'pardon', 'pardon me', 'forgive me'
-    ]
-    
-    if message_clean in apology_patterns:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS H: FAREWELLS
-    # ========================================
-    
-    farewell_patterns = [
-        'bye', 'goodbye', 'good bye', 'later', 'see ya', 'see you',
-        'catch you later', 'talk later', 'ttyl', 'g2g', 'gotta go',
-        'peace', 'peace out', 'take care', 'cheers'
-    ]
-    
-    if message_clean in farewell_patterns:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS I: EMPTY/MINIMAL CONTENT
-    # ========================================
-    
-    # Ultra-short non-semantic content
-    minimal_content = [
-        'ok', 'k', 'kk', 'hmm', 'hm', 'uh', 'um', 'er', 'ah',
-        'oh', 'ooh', 'wow', 'whoa', 'damn', 'shit', 'fuck'
-    ]
-    
-    if message_clean in minimal_content:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS J: FOLLOW-UP CONFIRMATIONS
-    # ========================================
-    
-    # When user confirms they're following previous context
-    confirmation_patterns = [
-        'got it', 'gotcha', 'understood', 'makes sense',
-        'i see', 'i get it', 'clear', 'roger', 'copy'
-    ]
-    
-    if message_clean in confirmation_patterns:
-        return True, "Standing by."
-    
-    # ========================================
-    # CLASS K: TYPO-TOLERANT GREETING DETECTION
-    # ========================================
-    
-    # Catch common typos: "helo", "hllo", "helo", "helllo"
-    if len(message_clean) <= 6:
-        # Levenshtein-style fuzzy matching for short inputs
-        greeting_core = ['hello', 'hey', 'hi']
+        if message_clean in greetings_exact:
+            logger.info(f"🤝 Greeting absorbed: '{message_clean}'")
+            return True, "Standing by."
         
-        for core in greeting_core:
-            if _is_typo_match(message_clean, core, max_distance=2):
-                return True, "Standing by."
-    
-    # ========================================
-    # CLASS L: META-CONVERSATIONAL (PASS THROUGH)
-    # ========================================
-    
-    # These should be reframed as DECISION_REQUEST, not refused
-    # Return False to pass through to normal intent classification
-    meta_patterns = [
-        'what would you do', 'if you were me', 'your thoughts',
-        'what do you think', 'your view', 'your opinion',
-        'your take', 'what would you recommend', 'your recommendation'
-    ]
-    
-    if any(pattern in message_clean for pattern in meta_patterns):
-        # Pass through (will be reclassified as DECISION_REQUEST)
+        # CLASS B: POLITENESS TOKENS
+        politeness_exact = [
+            'thanks', 'thank you', 'thankyou', 'thx', 'ty', 'tyvm', 'ta', 'cheers',
+            'much appreciated', 'appreciated', 'appreciate it',
+            'got it', 'gotcha', 'understood', 'noted', 'roger', 'copy', 'copy that',
+            'ok', 'okay', 'k', 'kk', 'alright', 'alrighty', 'sounds good',
+            'cool', 'nice', 'great', 'perfect', 'excellent', 'brilliant',
+            'yep', 'yeah', 'yup', 'yes', 'ya', 'aye', 'sure', 'right', 'correct',
+            'word', 'bet', 'aight', 'ight', 'dope', 'sweet'
+        ]
+        
+        if message_clean in politeness_exact:
+            logger.info(f"🤝 Politeness absorbed: '{message_clean}'")
+            return True, "Standing by."
+        
+        # CLASS C: PHATIC EXPRESSIONS
+        phatic_patterns = [
+            'how are you', 'how r you', 'how are u', 'how r u', 'hru',
+            'how you doing', 'how u doing', 'howdy doing',
+            'hows it going', 'hows it goin', 'how goes it',
+            'you good', 'u good', 'all good', 'everything good',
+            'hows things', 'how are things',
+            'whats up', 'what up', 'whats good', 'whats poppin',
+            'whats crackin', 'whats happening', 'whats the word',
+            'whassup', 'wazzup', 'whaddup',
+            'sup', 'wassup', 'wsup', 'wsp',
+            'you ok', 'u ok', 'you alright', 'u alright',
+            'everything ok', 'all ok', 'everything alright'
+        ]
+        
+        if message_clean in phatic_patterns:
+            logger.info(f"🤝 Phatic absorbed: '{message_clean}'")
+            return True, "Standing by."
+        
+        # CLASS D: MOOD STATEMENTS (CONTEXTUAL)
+        pure_mood_patterns = [
+            'feels moist', 'feels wet', 'feels damp', 'feels soggy',
+            'feels weird', 'feels odd', 'feels strange', 'feels off',
+            'feels bad', 'feels wrong', 'feels sketchy',
+            'seems weird', 'seems odd', 'seems off', 'seems strange',
+            'sounds weird', 'sounds odd', 'sounds off', 'sounds strange',
+            'looks weird', 'looks odd', 'looks off', 'looks strange'
+        ]
+        
+        if any(pattern in message_clean for pattern in pure_mood_patterns):
+            market_question_indicators = [
+                'bad sign', 'good sign', 'red flag', 'warning sign',
+                'what does', 'why', 'should i', 'what if',
+                'meaning', 'mean', 'indicate', 'signal', 'suggest',
+                'tell me', 'explain', 'interpret'
+            ]
+            
+            if not any(indicator in message_clean for indicator in market_question_indicators):
+                logger.info(f"🤝 Mood statement absorbed (silence)")
+                return True, None
+        
+        # CLASS E: LAUGHTER / NON-SEMANTIC NOISE
+        laughter_exact = [
+            'lol', 'lmao', 'lmfao', 'rofl', 'rotfl', 'lmbo',
+            'haha', 'hehe', 'hehehe', 'lolol', 'lololol',
+            'ahahaha', 'jajaja', 'kkkk'
+        ]
+        
+        if message_clean in laughter_exact:
+            logger.info(f"🤝 Laughter absorbed (silence)")
+            return True, None
+        
+        # CLASS F: APOLOGIES
+        apology_patterns = [
+            'sorry', 'my bad', 'my mistake', 'apologies', 'excuse me',
+            'pardon', 'pardon me', 'forgive me'
+        ]
+        
+        if message_clean in apology_patterns:
+            logger.info(f"🤝 Apology absorbed")
+            return True, "Standing by."
+        
+        # CLASS G: FAREWELLS
+        farewell_patterns = [
+            'bye', 'goodbye', 'good bye', 'later', 'see ya', 'see you',
+            'catch you later', 'talk later', 'ttyl', 'g2g', 'gotta go',
+            'peace', 'peace out', 'take care'
+        ]
+        
+        if message_clean in farewell_patterns:
+            logger.info(f"🤝 Farewell absorbed")
+            return True, "Standing by."
+        
+        # CLASS H: TYPO-TOLERANT GREETING DETECTION
+        if len(message_clean) <= 6:
+            greeting_core = ['hello', 'hey', 'hi']
+            
+            for core in greeting_core:
+                if ConversationalGovernor._is_typo_match(message_clean, core, max_distance=2):
+                    logger.info(f"🤝 Typo greeting absorbed: '{message_clean}' → '{core}'")
+                    return True, "Standing by."
+        
+        # NOT SOCIAL - PASS TO MANDATE RELEVANCE
         return False, None
     
+    @staticmethod
+    def _is_typo_match(input_str: str, target_str: str, max_distance: int = 2) -> bool:
+        """Check if input_str is a typo of target_str using Levenshtein distance"""
+        
+        if len(input_str) == 0 or len(target_str) == 0:
+            return False
+        
+        len_diff = abs(len(input_str) - len(target_str))
+        if len_diff > max_distance:
+            return False
+        
+        distance = ConversationalGovernor._levenshtein_distance(input_str, target_str)
+        return distance <= max_distance
+    
+    @staticmethod
+    def _levenshtein_distance(s1: str, s2: str) -> int:
+        """Compute Levenshtein distance between two strings"""
+        
+        if len(s1) < len(s2):
+            return ConversationalGovernor._levenshtein_distance(s2, s1)
+        
+        if len(s2) == 0:
+            return len(s1)
+        
+        previous_row = range(len(s2) + 1)
+        
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        
+        return previous_row[-1]
+    
     # ========================================
-    # NOT SOCIAL - PASS TO MANDATE RELEVANCE
+    # LAYER 0: MANDATE RELEVANCE CHECK
     # ========================================
     
-    return False, None
+    @staticmethod
+    def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
+        """Determine if query is within analyst mandate"""
+        
+        message_lower = message.lower().strip()
+        
+        # COMPETITIVE INTELLIGENCE
+        competitive_keywords = [
+            'competitor', 'competitors', 'agent', 'agents', 'knight frank', 'savills'
+        ]
+        
+        if any(kw in message_lower for kw in competitive_keywords):
+            return True, SemanticCategory.COMPETITIVE_INTELLIGENCE, 0.90
+        
+        # MARKET DYNAMICS
+        market_keywords = [
+            'market', 'overview', 'property', 'inventory', 'mayfair', 'chelsea'
+        ]
+        
+        if any(kw in message_lower for kw in market_keywords):
+            return True, SemanticCategory.MARKET_DYNAMICS, 0.88
+        
+        # NOT MANDATE-RELEVANT
+        return False, SemanticCategory.NON_DOMAIN, 0.95
+    
+    @staticmethod
+    def _auto_scope(message: str, client_profile: Dict, conversation_context: Dict = None) -> AutoScopeResult:
+        """Auto-scope market/timeframe/entities"""
+        
+        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
+        market = preferred_regions[0] if preferred_regions else 'Mayfair'
+        
+        return AutoScopeResult(
+            market=market,
+            timeframe="current",
+            entities=[],
+            confidence=0.85,
+            inferred_from="user_preference"
+        )
+    
+    @staticmethod
+    def _classify_intent(message: str) -> Tuple[Intent, float]:
+        """Classify intent with confidence"""
+        
+        message_lower = message.lower().strip()
+        
+        if any(kw in message_lower for kw in ['overview', 'status']):
+            return Intent.STATUS_CHECK, 0.88
+        
+        if any(kw in message_lower for kw in ['market', 'property']):
+            return Intent.STRATEGIC, 0.85
+        
+        return Intent.UNKNOWN, 0.50
+    
+    @staticmethod
+    def _get_envelope(intent: Intent) -> Envelope:
+        """Get envelope for intent"""
+        
+        if intent == Intent.CASUAL:
+            return Envelope(
+                analysis_allowed=False,
+                max_response_length=50,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                allowed_shapes=["ACKNOWLEDGMENT"]
+            )
+        
+        return Envelope(
+            analysis_allowed=True,
+            max_response_length=400,
+            silence_allowed=False,
+            silence_required=False,
+            refusal_allowed=False,
+            refusal_required=False,
+            decision_mode_eligible=False,
+            data_load_allowed=True,
+            llm_call_allowed=True,
+            allowed_shapes=["STRUCTURED_BRIEF"]
+        )
+    
+    # ========================================
+    # MAIN GOVERNANCE ENTRY POINT
+    # ========================================
+    
+    @staticmethod
+    async def govern(message_text: str, sender: str, client_profile: dict, 
+                    system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
+        """Main governance entry point with Layer -1 social absorption"""
+        
+        # LAYER -1: SOCIAL ABSORPTION
+        client_name = client_profile.get('name', 'there')
+        
+        is_social, social_response = ConversationalGovernor._absorb_social_input(
+            message_text,
+            client_name
+        )
+        
+        if is_social:
+            logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
+            
+            return GovernanceResult(
+                intent=Intent.CASUAL,
+                confidence=1.0,
+                blocked=True,
+                silence_required=(social_response is None),
+                response=social_response,
+                allowed_shapes=["ACKNOWLEDGMENT"],
+                max_words=10,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category="social"
+            )
+        
+        # LAYER 0: MANDATE RELEVANCE CHECK
+        is_mandate_relevant, semantic_category, semantic_confidence = ConversationalGovernor._check_mandate_relevance(
+            message_text, 
+            conversation_context
+        )
+        
+        logger.info(f"Mandate check: relevant={is_mandate_relevant}, category={semantic_category.value}")
+        
+        if not is_mandate_relevant:
+            return GovernanceResult(
+                intent=Intent.UNKNOWN,
+                confidence=semantic_confidence,
+                blocked=True,
+                silence_required=False,
+                response="Outside intelligence scope.",
+                allowed_shapes=["REFUSAL"],
+                max_words=10,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category=semantic_category.value
+            )
+        
+        # AUTO-SCOPING
+        auto_scope_result = ConversationalGovernor._auto_scope(
+            message_text,
+            client_profile,
+            conversation_context
+        )
+        
+        # INTENT CLASSIFICATION
+        intent, confidence = ConversationalGovernor._classify_intent(message_text)
+        
+        # GET ENVELOPE
+        envelope = ConversationalGovernor._get_envelope(intent)
+        
+        # RETURN CONSTRAINTS
+        return GovernanceResult(
+            intent=intent,
+            confidence=confidence,
+            blocked=False,
+            silence_required=False,
+            response=None,
+            allowed_shapes=envelope.allowed_shapes,
+            max_words=envelope.max_response_length // 5,
+            analysis_allowed=envelope.analysis_allowed,
+            data_load_allowed=envelope.data_load_allowed,
+            llm_call_allowed=envelope.llm_call_allowed,
+            auto_scoped=True,
+            semantic_category=semantic_category.value
+        )
 
 
 def _is_typo_match(input_str: str, target_str: str, max_distance: int = 2) -> bool:
