@@ -570,7 +570,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, "I specialise in market intelligence analysis. What would you like to explore?")
             return
         
-        # ====================================================================
+# ====================================================================
         # GATE 1: IDENTITY - OPTIMIZED CLIENT LOADING
         # ====================================================================
         
@@ -646,6 +646,161 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             logger.warning(f"🚫 GATE 1 FAILED: UNAUTHORIZED: {sender}")
             await send_twilio_message(sender, "This number is not authorized for Voxmill Intelligence.\n\nFor institutional access, contact:\nintel@voxmill.uk")
             return
+        
+        # ====================================================================
+        # AUTOMATED WELCOME MESSAGE DETECTION (FIRST MESSAGE ONLY)
+        # ====================================================================
+        
+        from pymongo import MongoClient
+        MONGODB_URI = os.getenv('MONGODB_URI')
+        
+        should_send_welcome = False
+        welcome_message_type = None
+        
+        if MONGODB_URI:
+            mongo_client = MongoClient(MONGODB_URI)
+            db = mongo_client['Voxmill']
+            
+            # Get previous profile state (if exists)
+            previous_profile = db['client_profiles'].find_one({'whatsapp_number': sender})
+            
+            # ================================================================
+            # DETECTION 1: BRAND NEW USER (NO PREVIOUS RECORD)
+            # ================================================================
+            
+            if not previous_profile:
+                logger.info(f"🆕 BRAND NEW USER DETECTED: {sender}")
+                should_send_welcome = True
+                
+                if client_profile.get('subscription_status') == 'Trial':
+                    welcome_message_type = 'trial_start'
+                else:
+                    welcome_message_type = 'first_active'
+            
+            # ================================================================
+            # DETECTION 2: FIRST MESSAGE (EXISTING RECORD BUT NO QUERIES)
+            # ================================================================
+            
+            elif previous_profile.get('total_queries', 0) == 0 and not previous_profile.get('welcome_message_sent'):
+                logger.info(f"🆕 FIRST MESSAGE FROM EXISTING USER: {sender}")
+                should_send_welcome = True
+                
+                if client_profile.get('subscription_status') == 'Trial':
+                    welcome_message_type = 'trial_start'
+                else:
+                    welcome_message_type = 'first_active'
+            
+            # ================================================================
+            # DETECTION 3: REACTIVATION (CANCELLED → ACTIVE)
+            # ================================================================
+            
+            elif previous_profile:
+                previous_status = previous_profile.get('subscription_status')
+                current_status = client_profile.get('subscription_status')
+                
+                # Detect status change to Active from any inactive state
+                if previous_status in ['Cancelled', 'Paused', 'Suspended'] and current_status == 'Active':
+                    # Only send if welcome wasn't already sent for reactivation
+                    if not previous_profile.get('reactivation_welcome_sent'):
+                        logger.info(f"🔄 REACTIVATION DETECTED: {previous_status} → {current_status}")
+                        should_send_welcome = True
+                        welcome_message_type = 'reactivation'
+            
+            # ================================================================
+            # SEND AUTOMATED WELCOME MESSAGE
+            # ================================================================
+            
+            if should_send_welcome:
+                client_name = client_profile.get('name', 'there')
+                first_name = client_name.split()[0] if client_name != 'there' else 'there'
+                
+                if welcome_message_type == 'trial_start':
+                    welcome_msg = f"""TRIAL PERIOD ACTIVE
+
+Welcome to Voxmill Intelligence, {first_name}.
+
+Your 24-hour trial access is now active.
+
+This desk provides real-time market intelligence, competitive dynamics, and strategic signal detection.
+
+The system is designed for executive shorthand—you don't need to be precise, clarity is inferred.
+
+Try:
+- "Market overview"
+- "What changed this week?"
+- "Where is risk building?"
+- "Who's moving first?"
+
+Available 24/7.
+
+Voxmill Intelligence — Precision at Scale"""
+                
+                elif welcome_message_type == 'reactivation':
+                    greeting = get_time_appropriate_greeting(first_name)
+                    welcome_msg = f"""{greeting}
+
+WELCOME BACK
+
+Your Voxmill Intelligence access has been reactivated.
+
+Your private intelligence line is now active.
+
+Standing by."""
+                
+                else:  # first_active
+                    greeting = get_time_appropriate_greeting(first_name)
+                    welcome_msg = f"""{greeting}
+
+Welcome to Voxmill Intelligence.
+
+Your private intelligence line is now active.
+
+This desk provides real-time market intelligence, competitive dynamics, and strategic signal detection across high-level markets.
+
+The system is designed for executive shorthand—you don't need to be precise, clarity is inferred.
+
+Try:
+- "Market overview"
+- "What changed since last week?"
+- "Where is risk building?"
+- "Who's moving first?"
+
+Available 24/7.
+
+Voxmill Intelligence — Precision at Scale"""
+                
+                # Send welcome message
+                await send_twilio_message(sender, welcome_msg)
+                
+                # Mark welcome as sent in MongoDB
+                if welcome_message_type == 'reactivation':
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {
+                            '$set': {
+                                'reactivation_welcome_sent': True,
+                                'last_reactivation_welcome': datetime.now(timezone.utc)
+                            }
+                        },
+                        upsert=True
+                    )
+                else:
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {
+                            '$set': {
+                                'welcome_message_sent': True,
+                                'welcome_sent_at': datetime.now(timezone.utc),
+                                'welcome_type': welcome_message_type
+                            }
+                        },
+                        upsert=True
+                    )
+                
+                logger.info(f"✅ Automated welcome sent: {welcome_message_type}")
+                
+                # Brief pause before processing actual query
+                await asyncio.sleep(1.5)
         
         # ====================================================================
         # GATE 2: TRIAL STATUS - OPTIMIZED (Single Check)
