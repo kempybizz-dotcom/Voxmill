@@ -363,7 +363,7 @@ Welcome to Voxmill Intelligence.
 
 Your private intelligence line is now active.
 
-This desk provides real-time market intelligence, competitive dynamics, and strategic signal detection across luxury property markets.
+This desk provides real-time market intelligence, competitive dynamics, and strategic signal detection across high-level markets.
 
 The system is designed for executive shorthand - you don't need to be precise, clarity is inferred.
 
@@ -947,7 +947,7 @@ Standing by."""
         
         logger.info(f"✅ Region = '{preferred_region}'")
         
-        # ====================================================================
+# ====================================================================
         # GOVERNANCE LAYER
         # ====================================================================
         
@@ -1088,6 +1088,67 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 logger.info(f"✅ Message processed: category={governance_result.intent.value}")
                 return
+        
+        # ====================================================================
+        # VALUE_JUSTIFICATION / TRUST_AUTHORITY / PORTFOLIO_MANAGEMENT / DELIVERY_REQUEST ROUTING (NEW)
+        # ====================================================================
+        
+        if governance_result.intent in [Intent.VALUE_JUSTIFICATION, Intent.TRUST_AUTHORITY, Intent.PORTFOLIO_MANAGEMENT, Intent.DELIVERY_REQUEST]:
+            # These intents have hardcoded responses in governance_result.response
+            if governance_result.response:
+                await send_twilio_message(sender, governance_result.response)
+                
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=governance_result.response,
+                    metadata={'category': governance_result.intent.value, 'intent': governance_result.intent.value}
+                )
+                
+                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
+                update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                
+                logger.info(f"✅ Message processed: category={governance_result.intent.value}")
+                return
+        
+        # ====================================================================
+        # STATUS_MONITORING ROUTING (NEW - CRITICAL)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.STATUS_MONITORING:
+            try:
+                from app.monitoring import get_monitoring_status
+                
+                logger.info(f"📊 Status monitoring query detected")
+                
+                # Get monitoring status
+                monitors = get_monitoring_status(sender)
+                
+                if not monitors or len(monitors) == 0:
+                    response = "No active monitoring."
+                else:
+                    response = f"""MONITORING STATUS
+
+Active: {len(monitors)} properties
+
+Standing by."""
+                
+                await send_twilio_message(sender, response)
+                
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'status_monitoring', 'intent': 'status_monitoring'}
+                )
+                
+                log_interaction(sender, message_text, "status_monitoring", response)
+                update_client_history(sender, message_text, "status_monitoring", preferred_region)
+                
+                logger.info(f"✅ Message processed: category=status_monitoring")
+                return
+                
+            except Exception as e:
+                logger.error(f"❌ Status monitoring failed: {e}")
+                # Fall through to normal processing
         
         # ====================================================================
         # DATA LOAD / ANALYSIS GATES
