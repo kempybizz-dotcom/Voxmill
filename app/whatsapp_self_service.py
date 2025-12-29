@@ -502,7 +502,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             change_lines.append(f"• Coverage Areas: {regions}")
         
         # Final confirmation message
-        confirmation = f"""✅ PREFERENCES UPDATED
+        confirmation = f""" PREFERENCES UPDATED
 
 {chr(10).join(change_lines)}
 
@@ -609,7 +609,7 @@ Contact ollys@voxmill.uk to upgrade."""
         
         status = "ENABLED" if alert_enabled else "DISABLED"
         
-        return f"""✅ ALERT PREFERENCES UPDATED
+        return f""" ALERT PREFERENCES UPDATED
 
 Real-Time Alerts: {status}
 
@@ -627,7 +627,7 @@ Your preferences can be changed anytime."""
         
         return f"""ALERT SETTINGS
 
-Current Status: {"ENABLED ✅" if current_status else "DISABLED ❌"}
+Current Status: {"ENABLED" if current_status else "DISABLED ❌"}
 
 Alert Types:
 - Price Drop Alerts (>5% adjustments)
