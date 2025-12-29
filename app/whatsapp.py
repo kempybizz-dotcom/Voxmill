@@ -924,7 +924,7 @@ Standing by."""
         
         logger.info(f"✅ GATE 4 PASSED: PIN verified")
         
-        # ====================================================================
+# ====================================================================
         # GATE 5: REGION EXTRACTION
         # ====================================================================
         
@@ -1000,6 +1000,98 @@ Standing by."""
         data_load_allowed = governance_result.data_load_allowed
         
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
+        
+        # ====================================================================
+        # PORTFOLIO STATUS ROUTING (NEW - CRITICAL)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.PORTFOLIO_STATUS:
+            try:
+                from app.portfolio import get_portfolio_summary
+                
+                logger.info(f"📊 Portfolio query detected")
+                
+                # Get portfolio data
+                portfolio = get_portfolio_summary(sender)
+                
+                if portfolio.get('error'):
+                    response = "No properties in portfolio."
+                else:
+                    # Format portfolio response
+                    total_properties = len(portfolio.get('properties', []))
+                    total_value = portfolio.get('total_current_value', 0)
+                    total_gain_loss = portfolio.get('total_gain_loss_pct', 0)
+                    
+                    # Build property list (max 5)
+                    prop_list = []
+                    for prop in portfolio.get('properties', [])[:5]:
+                        address = prop.get('address', 'Unknown')
+                        current_estimate = prop.get('current_estimate', 0)
+                        gain_loss_pct = prop.get('gain_loss_pct', 0)
+                        
+                        prop_list.append(
+                            f"• {address}: £{current_estimate:,.0f} ({gain_loss_pct:+.1f}%)"
+                        )
+                    
+                    # Construct response
+                    response = f"""PORTFOLIO SUMMARY
+
+{chr(10).join(prop_list)}
+
+Total: {total_properties} properties
+Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
+                
+                # Send response
+                await send_twilio_message(sender, response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'portfolio_status', 'intent': 'portfolio_status'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "portfolio_status", response)
+                
+                # Update client history
+                update_client_history(sender, message_text, "portfolio_status", preferred_region)
+                
+                logger.info(f"✅ Message processed: category=portfolio_status, intent=portfolio_status")
+                
+                return  # Exit early
+                
+            except ImportError:
+                logger.error("❌ Portfolio module not available")
+                # Fall through to normal processing
+            except Exception as e:
+                logger.error(f"❌ Portfolio failed: {e}")
+                # Fall through to normal processing
+        
+        # ====================================================================
+        # META_AUTHORITY / PROFILE_STATUS ROUTING (NEW - CRITICAL)
+        # ====================================================================
+        
+        if governance_result.intent in [Intent.META_AUTHORITY, Intent.PROFILE_STATUS]:
+            # These intents have hardcoded responses in governance_result.response
+            if governance_result.response:
+                await send_twilio_message(sender, governance_result.response)
+                
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=governance_result.response,
+                    metadata={'category': governance_result.intent.value, 'intent': governance_result.intent.value}
+                )
+                
+                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
+                update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                
+                logger.info(f"✅ Message processed: category={governance_result.intent.value}")
+                return
+        
+        # ====================================================================
+        # DATA LOAD / ANALYSIS GATES
+        # ====================================================================
         
         if not data_load_allowed:
             await send_twilio_message(sender, "Standing by.")
