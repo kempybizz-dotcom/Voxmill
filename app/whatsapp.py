@@ -129,7 +129,7 @@ def parse_regions(regions_raw):
 
 def get_client_from_airtable(sender: str) -> dict:
     """
-    OPTIMIZED: Single Airtable lookup with ALL enforcement fields
+    OPTIMIZED: Single Airtable lookup with ALL enforcement fields + MongoDB state management
     
     Returns complete client profile with enforcement fields:
     - Airtable Is Source of Truth
@@ -138,6 +138,11 @@ def get_client_from_airtable(sender: str) -> dict:
     - Industry
     - Allowed Intelligence Modules
     - PIN Enforcement Mode
+    
+    NEW: Manages MongoDB state transitions for:
+    - Trial expiry/renewal
+    - Cancellation/reactivation
+    - Welcome message flags
     """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -207,12 +212,73 @@ def get_client_from_airtable(sender: str) -> dict:
                          [r.strip() for r in str(regions_raw).split(',') if r.strip()] if regions_raw else ['Mayfair']
                 
                 logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
+                
+                # ============================================================
+                # MONGODB STATE MANAGEMENT FOR TRIAL USERS (NEW)
+                # ============================================================
+                
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    
+                    # Get previous MongoDB state
+                    previous_mongo = db['client_profiles'].find_one({'whatsapp_number': sender})
+                    
+                    if previous_mongo:
+                        # Check if this is a NEW trial (trial dates changed)
+                        previous_trial_end = previous_mongo.get('trial_end_date')
+                        current_trial_end = fields.get('Trial End Date')
+                        
+                        # If trial end date changed → NEW TRIAL
+                        if current_trial_end and previous_trial_end:
+                            # Parse dates for comparison
+                            if isinstance(previous_trial_end, str):
+                                previous_trial_end_dt = dateutil_parser.parse(previous_trial_end)
+                            elif isinstance(previous_trial_end, datetime):
+                                previous_trial_end_dt = previous_trial_end
+                            else:
+                                previous_trial_end_dt = None
+                            
+                            if isinstance(current_trial_end, str):
+                                current_trial_end_dt = dateutil_parser.parse(current_trial_end)
+                            else:
+                                current_trial_end_dt = current_trial_end
+                            
+                            # Normalize timezones
+                            if previous_trial_end_dt and previous_trial_end_dt.tzinfo is None:
+                                previous_trial_end_dt = previous_trial_end_dt.replace(tzinfo=timezone.utc)
+                            if current_trial_end_dt and current_trial_end_dt.tzinfo is None:
+                                current_trial_end_dt = current_trial_end_dt.replace(tzinfo=timezone.utc)
+                            
+                            # If dates are different → RESET FOR NEW TRIAL
+                            if previous_trial_end_dt and current_trial_end_dt and current_trial_end_dt != previous_trial_end_dt:
+                                logger.info(f"🆕 NEW TRIAL DETECTED: Resetting MongoDB state")
+                                
+                                # FULL STATE RESET for new trial
+                                db['client_profiles'].update_one(
+                                    {'whatsapp_number': sender},
+                                    {
+                                        '$set': {
+                                            'welcome_message_sent': False,  # Allow new welcome
+                                            'trial_expired': False,
+                                            'trial_end_date': current_trial_end,
+                                            'trial_reset_at': datetime.now(timezone.utc),
+                                            'total_queries': 0,  # Reset usage for new trial
+                                            'query_history': []  # Clear history for new trial
+                                        }
+                                    }
+                                )
+                
                 return {
                     'name': fields.get('Name', 'there'),
                     'email': fields.get('Email', ''),
                     'subscription_status': 'Trial',
                     'tier': 'tier_1',
                     'trial_expired': False,
+                    'trial_end_date': fields.get('Trial End Date'),
                     'airtable_record_id': trial_record['id'],
                     'table': 'Trial Users',
                     'preferences': {
@@ -309,6 +375,61 @@ def get_client_from_airtable(sender: str) -> dict:
                 regions = parse_regions(fields.get('Regions'))
                 
                 logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
+                
+                # ============================================================
+                # MONGODB STATE MANAGEMENT FOR CLIENTS (NEW)
+                # ============================================================
+                
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    
+                    # Get previous MongoDB state
+                    previous_mongo = db['client_profiles'].find_one({'whatsapp_number': sender})
+                    
+                    if previous_mongo:
+                        previous_status = previous_mongo.get('subscription_status')
+                        
+                        # ====================================================
+                        # RULE 1: CANCELLATION → SOFT RESET
+                        # ====================================================
+                        
+                        if subscription_status == 'Cancelled' and previous_status != 'Cancelled':
+                            logger.info(f"📝 CANCELLATION DETECTED: Soft resetting MongoDB state")
+                            
+                            # Keep essential data, reset flags
+                            db['client_profiles'].update_one(
+                                {'whatsapp_number': sender},
+                                {
+                                    '$set': {
+                                        'subscription_status': 'Cancelled',
+                                        'cancelled_at': datetime.now(timezone.utc),
+                                        'reactivation_welcome_sent': False  # Reset for future reactivation
+                                    }
+                                }
+                            )
+                        
+                        # ====================================================
+                        # RULE 2: REACTIVATION → RESET WELCOME FLAGS
+                        # ====================================================
+                        
+                        if subscription_status == 'Active' and previous_status in ['Cancelled', 'Paused', 'Suspended']:
+                            logger.info(f"🔄 REACTIVATION DETECTED: Resetting welcome flags")
+                            
+                            # Reset reactivation flag to allow new welcome
+                            db['client_profiles'].update_one(
+                                {'whatsapp_number': sender},
+                                {
+                                    '$set': {
+                                        'reactivation_welcome_sent': False,
+                                        'subscription_status': 'Active',
+                                        'reactivated_at': datetime.now(timezone.utc)
+                                    }
+                                }
+                            )
                 
                 return {
                     'name': fields.get('Name', 'there'),
