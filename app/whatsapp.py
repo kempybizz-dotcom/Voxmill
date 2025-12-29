@@ -173,18 +173,31 @@ def get_client_from_airtable(sender: str) -> dict:
                     if trial_end.tzinfo is None:
                         trial_end = trial_end.replace(tzinfo=timezone.utc)
                     
+                    # ✅ FIX: CHECK TRIAL EXPIRY FIRST - RETURN COMPLETE DICT
                     if datetime.now(timezone.utc) > trial_end:
                         logger.warning(f"Trial expired for {sender}")
                         return {
                             'subscription_status': 'Trial',
                             'trial_expired': True,
                             'name': fields.get('Name', 'there'),
-                            'airtable_record_id': None,
+                            'email': fields.get('Email', ''),
+                            'tier': 'tier_1',
+                            'airtable_record_id': trial_record['id'],
                             'table': 'Trial Users',
+                            'preferences': {
+                                'preferred_regions': ['Mayfair'],
+                                'competitor_focus': 'medium',
+                                'report_depth': 'detailed'
+                            },
+                            'usage_metrics': {
+                                'messages_used_this_month': 0,
+                                'monthly_message_limit': 0,
+                                'total_messages_sent': 0
+                            },
                             'airtable_is_source_of_truth': True,
                             'access_enabled': False,
                             'subscription_gate_enforced': True,
-                            'industry': None,
+                            'industry': 'Real Estate',
                             'allowed_intelligence_modules': [],
                             'pin_enforcement_mode': 'Strict'
                         }
@@ -198,7 +211,7 @@ def get_client_from_airtable(sender: str) -> dict:
                     'name': fields.get('Name', 'there'),
                     'email': fields.get('Email', ''),
                     'subscription_status': 'Trial',
-                    'tier': 'tier_2',
+                    'tier': 'tier_1',
                     'trial_expired': False,
                     'airtable_record_id': trial_record['id'],
                     'table': 'Trial Users',
