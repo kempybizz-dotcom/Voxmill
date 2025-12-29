@@ -3,21 +3,23 @@ VOXMILL CONVERSATIONAL GOVERNOR - WORLD-CLASS EDITION
 ======================================================
 LLM-based intent classification with zero keyword dependency
 Surgical precision. Institutional authority. Elite social absorption.
+
+UPDATED: Added META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS intents
 """
 
 import logging
-import openai
-import json
 import os
+import json
 from enum import Enum
 from typing import Optional, List, Tuple, Dict
 from dataclasses import dataclass
+from openai import AsyncOpenAI
 
 logger = logging.getLogger(__name__)
 
 
 class Intent(Enum):
-    """Finite intent taxonomy (10 classes)"""
+    """Finite intent taxonomy (13 classes)"""
     SECURITY = "security"
     ADMINISTRATIVE = "administrative"
     PROVOCATION = "provocation"
@@ -27,6 +29,9 @@ class Intent(Enum):
     DECISION_REQUEST = "decision_request"
     META_STRATEGIC = "meta_strategic"
     MONITORING_DIRECTIVE = "monitoring_directive"
+    META_AUTHORITY = "meta_authority"  # NEW
+    PROFILE_STATUS = "profile_status"  # NEW
+    PORTFOLIO_STATUS = "portfolio_status"  # NEW
     UNKNOWN = "unknown"
 
 
@@ -86,6 +91,9 @@ class AutoScopeResult:
 
 class ConversationalGovernor:
     """Main governance controller with Layer -1 social absorption + LLM intent classification"""
+    
+    # Class variable to store LLM's intent_type hint
+    _last_intent_type = None
     
     # ========================================
     # LAYER -1: SOCIAL ABSORPTION - ELITE EDITION
@@ -282,19 +290,12 @@ class ConversationalGovernor:
         """
         LLM-based intent classification (OpenAI v1.0+ compatible)
         
-        CHATGPT PRESCRIPTION:
-        - LLM = meaning
-        - Airtable = permission
-        - Code = execution
-        
         NO KEYWORDS. NO PATTERNS. ONLY LLM.
         
         Returns: (is_mandate_relevant, semantic_category, confidence)
         """
         
-        from openai import AsyncOpenAI
-        
-        # Initialize client
+        # Initialize async client
         client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
         # Build context string if available
@@ -314,7 +315,7 @@ Message: "{message}"{context_str}
 
 Return ONLY valid JSON (no markdown, no explanation):
 {{
-  "intent_type": "market_query|meta_authority|preference_change|profanity|gibberish|follow_up",
+  "intent_type": "market_query|meta_authority|profile_status|portfolio_status|preference_change|profanity|gibberish|follow_up",
   "is_mandate_relevant": true|false,
   "semantic_category": "competitive_intelligence|market_dynamics|strategic_positioning|temporal_analysis|surveillance|administrative|non_domain",
   "confidence": 0.0-1.0,
@@ -326,15 +327,20 @@ Return ONLY valid JSON (no markdown, no explanation):
 Classification rules:
 1. PROFANITY ALONE = gibberish (e.g. "Fuck Chelsea", "Go fuck yourself")
 2. PERSONAL ANECDOTES = gibberish (e.g. "My dog is from London")
-3. META QUESTIONS = meta_authority (e.g. "Can I trust you?", "What can you do?")
-4. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
-5. REGION CHANGES = preference_change (e.g. "Switch to Lincoln", "Show me Manchester")
-6. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening in Chelsea?")
-7. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
-8. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
-9. OFF-TOPIC = gibberish (anything not about property markets)
+3. META QUESTIONS = meta_authority (e.g. "What is Voxmill?", "What can you do?", "Tell me your capabilities")
+4. IDENTITY QUESTIONS = profile_status (e.g. "What's my name?", "Who am I?", "I'm a hedge fund investor")
+5. PORTFOLIO QUESTIONS = portfolio_status (e.g. "Show me my portfolio", "How's my portfolio?", "Portfolio summary")
+6. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
+7. REGION CHANGES = preference_change (e.g. "Switch to Lincoln", "Show me Manchester")
+8. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening in Chelsea?")
+9. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
+10. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
+11. OFF-TOPIC = gibberish (anything not about property markets)
 
 Examples:
+- "What is Voxmill?" → meta_authority (about system capabilities)
+- "What's my name?" → profile_status (about user identity)
+- "Show me my portfolio" → portfolio_status (portfolio query)
 - "Fuck Chelsea" → gibberish (profanity, not market query)
 - "My dog is from London" → gibberish (personal anecdote)
 - "Can I trust you?" → meta_authority (about capabilities)
@@ -361,7 +367,7 @@ JSON:"""
                 ],
                 max_tokens=150,
                 temperature=0,
-                timeout=5
+                timeout=5.0
             )
             
             # Parse response (v1.0+ response structure)
@@ -374,6 +380,9 @@ JSON:"""
                     raw_response = raw_response[4:]
             
             intent_data = json.loads(raw_response.strip())
+            
+            # CRITICAL: Store intent_type for downstream use
+            ConversationalGovernor._last_intent_type = intent_data.get('intent_type')
             
             # Log classification
             logger.info(f"🤖 LLM Intent: {intent_data['intent_type']} | Relevant: {intent_data['is_mandate_relevant']} | Reason: {intent_data['reasoning']}")
@@ -496,12 +505,23 @@ JSON:"""
     # ========================================
     
     @staticmethod
-    def _force_intent_from_semantic_category(semantic_category: SemanticCategory, message: str) -> Intent:
+    def _force_intent_from_semantic_category(semantic_category: SemanticCategory, message: str, intent_type: str = None) -> Intent:
         """
-        Map semantic category to best-fit intent when UNKNOWN would occur
+        Map semantic category + intent_type to best-fit intent
         Preserves nuance while blocking non-answers
         """
         
+        # PRIORITY: Use LLM's intent_type if provided
+        if intent_type == "meta_authority":
+            return Intent.META_AUTHORITY
+        
+        if intent_type == "profile_status":
+            return Intent.PROFILE_STATUS
+        
+        if intent_type == "portfolio_status":
+            return Intent.PORTFOLIO_STATUS
+        
+        # Original logic for other categories
         message_lower = message.lower()
         
         # Action/recommendation signals
@@ -687,6 +707,45 @@ JSON:"""
                 allowed_shapes=["SINGLE_SIGNAL"]
             ),
             
+            Intent.META_AUTHORITY: Envelope(
+                analysis_allowed=False,
+                max_response_length=150,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.PROFILE_STATUS: Envelope(
+                analysis_allowed=False,
+                max_response_length=100,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,  # Static response
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.PORTFOLIO_STATUS: Envelope(
+                analysis_allowed=True,
+                max_response_length=200,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=True,
+                llm_call_allowed=True,
+                allowed_shapes=["STRUCTURED_BRIEF"]
+            ),
+            
             Intent.UNKNOWN: Envelope(
                 analysis_allowed=False,
                 max_response_length=50,
@@ -743,12 +802,36 @@ JSON:"""
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
     @staticmethod
-    def _get_hardcoded_response(intent: Intent, message: str) -> Optional[str]:
+    def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
         
         Intent-based responses only (no phrase matching)
         """
+        
+        # META_AUTHORITY responses
+        if intent == Intent.META_AUTHORITY:
+            return """I provide real-time market intelligence for luxury property markets.
+
+Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
+
+What market intelligence can I provide?"""
+        
+        # PROFILE_STATUS responses
+        if intent == Intent.PROFILE_STATUS:
+            if client_profile:
+                name = client_profile.get('name', 'there')
+                tier = client_profile.get('tier', 'tier_1')
+                tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
+                
+                return f"""CLIENT PROFILE
+
+Name: {name}
+Service Tier: {tier_display}
+
+What market intelligence can I provide?"""
+            else:
+                return "Client profile loading..."
         
         # Intent-based responses
         intent_responses = {
@@ -839,8 +922,6 @@ JSON:"""
         # ========================================
         # CRITICAL: IMPLICIT REFERENCE OVERRIDE
         # ========================================
-        # If query was marked non-domain BUT contains implicit references AND context exists,
-        # force to mandate-relevant (it's likely a compressed follow-up)
         
         if not is_mandate_relevant and conversation_context:
             # Check for implicit reference words
@@ -863,6 +944,15 @@ JSON:"""
         # ========================================
         # REFUSAL CHECK (AFTER IMPLICIT REFERENCE OVERRIDE)
         # ========================================
+        
+        # Get LLM's intent_type hint for special handling
+        intent_type_hint = ConversationalGovernor._last_intent_type
+        
+        # CRITICAL: META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
+        if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status']:
+            # Force to mandate-relevant (these are valid system queries)
+            is_mandate_relevant = True
+            logger.info(f"✅ Special intent {intent_type_hint} - forcing mandate relevance")
         
         # If NOT mandate-relevant, refuse immediately
         if not is_mandate_relevant:
@@ -918,6 +1008,9 @@ JSON:"""
             Intent.DECISION_REQUEST: 0.90,
             Intent.META_STRATEGIC: 0.85,
             Intent.MONITORING_DIRECTIVE: 0.93,
+            Intent.META_AUTHORITY: 0.75,
+            Intent.PROFILE_STATUS: 0.75,
+            Intent.PORTFOLIO_STATUS: 0.75,
             Intent.UNKNOWN: 0.00
         }
         
@@ -933,10 +1026,11 @@ JSON:"""
         # ========================================
         
         if is_mandate_relevant and intent == Intent.UNKNOWN:
-            # Force to best-fit intent based on semantic category
+            # Force to best-fit intent based on semantic category + LLM hint
             forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
                 semantic_category,
-                message_text
+                message_text,
+                intent_type=intent_type_hint  # Pass LLM's intent_type
             )
             
             logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
@@ -950,12 +1044,15 @@ JSON:"""
         
         # Map Intent to required modules (Airtable field names)
         INTENT_TO_MODULES = {
-            Intent.STRATEGIC: ['Market Overview'],  # ✓ BASE TIER ONLY
+            Intent.STRATEGIC: ['Market Overview'],
             Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
-            Intent.STATUS_CHECK: [],  # ✓ NO MODULE REQUIRED (instant snapshots)
+            Intent.STATUS_CHECK: [],
             Intent.META_STRATEGIC: ['Risk Analysis'],
             Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
-            Intent.ADMINISTRATIVE: [],  # ✓ NO MODULE REQUIRED (meta questions)
+            Intent.ADMINISTRATIVE: [],
+            Intent.META_AUTHORITY: [],  # No module required
+            Intent.PROFILE_STATUS: [],  # No module required
+            Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],  # Requires Portfolio module
         }
         
         # Get required modules for this intent
@@ -1010,9 +1107,9 @@ JSON:"""
         # CHECK FOR HARDCODED RESPONSE
         # ========================================
         
-        hardcoded_response = ConversationalGovernor._get_hardcoded_response(intent, message_text)
+        hardcoded_response = ConversationalGovernor._get_hardcoded_response(intent, message_text, client_profile)
         
-        if hardcoded_response and intent not in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST]:
+        if hardcoded_response and intent not in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST, Intent.PORTFOLIO_STATUS]:
             return GovernanceResult(
                 intent=intent,
                 confidence=confidence,
@@ -1077,7 +1174,7 @@ JSON:"""
             confidence=confidence,
             blocked=False,
             silence_required=False,
-            response=None,
+            response=hardcoded_response,  # May be None or static response
             allowed_shapes=envelope.allowed_shapes,
             max_words=envelope.max_response_length // 5,
             analysis_allowed=envelope.analysis_allowed,
