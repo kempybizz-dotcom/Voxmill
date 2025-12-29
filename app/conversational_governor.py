@@ -1006,12 +1006,13 @@ class ConversationalGovernor:
                                conversation_context.get('agents') or 
                                conversation_context.get('topics'))
             
-            if has_context and (has_implicit_ref or is_ultra_short):
-                # Force to mandate-relevant
+            if has_context and has_implicit_ref:  # ✓ REMOVED is_ultra_short CHECK
+                # Force to mandate-relevant ONLY if explicit reference word exists
                 is_mandate_relevant = True
                 semantic_category = SemanticCategory.STRATEGIC_POSITIONING
                 semantic_confidence = 0.80
                 logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
+             
         
         # ========================================
         # REFUSAL CHECK (AFTER IMPLICIT REFERENCE OVERRIDE)
@@ -1102,12 +1103,14 @@ class ConversationalGovernor:
         # ========================================
         
         # Map Intent to required modules (Airtable field names)
+        # Map Intent to required modules (Airtable field names)
         INTENT_TO_MODULES = {
-            Intent.STRATEGIC: ['Market Overview', 'Competitive Intelligence'],
+            Intent.STRATEGIC: ['Market Overview'],  # ✓ BASE TIER ONLY
             Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
-            Intent.STATUS_CHECK: ['Market Overview'],
+            Intent.STATUS_CHECK: [],  # ✓ NO MODULE REQUIRED (instant snapshots)
             Intent.META_STRATEGIC: ['Risk Analysis'],
             Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
+            Intent.ADMINISTRATIVE: [],  # ✓ NO MODULE REQUIRED (meta questions)
         }
         
         # Get required modules for this intent
