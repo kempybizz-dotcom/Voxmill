@@ -91,81 +91,323 @@ class AutoScopeResult:
 
 
 class ConversationalGovernor:
-    """Main governance controller with Layer -1 social absorption"""
     
-    # ========================================
-    # LAYER -1: SOCIAL ABSORPTION
-    # ========================================
-    
-    @staticmethod
     def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
-        """
-        Layer -1: Social Absorption
+    """
+    Layer -1: Social Absorption - Elite Edition
+    
+    Absorbs non-semantic social inputs with surgical precision
+    
+    Returns: (is_social, response_override)
+    - If is_social=True, use response_override and bypass all other layers
+    - If is_social=False, continue to mandate relevance check
+    
+    Design Philosophy:
+    - High recall for social inputs (catch all greetings/politeness)
+    - Zero false positives on market queries (never block intelligence requests)
+    - Executive-friendly (tolerates compressed communication)
+    """
+    
+    # ========================================
+    # NORMALIZATION PIPELINE
+    # ========================================
+    
+    message_lower = message.lower().strip()
+    
+    # Remove trailing punctuation
+    message_clean = message_lower.rstrip('?!.,;:')
+    
+    # Handle ALL apostrophe variants (straight, curly left, curly right, backtick, prime)
+    apostrophe_variants = ["'", "'", "'", "`", "′"]
+    for variant in apostrophe_variants:
+        message_clean = message_clean.replace(variant, "")
+    
+    # Collapse whitespace (fixes "What  's   up" → "whats up")
+    message_clean = ' '.join(message_clean.split())
+    
+    # Remove common typo patterns
+    message_clean = message_clean.replace("whatsssup", "whats up")
+    message_clean = message_clean.replace("heyyyy", "hey")
+    message_clean = message_clean.replace("hiii", "hi")
+    
+    # ========================================
+    # CLASS A: GREETINGS (MULTI-LANGUAGE)
+    # ========================================
+    
+    greetings_exact = [
+        # English
+        'hi', 'hello', 'hey', 'yo', 'hiya', 'heya', 'hola', 'sup',
+        'morning', 'afternoon', 'evening', 'night',
+        'good morning', 'good afternoon', 'good evening', 'good night',
+        'gm', 'gn', 'ga',  # Abbreviations
         
-        Returns: (is_social, response_override)
-        - If is_social=True, use response_override and bypass all other layers
-        - If is_social=False, continue to mandate relevance check
-        """
+        # Spanish
+        'buenos dias', 'buenas tardes', 'buenas noches',
         
-        message_lower = message.lower().strip()
-        # Remove trailing punctuation
-        message_clean = message_lower.rstrip('?!.,;:')
-        # Handle ALL apostrophe types: straight ('), curly left ('), curly right ('), backtick (`)
-        message_clean = message_clean.replace("'", "").replace("'", "").replace("'", "").replace("`", "")
-        # CRITICAL: Collapse whitespace (fixes "What's up" bug)
-        message_clean = ' '.join(message_clean.split())
+        # French
+        'bonjour', 'bonsoir', 'salut',
         
-        # CLASS B: POLITENESS TOKENS
-        politeness_exact = ['thanks', 'thank you', 'thankyou', 'thx', 'cheers', 
-                            'appreciated', 'got it', 'noted', 'cool', 'ok', 'okay']
+        # German
+        'guten tag', 'guten morgen', 'guten abend',
         
-        if message_clean in politeness_exact:
-            return True, "Standing by."
+        # Italian
+        'buongiorno', 'buonasera', 'ciao',
         
-        # CLASS C: PHATIC EXPRESSIONS
-        phatic_patterns = [
-            'how are you', 'how r you', 'how are u',
-            'whats up', 'what up', 'sup', 'wassup',
-            'hows it going', 'you good', 'all good',
-            'how you doing', 'hows things'
+        # Informal/slang
+        'wagwan', 'wazzup', 'wassup', 'whaddup', 'howdy',
+        'ello', 'ey', 'ayy', 'yooo'
+    ]
+    
+    if message_clean in greetings_exact:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS B: POLITENESS TOKENS
+    # ========================================
+    
+    politeness_exact = [
+        # Thanks variations
+        'thanks', 'thank you', 'thankyou', 'thx', 'ty', 'tyvm', 'ta', 'cheers',
+        'much appreciated', 'appreciated', 'appreciate it',
+        
+        # Acknowledgments
+        'got it', 'gotcha', 'understood', 'noted', 'roger', 'copy', 'copy that',
+        'ok', 'okay', 'k', 'kk', 'alright', 'alrighty', 'sounds good',
+        
+        # Affirmations
+        'cool', 'nice', 'great', 'perfect', 'excellent', 'brilliant',
+        'yep', 'yeah', 'yup', 'yes', 'ya', 'aye', 'sure', 'right', 'correct',
+        
+        # Casual acknowledgments
+        'word', 'bet', 'aight', 'ight', 'dope', 'sweet'
+    ]
+    
+    if message_clean in politeness_exact:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS C: PHATIC EXPRESSIONS
+    # ========================================
+    
+    phatic_patterns = [
+        # Status checks
+        'how are you', 'how r you', 'how are u', 'how r u', 'hru',
+        'how you doing', 'how u doing', 'howdy doing',
+        'hows it going', 'hows it goin', 'how goes it',
+        'you good', 'u good', 'all good', 'everything good',
+        'hows things', 'how are things',
+        
+        # Casual check-ins
+        'whats up', 'what up', 'whats good', 'whats poppin',
+        'whats crackin', 'whats happening', 'whats the word',
+        'whassup', 'wazzup', 'whaddup',
+        
+        # Compressed variants
+        'sup', 'wassup', 'wsup', 'wsp',
+        
+        # Wellness checks
+        'you ok', 'u ok', 'you alright', 'u alright',
+        'everything ok', 'all ok', 'everything alright'
+    ]
+    
+    if message_clean in phatic_patterns:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS D: MOOD STATEMENTS (CONTEXTUAL)
+    # ========================================
+    
+    # CRITICAL: Only absorb if it's a PURE mood statement with NO market context
+    # "Feels moist" = absorbed (pure mood)
+    # "Feels moist - bad sign?" = NOT absorbed (market question)
+    
+    pure_mood_patterns = [
+        'feels moist', 'feels wet', 'feels damp', 'feels soggy',
+        'feels weird', 'feels odd', 'feels strange', 'feels off',
+        'feels bad', 'feels wrong', 'feels sketchy',
+        'seems weird', 'seems odd', 'seems off', 'seems strange',
+        'sounds weird', 'sounds odd', 'sounds off', 'sounds strange',
+        'looks weird', 'looks odd', 'looks off', 'looks strange'
+    ]
+    
+    if any(pattern in message_clean for pattern in pure_mood_patterns):
+        # Check if there's a market question component
+        market_question_indicators = [
+            'bad sign', 'good sign', 'red flag', 'warning sign',
+            'what does', 'why', 'should i', 'what if',
+            'meaning', 'mean', 'indicate', 'signal', 'suggest',
+            'tell me', 'explain', 'interpret'
         ]
         
-        if message_clean in phatic_patterns:
-            return True, "Standing by."
+        if not any(indicator in message_clean for indicator in market_question_indicators):
+            # Pure mood statement with no market question → silence
+            return True, None
+        # Otherwise, pass through to mandate check (it's a market question)
+    
+    # ========================================
+    # CLASS E: LAUGHTER / NON-SEMANTIC NOISE
+    # ========================================
+    
+    laughter_exact = [
+        'lol', 'lmao', 'lmfao', 'rofl', 'rotfl', 'lmbo',
+        'haha', 'hehe', 'hehehe', 'lolol', 'lololol',
+        'ahahaha', 'jajaja', 'kkkk',  # Spanish/Portuguese laughter
+        '😂', '🤣', '😆'  # Emoji (if text contains only emojis)
+    ]
+    
+    if message_clean in laughter_exact:
+        return True, None  # Silence (no response needed)
+    
+    # ========================================
+    # CLASS F: SINGLE-WORD AFFIRMATIONS
+    # ========================================
+    
+    single_word_affirmations = [
+        'ok', 'okay', 'yes', 'yep', 'yeah', 'yup', 'sure', 'fine',
+        'k', 'kk', 'alright', 'right', 'correct', 'agreed'
+    ]
+    
+    if message_clean in single_word_affirmations:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS G: APOLOGIES
+    # ========================================
+    
+    apology_patterns = [
+        'sorry', 'my bad', 'my mistake', 'apologies', 'excuse me',
+        'pardon', 'pardon me', 'forgive me'
+    ]
+    
+    if message_clean in apology_patterns:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS H: FAREWELLS
+    # ========================================
+    
+    farewell_patterns = [
+        'bye', 'goodbye', 'good bye', 'later', 'see ya', 'see you',
+        'catch you later', 'talk later', 'ttyl', 'g2g', 'gotta go',
+        'peace', 'peace out', 'take care', 'cheers'
+    ]
+    
+    if message_clean in farewell_patterns:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS I: EMPTY/MINIMAL CONTENT
+    # ========================================
+    
+    # Ultra-short non-semantic content
+    minimal_content = [
+        'ok', 'k', 'kk', 'hmm', 'hm', 'uh', 'um', 'er', 'ah',
+        'oh', 'ooh', 'wow', 'whoa', 'damn', 'shit', 'fuck'
+    ]
+    
+    if message_clean in minimal_content:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS J: FOLLOW-UP CONFIRMATIONS
+    # ========================================
+    
+    # When user confirms they're following previous context
+    confirmation_patterns = [
+        'got it', 'gotcha', 'understood', 'makes sense',
+        'i see', 'i get it', 'clear', 'roger', 'copy'
+    ]
+    
+    if message_clean in confirmation_patterns:
+        return True, "Standing by."
+    
+    # ========================================
+    # CLASS K: TYPO-TOLERANT GREETING DETECTION
+    # ========================================
+    
+    # Catch common typos: "helo", "hllo", "helo", "helllo"
+    if len(message_clean) <= 6:
+        # Levenshtein-style fuzzy matching for short inputs
+        greeting_core = ['hello', 'hey', 'hi']
         
-        # CLASS D: MOOD STATEMENTS (non-market)
-        # ONLY silence if it's a pure mood statement with NO market context
-        pure_mood_patterns = ['feels moist', 'feels weird', 'feels odd', 'feels strange']
-        
-        # Check for pure mood statements
-        if any(pattern in message_clean for pattern in pure_mood_patterns):
-            # Check if there's a market question component
-            market_question_indicators = [
-                'bad sign', 'good sign', 'what does', 'why', 'should i', 
-                'meaning', 'mean', 'indicate', 'signal', 'tell me'
-            ]
-            
-            if not any(indicator in message_clean for indicator in market_question_indicators):
-                # Pure mood statement with no market question → silence
-                return True, None
-            # Otherwise, pass through to mandate check (it's a market question)
-        
-        # CLASS F: META-CONVERSATIONAL
-        # These should be reframed as DECISION_REQUEST, not refused
-        # Return False to pass through to normal intent classification
-        meta_patterns = ['what would you do', 'if you were me', 'your thoughts',
-                         'what do you think', 'your view', 'your opinion']
-        
-        if any(pattern in message_clean for pattern in meta_patterns):
-            # Pass through but will force to DECISION_REQUEST
-            return False, None
-        
-        # NOT SOCIAL - pass to mandate relevance
+        for core in greeting_core:
+            if _is_typo_match(message_clean, core, max_distance=2):
+                return True, "Standing by."
+    
+    # ========================================
+    # CLASS L: META-CONVERSATIONAL (PASS THROUGH)
+    # ========================================
+    
+    # These should be reframed as DECISION_REQUEST, not refused
+    # Return False to pass through to normal intent classification
+    meta_patterns = [
+        'what would you do', 'if you were me', 'your thoughts',
+        'what do you think', 'your view', 'your opinion',
+        'your take', 'what would you recommend', 'your recommendation'
+    ]
+    
+    if any(pattern in message_clean for pattern in meta_patterns):
+        # Pass through (will be reclassified as DECISION_REQUEST)
         return False, None
     
     # ========================================
-    # LAYER 0: MANDATE RELEVANCE CHECK
+    # NOT SOCIAL - PASS TO MANDATE RELEVANCE
     # ========================================
+    
+    return False, None
+
+
+def _is_typo_match(input_str: str, target_str: str, max_distance: int = 2) -> bool:
+    """
+    Check if input_str is a typo of target_str using Levenshtein distance
+    
+    Examples:
+    - "helo" vs "hello" → distance 1 (missing 'l')
+    - "helllo" vs "hello" → distance 1 (extra 'l')
+    - "heyy" vs "hey" → distance 1 (extra 'y')
+    """
+    
+    if len(input_str) == 0 or len(target_str) == 0:
+        return False
+    
+    # Quick length check (avoid computing distance if lengths are too different)
+    len_diff = abs(len(input_str) - len(target_str))
+    if len_diff > max_distance:
+        return False
+    
+    # Compute Levenshtein distance
+    distance = _levenshtein_distance(input_str, target_str)
+    
+    return distance <= max_distance
+
+
+def _levenshtein_distance(s1: str, s2: str) -> int:
+    """
+    Compute Levenshtein distance (minimum edit distance) between two strings
+    
+    Used for typo-tolerant pattern matching
+    """
+    
+    if len(s1) < len(s2):
+        return _levenshtein_distance(s2, s1)
+    
+    if len(s2) == 0:
+        return len(s1)
+    
+    previous_row = range(len(s2) + 1)
+    
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            # Cost of insertions, deletions, substitutions
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    
+    return previous_row[-1]
+
     
     @staticmethod
     def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
