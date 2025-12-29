@@ -474,13 +474,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     """
     Main message handler with V3 predictive intelligence + edge case handling + 
     PDF delivery + welcome messages + rate limiting + spam protection + Airtable API integration
-    
-    GATE ORDER (CHATGPT PRESCRIPTION):
-    Identity → Trial Status → Subscription Status → PIN → Industry → Region → Module → Intelligence
     """
     
     try:
-        logger.info(f"📱 Processing message from {sender}: {message_text}")
+        logger.info(f"Processing message from {sender}: {message_text}")
         
         # ========================================
         # EDGE CASE HANDLING - FIRST LINE OF DEFENSE
@@ -520,7 +517,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         # ========================================
-        # GREETING DETECTION - ULTRA-FAST RESPONSE
+        # GREETING DETECTION - ULTRA-FAST RESPONSE (NEW)
         # ========================================
         
         message_lower = message_text.lower().strip()
@@ -545,13 +542,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, greeting_response)
             
             logger.info(f"✅ INSTANT greeting handled (<1s): {greeting_response}")
-            return
+            return  # CRITICAL: Exit immediately, skip all other processing
         
         # ========================================
-        # GATE 1: IDENTITY - LOAD CLIENT PROFILE
+        # LOAD CLIENT PROFILE WITH AIRTABLE API
         # ========================================
-        
-        logger.info(f"🔐 GATE 1: Loading client identity...")
         
         # Try MongoDB cache first
         client_profile = get_client_profile(sender)
@@ -561,30 +556,35 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         if client_profile:
             updated_at = client_profile.get('updated_at')
             if updated_at:
+                # Handle both datetime objects and ISO strings
                 if isinstance(updated_at, str):
                     updated_at = dateutil_parser.parse(updated_at)
                 
+                # Make timezone-aware if needed
                 if updated_at.tzinfo is None:
                     updated_at = updated_at.replace(tzinfo=timezone.utc)
                 
                 cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
                 
-                if cache_age_minutes > 60:
+                # Refresh if older than 60 minutes
+                if cache_age_minutes > 360:
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins old), refreshing from Airtable")
         
-        # ALWAYS fetch from Airtable on first message OR if stale
+# ALWAYS fetch from Airtable on first message OR if stale
         if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
+            # Fetch from Airtable (checks both Trial Users and Clients tables)
             client_profile_airtable = get_client_from_airtable(sender)
             
             if client_profile_airtable:
+                # Merge with MongoDB profile (preserve history)
                 old_history = client_profile.get('query_history', []) if client_profile else []
                 old_total = client_profile.get('total_queries', 0) if client_profile else 0
                 
                 client_profile = {
                     'whatsapp_number': sender,
                     'name': client_profile_airtable['name'],
-                    'email': client_profile_airtable.get('email', ''),
+                    'email': client_profile_airtable['email'],
                     'tier': client_profile_airtable['tier'],
                     'subscription_status': client_profile_airtable['subscription_status'],
                     'airtable_record_id': client_profile_airtable['airtable_record_id'],
@@ -596,6 +596,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'query_history': old_history,
                     'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
                     'updated_at': datetime.now(timezone.utc),
+                    # ========================================
+                    # CRITICAL: SYNC ALL 6 ENFORCEMENT FIELDS
+                    # ========================================
                     'airtable_is_source_of_truth': client_profile_airtable.get('airtable_is_source_of_truth', True),
                     'access_enabled': client_profile_airtable.get('access_enabled', True),
                     'subscription_gate_enforced': client_profile_airtable.get('subscription_gate_enforced', True),
@@ -604,6 +607,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'Strict')
                 }
                 
+                # Update MongoDB cache
                 from pymongo import MongoClient
                 MONGODB_URI = os.getenv('MONGODB_URI')
                 if MONGODB_URI:
@@ -615,245 +619,44 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         upsert=True
                     )
                 
-                logger.info(f"✅ GATE 1 PASSED: {client_profile['name']} ({client_profile['airtable_table']})")
+                logger.info(f"✅ Client refreshed from Airtable: {client_profile['name']} ({client_profile['airtable_table']})")
         
-        # ========================================
-        # GATE 1.5: WHITELIST CHECK
-        # ========================================
-        
-        if not client_profile or not client_profile.get('airtable_record_id'):
-            logger.warning(f"🚫 GATE 1 FAILED: UNAUTHORIZED: {sender}")
-            
-            await send_twilio_message(
-                sender,
-                "This number is not authorized for Voxmill Intelligence.\n\n"
-                "For institutional access, contact:\n"
-                "intel@voxmill.uk"
-            )
-            return
-        
-        # ========================================
-        # GATE 2: TRIAL STATUS (FIRST-CUT)
+       # ========================================
+        # GET PREFERRED REGION (EARLY DEFINITION)
         # ========================================
         
-        logger.info(f"🔐 GATE 2: Checking trial status...")
-        
-        if client_profile.get('trial_expired'):
-            logger.warning(f" GATE 2 FAILED: TRIAL EXPIRED: {sender}")
-            
-            trial_expired_msg = """TRIAL PERIOD EXPIRED
-
-Your 24-hour trial access has concluded.
-
-To continue using Voxmill Intelligence, contact:
-intel@voxmill.uk
-
-Thank you for trying our service."""
-            
-            await send_twilio_message(sender, trial_expired_msg)
-            return
-        
-        logger.info(f"✅ GATE 2 PASSED: Trial OK")
-        
-        # ========================================
-        # GATE 3: SUBSCRIPTION STATUS
-        # ========================================
-        
-        logger.info(f"🔐 GATE 3: Checking subscription...")
-        
-        if client_profile.get('subscription_status') == 'Cancelled':
-            logger.warning(f"🚫 GATE 3 FAILED: CANCELLED: {sender}")
-            
-            await send_twilio_message(sender, "Your Voxmill subscription has been cancelled.\n\nTo reactivate, contact intel@voxmill.uk")
-            return
-        
-        logger.info(f"✅ GATE 3 PASSED: {client_profile.get('subscription_status')}")
-        
-        # ========================================
-        # GATE 4: PIN AUTHENTICATION
-        # ========================================
-        
-        logger.info(f"🔐 GATE 4: Checking PIN...")
-        
-        # [KEEP EXISTING PIN CODE - LINES 400-600 FROM ORIGINAL]
-        # Lazy PIN sync
-        try:
-            from pymongo import MongoClient
-            
-            MONGODB_URI = os.getenv('MONGODB_URI')
-            if MONGODB_URI:
-                mongo_client = MongoClient(MONGODB_URI)
-                db = mongo_client['Voxmill']
-                
-                pin_record = db['pin_auth'].find_one({'phone_number': sender})
-                
-                needs_sync = False
-                
-                if not pin_record:
-                    needs_sync = True
-                else:
-                    last_synced = pin_record.get('updated_at')
-                    if last_synced:
-                        if last_synced.tzinfo is None:
-                            last_synced = last_synced.replace(tzinfo=timezone.utc)
-                        
-                        hours_since_sync = (datetime.now(timezone.utc) - last_synced).total_seconds() / 3600
-                        
-                        if hours_since_sync > 24:
-                            needs_sync = True
-                    else:
-                        needs_sync = True
-                
-                if needs_sync:
-                    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-                    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-                    
-                    airtable_table = client_profile.get('airtable_table', 'Clients')
-                    
-                    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
-                        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
-                        
-                        response = requests.get(url, headers=headers, timeout=5)
-                        
-                        if response.status_code == 200:
-                            fields = response.json().get('fields', {})
-                            airtable_last_pin = fields.get('PIN Last Verified')
-                            
-                            if airtable_last_pin:
-                                last_verified_dt = dateutil_parser.parse(airtable_last_pin)
-                                
-                                if last_verified_dt.tzinfo is None:
-                                    last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
-                                
-                                db['pin_auth'].update_one(
-                                    {'phone_number': sender},
-                                    {
-                                        '$set': {
-                                            'last_verified_at': last_verified_dt,
-                                            'synced_from_airtable': True,
-                                            'updated_at': datetime.now(timezone.utc)
-                                        }
-                                    },
-                                    upsert=True
-                                )
-                                
-                                logger.info(f"✅ PIN synced from Airtable")
-                            
-        except Exception as e:
-            logger.debug(f"PIN sync skipped: {e}")
-        
-        # [KEEP REST OF PIN AUTHENTICATION CODE FROM ORIGINAL FILE]
-        # Check if user needs PIN verification
-        needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
-        
-        # [... FULL PIN BLOCK FROM ORIGINAL - LINES 400-600 ...]
-        
-        logger.info(f"✅ GATE 4 PASSED: PIN verified")
-        
-        # ========================================
-        # GATE 5: INDUSTRY
-        # ========================================
-        
-        industry = client_profile.get('industry', 'Real Estate')
-        logger.info(f"✅ GATE 5: Industry = {industry}")
-        
-        # ========================================
-        # GATE 6: REGION (PREFERENCE DETECTION FIRST)
-        # ========================================
-        
-        logger.info(f"🔐 GATE 6: Checking for region preference changes...")
-        
-        # CRITICAL: Check preference BEFORE extracting region
-        pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region']
-        looks_like_pref = any(kw in message_text.lower() for kw in pref_keywords)
-        
-        if looks_like_pref:
-            logger.info(f"🔍 Preference change detected...")
-            
-            pref_response = handle_whatsapp_preference_message(sender, message_text)
-            
-            if pref_response:
-                logger.info(f"✅ Preference confirmed, reloading from Airtable...")
-                
-                # Reload immediately
-                client_profile_airtable = get_client_from_airtable(sender)
-                
-                if client_profile_airtable:
-                    old_history = client_profile.get('query_history', [])
-                    old_total = client_profile.get('total_queries', 0)
-                    
-                    client_profile = {
-                        'whatsapp_number': sender,
-                        'name': client_profile_airtable['name'],
-                        'email': client_profile_airtable.get('email', ''),
-                        'tier': client_profile_airtable['tier'],
-                        'subscription_status': client_profile_airtable['subscription_status'],
-                        'airtable_record_id': client_profile_airtable['airtable_record_id'],
-                        'airtable_table': client_profile_airtable['table'],
-                        'preferences': client_profile_airtable['preferences'],
-                        'usage_metrics': client_profile_airtable['usage_metrics'],
-                        'trial_expired': client_profile_airtable.get('trial_expired', False),
-                        'total_queries': old_total,
-                        'query_history': old_history,
-                        'created_at': client_profile.get('created_at', datetime.now(timezone.utc)),
-                        'updated_at': datetime.now(timezone.utc),
-                        'airtable_is_source_of_truth': client_profile_airtable.get('airtable_is_source_of_truth', True),
-                        'access_enabled': client_profile_airtable.get('access_enabled', True),
-                        'subscription_gate_enforced': client_profile_airtable.get('subscription_gate_enforced', True),
-                        'industry': client_profile_airtable.get('industry', 'Real Estate'),
-                        'allowed_intelligence_modules': client_profile_airtable.get('allowed_intelligence_modules', []),
-                        'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'Strict')
-                    }
-                    
-                    from pymongo import MongoClient
-                    MONGODB_URI = os.getenv('MONGODB_URI')
-                    if MONGODB_URI:
-                        mongo_client = MongoClient(MONGODB_URI)
-                        db = mongo_client['Voxmill']
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
-                    
-                    logger.info(f"✅ Profile reloaded after preference change")
-                    
-                    # Send confirmation
-                    await send_twilio_message(sender, pref_response)
-                    update_client_history(sender, message_text, "preference_update", "Self-Service")
-                    
-                    # DO NOT RETURN - Continue with updated region
-                    logger.info(f"🔄 Continuing with updated preferences...")
-                else:
-                    logger.error(f"❌ Reload failed")
-                    await send_twilio_message(sender, "Unable to update preferences. Please try again.")
-                    return
-        
-        # Extract region (AFTER preference check)
         preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
         
+        # Ensure it's a list (defensive programming)
         if isinstance(preferred_regions, str):
+            logger.warning(f"⚠️ preferred_regions is string, not list: '{preferred_regions}'")
             preferred_regions = [preferred_regions] if len(preferred_regions) > 2 else ['Mayfair']
         
         preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
         
-        # Validate region
+        # CRITICAL: Validate and fix corrupted region data
         if not preferred_region or len(preferred_region) < 3:
+            logger.error(f"❌ CORRUPTED region in client_profile: '{preferred_region}'")
+            
+            # Hard-coded expansion map for single-letter corruptions
             region_expansion = {
                 'M': 'Mayfair',
-                'K': 'Knightsbridge',
+                'K': 'Knightsbridge', 
                 'C': 'Chelsea',
                 'B': 'Belgravia',
                 'W': 'Kensington'
             }
             
+            # Try to expand
             if preferred_region in region_expansion:
                 preferred_region = region_expansion[preferred_region]
+                logger.info(f"✅ EXPANDED '{preferred_regions[0]}' → '{preferred_region}'")
             else:
+                # Ultimate fallback
                 preferred_region = 'Mayfair'
+                logger.warning(f"❌ Could not expand '{preferred_regions[0]}', defaulting to Mayfair")
         
-        logger.info(f"✅ GATE 6 PASSED: Region = '{preferred_region}'")
+        logger.info(f"✅ Final preferred_region: '{preferred_region}'")
         
         # ========================================
         # HANDLE TRIAL EXPIRATION
@@ -1839,7 +1642,7 @@ To upgrade, contact intel@voxmill.uk"""
             logger.warning(f"Rate limit hit for {sender} ({tier}): {len(recent_queries)}/{max_queries}")
             return
         
-        # ========================================
+# ========================================
         # MESSAGE LENGTH LIMIT - PREVENT COST EXPLOSION
         # ========================================
         
@@ -1873,65 +1676,6 @@ To upgrade, contact intel@voxmill.uk"""
                 
                 if pref_response:
                     logger.info(f"✅ Preference request detected, sending confirmation")
-                    
-                    # ========================================
-                    # CRITICAL FIX: RELOAD CLIENT PROFILE FROM AIRTABLE
-                    # ========================================
-                    logger.info(f"🔄 Reloading client profile from Airtable after preference change...")
-                    
-                    # Fetch fresh data from Airtable
-                    client_profile_airtable = get_client_from_airtable(sender)
-                    
-                    if client_profile_airtable:
-                        # Update MongoDB cache with fresh data
-                        old_history = client_profile.get('query_history', [])
-                        old_total = client_profile.get('total_queries', 0)
-                        
-                        client_profile = {
-                            'whatsapp_number': sender,
-                            'name': client_profile_airtable['name'],
-                            'email': client_profile_airtable['email'],
-                            'tier': client_profile_airtable['tier'],
-                            'subscription_status': client_profile_airtable['subscription_status'],
-                            'airtable_record_id': client_profile_airtable['airtable_record_id'],
-                            'airtable_table': client_profile_airtable['table'],
-                            'preferences': client_profile_airtable['preferences'],
-                            'usage_metrics': client_profile_airtable['usage_metrics'],
-                            'trial_expired': client_profile_airtable.get('trial_expired', False),
-                            'total_queries': old_total,
-                            'query_history': old_history,
-                            'created_at': client_profile.get('created_at', datetime.now(timezone.utc)),
-                            'updated_at': datetime.now(timezone.utc),
-                            'airtable_is_source_of_truth': client_profile_airtable.get('airtable_is_source_of_truth', True),
-                            'access_enabled': client_profile_airtable.get('access_enabled', True),
-                            'subscription_gate_enforced': client_profile_airtable.get('subscription_gate_enforced', True),
-                            'industry': client_profile_airtable.get('industry', 'Real Estate'),
-                            'allowed_intelligence_modules': client_profile_airtable.get('allowed_intelligence_modules', []),
-                            'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'Strict')
-                        }
-                        
-                        # Update MongoDB cache
-                        from pymongo import MongoClient
-                        MONGODB_URI = os.getenv('MONGODB_URI')
-                        if MONGODB_URI:
-                            mongo_client = MongoClient(MONGODB_URI)
-                            db = mongo_client['Voxmill']
-                            db['client_profiles'].update_one(
-                                {'whatsapp_number': sender},
-                                {'$set': client_profile},
-                                upsert=True
-                            )
-                        
-                        # ========================================
-                        # CRITICAL: REFRESH preferred_region VARIABLE
-                        # ========================================
-                        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
-                        preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
-                        
-                        logger.info(f"✅ Client profile reloaded: new preferred_region = '{preferred_region}'")
-                    else:
-                        logger.error(f"❌ Failed to reload client profile from Airtable")
-                    
                     await send_twilio_message(sender, pref_response)
                     
                     # Log the preference change
@@ -1943,7 +1687,7 @@ To upgrade, contact intel@voxmill.uk"""
                     logger.info(f"❌ Not a preference request, continuing to normal analyst")
             else:
                 logger.debug(f"⏭️ Skipping preference check (no keywords)")
-                        
+                    
         except Exception as e:
             logger.error(f"❌ ERROR in preference handler: {e}", exc_info=True)
             # Continue to normal processing
