@@ -280,7 +280,7 @@ class ConversationalGovernor:
     @staticmethod
     async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
         """
-        LLM-based intent classification (world-class approach)
+        LLM-based intent classification (OpenAI v1.0+ compatible)
         
         CHATGPT PRESCRIPTION:
         - LLM = meaning
@@ -291,6 +291,11 @@ class ConversationalGovernor:
         
         Returns: (is_mandate_relevant, semantic_category, confidence)
         """
+        
+        from openai import AsyncOpenAI
+        
+        # Initialize client
+        client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
         # Build context string if available
         context_str = ""
@@ -341,9 +346,9 @@ Examples:
 JSON:"""
         
         try:
-            # Call GPT-4 for classification
-            response = await openai.ChatCompletion.acreate(
-                model="gpt-4o-mini",  # Fast, cheap, accurate
+            # Call GPT-4 for classification (OpenAI v1.0+ syntax)
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -355,11 +360,11 @@ JSON:"""
                     }
                 ],
                 max_tokens=150,
-                temperature=0,  # Deterministic
-                timeout=5  # Fast fail
+                temperature=0,
+                timeout=5
             )
             
-            # Parse response
+            # Parse response (v1.0+ response structure)
             raw_response = response.choices[0].message.content.strip()
             
             # Strip markdown formatting if present
@@ -395,18 +400,16 @@ JSON:"""
                 intent_data['confidence']
             )
             
-        except openai.error.Timeout:
+        except TimeoutError:
             logger.error("⏱️ LLM intent classification timeout - falling back to REJECT")
             return False, SemanticCategory.NON_DOMAIN, 0.5
             
         except json.JSONDecodeError as e:
             logger.error(f"❌ LLM returned invalid JSON: {e}")
-            # Safe fallback: reject unclear queries
             return False, SemanticCategory.NON_DOMAIN, 0.5
             
         except Exception as e:
             logger.error(f"❌ LLM intent classification failed: {e}")
-            # Safe fallback: reject on error
             return False, SemanticCategory.NON_DOMAIN, 0.5
     
     # ========================================
