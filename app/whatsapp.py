@@ -1434,7 +1434,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 logger.error(f"❌ Portfolio failed: {e}")
                 # Fall through to normal processing
         
-        # ====================================================================
+# ====================================================================
         # META_AUTHORITY / PROFILE_STATUS ROUTING (NEW - CRITICAL)
         # ====================================================================
         
@@ -1451,6 +1451,20 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
                 update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                
+                # Auto-sync to Airtable
+                from app.airtable_auto_sync import sync_usage_metrics
+                
+                await sync_usage_metrics(
+                    whatsapp_number=sender,
+                    record_id=client_profile.get('airtable_record_id'),
+                    table_name=client_profile.get('airtable_table', 'Clients'),
+                    event_type='message_sent',
+                    metadata={
+                        'tokens_used': 0,
+                        'category': governance_result.intent.value
+                    }
+                )
                 
                 logger.info(f"✅ Message processed: category={governance_result.intent.value}")
                 return
@@ -1472,6 +1486,20 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
                 update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                
+                # Auto-sync to Airtable
+                from app.airtable_auto_sync import sync_usage_metrics
+                
+                await sync_usage_metrics(
+                    whatsapp_number=sender,
+                    record_id=client_profile.get('airtable_record_id'),
+                    table_name=client_profile.get('airtable_table', 'Clients'),
+                    event_type='message_sent',
+                    metadata={
+                        'tokens_used': 0,
+                        'category': governance_result.intent.value
+                    }
+                )
                 
                 logger.info(f"✅ Message processed: category={governance_result.intent.value}")
                 return
@@ -1499,6 +1527,20 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             
             log_interaction(sender, message_text, "status_monitoring", response)
             update_client_history(sender, message_text, "status_monitoring", preferred_region)
+            
+            # Auto-sync to Airtable
+            from app.airtable_auto_sync import sync_usage_metrics
+            
+            await sync_usage_metrics(
+                whatsapp_number=sender,
+                record_id=client_profile.get('airtable_record_id'),
+                table_name=client_profile.get('airtable_table', 'Clients'),
+                event_type='message_sent',
+                metadata={
+                    'tokens_used': 0,
+                    'category': 'status_monitoring'
+                }
+            )
             
             logger.info(f"✅ Message processed: category=status_monitoring")
             return
@@ -1540,6 +1582,20 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             log_interaction(sender, message_text, "monitoring_status", fallback_response)
             update_client_history(sender, message_text, "monitoring_status", preferred_region)
             
+            # Auto-sync to Airtable
+            from app.airtable_auto_sync import sync_usage_metrics
+            
+            await sync_usage_metrics(
+                whatsapp_number=sender,
+                record_id=client_profile.get('airtable_record_id'),
+                table_name=client_profile.get('airtable_table', 'Clients'),
+                event_type='message_sent',
+                metadata={
+                    'tokens_used': 0,
+                    'category': 'monitoring_status'
+                }
+            )
+            
             logger.info(f"✅ Monitoring status handled")
             return
         
@@ -1554,6 +1610,21 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             from app.monitoring import handle_monitor_request
             response = await handle_monitor_request(sender, message_text, client_profile)
             await send_twilio_message(sender, response)
+            
+            # Auto-sync to Airtable
+            from app.airtable_auto_sync import sync_usage_metrics
+            
+            await sync_usage_metrics(
+                whatsapp_number=sender,
+                record_id=client_profile.get('airtable_record_id'),
+                table_name=client_profile.get('airtable_table', 'Clients'),
+                event_type='message_sent',
+                metadata={
+                    'tokens_used': 0,
+                    'category': 'monitoring_request'
+                }
+            )
+            
             return
         
         # ====================================================================
