@@ -1784,10 +1784,11 @@ To upgrade, contact intel@voxmill.uk"""
                     # ============================================================
                     # INVALIDATE CACHE FOR NEW REGION
                     # ============================================================
-                    from app.cache_manager import CacheManager
-                    CacheManager = CacheManager()
                     CacheManager.clear_dataset_cache(preferred_region)
                     logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
+                   
+                    
+                    
                 
                 # Send preference confirmation and EXIT
                 await send_twilio_message(sender, pref_response)
