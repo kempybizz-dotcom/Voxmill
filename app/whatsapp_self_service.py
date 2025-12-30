@@ -101,6 +101,7 @@ REPORT DEPTH SIGNALS:
 REGION SIGNALS:
 - "add [region]" / "include [region]" / "cover [region]"
 - "remove [region]" / "stop covering [region]"
+- "switch to [region]" / "focus on [region]" / "change to [region]"
 
 KEY DISTINCTION:
 PREFERENCE REQUESTS (is_preference_request = TRUE):
@@ -108,6 +109,7 @@ PREFERENCE REQUESTS (is_preference_request = TRUE):
 ✓ "Focus more on competitors going forward"
 ✓ "Add Chelsea to my coverage"
 ✓ "Strategic moves against competitors in my report"
+✓ "Switch to Mayfair" / "Focus on Manchester"
 
 MARKET QUERIES (is_preference_request = FALSE):
 ✗ "Who are the main competitors?"
@@ -120,7 +122,7 @@ Analyze if this is a preference change request (vs. a one-time market question).
 If it IS a preference request, extract the specific changes and respond with JSON:
 {{
     "is_preference_request": true,
-    "intent": "add_regions" | "remove_regions" | "change_depth" | "adjust_focus" | "delivery_settings" | "other",
+    "intent": "add_regions" | "remove_regions" | "change_regions" | "change_depth" | "adjust_focus" | "delivery_settings" | "other",
     "changes": {{
         "regions": ["Area1", "Area2"],
         "report_depth": "executive" | "detailed" | "deep",
@@ -140,6 +142,9 @@ EXAMPLES:
 
 Message: "I'd like more competitors and strategic moves against competitors in my next report"
 Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact: ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
+
+Message: "Switch to Mayfair" / "Focus on Manchester"
+Response: {{"is_preference_request": true, "intent": "change_regions", "changes": {{"regions": ["Mayfair"]}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Coverage Areas: Mayfair\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC."}}
 
 Message: "What's happening in Mayfair?"
 Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "What's happening in Mayfair?"}}
@@ -172,21 +177,23 @@ Analyze this message and determine if it's a preference change request."""
     return result
 
 
-def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
+def apply_preference_changes(whatsapp_number: str, changes: Dict, original_message: str = "") -> bool:
     """
     Apply preference changes to BOTH MongoDB AND Airtable
     
-    UPDATED: Now supports Industry and Allowed Intelligence Modules
+    CRITICAL FIX: Now distinguishes REPLACE vs MERGE for regions based on user intent
     
     Flow:
     1. Find client in MongoDB
     2. Update Airtable (source of truth) 
-    3. Update MongoDB (backup/cache)
-    4. Return success
+    3. Read back actual values from Airtable
+    4. Update MongoDB (backup/cache)
+    5. Return success
     
     Args:
         whatsapp_number: Client's WhatsApp number (with or without 'whatsapp:' prefix)
         changes: Dict with keys like 'competitor_focus', 'report_depth', 'regions', 'industry', 'allowed_modules'
+        original_message: Original user message (for intent detection)
     
     Returns:
         True if successful
@@ -260,14 +267,30 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
                         value = changes['report_depth'].capitalize()
                         airtable_updates['Report Depth'] = value
                     
+                    # ========================================
+                    # CRITICAL FIX: REPLACE vs MERGE FOR REGIONS
+                    # ========================================
                     if 'regions' in changes:
-                        # Get current regions from Airtable
-                        current_regions_str = records[0]['fields'].get('Regions', '')
-                        current_regions = [r.strip() for r in current_regions_str.split(',') if r.strip()]
+                        message_lower = original_message.lower()
                         
-                        # Merge with new regions (avoid duplicates)
-                        new_regions = list(set(current_regions + changes['regions']))
-                        airtable_updates['Regions'] = ', '.join(new_regions)
+                        # Detect user intent: REPLACE or MERGE
+                        is_replace = any(keyword in message_lower for keyword in [
+                            'switch to', 'focus on', 'change to', 'move to',
+                            'dont focus', 'don\'t focus', 'stop focusing',
+                            'switch from', 'stop covering'
+                        ])
+                        
+                        if is_replace:
+                            # REPLACE: User wants to change focus entirely
+                            airtable_updates['Regions'] = ', '.join(changes['regions'])
+                            logger.info(f"🔄 REPLACE regions: {changes['regions']}")
+                        else:
+                            # MERGE: User wants to ADD regions
+                            current_regions_str = records[0]['fields'].get('Regions', '')
+                            current_regions = [r.strip() for r in current_regions_str.split(',') if r.strip()]
+                            new_regions = list(set(current_regions + changes['regions']))
+                            airtable_updates['Regions'] = ', '.join(new_regions)
+                            logger.info(f"➕ MERGE regions: {current_regions} + {changes['regions']} = {new_regions}")
                     
                     # ========================================
                     # NEW: INDUSTRY FIELD (SINGLE SELECT)
@@ -341,6 +364,21 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
                         if update_response.status_code == 200:
                             logger.info(f"✅ Updated Airtable: {airtable_updates}")
                             airtable_success = True
+                            
+                            # ========================================
+                            # CRITICAL FIX: READ BACK ACTUAL VALUES FOR CONFIRMATION
+                            # ========================================
+                            updated_record = update_response.json()
+                            actual_regions = updated_record['fields'].get('Regions', '')
+                            actual_competitor_focus = updated_record['fields'].get('Competitor Focus', '')
+                            actual_report_depth = updated_record['fields'].get('Report Depth', '')
+                            
+                            # Store actual values for confirmation message
+                            changes['_actual_regions'] = actual_regions
+                            changes['_actual_competitor_focus'] = actual_competitor_focus
+                            changes['_actual_report_depth'] = actual_report_depth
+                            
+                            logger.info(f"📖 Airtable echo: Regions={actual_regions}, Focus={actual_competitor_focus}, Depth={actual_report_depth}")
                         else:
                             logger.warning(f"Airtable update failed: {update_response.status_code} - {update_response.text}")
                 else:
@@ -357,9 +395,13 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     update_data = {}
     
     if 'regions' in changes:
-        current_regions = client.get('preferences', {}).get('preferred_regions', [])
-        new_regions = list(set(current_regions + changes['regions']))
-        update_data['preferences.preferred_regions'] = new_regions
+        # Use actual regions from Airtable (if available)
+        if '_actual_regions' in changes:
+            actual_regions_list = [r.strip() for r in changes['_actual_regions'].split(',') if r.strip()]
+            update_data['preferences.preferred_regions'] = actual_regions_list
+        else:
+            # Fallback to requested regions
+            update_data['preferences.preferred_regions'] = changes['regions']
     
     if 'report_depth' in changes:
         update_data['preferences.report_depth'] = changes['report_depth']
@@ -387,7 +429,7 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict) -> bool:
     
     # Handle any other custom fields
     for key, value in changes.items():
-        if key not in ['regions', 'report_depth', 'competitor_focus', 'delivery_time', 'industry', 'allowed_modules']:
+        if key not in ['regions', 'report_depth', 'competitor_focus', 'delivery_time', 'industry', 'allowed_modules'] and not key.startswith('_'):
             update_data[f'preferences.{key}'] = value
     
     mongodb_success = False
@@ -461,8 +503,8 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             "• Report Depth (executive/detailed/deep)\n"
             "• Coverage Regions")
     
-    # ✅ FIX: Use WhatsApp number (not email)
-    success = apply_preference_changes(from_number, changes)
+    # ✅ CRITICAL FIX: Pass original message for intent detection
+    success = apply_preference_changes(from_number, changes, message)
     
     if success:
         # Log the change
@@ -478,7 +520,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         except Exception as e:
             logger.error(f"Failed to log preference change: {e}")
         
-        # BUILD RICH CONFIRMATION MESSAGE
+        # BUILD RICH CONFIRMATION MESSAGE (USING ACTUAL AIRTABLE VALUES)
         today = datetime.now()
         days_until_sunday = (6 - today.weekday()) % 7
         if days_until_sunday == 0:
@@ -487,22 +529,26 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         
         # Build change summary
         change_lines = []
+        
         if 'competitor_focus' in changes:
-            focus = changes['competitor_focus']
-            count = {'low': 3, 'medium': 6, 'high': 10}[focus]
+            # Use actual value from Airtable
+            focus = changes.get('_actual_competitor_focus', changes['competitor_focus']).lower()
+            count = {'low': 3, 'medium': 6, 'high': 10}.get(focus, 6)
             change_lines.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
         
         if 'report_depth' in changes:
-            depth = changes['report_depth']
-            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}[depth]
+            # Use actual value from Airtable
+            depth = changes.get('_actual_report_depth', changes['report_depth']).lower()
+            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}.get(depth, 14)
             change_lines.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
         
         if 'regions' in changes:
-            regions = ', '.join(changes['regions'])
+            # CRITICAL FIX: Use actual value from Airtable
+            regions = changes.get('_actual_regions', ', '.join(changes['regions']))
             change_lines.append(f"• Coverage Areas: {regions}")
         
         # Final confirmation message
-        confirmation = f""" PREFERENCES UPDATED
+        confirmation = f"""✅ PREFERENCES UPDATED
 
 {chr(10).join(change_lines)}
 
@@ -547,8 +593,6 @@ def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
     from app.whatsapp import handle_whatsapp_message  # Your existing handler
     return handle_whatsapp_message(from_number, message)
 
-
-# ADD THIS FUNCTION to whatsapp_self_service.py (at the bottom, before if __name__ == "__main__":)
 
 def handle_alert_preferences(whatsapp_number: str, message: str) -> Optional[str]:
     """
@@ -609,7 +653,7 @@ Contact ollys@voxmill.uk to upgrade."""
         
         status = "ENABLED" if alert_enabled else "DISABLED"
         
-        return f""" ALERT PREFERENCES UPDATED
+        return f"""✅ ALERT PREFERENCES UPDATED
 
 Real-Time Alerts: {status}
 
@@ -648,7 +692,9 @@ if __name__ == "__main__":
         "Focus more on competitors next week",
         "What's the latest in Mayfair?",  # Not a preference request
         "Change delivery to 6am and add Kensington",
-        "Make my reports more detailed"
+        "Make my reports more detailed",
+        "Switch to Mayfair",  # REPLACE region
+        "Focus on Manchester"  # REPLACE region
     ]
     
     print("Testing preference detection...\n")
@@ -670,4 +716,3 @@ if __name__ == "__main__":
             print(f"Changes: {result.get('changes')}")
             print(f"Response: {result.get('confirmation_message')}")
         print("-" * 70)
-
