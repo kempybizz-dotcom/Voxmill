@@ -465,6 +465,33 @@ class CacheManager:
             if cache_key in _memory_cache:
                 del _memory_cache[cache_key]
                 logger.info(f"🗑️ Memory cache invalidated for client")
+
+    @classmethod
+    def clear_dataset_cache(cls, area: str, vertical: str = "real_estate"):
+        """
+        Clear dataset cache for a specific region
+        
+        Use this after preference changes to force fresh data load
+        
+        Args:
+            area: Region name (e.g., "Mayfair")
+            vertical: Market vertical (default: "real_estate")
+        """
+        cache_key = cls._generate_cache_key("dataset", area, vertical)
+        
+        # Clear from Redis
+        if redis_available and redis_client:
+            try:
+                redis_client.delete(cache_key)
+                logger.info(f"🗑️ Redis dataset cache cleared for {area}")
+            except Exception as e:
+                logger.warning(f"Redis delete failed: {e}")
+        
+        # Clear from memory
+        with _memory_cache_lock:
+            if cache_key in _memory_cache:
+                del _memory_cache[cache_key]
+                logger.info(f"🗑️ Memory dataset cache cleared for {area}")
     
     # ============================================================
     # WEBHOOK DEDUPLICATION
