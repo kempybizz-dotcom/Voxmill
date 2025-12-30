@@ -595,15 +595,15 @@ async def get_latest_data(area: Optional[str] = None):
         from app.dataset_loader import load_dataset
         
         dataset = load_dataset(
-            area=area if area else "Mayfair",
+            area=area if area else "Mayfair"
         )
         
         if not dataset or dataset.get('error'):
-            return {"error": "No data found", "area": area, "industry": industry}
+            return {"error": "No data found", "area": area}  # ✅ FIXED - removed industry
         
         return {
             "area": dataset.get("metadata", {}).get("area"),
-            "industry": dataset.get("metadata", {}).get("industry", industry),
+            "industry": dataset.get("metadata", {}).get("industry", "Real Estate"),  # ✅ FIXED - hardcoded default
             "timestamp": dataset.get("metadata", {}).get("analysis_timestamp"),
             "property_count": len(dataset.get("properties", [])),
             "has_intelligence": "intelligence" in dataset
