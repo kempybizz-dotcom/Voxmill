@@ -1998,7 +1998,7 @@ Standing by."""
             metadata=response_metadata
         )
         
-        # Security validation
+# Security validation
         from app.security import ResponseValidator
         response_safe, reason = ResponseValidator.validate_response(formatted_response)
         
@@ -2033,8 +2033,23 @@ Standing by."""
         
         update_client_history(sender, message_text, category, query_region)
         
+        # Auto-sync Airtable fields
+        from app.airtable_auto_sync import sync_usage_metrics
+        
+        await sync_usage_metrics(
+            whatsapp_number=sender,
+            record_id=client_profile.get('airtable_record_id'),
+            table_name=client_profile.get('airtable_table', 'Clients'),
+            event_type='message_sent',
+            metadata={
+                'tokens_used': tokens_used,
+                'category': category
+            }
+        )
+        
         logger.info(f"✅ Message processed: category={category}, intent={governance_result.intent.value}, region={query_region}")
         
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         await send_twilio_message(sender, "System encountered an error. Please try again.")
+
