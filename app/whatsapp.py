@@ -1714,18 +1714,43 @@ What market intelligence can I provide?"""
             update_client_history(sender, message_text, "cached", preferred_region)
             return
         
+# ====================================================================
+        # REGION EXTRACTION FROM QUERY (CRITICAL FIX)
+        # ====================================================================
+        
+        message_lower = message_normalized.lower()
+        
+        # Known regions
+        region_map = {
+            'mayfair': 'Mayfair',
+            'knightsbridge': 'Knightsbridge', 
+            'chelsea': 'Chelsea',
+            'belgravia': 'Belgravia',
+            'kensington': 'Kensington',
+            'marylebone': 'Marylebone',
+            'notting hill': 'Notting Hill',
+            'holland park': 'Holland Park'
+        }
+        
+        # Check if user mentioned a region
+        query_region = preferred_region  # Default to preferred
+        
+        for region_key, region_proper in region_map.items():
+            if region_key in message_lower:
+                query_region = region_proper
+                logger.info(f"🗺️ Region extracted from query: '{query_region}' (overriding '{preferred_region}')")
+                break
+        
         # ====================================================================
         # OPTIMIZED: SELECTIVE DATASET LOADING
         # ====================================================================
         
         # Validate region
-        if not preferred_region or len(preferred_region) < 3:
+        if not query_region or len(query_region) < 3:
             preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', ['Mayfair'])
-            preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
+            query_region = preferred_regions[0] if preferred_regions else 'Mayfair'
         
         # Detect query patterns
-        message_lower = message_normalized.lower()
-        
         overview_patterns = ['market overview', 'what\'s up', 'what\'s the market', 'market status', 'how\'s the market', 'market update', 'what\'s happening', 'give me an update']
         decision_patterns = ['decision mode', 'what should i do', 'recommend action', 'tell me what to do', 'make the call', 'your recommendation']
         trend_patterns = ['what\'s changed', 'what\'s different', 'trends', 'what\'s new', 'movements', 'shifts']
@@ -1740,13 +1765,13 @@ What market intelligence can I provide?"""
         
         # OPTIMIZED: Only load dataset for instant response patterns
         if is_overview or is_decision or is_trend or is_timing or is_agent:
-            logger.info(f"🎯 Loading dataset for region: '{preferred_region}'")
-            dataset = load_dataset(area=preferred_region)
+            logger.info(f"🎯 Loading dataset for region: '{query_region}'")
+            dataset = load_dataset(area=query_region)
             
             if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
                 fallback_response = f"""INTELLIGENCE UNAVAILABLE
 
-No active market data is currently available for {preferred_region}.
+No active market data is currently available for {query_region}.
 
 Available coverage: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
 
@@ -1760,25 +1785,25 @@ Standing by."""
             
             # Route to instant intelligence
             if is_overview:
-                formatted_response = InstantIntelligence.get_full_market_snapshot(preferred_region, dataset, client_profile)
+                formatted_response = InstantIntelligence.get_full_market_snapshot(query_region, dataset, client_profile)
                 category = "market_overview"
             elif is_decision:
-                formatted_response = InstantIntelligence.get_instant_decision(preferred_region, dataset, client_profile)
+                formatted_response = InstantIntelligence.get_instant_decision(query_region, dataset, client_profile)
                 category = "decision_mode"
             elif is_trend:
-                formatted_response = InstantIntelligence.get_trend_analysis(preferred_region, dataset)
+                formatted_response = InstantIntelligence.get_trend_analysis(query_region, dataset)
                 category = "trend_analysis"
             elif is_timing:
-                formatted_response = InstantIntelligence.get_timing_analysis(preferred_region, dataset)
+                formatted_response = InstantIntelligence.get_timing_analysis(query_region, dataset)
                 category = "timing_analysis"
             elif is_agent:
-                formatted_response = InstantIntelligence.get_agent_analysis(preferred_region, dataset)
+                formatted_response = InstantIntelligence.get_agent_analysis(query_region, dataset)
                 category = "agent_analysis"
             
             await send_twilio_message(sender, formatted_response)
             conversation.update_session(user_message=message_text, assistant_response=formatted_response, metadata={'category': category, 'response_type': 'instant'})
             log_interaction(sender, message_text, category, formatted_response)
-            update_client_history(sender, message_text, category, preferred_region)
+            update_client_history(sender, message_text, category, query_region)
             
             logger.info(f"✅ Instant response sent (<1s)")
             return
@@ -1787,14 +1812,14 @@ Standing by."""
         # COMPLEX QUERIES: LOAD DATASET AND USE GPT-4
         # ====================================================================
         
-        logger.info(f"🤖 Complex query - loading dataset and using GPT-4")
+        logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
-        dataset = load_dataset(area=preferred_region)
+        dataset = load_dataset(area=query_region)
         
         if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
             fallback_response = f"""INTELLIGENCE UNAVAILABLE
 
-No active market data for {preferred_region}.
+No active market data for {query_region}.
 
 Available: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
 
@@ -1873,7 +1898,7 @@ Standing by."""
         # Cache response
         cache_mgr.set_response_cache(
             query=message_normalized,
-            region=preferred_region,
+            region=query_region,
             client_tier=client_profile.get('tier', 'tier_1'),
             category=category,
             response_text=formatted_response,
@@ -1897,7 +1922,7 @@ Standing by."""
             assistant_response=formatted_response,
             metadata={
                 'category': category,
-                'region': preferred_region,
+                'region': query_region,
                 'confidence': confidence_score,
                 'cached': False
             }
@@ -1913,9 +1938,9 @@ Standing by."""
             client_profile=client_profile
         )
         
-        update_client_history(sender, message_text, category, preferred_region)
+        update_client_history(sender, message_text, category, query_region)
         
-        logger.info(f"✅ Message processed: category={category}, intent={governance_result.intent.value}")
+        logger.info(f"✅ Message processed: category={category}, intent={governance_result.intent.value}, region={query_region}")
         
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
