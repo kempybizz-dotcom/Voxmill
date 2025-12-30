@@ -102,13 +102,13 @@ async def check_all_monitors():
         logger.error(f"Monitor check failed: {e}")
 
 async def warm_cache():
-    """Pre-warm cache at 7am - UPDATED with industry parameter"""
+    """Pre-warm cache at 7am"""
     try:
         from app.dataset_loader import load_dataset
         
         # Warm Real Estate cache (primary vertical)
         for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
-            load_dataset(area, max_properties=100, industry="Real Estate")
+            load_dataset(area=area, max_properties=100)
             logger.info(f"✅ Cache warmed for {area}")
     except Exception as e:
         logger.error(f"Cache warming failed: {e}")
