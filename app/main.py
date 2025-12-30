@@ -108,7 +108,7 @@ async def warm_cache():
         
         # Warm Real Estate cache (primary vertical)
         for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
-            load_dataset(area=area, max_properties=100)
+            load_dataset(area=area, max_properties=100)  # ✅ FIXED - no industry=
             logger.info(f"✅ Cache warmed for {area}")
     except Exception as e:
         logger.error(f"Cache warming failed: {e}")
@@ -186,7 +186,7 @@ async def store_daily_snapshots_all_regions():
     for region in core_regions:
         try:
             logger.info(f"📸 Storing daily snapshot for {region}...")
-            dataset = load_dataset(area=region, max_properties=100)  # ← FIXED
+            dataset = load_dataset(area=region, max_properties=100)  # ✅ FIXED - no industry=
             # Snapshot storage happens automatically inside load_dataset now
             logger.info(f"✅ Snapshot stored for {region}")
         except Exception as e:
@@ -596,7 +596,6 @@ async def get_latest_data(area: Optional[str] = None):
         
         dataset = load_dataset(
             area=area if area else "Mayfair",
-            max_properties=100
         )
         
         if not dataset or dataset.get('error'):
