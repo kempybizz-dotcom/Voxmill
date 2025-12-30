@@ -179,6 +179,15 @@ def calculate_engagement_level(client: Dict) -> str:
     # Calculate messages per day
     created_at = client.get('created_at')
     if created_at:
+        # ✅ FIX: Ensure timezone-aware datetime
+        if isinstance(created_at, str):
+            from dateutil import parser as dateutil_parser
+            created_at = dateutil_parser.parse(created_at)
+        
+        # Make timezone-aware if naive
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        
         days_active = (datetime.now(timezone.utc) - created_at).days
         if days_active < 1:
             days_active = 1
