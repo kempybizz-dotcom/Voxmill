@@ -167,9 +167,13 @@ class ConversationalGovernor:
         # CLASS C: PHATIC EXPRESSIONS
         phatic_patterns = [
             'how are you', 'how r you', 'how are u', 'how r u', 'hru',
+            'you there', 'u there', 'are you there', 'r u there',
             'how you doing', 'how u doing', 'howdy doing',
+            'you around', 'u around', 'are you around',
+            'you here', 'you ready?', 'are you here',
             'hows it going', 'hows it goin', 'how goes it',
             'you good', 'u good', 'all good', 'everything good',
+            'anyone there', 'anybody there'
             'hows things', 'how are things',
             'whats up', 'what up', 'whats good', 'whats poppin',
             'whats crackin', 'whats happening', 'whats the word',
@@ -350,6 +354,8 @@ Classification rules:
 Examples:
 - "What is Voxmill?" → meta_authority (about system capabilities)
 - "Why should I use Voxmill?" → value_justification (about value proposition)
+- "Let's get started" → meta_authority (onboarding request)
+- "Show me what you can do" → meta_authority (capability demonstration)
 - "Can I trust you?" → trust_authority (about reliability)
 - "What am I waiting for?" → status_monitoring (about user's status)
 - "Can I add properties?" → portfolio_management (portfolio action)
