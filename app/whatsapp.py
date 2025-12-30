@@ -827,7 +827,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         should_send_welcome = True
                         welcome_message_type = 'reactivation'
             
-            # ================================================================
+# ================================================================
             # SEND AUTOMATED WELCOME MESSAGE
             # ================================================================
             
@@ -924,13 +924,16 @@ Voxmill Intelligence — Precision at Scale"""
                 await asyncio.sleep(1.5)
         
         # ====================================================================
-        # GATE 2: TRIAL STATUS - OPTIMIZED (Single Check)
+        # GATE 2: TRIAL ENVELOPE (OUTER LAYER - CRITICAL)
         # ====================================================================
         
-        logger.info(f"🔐 GATE 2: Checking trial status...")
+        logger.info(f"🔐 GATE 2: Checking trial envelope...")
         
-        # OPTIMIZED: Single trial check (removed duplicates at lines 765)
-        if client_profile.get('trial_expired'):
+        subscription_status = client_profile.get('subscription_status')
+        trial_expired = client_profile.get('trial_expired', False)
+        
+        # TRIAL EXPIRED - HARD STOP
+        if trial_expired:
             logger.warning(f"🚫 GATE 2 FAILED: TRIAL EXPIRED: {sender}")
             
             trial_expired_msg = """TRIAL PERIOD EXPIRED
@@ -945,7 +948,147 @@ Thank you for trying our service."""
             await send_twilio_message(sender, trial_expired_msg)
             return
         
-        logger.info(f"✅ GATE 2 PASSED: Trial OK")
+        # TRIAL ACTIVE - LIMITED ENVELOPE
+        if subscription_status == 'Trial' and not trial_expired:
+            logger.info(f"🔐 TRIAL ENVELOPE ACTIVE for {sender}")
+            
+            # TRIAL ALLOWS:
+            # - Meta questions (What is Voxmill, Can I trust you, Capabilities)
+            # - Social (Hello, Thanks, etc)
+            # - Preference changes (Switch to Manchester)
+            # - 1 LIMITED intelligence sample per session
+            # - NO follow-up intelligence
+            
+            # Check message intent via governor
+            from app.conversational_governor import ConversationalGovernor, Intent
+            
+            governance_result = await ConversationalGovernor.govern(
+                message_text=message_text,
+                sender=sender,
+                client_profile=client_profile,
+                system_state={},
+                conversation_context=conversation_context
+            )
+            
+            # ALWAYS ALLOW: Meta, Social, Administrative
+            if governance_result.intent in [Intent.META_AUTHORITY, Intent.PROFILE_STATUS, 
+                                            Intent.VALUE_JUSTIFICATION, Intent.TRUST_AUTHORITY,
+                                            Intent.CASUAL, Intent.ADMINISTRATIVE]:
+                # These bypass trial limits
+                logger.info(f"✅ TRIAL: Meta/Social allowed - {governance_result.intent.value}")
+                
+                if governance_result.response:
+                    await send_twilio_message(sender, governance_result.response)
+                    
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response=governance_result.response,
+                        metadata={'category': governance_result.intent.value, 'trial': True}
+                    )
+                    
+                    log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
+                    return
+            
+            # INTELLIGENCE QUERY - CHECK TRIAL SAMPLE LIMIT
+            if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST]:
+                # Check if trial sample already used
+                try:
+                    from pymongo import MongoClient
+                    MONGODB_URI = os.getenv('MONGODB_URI')
+                    
+                    if MONGODB_URI:
+                        mongo_client = MongoClient(MONGODB_URI)
+                        db = mongo_client['Voxmill']
+                        
+                        trial_usage = db['client_profiles'].find_one({'whatsapp_number': sender})
+                        
+                        if trial_usage and trial_usage.get('trial_sample_used', False):
+                            # Trial sample already used - BLOCK
+                            logger.warning(f"🚫 TRIAL: Sample already used for {sender}")
+                            
+                            trial_limit_msg = """TRIAL SAMPLE COMPLETE
+
+You've received your trial intelligence sample.
+
+To continue receiving market intelligence, contact:
+intel@voxmill.uk
+
+Trial period: 24 hours from activation"""
+                            
+                            await send_twilio_message(sender, trial_limit_msg)
+                            return
+                        
+                        # Mark trial sample as used
+                        db['client_profiles'].update_one(
+                            {'whatsapp_number': sender},
+                            {
+                                '$set': {
+                                    'trial_sample_used': True,
+                                    'trial_sample_at': datetime.now(timezone.utc)
+                                }
+                            },
+                            upsert=True
+                        )
+                        
+                        logger.info(f"✅ TRIAL: First sample - allowing intelligence")
+                        
+                        # ALLOW FIRST INTELLIGENCE SAMPLE
+                        # Continue to full intelligence flow below
+                        
+                except Exception as e:
+                    logger.error(f"Trial tracking failed: {e}")
+                    # Allow on error to prevent blocking trial users
+            
+            # PREFERENCE CHANGE - ALWAYS ALLOW
+            if 'switch to' in message_text.lower() or 'focus on' in message_text.lower():
+                # Extract region from message
+                message_lower = message_text.lower()
+                
+                # Simple region extraction
+                new_region = None
+                if 'manchester' in message_lower:
+                    new_region = 'Manchester'
+                elif 'birmingham' in message_lower:
+                    new_region = 'Birmingham'
+                # Add more as needed
+                
+                if new_region:
+                    preference_msg = f"""PREFERENCE UPDATED
+
+Primary region set to: {new_region}
+
+Note: Trial access provides limited intelligence sampling.
+
+For full regional coverage, contact:
+intel@voxmill.uk"""
+                    
+                    await send_twilio_message(sender, preference_msg)
+                    
+                    # Update Airtable
+                    try:
+                        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                        
+                        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Trial%20Users/{client_profile['airtable_record_id']}"
+                            headers = {
+                                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                                "Content-Type": "application/json"
+                            }
+                            data = {
+                                "fields": {
+                                    "Regions": [new_region]
+                                }
+                            }
+                            
+                            requests.patch(url, headers=headers, json=data, timeout=5)
+                            logger.info(f"✅ Airtable updated: Region = {new_region}")
+                    except Exception as e:
+                        logger.error(f"Airtable update failed: {e}")
+                    
+                    return
+        
+        logger.info(f"✅ GATE 2 PASSED: Trial envelope OK")
         
         # ====================================================================
         # GATE 3: SUBSCRIPTION STATUS - OPTIMIZED (Single Check)
