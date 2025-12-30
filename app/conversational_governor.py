@@ -313,7 +313,7 @@ class ConversationalGovernor:
             if regions or agents or topics:
                 context_str = f"\n\nConversation context:\n- Recent regions: {regions}\n- Recent agents: {agents}\n- Recent topics: {topics}"
         
-# Single LLM call for intent classification
+        # Single LLM call for intent classification
         prompt = f"""Classify this message for a luxury property market intelligence analyst.
 
 Message: "{message}"{context_str}
@@ -923,6 +923,34 @@ What market intelligence can I provide?"""
             else:
                 return "Client profile loading..."
         
+        # VALUE_JUSTIFICATION responses
+        if intent == Intent.VALUE_JUSTIFICATION:
+            return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
+
+Real-time data. Fortune-500 presentation quality. Surgical precision.
+
+What market intelligence can I provide?"""
+        
+        # TRUST_AUTHORITY responses
+        if intent == Intent.TRUST_AUTHORITY:
+            return """Every insight is sourced from verified APIs and cross-referenced datasets.
+
+Confidence levels disclosed. No hallucinations.
+
+What market intelligence can I provide?"""
+        
+        # PORTFOLIO_MANAGEMENT responses
+        if intent == Intent.PORTFOLIO_MANAGEMENT:
+            return """Your portfolio is currently empty.
+
+You can add properties by sending an address, postcode, or Rightmove link."""
+        
+        # DELIVERY_REQUEST responses
+        if intent == Intent.DELIVERY_REQUEST:
+            return """PDF reports generate Sunday at 6:00 AM UTC.
+
+For immediate regeneration, contact intel@voxmill.uk"""
+        
         # Intent-based responses
         intent_responses = {
             Intent.CASUAL: "Standing by.",
@@ -1039,7 +1067,7 @@ What market intelligence can I provide?"""
         intent_type_hint = ConversationalGovernor._last_intent_type
         
         # CRITICAL: META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
-        if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status']:
+        if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status', 'value_justification', 'trust_authority', 'portfolio_management', 'status_monitoring', 'delivery_request']:
             # Force to mandate-relevant (these are valid system queries)
             is_mandate_relevant = True
             logger.info(f"✅ Special intent {intent_type_hint} - forcing mandate relevance")
