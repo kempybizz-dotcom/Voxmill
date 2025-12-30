@@ -1842,7 +1842,7 @@ What market intelligence can I provide?"""
         # RESPONSE CACHE CHECK
         # ====================================================================
         
-        CacheManager = CacheManager()
+        
         cached_response = CacheManager.get_response_cache(
             query=message_normalized,
             region=preferred_region,
