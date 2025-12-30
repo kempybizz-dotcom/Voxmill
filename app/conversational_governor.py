@@ -1251,6 +1251,9 @@ Trial access provides limited intelligence sampling."""
         
         logger.info(f"Mandate check: relevant={is_mandate_relevant}, category={semantic_category.value}, confidence={semantic_confidence:.2f}")
         
+        # Get LLM's intent_type hint for special handling
+        intent_type_hint = ConversationalGovernor._last_intent_type
+        
         # ========================================
         # CRITICAL: IMPLICIT REFERENCE OVERRIDE
         # ========================================
@@ -1274,34 +1277,58 @@ Trial access provides limited intelligence sampling."""
                 logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
         
         # ========================================
-        # REFUSAL CHECK (AFTER IMPLICIT REFERENCE OVERRIDE)
+        # CRITICAL FIX: SPECIAL INTENT OVERRIDE (BEFORE REFUSAL)
         # ========================================
         
-        # Get LLM's intent_type hint for special handling
-        intent_type_hint = ConversationalGovernor._last_intent_type
-        
-        # CRITICAL: META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
+        # META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
         if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status', 'value_justification', 'trust_authority', 'portfolio_management', 'status_monitoring', 'delivery_request']:
             # Force to mandate-relevant (these are valid system queries)
             is_mandate_relevant = True
             logger.info(f"✅ Special intent {intent_type_hint} - forcing mandate relevance")
         
-        # If NOT mandate-relevant, refuse immediately
+        # ========================================
+        # CRITICAL FIX: REFUSAL CHECK (NOISE vs DISALLOWED)
+        # ========================================
+        
+        # If NOT mandate-relevant, check if it's noise or a disallowed request
         if not is_mandate_relevant:
-            return GovernanceResult(
-                intent=Intent.UNKNOWN,
-                confidence=semantic_confidence,
-                blocked=True,
-                silence_required=False,
-                response="Outside intelligence scope.",
-                allowed_shapes=["REFUSAL"],
-                max_words=10,
-                analysis_allowed=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                auto_scoped=False,
-                semantic_category=semantic_category.value
-            )
+            # NOISE (gibberish, profanity, anecdotes) → "Standing by."
+            if intent_type_hint in ['gibberish', 'profanity']:
+                logger.info(f"🔇 NOISE detected ({intent_type_hint}) - responding 'Standing by.'")
+                
+                return GovernanceResult(
+                    intent=Intent.CASUAL,
+                    confidence=semantic_confidence,
+                    blocked=True,
+                    silence_required=False,
+                    response="Standing by.",
+                    allowed_shapes=["ACKNOWLEDGMENT"],
+                    max_words=5,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category=semantic_category.value
+                )
+            
+            # DISALLOWED REQUEST → "Outside intelligence scope."
+            else:
+                logger.warning(f"🚫 REFUSAL: Not mandate-relevant, not noise - refusing")
+                
+                return GovernanceResult(
+                    intent=Intent.UNKNOWN,
+                    confidence=semantic_confidence,
+                    blocked=True,
+                    silence_required=False,
+                    response="Outside intelligence scope.",
+                    allowed_shapes=["REFUSAL"],
+                    max_words=10,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category=semantic_category.value
+                )
         
         # ========================================
         # AUTO-SCOPING (for mandate-relevant queries)
@@ -1478,16 +1505,19 @@ Trial access provides limited intelligence sampling."""
             )
         
         # ========================================
-        # CHECK IF REFUSAL REQUIRED
+        # CHECK IF REFUSAL REQUIRED (SHOULD NEVER REACH HERE)
         # ========================================
         
+        # This is a safety check - should have been caught earlier
         if envelope.refusal_required and not is_mandate_relevant:
+            logger.error(f"❌ LATE REFUSAL: This should have been caught earlier")
+            
             return GovernanceResult(
                 intent=intent,
                 confidence=confidence,
                 blocked=True,
                 silence_required=False,
-                response="Outside intelligence scope.",
+                response="Standing by.",  # ← Changed from "Outside intelligence scope."
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=20,
                 analysis_allowed=False,
