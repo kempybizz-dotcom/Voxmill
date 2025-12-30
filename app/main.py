@@ -178,7 +178,7 @@ async def check_and_send_alerts_task():
         logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
 
 async def store_daily_snapshots_all_regions():
-    """Store daily snapshots for all core regions - UPDATED with industry parameter"""
+    """Store daily snapshots for all core regions"""
     from app.dataset_loader import load_dataset
     
     core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
@@ -186,7 +186,7 @@ async def store_daily_snapshots_all_regions():
     for region in core_regions:
         try:
             logger.info(f"📸 Storing daily snapshot for {region}...")
-            dataset = load_dataset(area=region, max_properties=100, industry="Real Estate")
+            dataset = load_dataset(area=region, max_properties=100)  # ← FIXED
             # Snapshot storage happens automatically inside load_dataset now
             logger.info(f"✅ Snapshot stored for {region}")
         except Exception as e:
@@ -589,19 +589,14 @@ async def admin_broadcast(request: Request):
 
 
 @app.get("/data/latest")
-async def get_latest_data(area: Optional[str] = None, industry: Optional[str] = "Real Estate"):
-    """
-    Get latest market data for testing/debugging
-    
-    UPDATED: Now supports industry parameter
-    """
+async def get_latest_data(area: Optional[str] = None):
+    """Get latest market data for testing/debugging"""
     try:
         from app.dataset_loader import load_dataset
         
         dataset = load_dataset(
             area=area if area else "Mayfair",
-            max_properties=100,
-            industry=industry
+            max_properties=100
         )
         
         if not dataset or dataset.get('error'):
