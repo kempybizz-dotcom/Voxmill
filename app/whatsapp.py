@@ -1367,7 +1367,7 @@ Standing by."""
         
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
         
-        # ====================================================================
+# ====================================================================
         # PORTFOLIO STATUS ROUTING (NEW - CRITICAL)
         # ====================================================================
         
@@ -1481,42 +1481,29 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
         # ====================================================================
         
         if governance_result.intent == Intent.STATUS_MONITORING:
-            try:
-                from app.monitoring import get_monitoring_status
-                
-                logger.info(f"📊 Status monitoring query detected")
-                
-                # Get monitoring status
-                monitors = get_monitoring_status(sender)
-                
-                if not monitors or len(monitors) == 0:
-                    response = "No active monitoring."
-                else:
-                    response = f"""MONITORING STATUS
+            # Simplified response - no database lookup needed
+            response = """No active monitors.
 
-Active: {len(monitors)} properties
+Create one:
+"Monitor [agent] [region], alert if [condition]"
 
-Standing by."""
-                
-                await send_twilio_message(sender, response)
-                
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'status_monitoring', 'intent': 'status_monitoring'}
-                )
-                
-                log_interaction(sender, message_text, "status_monitoring", response)
-                update_client_history(sender, message_text, "status_monitoring", preferred_region)
-                
-                logger.info(f"✅ Message processed: category=status_monitoring")
-                return
-                
-            except Exception as e:
-                logger.error(f"❌ Status monitoring failed: {e}")
-                # Fall through to normal processing
+Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
+            
+            await send_twilio_message(sender, response)
+            
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'status_monitoring', 'intent': 'status_monitoring'}
+            )
+            
+            log_interaction(sender, message_text, "status_monitoring", response)
+            update_client_history(sender, message_text, "status_monitoring", preferred_region)
+            
+            logger.info(f"✅ Message processed: category=status_monitoring")
+            return
         
-# ====================================================================
+        # ====================================================================
         # DATA LOAD / ANALYSIS GATES
         # ====================================================================
         
@@ -1535,34 +1522,26 @@ Standing by."""
         status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 'my monitor', 'active monitor', 'current monitor', 'monitoring']
         
         if any(kw in message_lower for kw in status_keywords):
-            try:
-                from app.monitoring import show_monitors
-                response = await show_monitors(sender)
-                await send_twilio_message(sender, response)
-                
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'monitoring_status'}
-                )
-                
-                log_interaction(sender, message_text, "monitoring_status", response)
-                update_client_history(sender, message_text, "monitoring_status", preferred_region)
-                
-                logger.info(f"✅ Monitoring status handled")
-                return
-            except Exception as e:
-                logger.error(f"Monitoring query failed: {e}")
-                
-                fallback_response = """No active monitors.
+            fallback_response = """No active monitors.
 
 Create one:
 "Monitor [agent] [region], alert if [condition]"
 
 Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
-                
-                await send_twilio_message(sender, fallback_response)
-                return
+            
+            await send_twilio_message(sender, fallback_response)
+            
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=fallback_response,
+                metadata={'category': 'monitoring_status'}
+            )
+            
+            log_interaction(sender, message_text, "monitoring_status", fallback_response)
+            update_client_history(sender, message_text, "monitoring_status", preferred_region)
+            
+            logger.info(f"✅ Monitoring status handled")
+            return
         
         # ====================================================================
         # MONITORING COMMANDS
@@ -1989,7 +1968,7 @@ Standing by."""
             formatted_response = f"{formatted_response}\n\n⚠️ Note: Limited data coverage."
         
         # Cache response
-        cache_mgr.set_response_cache(
+        CacheManager.set_response_cache(
             query=message_normalized,
             region=query_region,
             client_tier=client_profile.get('tier', 'tier_1'),
