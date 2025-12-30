@@ -979,7 +979,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         Returns: GovernanceResult with intent, constraints, and optional response
         """
         
-        # ========================================
+# ========================================
         # LAYER -1: SOCIAL ABSORPTION
         # ========================================
         
@@ -1025,6 +1025,214 @@ For immediate regeneration, contact intel@voxmill.uk"""
                     auto_scoped=False,
                     semantic_category="social"
                 )
+        
+        # ========================================
+        # LAYER -0.5: TRIAL ENVELOPE (OUTER LAYER - CRITICAL)
+        # ========================================
+        
+        subscription_status = client_profile.get('subscription_status')
+        trial_expired = client_profile.get('trial_expired', False)
+        
+        # TRIAL EXPIRED - HARD STOP
+        if trial_expired:
+            logger.warning(f"🚫 TRIAL EXPIRED: {sender}")
+            
+            return GovernanceResult(
+                intent=Intent.ADMINISTRATIVE,
+                confidence=1.0,
+                blocked=True,
+                silence_required=False,
+                response="""TRIAL PERIOD EXPIRED
+
+Your 24-hour trial access has concluded.
+
+To continue using Voxmill Intelligence, contact:
+intel@voxmill.uk
+
+Thank you for trying our service.""",
+                allowed_shapes=["STATUS_LINE"],
+                max_words=50,
+                analysis_allowed=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                auto_scoped=False,
+                semantic_category="administrative"
+            )
+        
+        # TRIAL ACTIVE - LIMITED ENVELOPE
+        if subscription_status == 'Trial':
+            logger.info(f"🔐 TRIAL ENVELOPE ACTIVE for {sender}")
+            
+            # Quick LLM check to determine intent type (we need this to know if it's meta/admin)
+            is_mandate_relevant_trial, semantic_category_trial, semantic_confidence_trial = await ConversationalGovernor._check_mandate_relevance(
+                message_text, 
+                conversation_context
+            )
+            
+            intent_type_hint = ConversationalGovernor._last_intent_type
+            
+            logger.info(f"Trial intent hint: {intent_type_hint}")
+            
+            # ALWAYS ALLOW: Meta, Trust, Value, Profile questions
+            if intent_type_hint in ['meta_authority', 'profile_status', 'value_justification', 
+                                    'trust_authority', 'portfolio_management', 'delivery_request']:
+                logger.info(f"✅ TRIAL: Meta/Admin question allowed - {intent_type_hint}")
+                
+                # Get hardcoded response
+                if intent_type_hint == 'meta_authority':
+                    response = """I provide real-time market intelligence for luxury property markets.
+
+Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
+
+What market intelligence can I provide?"""
+                
+                elif intent_type_hint == 'value_justification':
+                    response = """Voxmill delivers institutional-grade market intelligence via WhatsApp.
+
+Real-time data. Fortune-500 presentation quality. Surgical precision.
+
+What market intelligence can I provide?"""
+                
+                elif intent_type_hint == 'trust_authority':
+                    response = """Every insight is sourced from verified APIs and cross-referenced datasets.
+
+Confidence levels disclosed. No hallucinations.
+
+What market intelligence can I provide?"""
+                
+                elif intent_type_hint == 'profile_status':
+                    name = client_profile.get('name', 'there')
+                    tier = 'Trial'
+                    response = f"""CLIENT PROFILE
+
+Name: {name}
+Service Tier: {tier}
+
+Trial period: 24 hours from activation
+Sample intelligence: 1 query available
+
+What market intelligence can I provide?"""
+                
+                elif intent_type_hint == 'portfolio_management':
+                    response = """Portfolio tracking is available on paid plans.
+
+Your trial provides limited intelligence sampling.
+
+Contact intel@voxmill.uk to upgrade."""
+                
+                elif intent_type_hint == 'delivery_request':
+                    response = """PDF reports are available on paid plans.
+
+Your trial provides limited intelligence sampling.
+
+Contact intel@voxmill.uk to upgrade."""
+                
+                else:
+                    response = "Standing by."
+                
+                return GovernanceResult(
+                    intent=Intent.META_AUTHORITY if intent_type_hint == 'meta_authority' else Intent.ADMINISTRATIVE,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=False,
+                    response=response,
+                    allowed_shapes=["STATUS_LINE"],
+                    max_words=50,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="administrative"
+                )
+            
+            # INTELLIGENCE QUERY - CHECK TRIAL SAMPLE LIMIT
+            if intent_type_hint in ['market_query', 'follow_up'] or is_mandate_relevant_trial:
+                logger.info(f"🔍 TRIAL: Intelligence query detected - checking sample limit")
+                
+                # Check if trial sample already used (via MongoDB flag from whatsapp.py)
+                # This flag is set in whatsapp.py GATE 2, we just read it here
+                trial_sample_used = system_state.get('trial_sample_used', False)
+                
+                if trial_sample_used:
+                    logger.warning(f"🚫 TRIAL: Sample already used")
+                    
+                    return GovernanceResult(
+                        intent=Intent.ADMINISTRATIVE,
+                        confidence=1.0,
+                        blocked=True,
+                        silence_required=False,
+                        response="""TRIAL SAMPLE COMPLETE
+
+You've received your trial intelligence sample.
+
+To continue receiving market intelligence, contact:
+intel@voxmill.uk
+
+Trial period: 24 hours from activation""",
+                        allowed_shapes=["STATUS_LINE"],
+                        max_words=50,
+                        analysis_allowed=False,
+                        data_load_allowed=False,
+                        llm_call_allowed=False,
+                        auto_scoped=False,
+                        semantic_category="administrative"
+                    )
+                
+                # ALLOW FIRST INTELLIGENCE SAMPLE
+                # Continue to full governance flow below (don't return yet)
+                logger.info(f"✅ TRIAL: First sample allowed - continuing to full governance")
+            
+            # PREFERENCE CHANGE - ALWAYS ALLOW (but with trial caveat)
+            if intent_type_hint == 'preference_change' or 'switch to' in message_text.lower():
+                logger.info(f"✅ TRIAL: Preference change allowed")
+                
+                # Extract region from message (simple pattern matching)
+                message_lower = message_text.lower()
+                new_region = None
+                
+                if 'manchester' in message_lower:
+                    new_region = 'Manchester'
+                elif 'birmingham' in message_lower:
+                    new_region = 'Birmingham'
+                elif 'leeds' in message_lower:
+                    new_region = 'Leeds'
+                elif 'liverpool' in message_lower:
+                    new_region = 'Liverpool'
+                
+                if new_region:
+                    response = f"""PREFERENCE UPDATED
+
+Primary region set to: {new_region}
+
+Note: Trial access provides limited intelligence sampling.
+
+For full regional coverage, contact:
+intel@voxmill.uk"""
+                else:
+                    response = """PREFERENCE UPDATE
+
+Specify region format: "Switch to [City]"
+
+Example: "Switch to Manchester"
+
+Trial access provides limited intelligence sampling."""
+                
+                return GovernanceResult(
+                    intent=Intent.ADMINISTRATIVE,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=False,
+                    response=response,
+                    allowed_shapes=["STATUS_LINE"],
+                    max_words=50,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="administrative"
+                )
+        
+        logger.info(f"✅ Trial envelope passed (not trial or sample allowed)")
         
         # ========================================
         # LAYER 0: LLM-BASED MANDATE RELEVANCE CHECK
