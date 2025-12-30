@@ -520,6 +520,38 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         except Exception as e:
             logger.error(f"Failed to log preference change: {e}")
         
+        # ========================================
+        # AUTO-SYNC PREFERENCE CHANGE TO AIRTABLE
+        # ========================================
+        
+        try:
+            # Import at function level to avoid circular imports
+            import asyncio
+            from app.airtable_auto_sync import sync_usage_metrics
+            
+            # Get event loop (create if doesn't exist)
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Run async function in sync context
+            loop.run_until_complete(
+                sync_usage_metrics(
+                    whatsapp_number=from_number,
+                    record_id=client.get('airtable_record_id'),
+                    table_name=client.get('airtable_table', 'Clients'),
+                    event_type='preference_changed',
+                    metadata=changes
+                )
+            )
+            
+            logger.info(f"✅ Preference change synced to Airtable")
+            
+        except Exception as e:
+            logger.error(f"Airtable auto-sync failed (non-critical): {e}")
+        
         # BUILD RICH CONFIRMATION MESSAGE (USING ACTUAL AIRTABLE VALUES)
         today = datetime.now()
         days_until_sunday = (6 - today.weekday()) % 7
