@@ -1228,6 +1228,33 @@ Standing by."""
             'topics': conversation_entities.get('topics', [])
         }
         
+        # ====================================================================
+        # CHECK TRIAL SAMPLE STATUS (FOR GOVERNOR)
+        # ====================================================================
+        
+        trial_sample_used = False
+        
+        if client_profile.get('subscription_status') == 'Trial':
+            try:
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    
+                    trial_usage = db['client_profiles'].find_one({'whatsapp_number': sender})
+                    
+                    if trial_usage:
+                        trial_sample_used = trial_usage.get('trial_sample_used', False)
+                        logger.debug(f"Trial sample status: used={trial_sample_used}")
+            except Exception as e:
+                logger.debug(f"Trial sample check failed: {e}")
+        
+        # ====================================================================
+        # CALL GOVERNOR WITH TRIAL STATE
+        # ====================================================================
+        
         governance_result = await ConversationalGovernor.govern(
             message_text=message_text,
             sender=sender,
@@ -1236,7 +1263,8 @@ Standing by."""
                 'subscription_active': client_profile.get('subscription_status') == 'Active',
                 'pin_unlocked': True,
                 'quota_remaining': 100,
-                'monitoring_active': len(client_profile.get('active_monitors', [])) > 0
+                'monitoring_active': len(client_profile.get('active_monitors', [])) > 0,
+                'trial_sample_used': trial_sample_used  # ← CRITICAL: Pass trial state
             },
             conversation_context=conversation_context
         )
@@ -1259,6 +1287,37 @@ Standing by."""
                 
                 logger.info(f"✅ Governance override: {governance_result.intent.value}")
                 return
+        
+        # ====================================================================
+        # MARK TRIAL SAMPLE AS USED (IF INTELLIGENCE QUERY FROM TRIAL USER)
+        # ====================================================================
+        
+        if client_profile.get('subscription_status') == 'Trial':
+            if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST]:
+                if not trial_sample_used:
+                    # Mark as used in MongoDB
+                    try:
+                        from pymongo import MongoClient
+                        MONGODB_URI = os.getenv('MONGODB_URI')
+                        
+                        if MONGODB_URI:
+                            mongo_client = MongoClient(MONGODB_URI)
+                            db = mongo_client['Voxmill']
+                            
+                            db['client_profiles'].update_one(
+                                {'whatsapp_number': sender},
+                                {
+                                    '$set': {
+                                        'trial_sample_used': True,
+                                        'trial_sample_at': datetime.now(timezone.utc)
+                                    }
+                                },
+                                upsert=True
+                            )
+                            
+                            logger.info(f"✅ TRIAL: Marked sample as used for {sender}")
+                    except Exception as e:
+                        logger.error(f"Trial sample marking failed: {e}")
         
         allowed_response_shape = governance_result.allowed_shapes
         max_words = governance_result.max_words
