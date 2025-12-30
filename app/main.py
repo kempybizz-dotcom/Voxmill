@@ -1030,10 +1030,42 @@ async def sync_team_member_from_airtable(request: Request):
         }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
+# ============================================================
+# PERIODIC AI FIELD SYNC
+# ============================================================
+
+async def update_all_ai_fields():
+    """Update AI-generated fields for all active clients"""
+    from app.airtable_auto_sync import sync_ai_fields
+    
+    try:
+        # Get all clients from MongoDB
+        clients = list(db['client_profiles'].find({
+            'subscription_status': {'$in': ['active', 'premium', 'trial']},
+            'airtable_record_id': {'$exists': True}
+        }))
+        
+        logger.info(f"🤖 AI field sync started for {len(clients)} clients")
+        
+        for client in clients:
+            try:
+                await sync_ai_fields(
+                    whatsapp_number=client['whatsapp_number'],
+                    record_id=client['airtable_record_id'],
+                    table_name=client.get('airtable_table', 'Clients')
+                )
+            except Exception as e:
+                logger.error(f"AI sync failed for {client['whatsapp_number']}: {e}")
+        
+        logger.info(f"✅ AI field sync complete")
+        
+    except Exception as e:
+        logger.error(f"❌ AI field sync error: {e}", exc_info=True)
+
+
+# ============================================================
+# SCHEDULER JOBS
+# ============================================================
 
 # Update AI fields every 6 hours
 scheduler.add_job(
@@ -1043,19 +1075,9 @@ scheduler.add_job(
     id='ai_fields_sync'
 )
 
-async def update_all_ai_fields():
-    """Update AI-generated fields for all active clients"""
-    from app.airtable_auto_sync import sync_ai_fields
-    from app.client_manager import get_all_clients
-    
-    clients = get_all_clients()  # You'll need to implement this
-    
-    for client in clients:
-        try:
-            await sync_ai_fields(
-                whatsapp_number=client['whatsapp_number'],
-                record_id=client['airtable_record_id'],
-                table_name=client.get('airtable_table', 'Clients')
-            )
-        except Exception as e:
-            logger.error(f"AI sync failed for {client['whatsapp_number']}: {e}")
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=False, log_level="info")
+
