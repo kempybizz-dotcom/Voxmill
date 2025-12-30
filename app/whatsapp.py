@@ -1516,7 +1516,7 @@ Standing by."""
                 logger.error(f"❌ Status monitoring failed: {e}")
                 # Fall through to normal processing
         
-        # ====================================================================
+# ====================================================================
         # DATA LOAD / ANALYSIS GATES
         # ====================================================================
         
@@ -1554,11 +1554,12 @@ Standing by."""
             except Exception as e:
                 logger.error(f"Monitoring query failed: {e}")
                 
-                fallback_response = """MONITORING STATUS
+                fallback_response = """No active monitors.
 
-Signal cache synchronizing. Your active monitoring directives will display momentarily.
+Create one:
+"Monitor [agent] [region], alert if [condition]"
 
-Standing by."""
+Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
                 
                 await send_twilio_message(sender, fallback_response)
                 return
@@ -1668,16 +1669,22 @@ To upgrade, contact intel@voxmill.uk"""
             return
         
         # ====================================================================
-        # PREFERENCE SELF-SERVICE
+        # CRITICAL FIX: PREFERENCE SELF-SERVICE (MUST BE TERMINAL)
         # ====================================================================
         
-        pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region', 'detailed', 'executive', 'brief', 'summary', 'bullet', 'memo', 'one line']
+        pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region', 'detailed', 'executive', 'brief', 'summary', 'bullet', 'memo', 'one line', 'forget', 'stop focusing', 'focus on', 'from now on']
         looks_like_pref = any(kw in message_text.lower() for kw in pref_keywords)
         
         if looks_like_pref:
             pref_response = handle_whatsapp_preference_message(sender, message_text)
             
             if pref_response:
+                # ============================================================
+                # CRITICAL: PREFERENCE CHANGE IS TERMINAL
+                # ============================================================
+                # NO intelligence generation allowed after preference change
+                # User must send new query to get intelligence with new settings
+                
                 # Reload profile from Airtable
                 client_profile_airtable = get_client_from_airtable(sender)
                 
@@ -1723,11 +1730,20 @@ To upgrade, contact intel@voxmill.uk"""
                     preferred_region = preferred_regions[0] if preferred_regions else 'Mayfair'
                     
                     logger.info(f"✅ Profile reloaded: region = '{preferred_region}'")
+                    
+                    # ============================================================
+                    # INVALIDATE CACHE FOR NEW REGION
+                    # ============================================================
+                    from app.cache_manager import CacheManager
+                    cache_mgr = CacheManager()
+                    cache_mgr.clear_dataset_cache(preferred_region)
+                    logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
                 
+                # Send preference confirmation and EXIT
                 await send_twilio_message(sender, pref_response)
                 update_client_history(sender, message_text, "preference_update", "Self-Service")
-                logger.info(f"✅ Preference updated")
-                return
+                logger.info(f"✅ Preference updated (TERMINAL - no intelligence generation)")
+                return  # ← HARD STOP - NO INTELLIGENCE ALLOWED
         
         # ====================================================================
         # FIRST-TIME WELCOME
@@ -1791,7 +1807,7 @@ What market intelligence can I provide?"""
             update_client_history(sender, message_text, "cached", preferred_region)
             return
         
-# ====================================================================
+        # ====================================================================
         # REGION EXTRACTION FROM QUERY (CRITICAL FIX)
         # ====================================================================
         
