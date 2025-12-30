@@ -1714,8 +1714,8 @@ To upgrade, contact intel@voxmill.uk"""
                     # INVALIDATE CACHE FOR NEW REGION
                     # ============================================================
                     from app.cache_manager import CacheManager
-                    cache_mgr = CacheManager()
-                    cache_mgr.clear_dataset_cache(preferred_region)
+                    CacheManager = CacheManager()
+                    CacheManager.clear_dataset_cache(preferred_region)
                     logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
                 
                 # Send preference confirmation and EXIT
@@ -1771,8 +1771,8 @@ What market intelligence can I provide?"""
         # RESPONSE CACHE CHECK
         # ====================================================================
         
-        cache_mgr = CacheManager()
-        cached_response = cache_mgr.get_response_cache(
+        CacheManager = CacheManager()
+        cached_response = CacheManager.get_response_cache(
             query=message_normalized,
             region=preferred_region,
             client_tier=client_profile.get('tier', 'tier_1')
