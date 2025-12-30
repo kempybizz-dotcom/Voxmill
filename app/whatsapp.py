@@ -171,47 +171,84 @@ def get_client_from_airtable(sender: str) -> dict:
                 trial_record = records[0]
                 fields = trial_record.get('fields', {})
                 
+                # ============================================================
+                # CRITICAL FIX: CALCULATE TRIAL EXPIRY
+                # ============================================================
+                
                 trial_end_date = fields.get('Trial End Date')
+                trial_expired = False
                 
                 if trial_end_date:
-                    trial_end = dateutil_parser.parse(trial_end_date)
-                    if trial_end.tzinfo is None:
-                        trial_end = trial_end.replace(tzinfo=timezone.utc)
+                    try:
+                        # Parse trial end date
+                        if isinstance(trial_end_date, str):
+                            trial_end_date_dt = dateutil_parser.parse(trial_end_date)
+                        else:
+                            trial_end_date_dt = trial_end_date
+                        
+                        # Ensure timezone aware
+                        if trial_end_date_dt.tzinfo is None:
+                            trial_end_date_dt = trial_end_date_dt.replace(tzinfo=timezone.utc)
+                        
+                        # Check if expired
+                        now = datetime.now(timezone.utc)
+                        
+                        if trial_end_date_dt < now:
+                            trial_expired = True
+                            logger.warning(f"Trial expired for {sender}: {trial_end_date_dt} < {now}")
+                        else:
+                            logger.info(f"Trial active for {sender}: expires {trial_end_date_dt}")
                     
-                    # ✅ FIX: CHECK TRIAL EXPIRY FIRST - RETURN COMPLETE DICT
-                    if datetime.now(timezone.utc) > trial_end:
-                        logger.warning(f"Trial expired for {sender}")
-                        return {
-                            'subscription_status': 'Trial',
-                            'trial_expired': True,
-                            'name': fields.get('Name', 'there'),
-                            'email': fields.get('Email', ''),
-                            'tier': 'tier_1',
-                            'airtable_record_id': trial_record['id'],
-                            'table': 'Trial Users',
-                            'preferences': {
-                                'preferred_regions': ['Mayfair'],
-                                'competitor_focus': 'medium',
-                                'report_depth': 'detailed'
-                            },
-                            'usage_metrics': {
-                                'messages_used_this_month': 0,
-                                'monthly_message_limit': 0,
-                                'total_messages_sent': 0
-                            },
-                            'airtable_is_source_of_truth': True,
-                            'access_enabled': False,
-                            'subscription_gate_enforced': True,
-                            'industry': 'Real Estate',
-                            'allowed_intelligence_modules': [],
-                            'pin_enforcement_mode': 'Strict'
-                        }
+                    except Exception as e:
+                        logger.error(f"Error parsing trial end date: {e}")
+                        trial_expired = False  # Fail open (allow access on error)
+                else:
+                    # No trial end date set → assume active
+                    trial_expired = False
+                    logger.warning(f"No trial end date set for {sender}, assuming active")
+                
+                # ============================================================
+                # IF TRIAL EXPIRED - RETURN LIMITED PROFILE
+                # ============================================================
+                
+                if trial_expired:
+                    logger.warning(f"Trial expired for {sender}")
+                    return {
+                        'subscription_status': 'Trial',
+                        'trial_expired': True,
+                        'trial_end_date': trial_end_date,
+                        'name': fields.get('Name', 'there'),
+                        'email': fields.get('Email', ''),
+                        'tier': 'tier_1',
+                        'airtable_record_id': trial_record['id'],
+                        'table': 'Trial Users',
+                        'preferences': {
+                            'preferred_regions': ['Mayfair'],
+                            'competitor_focus': 'medium',
+                            'report_depth': 'detailed'
+                        },
+                        'usage_metrics': {
+                            'messages_used_this_month': 0,
+                            'monthly_message_limit': 0,
+                            'total_messages_sent': 0
+                        },
+                        'airtable_is_source_of_truth': True,
+                        'access_enabled': False,
+                        'subscription_gate_enforced': True,
+                        'industry': 'Real Estate',
+                        'allowed_intelligence_modules': [],
+                        'pin_enforcement_mode': 'Strict'
+                    }
+                
+                # ============================================================
+                # TRIAL ACTIVE - PARSE REGIONS
+                # ============================================================
                 
                 regions_raw = fields.get('Regions', [])
                 regions = regions_raw if isinstance(regions_raw, list) else \
                          [r.strip() for r in str(regions_raw).split(',') if r.strip()] if regions_raw else ['Mayfair']
                 
-                logger.info(f"✅ Trial user found: {fields.get('Name', sender)}")
+                logger.info(f"✅ Trial user found: {fields.get('Name', sender)} (active, expires {trial_end_date})")
                 
                 # ============================================================
                 # MONGODB STATE MANAGEMENT FOR TRIAL USERS (NEW)
@@ -272,12 +309,16 @@ def get_client_from_airtable(sender: str) -> dict:
                                     }
                                 )
                 
+                # ============================================================
+                # RETURN ACTIVE TRIAL PROFILE
+                # ============================================================
+                
                 return {
                     'name': fields.get('Name', 'there'),
                     'email': fields.get('Email', ''),
                     'subscription_status': 'Trial',
                     'tier': 'tier_1',
-                    'trial_expired': False,
+                    'trial_expired': trial_expired,  # ← CALCULATED VALUE (False for active)
                     'trial_end_date': fields.get('Trial End Date'),
                     'airtable_record_id': trial_record['id'],
                     'table': 'Trial Users',
