@@ -102,14 +102,49 @@ async def check_all_monitors():
         logger.error(f"Monitor check failed: {e}")
 
 async def warm_cache():
-    """Pre-warm cache at 7am"""
+    """Pre-warm cache at 7am - INDUSTRY AGNOSTIC"""
     try:
         from app.dataset_loader import load_dataset
         
-        # Warm Real Estate cache (primary vertical)
-        for area in ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']:
-            load_dataset(area=area, max_properties=100)  # ✅ FIXED - no industry=
-            logger.info(f"✅ Cache warmed for {area}")
+        # ========================================
+        # QUERY ALL ACTIVE MARKETS FROM AIRTABLE
+        # ========================================
+        
+        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+        
+        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+            logger.warning("Airtable not configured, skipping cache warming")
+            return
+        
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        # Get all active markets across ALL industries
+        formula = "AND({is_active}=TRUE())"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            
+            for record in records:
+                fields = record['fields']
+                industry = fields.get('industry')
+                market = fields.get('market_name')
+                
+                if industry and market:
+                    try:
+                        # Route to appropriate dataset loader
+                        load_dataset(area=market, max_properties=100, industry=industry)
+                        logger.info(f"✅ Cache warmed: {industry} / {market}")
+                    except Exception as e:
+                        logger.error(f"Cache warm failed for {industry}/{market}: {e}")
+        
+        else:
+            logger.error(f"Markets table query failed: {response.status_code}")
+    
     except Exception as e:
         logger.error(f"Cache warming failed: {e}")
 
@@ -178,19 +213,52 @@ async def check_and_send_alerts_task():
         logger.error(f"Fatal error in alert checker: {e}", exc_info=True)
 
 async def store_daily_snapshots_all_regions():
-    """Store daily snapshots for all core regions"""
+    """Store daily snapshots for all active markets across ALL industries"""
     from app.dataset_loader import load_dataset
     
-    core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+    try:
+        # ========================================
+        # QUERY ALL ACTIVE MARKETS FROM AIRTABLE
+        # ========================================
+        
+        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+        
+        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+            logger.warning("Airtable not configured, skipping snapshots")
+            return
+        
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        # Get all active markets
+        formula = "AND({is_active}=TRUE())"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            
+            for record in records:
+                fields = record['fields']
+                industry = fields.get('industry')
+                market = fields.get('market_name')
+                
+                if industry and market:
+                    try:
+                        logger.info(f"📸 Storing daily snapshot for {industry}/{market}...")
+                        dataset = load_dataset(area=market, max_properties=100, industry=industry)
+                        # Snapshot storage happens automatically inside load_dataset
+                        logger.info(f"✅ Snapshot stored for {industry}/{market}")
+                    except Exception as e:
+                        logger.error(f"Failed to store snapshot for {industry}/{market}: {e}")
+        
+        else:
+            logger.error(f"Markets table query failed: {response.status_code}")
     
-    for region in core_regions:
-        try:
-            logger.info(f"📸 Storing daily snapshot for {region}...")
-            dataset = load_dataset(area=region, max_properties=100)  # ✅ FIXED - no industry=
-            # Snapshot storage happens automatically inside load_dataset now
-            logger.info(f"✅ Snapshot stored for {region}")
-        except Exception as e:
-            logger.error(f"Failed to store snapshot for {region}: {e}")
+    except Exception as e:
+        logger.error(f"Snapshot storage failed: {e}")
 
 async def reset_monthly_message_counters():
     """
@@ -833,7 +901,11 @@ except ImportError as e:
 
 @app.post("/api/airtable/sync-client")
 async def sync_client_from_airtable(request: Request):
-    """Webhook: Airtable → MongoDB client sync"""
+    """
+    Webhook: Airtable Control Plane → MongoDB client sync
+    
+    NEW SCHEMA: Accounts + Permissions + Preferences tables
+    """
     try:
         # Get content type
         content_type = request.headers.get('content-type', '')
@@ -861,167 +933,100 @@ async def sync_client_from_airtable(request: Request):
         
         logger.info(f"📥 Received keys: {list(data.keys())}")
         
-        # Extract email
-        email = (
-            data.get('Email') or 
-            data.get('email') or 
-            data.get('EMAIL')
-        )
+        # ========================================
+        # EXTRACT WHATSAPP NUMBER (REQUIRED)
+        # ========================================
         
-        if not email:
-            logger.error(f"❌ No email. Keys: {list(data.keys())}")
-            return {"success": False, "error": "Email required"}
-        
-        # Extract WhatsApp
         whatsapp_raw = (
             data.get('WhatsApp_Number') or 
             data.get('WhatsApp Number') or 
             data.get('whatsapp_number') or 
             ''
         )
-        whatsapp_clean = str(whatsapp_raw).replace(' ', '').replace('+', '').replace('whatsapp:', '')
-        whatsapp_formatted = f"whatsapp:+{whatsapp_clean}" if whatsapp_clean else ''
         
-        # Build profile
+        if not whatsapp_raw:
+            logger.error(f"❌ No WhatsApp number. Keys: {list(data.keys())}")
+            return {"success": False, "error": "WhatsApp number required"}
+        
+        whatsapp_clean = str(whatsapp_raw).replace(' ', '').replace('+', '').replace('whatsapp:', '')
+        whatsapp_formatted = f"whatsapp:+{whatsapp_clean}"
+        
+        # ========================================
+        # EXTRACT ACCOUNT DATA (NEW SCHEMA)
+        # ========================================
+        
+        # Account Status (lowercase enum: trial, active, paused, cancelled)
+        account_status = str(data.get('Account Status') or 'trial').lower()
+        
+        # Service Tier → tier_1/tier_2/tier_3
+        service_tier = str(data.get('Service Tier') or 'core').lower()
+        tier_map = {'core': 'tier_1', 'premium': 'tier_2', 'sigma': 'tier_3'}
+        tier = tier_map.get(service_tier, 'tier_1')
+        
+        # Industry (lowercase code: real_estate, hedge_fund, etc.)
+        industry = str(data.get('Industry') or 'real_estate').lower()
+        
+        # Trial status
+        trial_expired = data.get('Is Trial Expired') == 1
+        
+        # Record ID
+        airtable_record_id = str(data.get('id') or data.get('record_id') or 'unknown')
+        
+        # ========================================
+        # BUILD MONGODB PROFILE
+        # ========================================
+        
         client_profile = {
-            'email': email,
             'whatsapp_number': whatsapp_formatted,
-            'name': str(data.get('Name') or data.get('name') or 'Unknown'),
-            'company': str(data.get('Company') or data.get('company') or ''),
-            'tier': str(data.get('Tier') or data.get('tier') or 'trial').lower(),
+            'subscription_status': account_status,
+            'tier': tier,
+            'industry': industry,
+            'trial_expired': trial_expired,
+            'airtable_record_id': airtable_record_id,
+            'airtable_table': 'Accounts',
+            
+            # Default preferences (will be overwritten by Preferences table if exists)
             'preferences': {
-                'preferred_region': str(
-                    data.get('Preferred_Region') or 
-                    data.get('Preferred Region') or 
-                    'London'
-                ),
-                'preferred_city': str(
-                    data.get('Preferred_City') or 
-                    data.get('Preferred City') or 
-                    'London'
-                ),
-                'competitor_focus': str(
-                    data.get('Competitor_Focus') or 
-                    data.get('Competitor Focus') or 
-                    'medium'
-                ).lower(),
-                'report_depth': str(
-                    data.get('Report_Depth') or 
-                    data.get('Report Depth') or 
-                    'detailed'
-                ).lower(),
-                'update_frequency': str(
-                    data.get('Update_Frequency') or 
-                    data.get('Update Frequency') or 
-                    'weekly'
-                ).lower()
+                'preferred_regions': [],  # Will be populated from Preferences table
+                'competitor_focus': 'medium',
+                'report_depth': 'detailed'
             },
-            'monthly_message_limit': int(
-                data.get('Monthly_Message_Limit') or 
-                data.get('Monthly Message Limit') or 
-                100
-            ),
-            'messages_used_this_month': int(
-                data.get('Messages_Used_This_Month') or 
-                data.get('Messages Used This Month') or 
-                0
-            ),
-            'subscription_status': str(
-                data.get('Subscription_Status') or 
-                data.get('Subscription Status') or 
-                'trial'
-            ).lower(),
-            'stripe_customer_id': str(
-                data.get('Stripe_Customer_ID') or 
-                data.get('Stripe Customer ID') or 
-                ''
-            ),
-            'airtable_record_id': str(data.get('id') or data.get('record_id') or 'unknown'),
+            
+            # Usage tracking (MongoDB only)
+            'messages_used_this_month': 0,
+            'total_messages_sent': 0,
+            
+            # Timestamps
             'created_at': datetime.now(timezone.utc).isoformat(),
             'updated_at': datetime.now(timezone.utc).isoformat()
         }
         
-        # Save to MongoDB
+        # ========================================
+        # SAVE TO MONGODB
+        # ========================================
+        
         result = db['client_profiles'].update_one(
-            {'email': email},
+            {'whatsapp_number': whatsapp_formatted},
             {'$set': client_profile},
             upsert=True
         )
         
         action = "updated" if result.matched_count > 0 else "created"
         
-        logger.info(f"✅ Client {action}: {email}")
-        logger.info(f"   Name: {client_profile['name']}")
-        logger.info(f"   WhatsApp: {whatsapp_formatted}")
-        logger.info(f"   Tier: {client_profile['tier']}")
+        logger.info(f"✅ Client {action}: {whatsapp_formatted}")
+        logger.info(f"   Industry: {industry}")
+        logger.info(f"   Status: {account_status}")
+        logger.info(f"   Tier: {tier}")
         
         return {
             "success": True,
             "action": action,
-            "email": email
+            "whatsapp_number": whatsapp_formatted
         }
         
     except Exception as e:
         logger.error(f"❌ Webhook error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
-
-
-@app.post("/api/airtable/sync-team-member")
-async def sync_team_member_from_airtable(request: Request):
-    """Webhook endpoint for Airtable → MongoDB team member sync"""
-    try:
-        data = await request.json()
-        fields = data.get('fields', {})
-        
-        # Get client email from linked record
-        client_link = fields.get('Client', [])
-        if not client_link:
-            return {"success": False, "error": "No client linked"}
-        
-        # Fetch client record from Airtable to get email
-        client_airtable_id = client_link[0]
-        
-        # Find MongoDB client by Airtable record ID
-        client = db['client_profiles'].find_one({
-            'airtable_record_id': client_airtable_id
-        })
-        
-        if not client:
-            return {"success": False, "error": "Client not found in MongoDB"}
-        
-        # Build team member object
-        team_member = {
-            'whatsapp_number': f"whatsapp:{fields.get('WhatsApp Number', '').replace(' ', '')}",
-            'name': fields.get('Name'),
-            'role': fields.get('Role', 'Team Member'),
-            'access_level': fields.get('Access Level', 'full').lower(),
-            'status': fields.get('Status', 'active').lower(),
-            'added_date': fields.get('Added Date', datetime.now().isoformat())
-        }
-        
-        # Add to client's team_members array (avoid duplicates)
-        result = db['client_profiles'].update_one(
-            {'email': client['email']},
-            {
-                '$addToSet': {'team_members': team_member},
-                '$set': {'updated_at': datetime.now().isoformat()}
-            }
-        )
-        
-        logger.info(f"✅ Team member added: {team_member['name']} → {client['email']}")
-        
-        return {
-            "success": True,
-            "client_email": client['email'],
-            "team_member": team_member['name']
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Team member sync error: {e}", exc_info=True)
-        return {
-            "success": False,
-            "error": str(e)
-        }
 
 
 # ============================================================
