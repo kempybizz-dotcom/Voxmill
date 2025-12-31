@@ -665,7 +665,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     try:
         logger.info(f"📱 Processing message from {sender}: {message_text}")
         
-# ====================================================================
+        # ====================================================================
         # EDGE CASE HANDLING
         # ====================================================================
         
@@ -718,7 +718,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins), refreshing")
         
-        # ========================================
+# ========================================
         # STEP 3: LOAD FROM AIRTABLE IF NEEDED
         # ========================================
         
@@ -738,11 +738,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'tier': client_profile_airtable.get('tier', 'tier_1'),
                     'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
                     'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
-                    'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),  # ✅ FIXED
-                    'industry': client_profile_airtable.get('industry', 'real_estate'),  # ✅ FIXED: lowercase
-                    'active_market': client_profile_airtable.get('active_market', 'Mayfair'),  # ✅ NEW
+                    'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
+                    'industry': client_profile_airtable.get('industry', 'real_estate'),
+                    'active_market': client_profile_airtable.get('active_market', 'Mayfair'),
                     
-                    # ✅ PREFERENCES: Built from active_market
                     'preferences': {
                         'preferred_regions': [client_profile_airtable.get('active_market', 'Mayfair')],
                         'competitor_set': [],
@@ -753,13 +752,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                         'report_depth': 'detailed'
                     },
                     
-                    # ✅ CONTROL PLANE FIELDS
                     'usage_metrics': client_profile_airtable.get('usage_metrics', {}),
                     'trial_expired': client_profile_airtable.get('trial_expired', False),
-                    'execution_allowed': client_profile_airtable.get('execution_allowed', False),  # ✅ CRITICAL
+                    'execution_allowed': client_profile_airtable.get('execution_allowed', False),
                     'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
                     
-                    # ✅ MONGODB-ONLY FIELDS (preserved)
                     'total_queries': old_total,
                     'query_history': old_history,
                     'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
@@ -816,7 +813,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 logger.info(f"🆕 BRAND NEW USER DETECTED: {sender}")
                 should_send_welcome = True
                 
-                if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
+                if client_profile.get('subscription_status') == 'trial':
                     welcome_message_type = 'trial_start'
                 else:
                     welcome_message_type = 'first_active'
@@ -829,7 +826,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 logger.info(f"🆕 FIRST MESSAGE FROM EXISTING USER: {sender}")
                 should_send_welcome = True
                 
-                if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
+                if client_profile.get('subscription_status') == 'trial':
                     welcome_message_type = 'trial_start'
                 else:
                     welcome_message_type = 'first_active'
@@ -843,7 +840,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 current_status = client_profile.get('subscription_status')
                 
                 # Detect status change to Active from any inactive state
-                if previous_status in ['cancelled', 'paused', 'suspended'] and current_status == 'active':  # ✅ FIXED: lowercase
+                if previous_status in ['cancelled', 'paused', 'suspended'] and current_status == 'active':
                     # Only send if welcome wasn't already sent for reactivation
                     if not previous_profile.get('reactivation_welcome_sent'):
                         logger.info(f"🔄 REACTIVATION DETECTED: {previous_status} → {current_status}")
@@ -946,24 +943,23 @@ Voxmill Intelligence — Precision at Scale"""
                 # Brief pause before processing actual query
                 await asyncio.sleep(1.5)
         
+        # ====================================================================
+        # GATE 3: EXECUTION CONTROL - AIRTABLE FORMULA ENFORCEMENT
+        # ====================================================================
         
-# ====================================================================
-# GATE 3: EXECUTION CONTROL - AIRTABLE FORMULA ENFORCEMENT
-# ====================================================================
-
-logger.info(f"🔐 GATE 3: Checking subscription...")
-
-# ✅ USE execution_allowed FORMULA (single source of truth)
-if not client_profile.get('execution_allowed'):
-    logger.warning(f"🚫 GATE 3 FAILED: EXECUTION BLOCKED: {sender}")
-    await send_twilio_message(sender, "Your access is currently suspended.\n\nContact intel@voxmill.uk")
-    return
-
-logger.info(f"✅ GATE 3 PASSED: {client_profile.get('subscription_status')}")
-
-# ====================================================================
-# GATE 4: PIN AUTHENTICATION
-# ====================================================================
+        logger.info(f"🔐 GATE 3: Checking subscription...")
+        
+        # ✅ USE execution_allowed FORMULA (single source of truth)
+        if not client_profile.get('execution_allowed'):
+            logger.warning(f"🚫 GATE 3 FAILED: EXECUTION BLOCKED: {sender}")
+            await send_twilio_message(sender, "Your access is currently suspended.\n\nContact intel@voxmill.uk")
+            return
+        
+        logger.info(f"✅ GATE 3 PASSED: {client_profile.get('subscription_status')}")
+        
+        # ====================================================================
+        # GATE 4: PIN AUTHENTICATION
+        # ====================================================================
 
 logger.info(f"🔐 GATE 4: Checking PIN...")
 
