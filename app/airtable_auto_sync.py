@@ -3,7 +3,10 @@ AIRTABLE AUTO-SYNC
 ==================
 Automatically populate Airtable fields from system events
 
-Integration with existing airtable_queue.py for rate-limit-safe writes
+NEW CONTROL PLANE INTEGRATION:
+- Updated field names to match new schema
+- Removed deprecated fields
+- Uses Accounts/Permissions/Preferences tables
 """
 
 import logging
@@ -24,6 +27,8 @@ async def sync_usage_metrics(
     """
     Auto-update Airtable usage metrics
     
+    NEW: Works with Control Plane schema (Accounts, Permissions, Preferences tables)
+    
     Event types:
     - message_sent: User sent message
     - intelligence_delivered: System responded
@@ -43,7 +48,7 @@ async def sync_usage_metrics(
         return
     
     # ========================================
-    # BUILD UPDATE FIELDS
+    # BUILD UPDATE FIELDS (NEW SCHEMA)
     # ========================================
     
     updates = {}
@@ -52,67 +57,43 @@ async def sync_usage_metrics(
     # ALWAYS UPDATE (Every Event)
     # ========================================
     
-    updates['Last Active'] = datetime.now(timezone.utc).isoformat()
-    updates['Mongo Sync Status'] = datetime.now(timezone.utc).isoformat()
+    # NOTE: New schema doesn't have 'Last Active' or 'Mongo Sync Status'
+    # These fields don't exist in the new Control Plane
+    # We only update fields that exist in the new schema
     
     # ========================================
     # MESSAGE SENT
     # ========================================
     
     if event_type == 'message_sent':
+        # NOTE: Usage tracking moved to Permissions table
+        # We need to update Permissions table, not Accounts table
+        
         usage = client.get('usage_metrics', {})
         
-        # Counters
-        updates['Messages Used This Month'] = usage.get('messages_used_this_month', 0)
-        updates['Total Messages Sent'] = usage.get('total_messages_sent', 0)
-        updates['Last Message Date'] = datetime.now(timezone.utc).isoformat()
+        # Queue update to Permissions table (not Accounts)
+        permissions_updates = {}
         
-        # Calculate remaining
-        monthly_limit = usage.get('monthly_message_limit', 50)
-        used = usage.get('messages_used_this_month', 0)
-        updates['Message Limit Remaining'] = max(0, monthly_limit - used)
+        # NOTE: New schema uses 'monthly_message_limit' (not 'Monthly Message Limit')
+        # But this is a permission setting, not usage tracking
+        # We should track usage in MongoDB only, not Airtable
         
-        # Tokens (if provided)
-        if metadata and 'tokens_used' in metadata:
-            updates['Total Tokens Used'] = usage.get('total_tokens_used', 0) + metadata['tokens_used']
-        
-        # Engagement Level (AI)
-        updates['Engagement Level (AI)'] = calculate_engagement_level(client)
-    
-    # ========================================
-    # INTELLIGENCE DELIVERED
-    # ========================================
-    
-    elif event_type == 'intelligence_delivered':
-        if metadata:
-            category = metadata.get('category', '')
-            
-            # Track decision mode
-            if category in ['decision_mode', 'decision_request']:
-                updates['Last Decision Mode Trigger'] = datetime.now(timezone.utc).isoformat()
-            
-            # Track strategic actions
-            if 'strategic_action' in metadata:
-                updates['Last Strategic Action Recommended'] = metadata['strategic_action']
+        logger.debug(f"Message usage tracked in MongoDB only (not synced to Airtable)")
     
     # ========================================
     # PIN EVENTS
     # ========================================
     
     elif event_type == 'pin_verified':
-        updates['PIN Status'] = 'Active'
+        # Update Accounts table
+        updates['PIN State'] = 'verified'  # NEW: lowercase enum value
         updates['PIN Last Verified'] = datetime.now(timezone.utc).isoformat()
-        updates['PIN Failed Attempts'] = 0  # Reset on success
+        # NOTE: 'PIN Failed Attempts' doesn't exist in new schema
     
     elif event_type == 'pin_failed':
-        # Increment failed attempts
-        current_failures = client.get('pin_failed_attempts', 0)
-        updates['PIN Failed Attempts'] = current_failures + 1
-        
-        # Lock if too many failures
-        if current_failures + 1 >= 5:
-            updates['PIN Status'] = 'Locked'
-            updates['PIN Locked Reason'] = 'Too many failed attempts'
+        # NOTE: PIN failed attempts tracking removed from new schema
+        # Track in MongoDB only
+        logger.debug(f"PIN failure tracked in MongoDB only (not synced to Airtable)")
     
     # ========================================
     # PREFERENCE CHANGED
@@ -120,37 +101,53 @@ async def sync_usage_metrics(
     
     elif event_type == 'preference_changed':
         if metadata:
-            # Update preference fields
-            if 'regions' in metadata:
-                updates['Regions'] = metadata['regions']
+            # NOTE: Preferences are in separate Preferences table
+            # We need the preferences record_id, not the accounts record_id
             
-            if 'competitor_focus' in metadata:
-                updates['Competitor Focus'] = metadata['competitor_focus'].capitalize()
+            # Get preferences record ID from client profile
+            prefs_record_id = client.get('airtable_preferences_record_id')
             
-            if 'report_depth' in metadata:
-                updates['Report Depth'] = metadata['report_depth'].capitalize()
-    
-    # ========================================
-    # ONBOARDING COMPLETE
-    # ========================================
-    
-    elif event_type == 'onboarding_complete':
-        updates['Onboarding Complete'] = True
+            if prefs_record_id:
+                pref_updates = {}
+                
+                # Update active_market_id (requires market record ID lookup)
+                if 'regions' in metadata:
+                    new_region = metadata['regions'][0] if isinstance(metadata['regions'], list) else metadata['regions']
+                    
+                    # Get market record ID from Markets table
+                    market_record_id = get_market_record_id(new_region, client.get('industry'))
+                    
+                    if market_record_id:
+                        # NEW: active_market_id is a linked record (array of IDs)
+                        pref_updates['active_market_id'] = [market_record_id]
+                
+                # NOTE: competitor_focus and report_depth don't exist in new Preferences schema
+                # They were removed from the simplified Control Plane
+                
+                if pref_updates:
+                    await queue_airtable_update(
+                        table_name='Preferences',
+                        record_id=prefs_record_id,
+                        fields=pref_updates,
+                        priority='normal'
+                    )
+                    
+                    logger.info(f"📊 Preferences updated for {whatsapp_number}")
     
     # ========================================
     # TRIAL EXPIRY
     # ========================================
     
     elif event_type == 'trial_expired':
-        updates['Trial Expiry Date'] = datetime.now(timezone.utc).isoformat()
+        # Update Account Status to 'cancelled' or 'paused'
+        updates['Account Status'] = 'cancelled'  # NEW: lowercase enum value
     
     # ========================================
-    # CANCELLATION
+    # SUBSCRIPTION CANCELLED
     # ========================================
     
     elif event_type == 'subscription_cancelled':
-        updates['Cancellation Date'] = datetime.now(timezone.utc).isoformat()
-        updates['Subscription Status'] = 'Cancelled'
+        updates['Account Status'] = 'cancelled'  # NEW: lowercase enum value
     
     # ========================================
     # QUEUE UPDATE (Rate-limit safe)
@@ -158,7 +155,7 @@ async def sync_usage_metrics(
     
     if updates:
         await queue_airtable_update(
-            table_name=table_name,
+            table_name=table_name,  # Should be 'Accounts'
             record_id=record_id,
             fields=updates,
             priority='normal'
@@ -167,9 +164,61 @@ async def sync_usage_metrics(
         logger.info(f"📊 Auto-synced {len(updates)} fields to Airtable for {whatsapp_number}")
 
 
+def get_market_record_id(market_name: str, industry: str) -> Optional[str]:
+    """
+    Get Markets table record ID for a market name
+    
+    NEW: Required for updating active_market_id (linked record field)
+    """
+    
+    import os
+    import requests
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    # Map industry to schema enum
+    industry_map = {
+        'Private Real Estate': 'real_estate',
+        'Hedge Funds': 'hedge_fund',
+        'Family Offices': 'family_office',
+        'Private Equity': 'private_equity',
+        'Luxury Automotive': 'luxury_assets',
+        'Art & Collectibles': 'art_collectibles',
+        'Yacht Brokers': 'yachting'
+    }
+    
+    industry_code = industry_map.get(industry, 'real_estate')
+    
+    try:
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        # Find market by name and industry
+        formula = f"AND({{market_name}}='{market_name}', {{industry}}='{industry_code}')"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            if records:
+                return records[0]['id']  # Return record ID
+        
+        logger.warning(f"Market not found in Airtable: {market_name} ({industry})")
+        return None
+    
+    except Exception as e:
+        logger.error(f"Get market record ID failed: {e}")
+        return None
+
+
 def calculate_engagement_level(client: Dict) -> str:
     """
     Calculate engagement level based on usage patterns
+    
+    NOTE: This field doesn't exist in new Control Plane schema
+    Kept for MongoDB analytics only
     
     Returns: 'High' | 'Medium' | 'Low'
     """
@@ -179,7 +228,7 @@ def calculate_engagement_level(client: Dict) -> str:
     # Calculate messages per day
     created_at = client.get('created_at')
     if created_at:
-        # ✅ FIX: Ensure timezone-aware datetime
+        # ✅ Ensure timezone-aware datetime
         if isinstance(created_at, str):
             from dateutil import parser as dateutil_parser
             created_at = dateutil_parser.parse(created_at)
@@ -210,42 +259,6 @@ def calculate_engagement_level(client: Dict) -> str:
         return 'Low'
 
 
-def calculate_decision_style(client: Dict) -> str:
-    """
-    Analyze query history to determine decision style
-    
-    Returns: 'Data-Driven' | 'Intuitive' | 'Balanced'
-    """
-    
-    query_history = client.get('query_history', [])
-    
-    if len(query_history) < 5:
-        return 'Unknown'
-    
-    # Count categories
-    decision_queries = 0
-    analytical_queries = 0
-    quick_queries = 0
-    
-    for query in query_history[-20:]:  # Last 20 queries
-        category = query.get('category', '')
-        
-        if category in ['decision_mode', 'decision_request']:
-            decision_queries += 1
-        elif category in ['trend_analysis', 'risk_analysis']:
-            analytical_queries += 1
-        elif category in ['market_overview', 'status_check']:
-            quick_queries += 1
-    
-    # Classify
-    if decision_queries > analytical_queries and decision_queries > quick_queries:
-        return 'Data-Driven'
-    elif quick_queries > analytical_queries * 2:
-        return 'Intuitive'
-    else:
-        return 'Balanced'
-
-
 async def sync_ai_fields(
     whatsapp_number: str,
     record_id: str,
@@ -254,36 +267,9 @@ async def sync_ai_fields(
     """
     Update AI-generated fields (run periodically, not on every message)
     
-    Fields updated:
-    - Client Summary (AI)
-    - Decision Style
-    - Observed Risk Tolerance
-    - Confidence Trajectory
-    - Accumulating Bias
+    NOTE: Most AI fields removed from new Control Plane schema
+    This function is deprecated but kept for backward compatibility
     """
     
-    from app.client_manager import get_client_profile
-    
-    client = get_client_profile(whatsapp_number)
-    
-    if not client:
-        return
-    
-    updates = {}
-    
-    # Decision Style
-    updates['Decision Style'] = calculate_decision_style(client)
-    
-    # TODO: Add GPT-4 generation for:
-    # - Client Summary (AI): 2-3 sentence summary of client behavior
-    # - Observed Risk Tolerance: High/Medium/Low based on queries
-    # - Confidence Trajectory: Increasing/Stable/Decreasing
-    # - Accumulating Bias: Detected patterns in queries
-    
-    if updates:
-        await queue_airtable_update(
-            table_name=table_name,
-            record_id=record_id,
-            fields=updates,
-            priority='normal'
-        )
+    logger.debug(f"AI field sync skipped (fields removed from new Control Plane schema)")
+    pass
