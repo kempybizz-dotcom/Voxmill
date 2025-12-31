@@ -299,7 +299,8 @@ def get_metric_name(industry: str, metric_key: str) -> str:
         logger.error(f"Get metric name error: {e}")
         return metric_key.replace('_', ' ').title()
 
-    @staticmethod
+
+@staticmethod
 def get_industry_context(industry_code: str) -> str:
     """
     Get industry-specific context for LLM system prompt
@@ -389,82 +390,31 @@ METRICS: Days on market, pricing trends, broker positioning
         logger.error(f"Get industry context error: {e}")
         return industry_contexts[Industry.REAL_ESTATE]
 
-    
-    @staticmethod
-    def apply_vocabulary_to_prompt(prompt: str, industry: str) -> str:
-        """
-        Apply industry-specific vocabulary to LLM prompt
-        
-        Replaces generic terms with industry-appropriate language
-        """
-        vocabulary = IndustryEnforcer.get_vocabulary(industry)
-        
-        # Apply replacements (case-insensitive)
-        modified_prompt = prompt
-        
-        for generic_term, industry_term in vocabulary.items():
-            # Replace whole words only (avoid partial matches)
-            import re
-            pattern = r'\b' + re.escape(generic_term) + r'\b'
-            modified_prompt = re.sub(
-                pattern,
-                industry_term,
-                modified_prompt,
-                flags=re.IGNORECASE
-            )
-        
-        return modified_prompt
-    
-    @staticmethod
-    def get_industry_context(industry: str) -> str:
-        """Get industry-specific context for LLM system prompt"""
-        
-        industry_contexts = {
-            Industry.REAL_ESTATE: """
-MARKET CONTEXT: Luxury residential property
-ENTITIES: Estate agents (Knight Frank, Savills, Hamptons, etc.)
-VOCABULARY: Properties, listings, asking prices, £/sqft
-METRICS: Days on market, inventory velocity, agent positioning
-""",
-            
-            Industry.AUTOMOTIVE: """
-MARKET CONTEXT: Premium automotive retail
-ENTITIES: Dealerships (official brand dealers, premium used)
-VOCABULARY: Vehicles, inventory, sticker prices, model variants
-METRICS: Days in stock, inventory turnover, dealership positioning
-""",
-            
-            Industry.HEALTHCARE: """
-MARKET CONTEXT: Medical aesthetics and premium clinics
-ENTITIES: Private clinics, practitioners
-VOCABULARY: Treatments, services, treatment prices, practitioner profiles
-METRICS: Treatment popularity, pricing tiers, clinic positioning
-""",
-            
-            Industry.HOSPITALITY: """
-MARKET CONTEXT: Luxury hospitality
-ENTITIES: Hotels, boutique properties
-VOCABULARY: Rooms, occupancy, room rates, guest experience
-METRICS: Occupancy rates, ADR, RevPAR, competitive positioning
-""",
-            
-            Industry.LUXURY_RETAIL: """
-MARKET CONTEXT: Luxury retail
-ENTITIES: Boutiques, flagship stores
-VOCABULARY: Products, collections, retail prices, brand positioning
-METRICS: Stock levels, pricing strategy, foot traffic
-"""
-        }
-        
-        try:
-            industry_enum = Industry(industry)
-            return industry_contexts.get(
-                industry_enum,
-                industry_contexts[Industry.REAL_ESTATE]
-            )
-        except ValueError:
-            return industry_contexts[Industry.REAL_ESTATE]
 
+@staticmethod
+def apply_vocabulary_to_prompt(prompt: str, industry: str) -> str:
+    """
+    Apply industry-specific vocabulary to LLM prompt
+    
+    Replaces generic terms with industry-appropriate language
+    """
+    vocabulary = IndustryEnforcer.get_vocabulary(industry)
+    
+    # Apply replacements (case-insensitive)
+    modified_prompt = prompt
+    
+    for generic_term, industry_term in vocabulary.items():
+        # Replace whole words only (avoid partial matches)
+        import re
+        pattern = r'\b' + re.escape(generic_term) + r'\b'
+        modified_prompt = re.sub(
+            pattern,
+            industry_term,
+            modified_prompt,
+            flags=re.IGNORECASE
+        )
+    
+    return modified_prompt
 
 def route_dataset_loader(industry: str, area: str, max_results: int = 100) -> Dict:
     """
