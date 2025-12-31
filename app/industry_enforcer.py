@@ -298,6 +298,97 @@ def get_metric_name(industry: str, metric_key: str) -> str:
     except Exception as e:
         logger.error(f"Get metric name error: {e}")
         return metric_key.replace('_', ' ').title()
+
+    @staticmethod
+def get_industry_context(industry_code: str) -> str:
+    """
+    Get industry-specific context for LLM system prompt
+    
+    Args:
+        industry_code: Lowercase industry code (e.g., 'real_estate', 'hedge_fund')
+    
+    Returns:
+        Industry context string for LLM
+    """
+    
+    # Map lowercase codes to enum
+    industry_code_map = {
+        'real_estate': Industry.REAL_ESTATE,
+        'luxury_assets': Industry.AUTOMOTIVE,
+        'automotive': Industry.AUTOMOTIVE,
+        'healthcare': Industry.HEALTHCARE,
+        'hospitality': Industry.HOSPITALITY,
+        'luxury_retail': Industry.LUXURY_RETAIL,
+        'private_equity': Industry.PRIVATE_EQUITY,
+        'venture_capital': Industry.VENTURE_CAPITAL,
+        'yachting': Industry.YACHTING,
+        'aviation': Industry.AVIATION
+    }
+    
+    industry_contexts = {
+        Industry.REAL_ESTATE: """
+MARKET CONTEXT: Luxury residential property
+ENTITIES: Estate agents (Knight Frank, Savills, Hamptons, etc.)
+VOCABULARY: Properties, listings, asking prices, £/sqft
+METRICS: Days on market, inventory velocity, agent positioning
+""",
+        
+        Industry.AUTOMOTIVE: """
+MARKET CONTEXT: Premium automotive retail
+ENTITIES: Dealerships (official brand dealers, premium used)
+VOCABULARY: Vehicles, inventory, sticker prices, model variants
+METRICS: Days in stock, inventory turnover, dealership positioning
+""",
+        
+        Industry.HEALTHCARE: """
+MARKET CONTEXT: Medical aesthetics and premium clinics
+ENTITIES: Private clinics, practitioners
+VOCABULARY: Treatments, services, treatment prices, practitioner profiles
+METRICS: Treatment popularity, pricing tiers, clinic positioning
+""",
+        
+        Industry.HOSPITALITY: """
+MARKET CONTEXT: Luxury hospitality
+ENTITIES: Hotels, boutique properties
+VOCABULARY: Rooms, occupancy, room rates, guest experience
+METRICS: Occupancy rates, ADR, RevPAR, competitive positioning
+""",
+        
+        Industry.LUXURY_RETAIL: """
+MARKET CONTEXT: Luxury retail
+ENTITIES: Boutiques, flagship stores
+VOCABULARY: Products, collections, retail prices, brand positioning
+METRICS: Stock levels, pricing strategy, foot traffic
+""",
+        
+        Industry.PRIVATE_EQUITY: """
+MARKET CONTEXT: Private equity investments
+ENTITIES: PE firms, portfolio companies
+VOCABULARY: Deals, valuations, exit strategies, IRR
+METRICS: Deal flow, fund performance, sector positioning
+""",
+        
+        Industry.YACHTING: """
+MARKET CONTEXT: Superyacht sales and charter
+ENTITIES: Yacht brokers, shipyards
+VOCABULARY: Vessels, listings, charter rates, specifications
+METRICS: Days on market, pricing trends, broker positioning
+"""
+    }
+    
+    try:
+        industry_enum = industry_code_map.get(industry_code.lower())
+        
+        if industry_enum and industry_enum in industry_contexts:
+            return industry_contexts[industry_enum]
+        else:
+            # Default to Real Estate
+            return industry_contexts[Industry.REAL_ESTATE]
+    
+    except Exception as e:
+        logger.error(f"Get industry context error: {e}")
+        return industry_contexts[Industry.REAL_ESTATE]
+
     
     @staticmethod
     def apply_vocabulary_to_prompt(prompt: str, industry: str) -> str:
