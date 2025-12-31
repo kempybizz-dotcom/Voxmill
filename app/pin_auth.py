@@ -435,14 +435,14 @@ Your subscription status has changed.
 For security, please re-verify your 4-digit code:"""
     
     elif reason == "locked":
-        return f"""🚫 ACCESS SUSPENDED
+        return f""" ACCESS SUSPENDED
 
 Your intelligence line has been locked for security.
 
 Too many failed attempts.
 
 Contact support:
-📧 ollys@voxmill.uk"""
+Intel@voxmill.uk"""
     
     else:
         return f""" ACCESS CODE REQUIRED
@@ -479,13 +479,13 @@ Your intelligence line is now secured.
 
 {greeting}
 
-What can I analyze for you today?"""
+What can I analyse for you today?"""
         else:
             return f""" ACCESS GRANTED
 
 {greeting}
 
-What can I analyze for you?"""
+What can I analyse for you?"""
     
     elif message == "locked":
         return get_pin_status_message("locked", client_name)
@@ -501,11 +501,11 @@ FINAL ATTEMPT REMAINING
 
 Your intelligence line will lock after one more incorrect attempt."""
         else:
-            return f"""❌ INCORRECT CODE ({attempts_remaining} attempts remaining)"""
+            return f""" INCORRECT CODE ({attempts_remaining} attempts remaining)"""
     
     else:
         # Other errors
-        return f"❌ {message}"
+        return f" {message}"
 
 
 # ============================================================
@@ -516,21 +516,18 @@ async def sync_pin_status_to_airtable(whatsapp_number: str, status: str, reason:
     """
     Sync PIN status back to Airtable for dashboard visibility
     
-    Status values: Not Set, Active, Locked, Requires Re-verification
+    NEW CONTROL PLANE: Only updates PIN State field in Accounts table
+    
+    Status values (OLD → NEW mapping):
+    - "Not Set" → "not_set"
+    - "Active" → "verified"
+    - "Locked" → "locked"
+    - "Requires Re-verification" → "not_set"
     """
     try:
-        import httpx
-        
-        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-        AIRTABLE_TABLE = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
-        
-        if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
-            logger.warning("Airtable not configured, skipping PIN status sync")
-            return
-        
         # Get client profile to find Airtable record ID
         if db is None:
+            logger.warning("MongoDB not available, skipping PIN status sync")
             return
         
         profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
@@ -541,49 +538,76 @@ async def sync_pin_status_to_airtable(whatsapp_number: str, status: str, reason:
         
         airtable_record_id = profile['airtable_record_id']
         
-        # Build update payload
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}/{airtable_record_id}"
+        # ========================================
+        # MAP OLD STATUS TO NEW SCHEMA ENUM VALUES
+        # ========================================
         
-        headers = {
-            "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-            "Content-Type": "application/json"
+        status_mapping = {
+            "Not Set": "not_set",
+            "Active": "verified",
+            "Locked": "locked",
+            "Requires Re-verification": "not_set",  # Reset to unverified state
+            # Lowercase variants
+            "not set": "not_set",
+            "active": "verified",
+            "locked": "locked"
         }
         
-        # Prepare fields to update
+        pin_state_value = status_mapping.get(status, "not_set")
+        
+        # ========================================
+        # BUILD UPDATE PAYLOAD (NEW SCHEMA - MINIMAL)
+        # ========================================
+        
         fields_to_update = {
-            "PIN Status": status
+            "PIN State": pin_state_value  # Only field that exists in new schema
         }
         
-        # Add timestamp based on status
-        current_time = datetime.now(timezone.utc).isoformat()
+        # ========================================
+        # QUEUE UPDATE (RATE-LIMIT SAFE)
+        # ========================================
         
-        if status == "Active":
-            fields_to_update["PIN Set Date"] = current_time
-            fields_to_update["PIN Last Verified"] = current_time
-            fields_to_update["PIN Failed Attempts"] = 0
-            fields_to_update["PIN Locked Reason"] = ""
-        
-        elif status == "Locked":
-            fields_to_update["PIN Locked Reason"] = reason or "Too many failed attempts"
-        
-        elif status == "Requires Re-verification":
-            fields_to_update["PIN Locked Reason"] = reason or "Inactivity or subscription change"
-        
-        # Get current failed attempts from profile
-        failed_attempts = profile.get('failed_attempts', 0)
-        if failed_attempts > 0:
-            fields_to_update["PIN Failed Attempts"] = failed_attempts
-        
-        payload = {"fields": fields_to_update}
-        
-        # Update Airtable
-        async with httpx.AsyncClient() as client:
-            response = await client.patch(url, headers=headers, json=payload, timeout=10)
-        
-        if response.status_code == 200:
-            logger.info(f" Airtable PIN status synced: {whatsapp_number} → {status}")
-        else:
-            logger.warning(f" Airtable sync failed: {response.status_code}")
+        try:
+            from app.airtable_queue import queue_airtable_update
+            
+            await queue_airtable_update(
+                table_name='Accounts',  # NEW: Changed from 'Clients'
+                record_id=airtable_record_id,
+                fields=fields_to_update,
+                priority='normal'
+            )
+            
+            logger.info(f"✅ Airtable PIN State synced: {whatsapp_number} → {pin_state_value}")
+            
+        except ImportError:
+            # Fallback to direct update if queue not available
+            logger.warning("airtable_queue not available, using direct update")
+            
+            import httpx
+            
+            AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+            AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+            
+            if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+                logger.warning("Airtable not configured, skipping PIN status sync")
+                return
+            
+            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Accounts/{airtable_record_id}"
+            
+            headers = {
+                "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {"fields": fields_to_update}
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.patch(url, headers=headers, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                logger.info(f"✅ Airtable PIN State synced (direct): {whatsapp_number} → {pin_state_value}")
+            else:
+                logger.warning(f"⚠️ Airtable sync failed: {response.status_code}")
             
     except Exception as e:
         logger.error(f"Airtable PIN sync error: {e}")
