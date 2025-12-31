@@ -129,20 +129,13 @@ def parse_regions(regions_raw):
 
 def get_client_from_airtable(sender: str) -> dict:
     """
-    OPTIMIZED: Single Airtable lookup with ALL enforcement fields + MongoDB state management
+    WORLD-CLASS: Query new Control Plane database
     
-    Returns complete client profile with enforcement fields:
-    - Airtable Is Source of Truth
-    - Access Enabled
-    - Subscription Gate Enforced
-    - Industry
-    - Allowed Intelligence Modules
-    - PIN Enforcement Mode
-    
-    NEW: Manages MongoDB state transitions for:
-    - Trial expiry/renewal
-    - Cancellation/reactivation
-    - Welcome message flags
+    New Schema:
+    - accounts: Account Status, Service Tier, execution_allowed
+    - permissions: allowed_modules, monthly_message_limit
+    - preferences: active_market_id, coverage_markets
+    - markets: market_name, is_active, Selectable
     """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -158,351 +151,270 @@ def get_client_from_airtable(sender: str) -> dict:
     if not search_number.startswith('+'):
         search_number = '+' + search_number
     
-    # Check Trial Users first
+    # ========================================
+    # QUERY ACCOUNTS TABLE
+    # ========================================
+    
     try:
-        trial_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Trial%20Users"
+        accounts_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Accounts"
         params = {'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"}
-        response = requests.get(trial_table_url, headers=headers, params=params, timeout=5)
+        response = requests.get(accounts_url, headers=headers, params=params, timeout=5)
         
-        if response.status_code == 200:
-            records = response.json().get('records', [])
+        if response.status_code != 200:
+            logger.error(f"Airtable query failed: {response.status_code}")
+            return None
+        
+        records = response.json().get('records', [])
+        
+        if not records:
+            logger.warning(f"No account found for {sender}")
+            return None
+        
+        account = records[0]
+        account_id = account['id']
+        fields = account['fields']
+        
+        # ========================================
+        # CRITICAL: Trust execution_allowed formula
+        # ========================================
+        
+        execution_allowed = fields.get('execution_allowed') == 1
+        
+        if not execution_allowed:
+            # Return minimal profile - access denied
+            status = fields.get('Account Status (Execution Safe)', 'blocked')
+            trial_expired = fields.get('Is Trial Expired') == 1
             
-            if records:
-                trial_record = records[0]
-                fields = trial_record.get('fields', {})
+            logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}")
+            
+            return {
+                'subscription_status': status.capitalize() if status != 'blocked' else 'Blocked',
+                'access_enabled': False,
+                'trial_expired': trial_expired,
+                'name': fields.get('WhatsApp Number', 'there'),  # No name field, use number
+                'email': '',
+                'airtable_record_id': account_id,
+                'table': 'Accounts',
+                'tier': 'tier_1',
+                'preferences': {'preferred_regions': ['Mayfair']},
+                'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0}
+            }
+        
+        # ========================================
+        # QUERY PERMISSIONS TABLE
+        # ========================================
+        
+        permissions_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Permissions"
+        params = {'filterByFormula': f"SEARCH('{account_id}', ARRAYJOIN({{account_id}}))"}
+        perm_response = requests.get(permissions_url, headers=headers, params=params, timeout=5)
+        
+        permissions = {}
+        if perm_response.status_code == 200:
+            perm_records = perm_response.json().get('records', [])
+            if perm_records:
+                permissions = perm_records[0]['fields']
+        
+        # ========================================
+        # QUERY PREFERENCES TABLE
+        # ========================================
+        
+        preferences_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Preferences"
+        params = {'filterByFormula': f"SEARCH('{account_id}', ARRAYJOIN({{account_id}}))"}
+        pref_response = requests.get(preferences_url, headers=headers, params=params, timeout=5)
+        
+        preferences_data = {}
+        active_market_name = 'Mayfair'  # Default
+        
+        if pref_response.status_code == 200:
+            pref_records = pref_response.json().get('records', [])
+            if pref_records:
+                preferences_data = pref_records[0]['fields']
                 
-                # ============================================================
-                # CRITICAL FIX: CALCULATE TRIAL EXPIRY
-                # ============================================================
-                
-                trial_end_date = fields.get('Trial End Date')
-                trial_expired = False
-                
-                if trial_end_date:
-                    try:
-                        # Parse trial end date
-                        if isinstance(trial_end_date, str):
-                            trial_end_date_dt = dateutil_parser.parse(trial_end_date)
-                        else:
-                            trial_end_date_dt = trial_end_date
-                        
-                        # Ensure timezone aware
-                        if trial_end_date_dt.tzinfo is None:
-                            trial_end_date_dt = trial_end_date_dt.replace(tzinfo=timezone.utc)
-                        
-                        # Check if expired
-                        now = datetime.now(timezone.utc)
-                        
-                        if trial_end_date_dt < now:
-                            trial_expired = True
-                            logger.warning(f"Trial expired for {sender}: {trial_end_date_dt} < {now}")
-                        else:
-                            logger.info(f"Trial active for {sender}: expires {trial_end_date_dt}")
-                    
-                    except Exception as e:
-                        logger.error(f"Error parsing trial end date: {e}")
-                        trial_expired = False  # Fail open (allow access on error)
-                else:
-                    # No trial end date set → assume active
-                    trial_expired = False
-                    logger.warning(f"No trial end date set for {sender}, assuming active")
-                
-                # ============================================================
-                # IF TRIAL EXPIRED - RETURN LIMITED PROFILE
-                # ============================================================
-                
-                if trial_expired:
-                    logger.warning(f"Trial expired for {sender}")
-                    return {
-                        'subscription_status': 'Trial',
-                        'trial_expired': True,
-                        'trial_end_date': trial_end_date,
-                        'name': fields.get('Name', 'there'),
-                        'email': fields.get('Email', ''),
-                        'tier': 'tier_1',
-                        'airtable_record_id': trial_record['id'],
-                        'table': 'Trial Users',
-                        'preferences': {
-                            'preferred_regions': ['Mayfair'],
-                            'competitor_focus': 'medium',
-                            'report_depth': 'detailed'
-                        },
-                        'usage_metrics': {
-                            'messages_used_this_month': 0,
-                            'monthly_message_limit': 0,
-                            'total_messages_sent': 0
-                        },
-                        'airtable_is_source_of_truth': True,
-                        'access_enabled': False,
-                        'subscription_gate_enforced': True,
-                        'industry': 'Real Estate',
-                        'allowed_intelligence_modules': [],
-                        'pin_enforcement_mode': 'Strict'
-                    }
-                
-                # ============================================================
-                # TRIAL ACTIVE - PARSE REGIONS
-                # ============================================================
-                
-                regions_raw = fields.get('Regions', [])
-                regions = regions_raw if isinstance(regions_raw, list) else \
-                         [r.strip() for r in str(regions_raw).split(',') if r.strip()] if regions_raw else ['Mayfair']
-                
-                logger.info(f"✅ Trial user found: {fields.get('Name', sender)} (active, expires {trial_end_date})")
-                
-                # ============================================================
-                # MONGODB STATE MANAGEMENT FOR TRIAL USERS (NEW)
-                # ============================================================
-                
-                from pymongo import MongoClient
-                MONGODB_URI = os.getenv('MONGODB_URI')
-                
-                if MONGODB_URI:
-                    mongo_client = MongoClient(MONGODB_URI)
-                    db = mongo_client['Voxmill']
-                    
-                    # Get previous MongoDB state
-                    previous_mongo = db['client_profiles'].find_one({'whatsapp_number': sender})
-                    
-                    if previous_mongo:
-                        # Check if this is a NEW trial (trial dates changed)
-                        previous_trial_end = previous_mongo.get('trial_end_date')
-                        current_trial_end = fields.get('Trial End Date')
-                        
-                        # If trial end date changed → NEW TRIAL
-                        if current_trial_end and previous_trial_end:
-                            # Parse dates for comparison
-                            if isinstance(previous_trial_end, str):
-                                previous_trial_end_dt = dateutil_parser.parse(previous_trial_end)
-                            elif isinstance(previous_trial_end, datetime):
-                                previous_trial_end_dt = previous_trial_end
-                            else:
-                                previous_trial_end_dt = None
-                            
-                            if isinstance(current_trial_end, str):
-                                current_trial_end_dt = dateutil_parser.parse(current_trial_end)
-                            else:
-                                current_trial_end_dt = current_trial_end
-                            
-                            # Normalize timezones
-                            if previous_trial_end_dt and previous_trial_end_dt.tzinfo is None:
-                                previous_trial_end_dt = previous_trial_end_dt.replace(tzinfo=timezone.utc)
-                            if current_trial_end_dt and current_trial_end_dt.tzinfo is None:
-                                current_trial_end_dt = current_trial_end_dt.replace(tzinfo=timezone.utc)
-                            
-                            # If dates are different → RESET FOR NEW TRIAL
-                            if previous_trial_end_dt and current_trial_end_dt and current_trial_end_dt != previous_trial_end_dt:
-                                logger.info(f"🆕 NEW TRIAL DETECTED: Resetting MongoDB state")
-                                
-                                # FULL STATE RESET for new trial
-                                db['client_profiles'].update_one(
-                                    {'whatsapp_number': sender},
-                                    {
-                                        '$set': {
-                                            'welcome_message_sent': False,  # Allow new welcome
-                                            'trial_expired': False,
-                                            'trial_end_date': current_trial_end,
-                                            'trial_reset_at': datetime.now(timezone.utc),
-                                            'total_queries': 0,  # Reset usage for new trial
-                                            'query_history': []  # Clear history for new trial
-                                        }
-                                    }
-                                )
-                
-                # ============================================================
-                # RETURN ACTIVE TRIAL PROFILE
-                # ============================================================
-                
-                return {
-                    'name': fields.get('Name', 'there'),
-                    'email': fields.get('Email', ''),
-                    'subscription_status': 'Trial',
-                    'tier': 'tier_1',
-                    'trial_expired': trial_expired,  # ← CALCULATED VALUE (False for active)
-                    'trial_end_date': fields.get('Trial End Date'),
-                    'airtable_record_id': trial_record['id'],
-                    'table': 'Trial Users',
-                    'preferences': {
-                        'preferred_regions': regions,
-                        'competitor_focus': 'medium',
-                        'report_depth': 'detailed'
-                    },
-                    'usage_metrics': {
-                        'messages_used_this_month': 0,
-                        'monthly_message_limit': 50,
-                        'total_messages_sent': 0
-                    },
-                    'airtable_is_source_of_truth': True,
-                    'access_enabled': True,
-                    'subscription_gate_enforced': True,
-                    'industry': 'Real Estate',
-                    'allowed_intelligence_modules': ['Market Overview'],
-                    'pin_enforcement_mode': 'Strict'
-                }
+                # Get active market name from Markets table
+                active_market_ids = preferences_data.get('active_market_id', [])
+                if active_market_ids:
+                    active_market_name = get_market_name_by_id(active_market_ids[0])
+        
+        # ========================================
+        # MAP TO OLD SCHEMA FOR COMPATIBILITY
+        # ========================================
+        
+        # Map Service Tier to tier_1/tier_2/tier_3
+        tier_map = {
+            'core': 'tier_1',
+            'premium': 'tier_2',
+            'sigma': 'tier_3'
+        }
+        
+        tier = tier_map.get(fields.get('Service Tier', 'core'), 'tier_1')
+        
+        # Map Account Status to subscription_status
+        status = fields.get('Account Status', 'trial')
+        
+        # Map Industry to old format
+        industry_map = {
+            'real_estate': 'Private Real Estate',
+            'hedge_fund': 'Hedge Funds',
+            'family_office': 'Family Offices',
+            'private_equity': 'Private Equity',
+            'luxury_assets': 'Luxury Automotive',
+            'art_collectibles': 'Art & Collectibles',
+            'yachting': 'Yacht Brokers',
+            'automotive': 'Luxury Automotive'
+        }
+        
+        industry = industry_map.get(fields.get('Industry', 'real_estate'), 'Private Real Estate')
+        
+        logger.info(f"✅ Client found: {search_number} ({status}, {tier}, {active_market_name})")
+        
+        return {
+            'name': search_number,  # No name field in new schema
+            'email': '',  # No email field in new schema
+            'subscription_status': status.capitalize(),
+            'tier': tier,
+            'trial_expired': fields.get('Is Trial Expired') == 1,
+            'airtable_record_id': account_id,
+            'airtable_table': 'Accounts',
+            'preferences': {
+                'preferred_regions': [active_market_name],
+                'competitor_focus': 'medium',  # Not in new schema
+                'report_depth': 'detailed'  # Not in new schema
+            },
+            'usage_metrics': {
+                'messages_used_this_month': 0,  # Track in MongoDB
+                'monthly_message_limit': permissions.get('monthly_message_limit', 100),
+                'total_messages_sent': 0  # Track in MongoDB
+            },
+            'airtable_is_source_of_truth': True,
+            'access_enabled': True,
+            'subscription_gate_enforced': True,
+            'industry': industry,
+            'allowed_intelligence_modules': permissions.get('allowed_modules', []),
+            'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize()
+        }
     
     except Exception as e:
-        logger.error(f"Error checking Trial Users table: {e}")
-    
-    # Check Clients table
-    try:
-        clients_table_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Clients"
-        params = {'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"}
-        response = requests.get(clients_table_url, headers=headers, params=params, timeout=5)
-        
-        if response.status_code == 200:
-            records = response.json().get('records', [])
-            
-            if records:
-                client_record = records[0]
-                fields = client_record.get('fields', {})
-                
-                # Enforcement fields
-                airtable_is_source_of_truth = fields.get('Airtable Is Source of Truth', True)
-                
-                if not airtable_is_source_of_truth:
-                    logger.critical(f"🚫 Airtable Is Source of Truth = false for {sender}")
-                    return None
-                
-                access_enabled = fields.get('Access Enabled', True)
-                
-                if not access_enabled:
-                    logger.critical(f"🚫 Access Enabled = false for {sender}")
-                    return {
-                        'subscription_status': 'Suspended',
-                        'access_enabled': False,
-                        'name': fields.get('Name', 'there'),
-                        'airtable_record_id': client_record['id'],
-                        'table': 'Clients'
-                    }
-                
-                subscription_status = fields.get('Subscription Status', 'Active')
-                subscription_gate_enforced = fields.get('Subscription Gate Enforced', True)
-                
-                if subscription_gate_enforced and subscription_status in ['Cancelled', 'Paused']:
-                    logger.warning(f"🚫 Subscription {subscription_status} (gate enforced) for {sender}")
-                    return {
-                        'subscription_status': subscription_status,
-                        'access_enabled': access_enabled,
-                        'subscription_gate_enforced': True,
-                        'name': fields.get('Name', 'there'),
-                        'airtable_record_id': client_record['id'],
-                        'table': 'Clients'
-                    }
-                
-                industry = fields.get('Industry', 'Real Estate')
-                
-                allowed_modules_raw = fields.get('Allowed Intelligence Modules', [])
-                allowed_intelligence_modules = allowed_modules_raw if isinstance(allowed_modules_raw, list) else \
-                    [m.strip() for m in str(allowed_modules_raw).split(',') if m.strip()]
-                
-                if not allowed_intelligence_modules:
-                    allowed_intelligence_modules = [
-                        'Market Overview', 'Competitive Intelligence', 
-                        'Predictive Intelligence', 'Risk Analysis', 'Portfolio Tracking'
-                    ]
-                
-                pin_enforcement_mode = fields.get('PIN Enforcement Mode', 'Strict')
-                
-                status_to_tier = {
-                    'Active': 'tier_3',
-                    'Premium': 'tier_3',
-                    'Basic': 'tier_1',
-                    'Cancelled': 'tier_1',
-                    'Suspended': 'tier_1',
-                    'Paused': 'tier_1'
-                }
-                
-                tier = status_to_tier.get(subscription_status, 'tier_1')
-                regions = parse_regions(fields.get('Regions'))
-                
-                logger.info(f"✅ Client found: {fields.get('Name', sender)} ({subscription_status})")
-                
-                # ============================================================
-                # MONGODB STATE MANAGEMENT FOR CLIENTS (NEW)
-                # ============================================================
-                
-                from pymongo import MongoClient
-                MONGODB_URI = os.getenv('MONGODB_URI')
-                
-                if MONGODB_URI:
-                    mongo_client = MongoClient(MONGODB_URI)
-                    db = mongo_client['Voxmill']
-                    
-                    # Get previous MongoDB state
-                    previous_mongo = db['client_profiles'].find_one({'whatsapp_number': sender})
-                    
-                    if previous_mongo:
-                        previous_status = previous_mongo.get('subscription_status')
-                        
-                        # ====================================================
-                        # RULE 1: CANCELLATION → SOFT RESET
-                        # ====================================================
-                        
-                        if subscription_status == 'Cancelled' and previous_status != 'Cancelled':
-                            logger.info(f"📝 CANCELLATION DETECTED: Soft resetting MongoDB state")
-                            
-                            # Keep essential data, reset flags
-                            db['client_profiles'].update_one(
-                                {'whatsapp_number': sender},
-                                {
-                                    '$set': {
-                                        'subscription_status': 'Cancelled',
-                                        'cancelled_at': datetime.now(timezone.utc),
-                                        'reactivation_welcome_sent': False  # Reset for future reactivation
-                                    }
-                                }
-                            )
-                        
-                        # ====================================================
-                        # RULE 2: REACTIVATION → RESET WELCOME FLAGS
-                        # ====================================================
-                        
-                        if subscription_status == 'Active' and previous_status in ['Cancelled', 'Paused', 'Suspended']:
-                            logger.info(f"🔄 REACTIVATION DETECTED: Resetting welcome flags")
-                            
-                            # Reset reactivation flag to allow new welcome
-                            db['client_profiles'].update_one(
-                                {'whatsapp_number': sender},
-                                {
-                                    '$set': {
-                                        'reactivation_welcome_sent': False,
-                                        'subscription_status': 'Active',
-                                        'reactivated_at': datetime.now(timezone.utc)
-                                    }
-                                }
-                            )
-                
-                return {
-                    'name': fields.get('Name', 'there'),
-                    'email': fields.get('Email', ''),
-                    'subscription_status': subscription_status,
-                    'tier': tier,
-                    'trial_expired': False,
-                    'airtable_record_id': client_record['id'],
-                    'table': 'Clients',
-                    'preferences': {
-                        'preferred_regions': regions,
-                        'competitor_focus': fields.get('Competitor Focus', 'medium'),
-                        'report_depth': fields.get('Report Depth', 'detailed')
-                    },
-                    'usage_metrics': {
-                        'messages_used_this_month': fields.get('Messages Used This Month', 0),
-                        'monthly_message_limit': fields.get('Monthly Message Limit', 10000),
-                        'total_messages_sent': fields.get('Total Messages Sent', 0)
-                    },
-                    'airtable_is_source_of_truth': airtable_is_source_of_truth,
-                    'access_enabled': access_enabled,
-                    'subscription_gate_enforced': subscription_gate_enforced,
-                    'industry': industry,
-                    'allowed_intelligence_modules': allowed_intelligence_modules,
-                    'pin_enforcement_mode': pin_enforcement_mode
-                }
-    
-    except Exception as e:
-        logger.error(f"Error checking Clients table: {e}")
-    
-    return None
+        logger.error(f"Error querying Airtable: {e}", exc_info=True)
+        return None
 
+
+def get_market_name_by_id(market_id: str) -> str:
+    """Get market name from Markets table by record ID"""
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    try:
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets/{market_id}"
+        
+        response = requests.get(url, headers=headers, timeout=5)
+        
+        if response.status_code == 200:
+            fields = response.json().get('fields', {})
+            return fields.get('market_name', 'Mayfair')
+        
+        return 'Mayfair'
+    
+    except Exception as e:
+        logger.error(f"Get market name failed: {e}")
+        return 'Mayfair'
+
+
+def check_market_availability(industry: str, market_name: str) -> dict:
+    """
+    Check if market is available using Markets table
+    
+    RULE: Trust markets.is_active AND markets.Selectable
+    """
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    # Map old industry names to new schema
+    industry_reverse_map = {
+        'Private Real Estate': 'real_estate',
+        'Hedge Funds': 'hedge_fund',
+        'Family Offices': 'family_office',
+        'Private Equity': 'private_equity',
+        'Luxury Automotive': 'luxury_assets',
+        'Art & Collectibles': 'art_collectibles',
+        'Yacht Brokers': 'yachting'
+    }
+    
+    industry_code = industry_reverse_map.get(industry, 'real_estate')
+    
+    try:
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        formula = f"AND({{industry}}='{industry_code}', {{market_name}}='{market_name}')"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            
+            if records:
+                fields = records[0]['fields']
+                is_active = fields.get('is_active', False)
+                selectable = fields.get('Selectable', False)
+                
+                if is_active and selectable:
+                    return {'available': True, 'coverage_level': fields.get('coverage_level'), 'message': None}
+                else:
+                    available_markets = get_available_markets_from_db(industry_code)
+                    return {
+                        'available': False,
+                        'message': f"""No active coverage for {market_name}.
+
+Active markets: {', '.join(available_markets)}
+
+Standing by."""
+                    }
+            else:
+                available_markets = get_available_markets_from_db(industry_code)
+                return {
+                    'available': False,
+                    'message': f"""Coverage for {market_name} is not yet available.
+
+Active markets: {', '.join(available_markets)}
+
+Standing by."""
+                }
+        
+        return {'available': True, 'message': None}
+    
+    except Exception as e:
+        logger.error(f"Market availability check failed: {e}")
+        return {'available': True, 'message': None}
+
+
+def get_available_markets_from_db(industry_code: str) -> list:
+    """Get active, selectable markets from Markets table"""
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    try:
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        formula = f"AND({{industry}}='{industry_code}', {{is_active}}=TRUE(), {{Selectable}}=TRUE())"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            return [r['fields'].get('market_name') for r in records if r['fields'].get('market_name')]
+        
+        return ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+    
+    except Exception as e:
+        logger.error(f"Get available markets failed: {e}")
+        return ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
 
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
     """Generate time-appropriate greeting based on UK time"""
