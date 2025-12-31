@@ -29,14 +29,14 @@ class Intent(Enum):
     DECISION_REQUEST = "decision_request"
     META_STRATEGIC = "meta_strategic"
     MONITORING_DIRECTIVE = "monitoring_directive"
-    META_AUTHORITY = "meta_authority"  # NEW
-    PROFILE_STATUS = "profile_status"  # NEW
+    META_AUTHORITY = "meta_authority"
+    PROFILE_STATUS = "profile_status"
     VALUE_JUSTIFICATION = "value_justification"
-    TRUST_AUTHORITY = "trust_authority"  # NEW
-    STATUS_MONITORING = "status_monitoring"  # NEW
+    TRUST_AUTHORITY = "trust_authority"
+    STATUS_MONITORING = "status_monitoring"
     PORTFOLIO_MANAGEMENT = "portfolio_management"
-    PORTFOLIO_STATUS = "portfolio_status"  # NEW
-    DELIVERY_REQUEST = "delivery_request"  # NEW
+    PORTFOLIO_STATUS = "portfolio_status"
+    DELIVERY_REQUEST = "delivery_request"
     UNKNOWN = "unknown"
 
 
@@ -299,6 +299,8 @@ class ConversationalGovernor:
         """
         LLM-based intent classification (OpenAI v1.0+ compatible)
         
+        ✅ INDUSTRY AGNOSTIC - Works for ANY vertical (Real Estate, Hedge Funds, Yachting, Automotive, etc.)
+        
         NO KEYWORDS. NO PATTERNS. ONLY LLM.
         
         Returns: (is_mandate_relevant, semantic_category, confidence)
@@ -317,8 +319,8 @@ class ConversationalGovernor:
             if regions or agents or topics:
                 context_str = f"\n\nConversation context:\n- Recent regions: {regions}\n- Recent agents: {agents}\n- Recent topics: {topics}"
         
-        # Single LLM call for intent classification
-        prompt = f"""Classify this message for a luxury property market intelligence analyst.
+        # ✅ INDUSTRY-AGNOSTIC PROMPT
+        prompt = f"""Classify this message for a market intelligence analyst.
 
 Message: "{message}"{context_str}
 
@@ -329,27 +331,27 @@ Return ONLY valid JSON (no markdown, no explanation):
   "semantic_category": "competitive_intelligence|market_dynamics|strategic_positioning|temporal_analysis|surveillance|administrative|non_domain",
   "confidence": 0.0-1.0,
   "requires_intelligence": true|false,
-  "region_mentioned": "London"|null,
+  "market_mentioned": "string|null",
   "reasoning": "one sentence explanation"
 }}
 
 Classification rules:
-1. PROFANITY ALONE = gibberish (e.g. "Fuck Chelsea", "Go fuck yourself")
-2. PERSONAL ANECDOTES = gibberish (e.g. "My dog is from London")
+1. PROFANITY ALONE = gibberish (e.g. "Fuck off", "Go to hell")
+2. PERSONAL ANECDOTES = gibberish (e.g. "My dog is sick", "I went shopping")
 3. META QUESTIONS = meta_authority (e.g. "What is Voxmill?", "What can you do?", "Tell me your capabilities")
-4. IDENTITY QUESTIONS = profile_status (e.g. "What's my name?", "Who am I?", "I'm a hedge fund investor", "Am I on trial?")
+4. IDENTITY QUESTIONS = profile_status (e.g. "What's my name?", "Who am I?", "Am I on trial?")
 5. PORTFOLIO VIEWING = portfolio_status (e.g. "Show me my portfolio", "How's my portfolio?", "Portfolio summary")
-6. PORTFOLIO ACTIONS = portfolio_management (e.g. "Can I add properties?", "How do I add?", "I want to add properties")
-7. VALUE QUESTIONS = value_justification (e.g. "Why Voxmill?", "Why should I use this?", "Why is this the best?")
-8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you reliable?")
-9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?", "What's my status?")
-10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF", "Send this weeks report")
+6. PORTFOLIO ACTIONS = portfolio_management (e.g. "Can I add assets?", "How do I track holdings?")
+7. VALUE QUESTIONS = value_justification (e.g. "Why Voxmill?", "Why should I use this?")
+8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?")
+9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?")
+10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF")
 11. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
-12. REGION CHANGES = preference_change (e.g. "Switch to Lincoln", "Show me Manchester")
-13. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening in Chelsea?")
+12. MARKET CHANGES = preference_change (e.g. "Switch to Manhattan", "Show me Dubai")
+13. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening?", "Show me trends")
 14. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
 15. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
-16. OFF-TOPIC = gibberish (anything not about property markets)
+16. OFF-TOPIC = gibberish (anything not about markets, investments, or business intelligence)
 
 Examples:
 - "What is Voxmill?" → meta_authority (about system capabilities)
@@ -358,12 +360,14 @@ Examples:
 - "Show me what you can do" → meta_authority (capability demonstration)
 - "Can I trust you?" → trust_authority (about reliability)
 - "What am I waiting for?" → status_monitoring (about user's status)
-- "Can I add properties?" → portfolio_management (portfolio action)
+- "Can I add holdings?" → portfolio_management (portfolio action)
 - "PDF?" → delivery_request (report delivery)
 - "What's my name?" → profile_status (about user identity)
 - "Show me my portfolio" → portfolio_status (portfolio viewing)
-- "Fuck Chelsea" → gibberish (profanity, not market query)
 - "Market overview" → market_query (legitimate query)
+- "What's happening in Manhattan hedge funds?" → market_query (industry-specific query)
+- "Show me Dubai yacht market" → market_query (industry-specific query)
+- "Beverly Hills luxury automotive trends" → market_query (industry-specific query)
 
 JSON:"""
         
