@@ -665,7 +665,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     try:
         logger.info(f"📱 Processing message from {sender}: {message_text}")
         
-        # ====================================================================
+# ====================================================================
         # EDGE CASE HANDLING
         # ====================================================================
         
@@ -686,180 +686,180 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, "I specialise in market intelligence analysis. What would you like to explore?")
             return
         
-# ====================================================================
-# GATE 1: IDENTITY - AIRTABLE CONTROL PLANE INTEGRATION
-# ====================================================================
-
-logger.info(f"🔐 GATE 1: Loading client identity...")
-
-# ========================================
-# STEP 1: CHECK MONGODB CACHE
-# ========================================
-
-client_profile = get_client_profile(sender)
-
-# ========================================
-# STEP 2: DETERMINE IF AIRTABLE REFRESH NEEDED
-# ========================================
-
-should_refresh = False
-if client_profile:
-    updated_at = client_profile.get('updated_at')
-    if updated_at:
-        if isinstance(updated_at, str):
-            updated_at = dateutil_parser.parse(updated_at)
+        # ====================================================================
+        # GATE 1: IDENTITY - AIRTABLE CONTROL PLANE INTEGRATION
+        # ====================================================================
         
-        if updated_at.tzinfo is None:
-            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        logger.info(f"🔐 GATE 1: Loading client identity...")
         
-        cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+        # ========================================
+        # STEP 1: CHECK MONGODB CACHE
+        # ========================================
         
-        if cache_age_minutes > 60:
-            should_refresh = True
-            logger.info(f"Cache stale ({int(cache_age_minutes)} mins), refreshing")
-
-# ========================================
-# STEP 3: LOAD FROM AIRTABLE IF NEEDED
-# ========================================
-
-if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
-    client_profile_airtable = get_client_from_airtable(sender)
-    
-    if client_profile_airtable:
-        # Preserve MongoDB-only fields
-        old_history = client_profile.get('query_history', []) if client_profile else []
-        old_total = client_profile.get('total_queries', 0) if client_profile else 0
+        client_profile = get_client_profile(sender)
         
-        # ✅ BUILD CLIENT PROFILE FROM NEW CONTROL PLANE SCHEMA
-        client_profile = {
-            'whatsapp_number': sender,
-            'name': client_profile_airtable.get('name', 'Unknown'),
-            'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
-            'tier': client_profile_airtable.get('tier', 'tier_1'),
-            'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
-            'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
-            'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),  # ✅ FIXED
-            'industry': client_profile_airtable.get('industry', 'real_estate'),  # ✅ FIXED: lowercase
-            'active_market': client_profile_airtable.get('active_market', 'Mayfair'),  # ✅ NEW
+        # ========================================
+        # STEP 2: DETERMINE IF AIRTABLE REFRESH NEEDED
+        # ========================================
+        
+        should_refresh = False
+        if client_profile:
+            updated_at = client_profile.get('updated_at')
+            if updated_at:
+                if isinstance(updated_at, str):
+                    updated_at = dateutil_parser.parse(updated_at)
+                
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+                cache_age_minutes = (datetime.now(timezone.utc) - updated_at).total_seconds() / 60
+                
+                if cache_age_minutes > 60:
+                    should_refresh = True
+                    logger.info(f"Cache stale ({int(cache_age_minutes)} mins), refreshing")
+        
+        # ========================================
+        # STEP 3: LOAD FROM AIRTABLE IF NEEDED
+        # ========================================
+        
+        if not client_profile or should_refresh or client_profile.get('total_queries', 0) == 0:
+            client_profile_airtable = get_client_from_airtable(sender)
             
-            # ✅ PREFERENCES: Built from active_market
-            'preferences': {
-                'preferred_regions': [client_profile_airtable.get('active_market', 'Mayfair')],
-                'competitor_set': [],
-                'risk_appetite': 'balanced',
-                'budget_range': {'min': 0, 'max': 100000000},
-                'insight_depth': 'standard',
-                'competitor_focus': 'medium',
-                'report_depth': 'detailed'
-            },
-            
-            # ✅ CONTROL PLANE FIELDS
-            'usage_metrics': client_profile_airtable.get('usage_metrics', {}),
-            'trial_expired': client_profile_airtable.get('trial_expired', False),
-            'execution_allowed': client_profile_airtable.get('execution_allowed', False),  # ✅ CRITICAL
-            'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
-            
-            # ✅ MONGODB-ONLY FIELDS (preserved)
-            'total_queries': old_total,
-            'query_history': old_history,
-            'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
-            'updated_at': datetime.now(timezone.utc)
-        }
+            if client_profile_airtable:
+                # Preserve MongoDB-only fields
+                old_history = client_profile.get('query_history', []) if client_profile else []
+                old_total = client_profile.get('total_queries', 0) if client_profile else 0
+                
+                # ✅ BUILD CLIENT PROFILE FROM NEW CONTROL PLANE SCHEMA
+                client_profile = {
+                    'whatsapp_number': sender,
+                    'name': client_profile_airtable.get('name', 'Unknown'),
+                    'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
+                    'tier': client_profile_airtable.get('tier', 'tier_1'),
+                    'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
+                    'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
+                    'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),  # ✅ FIXED
+                    'industry': client_profile_airtable.get('industry', 'real_estate'),  # ✅ FIXED: lowercase
+                    'active_market': client_profile_airtable.get('active_market', 'Mayfair'),  # ✅ NEW
+                    
+                    # ✅ PREFERENCES: Built from active_market
+                    'preferences': {
+                        'preferred_regions': [client_profile_airtable.get('active_market', 'Mayfair')],
+                        'competitor_set': [],
+                        'risk_appetite': 'balanced',
+                        'budget_range': {'min': 0, 'max': 100000000},
+                        'insight_depth': 'standard',
+                        'competitor_focus': 'medium',
+                        'report_depth': 'detailed'
+                    },
+                    
+                    # ✅ CONTROL PLANE FIELDS
+                    'usage_metrics': client_profile_airtable.get('usage_metrics', {}),
+                    'trial_expired': client_profile_airtable.get('trial_expired', False),
+                    'execution_allowed': client_profile_airtable.get('execution_allowed', False),  # ✅ CRITICAL
+                    'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
+                    
+                    # ✅ MONGODB-ONLY FIELDS (preserved)
+                    'total_queries': old_total,
+                    'query_history': old_history,
+                    'created_at': client_profile.get('created_at', datetime.now(timezone.utc)) if client_profile else datetime.now(timezone.utc),
+                    'updated_at': datetime.now(timezone.utc)
+                }
+                
+                # Update MongoDB cache
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {'$set': client_profile},
+                        upsert=True
+                    )
+                
+                logger.info(f"✅ Client found: {sender} (industry={client_profile['industry']}, status={client_profile['subscription_status']}, tier={client_profile['tier']}, market={client_profile['active_market']})")
         
-        # Update MongoDB cache
+        # ========================================
+        # STEP 4: WHITELIST CHECK
+        # ========================================
+        
+        if not client_profile or not client_profile.get('airtable_record_id'):
+            logger.warning(f"🚫 GATE 1 FAILED: UNAUTHORIZED: {sender}")
+            await send_twilio_message(sender, "This number is not authorized for Voxmill Intelligence.\n\nFor institutional access, contact:\nintel@voxmill.uk")
+            return
+        
+        logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
+        
+        # ====================================================================
+        # AUTOMATED WELCOME MESSAGE DETECTION (FIRST MESSAGE ONLY)
+        # ====================================================================
+        
         from pymongo import MongoClient
         MONGODB_URI = os.getenv('MONGODB_URI')
+        
+        should_send_welcome = False
+        welcome_message_type = None
+        
         if MONGODB_URI:
             mongo_client = MongoClient(MONGODB_URI)
             db = mongo_client['Voxmill']
-            db['client_profiles'].update_one(
-                {'whatsapp_number': sender},
-                {'$set': client_profile},
-                upsert=True
-            )
-        
-        logger.info(f"✅ Client found: {sender} (industry={client_profile['industry']}, status={client_profile['subscription_status']}, tier={client_profile['tier']}, market={client_profile['active_market']})")
-
-# ========================================
-# STEP 4: WHITELIST CHECK
-# ========================================
-
-if not client_profile or not client_profile.get('airtable_record_id'):
-    logger.warning(f"🚫 GATE 1 FAILED: UNAUTHORIZED: {sender}")
-    await send_twilio_message(sender, "This number is not authorized for Voxmill Intelligence.\n\nFor institutional access, contact:\nintel@voxmill.uk")
-    return
-
-logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
-
-# ====================================================================
-# AUTOMATED WELCOME MESSAGE DETECTION (FIRST MESSAGE ONLY)
-# ====================================================================
-
-from pymongo import MongoClient
-MONGODB_URI = os.getenv('MONGODB_URI')
-
-should_send_welcome = False
-welcome_message_type = None
-
-if MONGODB_URI:
-    mongo_client = MongoClient(MONGODB_URI)
-    db = mongo_client['Voxmill']
-    
-    # Get previous profile state (if exists)
-    previous_profile = db['client_profiles'].find_one({'whatsapp_number': sender})
-    
-    # ================================================================
-    # DETECTION 1: BRAND NEW USER (NO PREVIOUS RECORD)
-    # ================================================================
-    
-    if not previous_profile:
-        logger.info(f"🆕 BRAND NEW USER DETECTED: {sender}")
-        should_send_welcome = True
-        
-        if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
-            welcome_message_type = 'trial_start'
-        else:
-            welcome_message_type = 'first_active'
-    
-    # ================================================================
-    # DETECTION 2: FIRST MESSAGE (EXISTING RECORD BUT NO QUERIES)
-    # ================================================================
-    
-    elif previous_profile.get('total_queries', 0) == 0 and not previous_profile.get('welcome_message_sent'):
-        logger.info(f"🆕 FIRST MESSAGE FROM EXISTING USER: {sender}")
-        should_send_welcome = True
-        
-        if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
-            welcome_message_type = 'trial_start'
-        else:
-            welcome_message_type = 'first_active'
-    
-    # ================================================================
-    # DETECTION 3: REACTIVATION (CANCELLED → ACTIVE)
-    # ================================================================
-    
-    elif previous_profile:
-        previous_status = previous_profile.get('subscription_status')
-        current_status = client_profile.get('subscription_status')
-        
-        # Detect status change to Active from any inactive state
-        if previous_status in ['cancelled', 'paused', 'suspended'] and current_status == 'active':  # ✅ FIXED: lowercase
-            # Only send if welcome wasn't already sent for reactivation
-            if not previous_profile.get('reactivation_welcome_sent'):
-                logger.info(f"🔄 REACTIVATION DETECTED: {previous_status} → {current_status}")
+            
+            # Get previous profile state (if exists)
+            previous_profile = db['client_profiles'].find_one({'whatsapp_number': sender})
+            
+            # ================================================================
+            # DETECTION 1: BRAND NEW USER (NO PREVIOUS RECORD)
+            # ================================================================
+            
+            if not previous_profile:
+                logger.info(f"🆕 BRAND NEW USER DETECTED: {sender}")
                 should_send_welcome = True
-                welcome_message_type = 'reactivation'
-    
-    # ================================================================
-    # SEND AUTOMATED WELCOME MESSAGE
-    # ================================================================
-    
-    if should_send_welcome:
-        client_name = client_profile.get('name', 'there')
-        first_name = client_name.split()[0] if client_name != 'there' else 'there'
-        
-        if welcome_message_type == 'trial_start':
-            welcome_msg = f"""TRIAL PERIOD ACTIVE
+                
+                if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
+                    welcome_message_type = 'trial_start'
+                else:
+                    welcome_message_type = 'first_active'
+            
+            # ================================================================
+            # DETECTION 2: FIRST MESSAGE (EXISTING RECORD BUT NO QUERIES)
+            # ================================================================
+            
+            elif previous_profile.get('total_queries', 0) == 0 and not previous_profile.get('welcome_message_sent'):
+                logger.info(f"🆕 FIRST MESSAGE FROM EXISTING USER: {sender}")
+                should_send_welcome = True
+                
+                if client_profile.get('subscription_status') == 'trial':  # ✅ FIXED: lowercase
+                    welcome_message_type = 'trial_start'
+                else:
+                    welcome_message_type = 'first_active'
+            
+            # ================================================================
+            # DETECTION 3: REACTIVATION (CANCELLED → ACTIVE)
+            # ================================================================
+            
+            elif previous_profile:
+                previous_status = previous_profile.get('subscription_status')
+                current_status = client_profile.get('subscription_status')
+                
+                # Detect status change to Active from any inactive state
+                if previous_status in ['cancelled', 'paused', 'suspended'] and current_status == 'active':  # ✅ FIXED: lowercase
+                    # Only send if welcome wasn't already sent for reactivation
+                    if not previous_profile.get('reactivation_welcome_sent'):
+                        logger.info(f"🔄 REACTIVATION DETECTED: {previous_status} → {current_status}")
+                        should_send_welcome = True
+                        welcome_message_type = 'reactivation'
+            
+            # ================================================================
+            # SEND AUTOMATED WELCOME MESSAGE
+            # ================================================================
+            
+            if should_send_welcome:
+                client_name = client_profile.get('name', 'there')
+                first_name = client_name.split()[0] if client_name != 'there' else 'there'
+                
+                if welcome_message_type == 'trial_start':
+                    welcome_msg = f"""TRIAL PERIOD ACTIVE
 
 Welcome to Voxmill Intelligence, {first_name}.
 
@@ -878,10 +878,10 @@ Try:
 Available 24/7.
 
 Voxmill Intelligence — Precision at Scale"""
-        
-        elif welcome_message_type == 'reactivation':
-            greeting = get_time_appropriate_greeting(first_name)
-            welcome_msg = f"""{greeting}
+                
+                elif welcome_message_type == 'reactivation':
+                    greeting = get_time_appropriate_greeting(first_name)
+                    welcome_msg = f"""{greeting}
 
 WELCOME BACK
 
@@ -890,10 +890,10 @@ Your Voxmill Intelligence access has been reactivated.
 Your private intelligence line is now active.
 
 Standing by."""
-        
-        else:  # first_active
-            greeting = get_time_appropriate_greeting(first_name)
-            welcome_msg = f"""{greeting}
+                
+                else:  # first_active
+                    greeting = get_time_appropriate_greeting(first_name)
+                    welcome_msg = f"""{greeting}
 
 Welcome to Voxmill Intelligence.
 
@@ -912,39 +912,39 @@ Try:
 Available 24/7.
 
 Voxmill Intelligence — Precision at Scale"""
-        
-        # Send welcome message
-        await send_twilio_message(sender, welcome_msg)
-        
-        # Mark welcome as sent in MongoDB
-        if welcome_message_type == 'reactivation':
-            db['client_profiles'].update_one(
-                {'whatsapp_number': sender},
-                {
-                    '$set': {
-                        'reactivation_welcome_sent': True,
-                        'last_reactivation_welcome': datetime.now(timezone.utc)
-                    }
-                },
-                upsert=True
-            )
-        else:
-            db['client_profiles'].update_one(
-                {'whatsapp_number': sender},
-                {
-                    '$set': {
-                        'welcome_message_sent': True,
-                        'welcome_sent_at': datetime.now(timezone.utc),
-                        'welcome_type': welcome_message_type
-                    }
-                },
-                upsert=True
-            )
-        
-        logger.info(f"✅ Automated welcome sent: {welcome_message_type}")
-        
-        # Brief pause before processing actual query
-        await asyncio.sleep(1.5)
+                
+                # Send welcome message
+                await send_twilio_message(sender, welcome_msg)
+                
+                # Mark welcome as sent in MongoDB
+                if welcome_message_type == 'reactivation':
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {
+                            '$set': {
+                                'reactivation_welcome_sent': True,
+                                'last_reactivation_welcome': datetime.now(timezone.utc)
+                            }
+                        },
+                        upsert=True
+                    )
+                else:
+                    db['client_profiles'].update_one(
+                        {'whatsapp_number': sender},
+                        {
+                            '$set': {
+                                'welcome_message_sent': True,
+                                'welcome_sent_at': datetime.now(timezone.utc),
+                                'welcome_type': welcome_message_type
+                            }
+                        },
+                        upsert=True
+                    )
+                
+                logger.info(f"✅ Automated welcome sent: {welcome_message_type}")
+                
+                # Brief pause before processing actual query
+                await asyncio.sleep(1.5)
         
         
 # ====================================================================
