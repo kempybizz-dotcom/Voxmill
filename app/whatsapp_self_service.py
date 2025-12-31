@@ -605,48 +605,7 @@ Standing by."""
     else:
         logger.error(f"❌ Failed to update preferences for {from_number}")
         return "Unable to update preferences.\n\nStanding by."
-```
 
----
-
-## 🔑 **KEY CHANGES:**
-
-1. ✅ **Market validation BEFORE write** - Calls `check_market_availability()` from whatsapp.py
-2. ✅ **Hard rejection for unavailable markets** - Returns error message, prevents Airtable write
-3. ✅ **Updated table name** - `'Accounts'` instead of `'Clients'`
-4. ✅ **Simplified confirmation** - Removed marketing fluff, PDF schedules, email CTAs
-5. ✅ **Clean executive response** - Just "✅ PREFERENCES UPDATED" + changes + "Standing by."
-
----
-
-## 📋 **WHAT THIS FIXES:**
-
-❌ **BEFORE:**
-```
-User: "Switch to Manchester"
-Bot: "✅ PREFERENCES UPDATED
-* Coverage Area: Manchester
-Your next intelligence deck arrives Sunday, January 04 at 6:00 AM UTC.
-━━━━━━━━━━━━━━━━━━━━
-NEED THIS URGENTLY?
-Contact your Voxmill operator...
-━━━━━━━━━━━━━━━━━━━━"
-
-[Then user tries to query Manchester]
-Bot: "INTELLIGENCE UNAVAILABLE
-No active market data for Manchester..."
-```
-
-✅ **AFTER:**
-```
-User: "Switch to Manchester"
-Bot: "No active coverage for Manchester.
-
-Active markets: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
-
-Standing by."
-
-[Preference change blocked - Manchester never written to Airtable]
 
 def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
     """
