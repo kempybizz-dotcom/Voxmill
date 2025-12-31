@@ -56,39 +56,46 @@ except ImportError:
 # ============================================================
 # MODIFY load_dataset() FUNCTION SIGNATURE
 # ============================================================
-# Change line 1150 from:
-# def load_dataset(area: str = "Mayfair", max_properties: int = 100) -> Dict:
 
-# TO:
-def load_dataset(area: str = "Mayfair", max_properties: int = 100, industry: str = "Real Estate") -> Dict:
+def load_dataset(area: str, max_properties: int = 100, industry: str = "real_estate") -> Dict:
     """
     Load institutional-grade dataset with all intelligence layers
     
     UPDATED: Now supports industry routing
     
     Args:
-        area: Geographic area
+        area: Geographic area (REQUIRED - no default to prevent accidental Mayfair calls)
         max_properties: Maximum items to fetch
-        industry: Industry vertical (Real Estate, Automotive, Healthcare, etc.)
+        industry: Industry vertical code (lowercase: real_estate, automotive, healthcare, etc.)
     
     Returns:
         Dataset dict with intelligence layers
     """
     
     # ========================================
+    # VALIDATION
+    # ========================================
+    
+    if not area:
+        logger.error("❌ No area provided to load_dataset")
+        return _empty_dataset("Unknown")
+    
+    # ========================================
     # INDUSTRY ROUTING (NEW - CRITICAL)
     # ========================================
-    if INDUSTRY_ROUTING_ENABLED and industry != "Real Estate":
+    
+    if INDUSTRY_ROUTING_ENABLED and industry != "real_estate":
         logger.info(f"🔀 Routing to {industry} dataset loader")
         return route_dataset_loader(industry, area, max_properties)
     
     # ========================================
     # EXISTING REAL ESTATE LOADER (UNCHANGED)
     # ========================================
-    # Rest of function continues as-is...
     
     try:
-        # Existing Redis cache check...
+        # ============================================================
+        # REDIS CACHE CHECK
+        # ============================================================
         from app.cache_manager import CacheManager
         
         cache = CacheManager()
@@ -99,25 +106,262 @@ def load_dataset(area: str = "Mayfair", max_properties: int = 100, industry: str
             return cached_dataset
         
         logger.info(f"📊 Loading dataset for {area}...")
+        start_time = time.time()
         
-        # CONTINUE WITH YOUR EXISTING load_dataset() CODE HERE
-        # (All the Rightmove API calls, intelligence layers, etc.)
+        # ============================================================
+        # SOURCE 1: Rightmove
+        # ============================================================
         
-        # ... existing code ...
+        properties = circuit_breaker.call(
+            'rightmove',
+            RightmoveLiveData.fetch,
+            area,
+            max_properties
+        )
+        
+        if not properties:
+            return _empty_dataset(area)
+        
+        properties = DataQualityValidator.remove_duplicates(properties)
+        
+        prices = [p['price'] for p in properties if p.get('price')]
+        if not prices:
+            return _empty_dataset(area)
+        
+        initial_stats = {
+            'avg_price': statistics.mean(prices),
+            'std_dev_price': statistics.stdev(prices) if len(prices) > 1 else 0
+        }
+        
+        validated_properties = []
+        rejected_count = 0
+        
+        for prop in properties:
+            is_valid, reason = DataQualityValidator.validate_property(prop, initial_stats)
+            if is_valid:
+                validated_properties.append(prop)
+            else:
+                rejected_count += 1
+        
+        properties = validated_properties
+        
+        if not properties:
+            return _empty_dataset(area)
+        
+        # ============================================================
+        # SOURCE 2: Land Registry
+        # ============================================================
+        
+        postcode_map = {
+            'Mayfair': 'W1',
+            'Knightsbridge': 'SW1X',
+            'Chelsea': 'SW3',
+            'Belgravia': 'SW1',
+            'Kensington': 'W8'
+        }
+        
+        postcode_prefix = postcode_map.get(area, 'W1')
+        
+        historical_sales = circuit_breaker.call(
+            'land_registry',
+            LandRegistryData.fetch_recent_sales,
+            area,
+            postcode_prefix,
+            6
+        ) or []
+        
+        # ============================================================
+        # SOURCE 3: OpenStreetMap
+        # ============================================================
+        
+        amenities = circuit_breaker.call(
+            'openstreetmap',
+            OpenStreetMapEnrichment.get_area_amenities,
+            area
+        ) or {}
+        
+        # ============================================================
+        # SOURCE 4: GPT-4 Sentiment
+        # ============================================================
+        
+        news_articles = InstitutionalSentimentAnalysis.fetch_recent_news(area, days=7)
+        
+        sentiment_analysis = circuit_breaker.call(
+            'gpt4_sentiment',
+            InstitutionalSentimentAnalysis.analyze_with_gpt4,
+            news_articles
+        )
+        
+        if not sentiment_analysis:
+            sentiment_analysis = {
+                'sentiment': 'neutral',
+                'confidence': 0.0,
+                'reasoning': 'Sentiment analysis unavailable',
+                'key_themes': []
+            }
+        
+        # ============================================================
+        # CALCULATE METRICS
+        # ============================================================
+        
+        prices = [p['price'] for p in properties if p.get('price')]
+        prices_per_sqft = [p['price_per_sqft'] for p in properties if p.get('price_per_sqft')]
+        
+        metrics = {
+            'property_count': len(properties),
+            'avg_price': round(statistics.mean(prices)) if prices else 0,
+            'median_price': round(statistics.median(prices)) if prices else 0,
+            'min_price': min(prices) if prices else 0,
+            'max_price': max(prices) if prices else 0,
+            'std_dev_price': round(statistics.stdev(prices)) if len(prices) > 1 else 0,
+            'avg_price_per_sqft': round(statistics.mean(prices_per_sqft)) if prices_per_sqft else 0,
+            'median_price_per_sqft': round(statistics.median(prices_per_sqft)) if prices_per_sqft else 0,
+            'total_value': round(sum(prices)) if prices else 0
+        }
+        
+        types = [p['property_type'] for p in properties]
+        if types:
+            type_counts = {}
+            for t in types:
+                type_counts[t] = type_counts.get(t, 0) + 1
+            metrics['most_common_type'] = max(type_counts, key=type_counts.get)
+        else:
+            metrics['most_common_type'] = 'Unknown'
+        
+        agents = [p['agent'] for p in properties if p.get('agent') and p['agent'] != 'Private']
+        agent_counts = {}
+        for agent in agents:
+            agent_counts[agent] = agent_counts.get(agent, 0) + 1
+        
+        top_agents = sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        
+        dom_values = [p['days_on_market'] for p in properties if p.get('days_on_market') is not None]
+        avg_days_on_market = round(statistics.mean(dom_values)) if dom_values else None
+        
+        # ============================================================
+        # BUILD DATASET
+        # ============================================================
+        
+        current_timestamp = datetime.now(timezone.utc).isoformat()
+        is_fresh, freshness_msg = DataQualityValidator.check_data_freshness(current_timestamp, max_age_hours=24)
+        load_time = time.time() - start_time
+        
+        dataset = {
+            'properties': properties,
+            'metrics': metrics,
+            'metadata': {
+                'area': area,
+                'industry': industry,  # ✅ ADDED: Include industry in metadata
+                'city': 'London',
+                'property_count': len(properties),
+                'analysis_timestamp': current_timestamp,
+                'data_source': 'multi_source_institutional',
+                'sources': ['rightmove', 'land_registry', 'openstreetmap', 'gpt4_sentiment'],
+                'is_fallback': False,
+                'data_quality': 'institutional_grade',
+                'avg_days_on_market': avg_days_on_market,
+                'load_time_seconds': round(load_time, 2),
+                'data_freshness': freshness_msg,
+                'duplicates_removed': rejected_count,
+                'validation_passed': True,
+                'cached': False
+            },
+            'intelligence': {
+                'market_sentiment': sentiment_analysis['sentiment'],
+                'sentiment_confidence': sentiment_analysis.get('confidence', 0.0),
+                'sentiment_reasoning': sentiment_analysis.get('reasoning', ''),
+                'key_themes': sentiment_analysis.get('key_themes', []),
+                'confidence_level': 'high' if len(properties) > 50 else 'medium',
+                'top_agents': [{'name': agent, 'listings': count} for agent, count in top_agents[:5]],
+                'executive_summary': (
+                    f"Institutional-grade intelligence for {area}: "
+                    f"{len(properties)} validated listings, "
+                    f"£{metrics['avg_price']:,.0f} avg, "
+                    f"£{metrics['avg_price_per_sqft']}/sqft, "
+                    f"{sentiment_analysis['sentiment']} sentiment"
+                ),
+                'recent_headlines': [a['title'] for a in news_articles[:5]]
+            },
+            'historical_sales': historical_sales,
+            'amenities': amenities
+        }
+        
+        # ========================================
+        # WAVE 3 INTELLIGENCE LAYERS
+        # ========================================
+        
+        from app.historical_storage import get_historical_snapshots
+        
+        historical_snapshots = get_historical_snapshots(area, days=30)
+        logger.info(f"📊 Historical snapshots: {len(historical_snapshots)}")
+        
+        if len(historical_snapshots) >= 2:
+            historical_property_lists = [s.get('properties', []) for s in historical_snapshots]
+            velocity_data = calculate_liquidity_velocity(properties, historical_property_lists)
+            dataset['liquidity_velocity'] = velocity_data
+        else:
+            dataset['liquidity_velocity'] = {
+                'error': 'insufficient_history',
+                'message': f'Need 2+ snapshots, have {len(historical_snapshots)}'
+            }
+        
+        if len(historical_snapshots) >= 10:
+            from app.intelligence.liquidity_window_predictor import predict_liquidity_windows
+            if dataset.get('liquidity_velocity') and not dataset['liquidity_velocity'].get('error'):
+                windows_data = predict_liquidity_windows(area, dataset['liquidity_velocity'], historical_snapshots)
+                dataset['liquidity_windows'] = windows_data
+        
+        if len(historical_snapshots) >= 30:
+            from app.historical_storage import get_agent_behavioral_history
+            from app.intelligence.agent_profiler import classify_agent_archetype_v2
+            
+            agent_profiles = []
+            for agent_name, count in top_agents[:5]:
+                agent_history = get_agent_behavioral_history(agent_name, area, days=60)
+                if len(agent_history) >= 3:
+                    profile = classify_agent_archetype_v2(agent_name, agent_history)
+                    if not profile.get('error'):
+                        agent_profiles.append({
+                            'agent': agent_name,
+                            'archetype': profile['primary_archetype'],
+                            'confidence': profile['primary_confidence']
+                        })
+            dataset['agent_profiles'] = agent_profiles
+        else:
+            dataset['agent_profiles'] = []
+        
+        if dataset.get('agent_profiles') and len(dataset['agent_profiles']) >= 3:
+            from app.intelligence.behavioral_clustering import cluster_agents_by_behavior
+            clustering = cluster_agents_by_behavior(area=area, agent_profiles=dataset['agent_profiles'])
+            dataset['behavioral_clusters'] = clustering
+        
+        from app.intelligence.micromarket_segmenter import segment_micromarkets
+        micromarkets = segment_micromarkets(properties, area)
+        dataset['micromarkets'] = micromarkets
+        
+        if len(historical_snapshots) >= 7:
+            from app.intelligence.trend_detector import detect_market_trends
+            trends = detect_market_trends(area=area, lookback_days=14)
+            dataset['detected_trends'] = trends
+        else:
+            dataset['detected_trends'] = []
+        
+        # ========================================
+        # CACHE & STORE
+        # ========================================
+        
+        cache.set_dataset_cache(area, dataset, vertical="real_estate")
+        
+        from app.historical_storage import store_daily_snapshot
+        store_daily_snapshot(dataset, area)
+        
+        logger.info(f"✅ Dataset loaded in {load_time:.2f}s")
+        
+        return dataset
         
     except Exception as e:
-        logger.error(f"Dataset loading failed: {e}")
-        return {
-            "metadata": {
-                "area": area,
-                "industry": industry,
-                "error": str(e),
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            },
-            "properties": [],
-            "intelligence": {}
-        }
-
+        logger.error(f"Dataset load error: {e}", exc_info=True)
+        return _empty_dataset(area)
 
 # ============================================================
 # ENTERPRISE-GRADE UTILITIES
