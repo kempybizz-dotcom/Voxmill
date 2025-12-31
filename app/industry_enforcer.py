@@ -118,33 +118,6 @@ class IndustryEnforcer:
     }
     
     # ========================================
-    # INDUSTRY → SUPPORTED REGIONS
-    # ========================================
-    
-    INDUSTRY_REGIONS = {
-        Industry.REAL_ESTATE: [
-            'Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington',
-            'South Kensington', 'Notting Hill', 'Marylebone'
-        ],
-        
-        Industry.AUTOMOTIVE: [
-            'London Central', 'Mayfair', 'Kensington', 'Chelsea'
-        ],
-        
-        Industry.HEALTHCARE: [
-            'Harley Street', 'Mayfair', 'Kensington', 'Chelsea'
-        ],
-        
-        Industry.HOSPITALITY: [
-            'Mayfair', 'Knightsbridge', 'Belgravia', 'Covent Garden'
-        ],
-        
-        Industry.LUXURY_RETAIL: [
-            'Bond Street', 'Sloane Street', 'Kings Road', 'Mayfair'
-        ]
-    }
-    
-    # ========================================
     # INDUSTRY → METRIC NAMES
     # ========================================
     
@@ -174,49 +147,157 @@ class IndustryEnforcer:
         }
     }
     
-    @staticmethod
-    def get_vocabulary(industry: str) -> Dict[str, str]:
-        """Get industry-specific vocabulary mapping"""
-        try:
-            industry_enum = Industry(industry)
+@staticmethod
+def get_vocabulary(industry: str) -> Dict[str, str]:
+    """
+    Get industry-specific vocabulary mapping
+    
+    Args:
+        industry: Lowercase industry code (e.g., 'real_estate', 'hedge_fund')
+    
+    Returns:
+        Vocabulary mapping dict
+    """
+    # Map lowercase codes to enum
+    industry_code_map = {
+        'real_estate': Industry.REAL_ESTATE,
+        'luxury_assets': Industry.AUTOMOTIVE,
+        'automotive': Industry.AUTOMOTIVE,
+        'healthcare': Industry.HEALTHCARE,
+        'hospitality': Industry.HOSPITALITY,
+        'luxury_retail': Industry.LUXURY_RETAIL,
+        'private_equity': Industry.PRIVATE_EQUITY,
+        'venture_capital': Industry.VENTURE_CAPITAL,
+        'yachting': Industry.YACHTING,
+        'aviation': Industry.AVIATION
+    }
+    
+    try:
+        industry_enum = industry_code_map.get(industry.lower())
+        
+        if industry_enum:
             return IndustryEnforcer.INDUSTRY_VOCABULARY.get(
                 industry_enum,
                 IndustryEnforcer.INDUSTRY_VOCABULARY[Industry.REAL_ESTATE]
             )
-        except ValueError:
-            logger.warning(f"Unknown industry: {industry}, defaulting to Real Estate")
+        else:
+            logger.warning(f"Unknown industry code: {industry}, defaulting to Real Estate")
             return IndustryEnforcer.INDUSTRY_VOCABULARY[Industry.REAL_ESTATE]
     
-    @staticmethod
-    def get_supported_regions(industry: str) -> List[str]:
-        """Get regions supported for this industry"""
-        try:
-            industry_enum = Industry(industry)
-            return IndustryEnforcer.INDUSTRY_REGIONS.get(
-                industry_enum,
-                IndustryEnforcer.INDUSTRY_REGIONS[Industry.REAL_ESTATE]
-            )
-        except ValueError:
-            return IndustryEnforcer.INDUSTRY_REGIONS[Industry.REAL_ESTATE]
+    except Exception as e:
+        logger.error(f"Get vocabulary error: {e}")
+        return IndustryEnforcer.INDUSTRY_VOCABULARY[Industry.REAL_ESTATE]
+
+
+@staticmethod
+def get_supported_regions(industry_code: str) -> List[str]:
+    """
+    Query Markets table for regions supported by this industry
     
-    @staticmethod
-    def is_supported(industry: str, region: str) -> bool:
-        """Check if region is supported for industry"""
-        supported_regions = IndustryEnforcer.get_supported_regions(industry)
-        return region in supported_regions
+    ✅ DYNAMIC - Queries Airtable, NO hardcoded lists
     
-    @staticmethod
-    def get_metric_name(industry: str, metric_key: str) -> str:
-        """Get industry-specific metric display name"""
-        try:
-            industry_enum = Industry(industry)
+    Args:
+        industry_code: Lowercase industry code (e.g., 'real_estate', 'hedge_fund')
+    
+    Returns:
+        List of market names or empty list if none configured
+    """
+    import os
+    import requests
+    
+    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+    
+    if not AIRTABLE_API_KEY or not AIRTABLE_BASE_ID:
+        logger.warning("Airtable not configured")
+        return []
+    
+    try:
+        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Markets"
+        
+        # Query for active, selectable markets in this industry
+        formula = f"AND({{industry}}='{industry_code}', {{is_active}}=TRUE(), {{Selectable}}=TRUE())"
+        params = {'filterByFormula': formula}
+        
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if response.status_code == 200:
+            records = response.json().get('records', [])
+            markets = [r['fields'].get('market_name') for r in records if r['fields'].get('market_name')]
+            
+            if not markets:
+                logger.warning(f"⚠️ NO MARKETS CONFIGURED in Airtable for industry: {industry_code}")
+            
+            return markets  # Returns [] if no markets configured
+        
+        logger.error(f"Markets table query failed: {response.status_code}")
+        return []
+    
+    except Exception as e:
+        logger.error(f"Get supported regions failed: {e}")
+        return []
+
+
+@staticmethod
+def is_supported(industry_code: str, region: str) -> bool:
+    """
+    Check if region is supported for industry
+    
+    ✅ DYNAMIC - Queries Airtable Markets table
+    
+    Args:
+        industry_code: Lowercase industry code (e.g., 'real_estate', 'hedge_fund')
+        region: Market name (e.g., 'Mayfair', 'Manhattan')
+    
+    Returns:
+        True if market is active and selectable for this industry
+    """
+    supported_regions = IndustryEnforcer.get_supported_regions(industry_code)
+    return region in supported_regions
+
+
+@staticmethod
+def get_metric_name(industry: str, metric_key: str) -> str:
+    """
+    Get industry-specific metric display name
+    
+    Args:
+        industry: Lowercase industry code (e.g., 'real_estate', 'hedge_fund')
+        metric_key: Metric key (e.g., 'avg_price', 'days_on_market')
+    
+    Returns:
+        Display name for metric
+    """
+    # Map lowercase codes to enum
+    industry_code_map = {
+        'real_estate': Industry.REAL_ESTATE,
+        'luxury_assets': Industry.AUTOMOTIVE,
+        'automotive': Industry.AUTOMOTIVE,
+        'healthcare': Industry.HEALTHCARE,
+        'hospitality': Industry.HOSPITALITY,
+        'luxury_retail': Industry.LUXURY_RETAIL,
+        'private_equity': Industry.PRIVATE_EQUITY,
+        'venture_capital': Industry.VENTURE_CAPITAL,
+        'yachting': Industry.YACHTING,
+        'aviation': Industry.AVIATION
+    }
+    
+    try:
+        industry_enum = industry_code_map.get(industry.lower())
+        
+        if industry_enum:
             metrics = IndustryEnforcer.INDUSTRY_METRICS.get(
                 industry_enum,
                 IndustryEnforcer.INDUSTRY_METRICS[Industry.REAL_ESTATE]
             )
             return metrics.get(metric_key, metric_key.replace('_', ' ').title())
-        except ValueError:
+        else:
             return metric_key.replace('_', ' ').title()
+    
+    except Exception as e:
+        logger.error(f"Get metric name error: {e}")
+        return metric_key.replace('_', ' ').title()
     
     @staticmethod
     def apply_vocabulary_to_prompt(prompt: str, industry: str) -> str:
