@@ -99,43 +99,41 @@ def safe_detect_followup(conversation: ConversationSession, message: str) -> Tup
 
 
 def parse_regions(regions_raw):
-    """Parse Airtable Regions field into proper list"""
+    """
+    Parse Airtable Regions field into proper list
+    
+    ✅ FIXED: Removed all hardcoded markets
+    """
     if not regions_raw:
-        return ['Mayfair']
+        return []  # ✅ Return empty, not 'Mayfair'
     
     if isinstance(regions_raw, str):
+        # Simple comma-separated parsing
         regions = [r.strip() for r in regions_raw.split(',') if r.strip()]
         
-        region_expansion = {
-            'M': 'Mayfair',
-            'K': 'Knightsbridge',
-            'C': 'Chelsea',
-            'B': 'Belgravia',
-            'W': 'Kensington'
-        }
+        # ❌ REMOVED: Region expansion map (Real Estate specific)
+        # No single-letter shortcuts - markets come from Airtable
         
-        regions = [region_expansion.get(r, r) if len(r) == 1 else r for r in regions]
-        regions = [r for r in regions if len(r) > 2]
-        
-        if not regions:
-            return ['Mayfair']
-        
-        return regions
+        return regions if regions else []  # ✅ Return empty, not 'Mayfair'
+    
     elif isinstance(regions_raw, list):
-        return regions_raw if regions_raw else ['Mayfair']
+        return regions_raw if regions_raw else []  # ✅ Return empty, not 'Mayfair'
+    
     else:
-        return ['Mayfair']
+        return []  # ✅ Return empty, not 'Mayfair'
 
 
 def get_client_from_airtable(sender: str) -> dict:
     """
     WORLD-CLASS: Query new Control Plane database
     
+    ✅ FIXED: No hardcoded markets - queries Markets table by industry
+    
     New Schema:
-    - accounts: Account Status, Service Tier, execution_allowed
+    - accounts: Account Status, Service Tier, Industry, execution_allowed
     - permissions: allowed_modules, monthly_message_limit
     - preferences: active_market_id, coverage_markets
-    - markets: market_name, is_active, Selectable
+    - markets: market_name, is_active, Selectable, industry
     """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
@@ -175,6 +173,12 @@ def get_client_from_airtable(sender: str) -> dict:
         fields = account['fields']
         
         # ========================================
+        # CRITICAL: Read Industry from Airtable
+        # ========================================
+        
+        industry_code = fields.get('Industry', 'real_estate')  # Read from Airtable
+        
+        # ========================================
         # CRITICAL: Trust execution_allowed formula
         # ========================================
         
@@ -187,16 +191,21 @@ def get_client_from_airtable(sender: str) -> dict:
             
             logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}")
             
+            # ✅ Query default market from Markets table by industry
+            default_markets = get_available_markets_from_db(industry_code)
+            default_region = default_markets[0] if default_markets else None
+            
             return {
                 'subscription_status': status.capitalize() if status != 'blocked' else 'Blocked',
                 'access_enabled': False,
                 'trial_expired': trial_expired,
-                'name': fields.get('WhatsApp Number', 'there'),  # No name field, use number
+                'name': fields.get('WhatsApp Number', 'there'),
                 'email': '',
                 'airtable_record_id': account_id,
                 'table': 'Accounts',
                 'tier': 'tier_1',
-                'preferences': {'preferred_regions': ['Mayfair']},
+                'industry': industry_code,
+                'preferences': {'preferred_regions': [default_region] if default_region else []},  # ✅ From Markets table
                 'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0}
             }
         
@@ -223,7 +232,7 @@ def get_client_from_airtable(sender: str) -> dict:
         pref_response = requests.get(preferences_url, headers=headers, params=params, timeout=5)
         
         preferences_data = {}
-        active_market_name = 'Mayfair'  # Default
+        active_market_name = None  # ✅ No default
         
         if pref_response.status_code == 200:
             pref_records = pref_response.json().get('records', [])
@@ -234,6 +243,15 @@ def get_client_from_airtable(sender: str) -> dict:
                 active_market_ids = preferences_data.get('active_market_id', [])
                 if active_market_ids:
                     active_market_name = get_market_name_by_id(active_market_ids[0])
+        
+        # ✅ FALLBACK: Query Markets table for first available market in industry
+        if not active_market_name:
+            available_markets = get_available_markets_from_db(industry_code)
+            active_market_name = available_markets[0] if available_markets else None
+            
+            if not active_market_name:
+                logger.error(f"❌ NO MARKETS CONFIGURED for industry: {industry_code}")
+                # System cannot function without markets - this is a config error
         
         # ========================================
         # MAP TO OLD SCHEMA FOR COMPATIBILITY
@@ -251,44 +269,33 @@ def get_client_from_airtable(sender: str) -> dict:
         # Map Account Status to subscription_status
         status = fields.get('Account Status', 'trial')
         
-        # Map Industry to old format
-        industry_map = {
-            'real_estate': 'Private Real Estate',
-            'hedge_fund': 'Hedge Funds',
-            'family_office': 'Family Offices',
-            'private_equity': 'Private Equity',
-            'luxury_assets': 'Luxury Automotive',
-            'art_collectibles': 'Art & Collectibles',
-            'yachting': 'Yacht Brokers',
-            'automotive': 'Luxury Automotive'
-        }
+        # ✅ KEEP Industry as lowercase code (read directly from Airtable)
+        industry = industry_code  # Use code, not display name
         
-        industry = industry_map.get(fields.get('Industry', 'real_estate'), 'Private Real Estate')
-        
-        logger.info(f"✅ Client found: {search_number} ({status}, {tier}, {active_market_name})")
+        logger.info(f"✅ Client found: {search_number} (industry={industry}, status={status}, tier={tier}, market={active_market_name})")
         
         return {
-            'name': search_number,  # No name field in new schema
-            'email': '',  # No email field in new schema
+            'name': search_number,
+            'email': '',
             'subscription_status': status.capitalize(),
             'tier': tier,
             'trial_expired': fields.get('Is Trial Expired') == 1,
             'airtable_record_id': account_id,
             'airtable_table': 'Accounts',
             'preferences': {
-                'preferred_regions': [active_market_name],
-                'competitor_focus': 'medium',  # Not in new schema
-                'report_depth': 'detailed'  # Not in new schema
+                'preferred_regions': [active_market_name] if active_market_name else [],  # ✅ From Markets table
+                'competitor_focus': 'medium',
+                'report_depth': 'detailed'
             },
             'usage_metrics': {
-                'messages_used_this_month': 0,  # Track in MongoDB
+                'messages_used_this_month': 0,
                 'monthly_message_limit': permissions.get('monthly_message_limit', 100),
-                'total_messages_sent': 0  # Track in MongoDB
+                'total_messages_sent': 0
             },
             'airtable_is_source_of_truth': True,
             'access_enabled': True,
             'subscription_gate_enforced': True,
-            'industry': industry,
+            'industry': industry,  # ✅ Lowercase code from Airtable
             'allowed_intelligence_modules': permissions.get('allowed_modules', []),
             'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize()
         }
@@ -298,8 +305,12 @@ def get_client_from_airtable(sender: str) -> dict:
         return None
 
 
-def get_market_name_by_id(market_id: str) -> str:
-    """Get market name from Markets table by record ID"""
+def get_market_name_by_id(market_id: str) -> Optional[str]:
+    """
+    Get market name from Markets table by record ID
+    
+    ✅ FIXED: Returns None if not found (no hardcoded fallback)
+    """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
@@ -312,18 +323,21 @@ def get_market_name_by_id(market_id: str) -> str:
         
         if response.status_code == 200:
             fields = response.json().get('fields', {})
-            return fields.get('market_name', 'Mayfair')
+            return fields.get('market_name')  # ✅ Returns None if not found
         
-        return 'Mayfair'
+        logger.warning(f"Market record not found: {market_id}")
+        return None  # ✅ No hardcoded fallback
     
     except Exception as e:
         logger.error(f"Get market name failed: {e}")
-        return 'Mayfair'
+        return None  # ✅ No hardcoded fallback
 
 
 def check_market_availability(industry: str, market_name: str) -> dict:
     """
     Check if market is available using Markets table
+    
+    ✅ FIXED: industry parameter is lowercase code (not display name)
     
     RULE: Trust markets.is_active AND markets.Selectable
     """
@@ -331,18 +345,8 @@ def check_market_availability(industry: str, market_name: str) -> dict:
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
     
-    # Map old industry names to new schema
-    industry_reverse_map = {
-        'Private Real Estate': 'real_estate',
-        'Hedge Funds': 'hedge_fund',
-        'Family Offices': 'family_office',
-        'Private Equity': 'private_equity',
-        'Luxury Automotive': 'luxury_assets',
-        'Art & Collectibles': 'art_collectibles',
-        'Yacht Brokers': 'yachting'
-    }
-    
-    industry_code = industry_reverse_map.get(industry, 'real_estate')
+    # Industry is already lowercase code (e.g., 'real_estate', 'hedge_fund')
+    industry_code = industry
     
     try:
         headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
@@ -365,6 +369,17 @@ def check_market_availability(industry: str, market_name: str) -> dict:
                     return {'available': True, 'coverage_level': fields.get('coverage_level'), 'message': None}
                 else:
                     available_markets = get_available_markets_from_db(industry_code)
+                    
+                    if not available_markets:
+                        return {
+                            'available': False,
+                            'message': f"""No markets configured for {industry_code}.
+
+Contact intel@voxmill.uk
+
+Standing by."""
+                        }
+                    
                     return {
                         'available': False,
                         'message': f"""No active coverage for {market_name}.
@@ -375,6 +390,17 @@ Standing by."""
                     }
             else:
                 available_markets = get_available_markets_from_db(industry_code)
+                
+                if not available_markets:
+                    return {
+                        'available': False,
+                        'message': f"""No markets configured for {industry_code}.
+
+Contact intel@voxmill.uk
+
+Standing by."""
+                    }
+                
                 return {
                     'available': False,
                     'message': f"""Coverage for {market_name} is not yet available.
@@ -392,7 +418,17 @@ Standing by."""
 
 
 def get_available_markets_from_db(industry_code: str) -> list:
-    """Get active, selectable markets from Markets table"""
+    """
+    Get active, selectable markets from Markets table
+    
+    ✅ FIXED: Returns empty list if no markets configured (no hardcoded fallback)
+    
+    Args:
+        industry_code: Lowercase industry code from Airtable (e.g., 'real_estate', 'hedge_fund')
+    
+    Returns:
+        List of market names or empty list if none configured
+    """
     
     AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
     AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
@@ -408,13 +444,20 @@ def get_available_markets_from_db(industry_code: str) -> list:
         
         if response.status_code == 200:
             records = response.json().get('records', [])
-            return [r['fields'].get('market_name') for r in records if r['fields'].get('market_name')]
+            markets = [r['fields'].get('market_name') for r in records if r['fields'].get('market_name')]
+            
+            if not markets:
+                logger.error(f"❌ NO MARKETS CONFIGURED in Airtable for industry: {industry_code}")
+            
+            return markets  # ✅ Returns [] if no markets configured
         
-        return ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+        logger.error(f"Markets table query failed: {response.status_code}")
+        return []  # ✅ No hardcoded fallback
     
     except Exception as e:
         logger.error(f"Get available markets failed: {e}")
-        return ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
+        return []  # ✅ No hardcoded fallback
+
 
 def get_time_appropriate_greeting(client_name: str = "there") -> str:
     """Generate time-appropriate greeting based on UK time"""
@@ -434,7 +477,6 @@ def get_time_appropriate_greeting(client_name: str = "there") -> str:
         greeting = f"Evening{', ' + first_name if first_name else ''}."
     
     return greeting
-
 
 async def send_first_time_welcome(sender: str, client_profile: dict):
     """Send welcome message to first-time users"""
