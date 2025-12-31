@@ -27,7 +27,11 @@ def normalize_phone_number(phone: str) -> str:
 
 
 def get_client_profile(whatsapp_number: str) -> dict:
-    """Load client profile from MongoDB"""
+    """
+    Load client profile from MongoDB
+    
+    ✅ UPDATED: No hardcoded markets - Airtable is source of truth
+    """
     try:
         if not mongo_client:
             return {}
@@ -47,12 +51,28 @@ def get_client_profile(whatsapp_number: str) -> dict:
             # Format: +447780565645 → user_447780565645@temp.voxmill.uk
             temp_email = f"user_{normalized_number.replace('+', '')}@temp.voxmill.uk"
             
+            # ========================================
+            # MINIMAL MONGODB PROFILE
+            # ========================================
+            # Airtable is source of truth for:
+            # - Industry
+            # - Tier
+            # - Preferred regions/markets
+            # - Account status
+            # MongoDB only stores:
+            # - Usage tracking
+            # - Query history
+            # - Conversation state
+            # ========================================
+            
             default_profile = {
                 "whatsapp_number": normalized_number,
                 "email": temp_email,
                 "created_at": datetime.now(timezone.utc),
+                
+                # ✅ UPDATED: Empty preferences - Airtable populates these
                 "preferences": {
-                    "preferred_regions": ["Mayfair"],
+                    "preferred_regions": [],  # ✅ Empty - Airtable is truth
                     "competitor_set": [],
                     "risk_appetite": "balanced",
                     "budget_range": {"min": 0, "max": 100000000},
@@ -60,15 +80,24 @@ def get_client_profile(whatsapp_number: str) -> dict:
                     "competitor_focus": "medium",
                     "report_depth": "detailed"
                 },
+                
+                # ✅ UPDATED: No default region - will be set on first query
                 "query_history": [],
-                "last_region_queried": "Mayfair",
+                "last_region_queried": None,  # ✅ None - will be set on first query
                 "total_queries": 0,
-                "tier": "tier_3",
-                "status": "active"
+                
+                # ✅ Minimal defaults - Airtable overwrites these
+                "tier": "tier_1",  # Will be overwritten by Airtable sync
+                "status": "unknown"  # Will be overwritten by Airtable sync
             }
+            
             collection.insert_one(default_profile)
-            logger.info(f"Created new client profile: {normalized_number}")
+            logger.info(f"✅ Created new MongoDB profile: {normalized_number} (Airtable will populate)")
             return default_profile
+        
+        # ========================================
+        # MIGRATION: Add missing fields
+        # ========================================
         
         # MIGRATION: If profile exists but missing email, add it
         if not profile.get('email'):
@@ -93,12 +122,26 @@ def get_client_profile(whatsapp_number: str) -> dict:
                 updates['preferences.report_depth'] = 'detailed'
                 needs_update = True
             
+            # ✅ MIGRATION: Ensure preferred_regions is a list (not null)
+            if 'preferred_regions' not in profile['preferences']:
+                updates['preferences.preferred_regions'] = []
+                needs_update = True
+            elif profile['preferences']['preferred_regions'] is None:
+                updates['preferences.preferred_regions'] = []
+                needs_update = True
+            
             if needs_update:
                 collection.update_one(
                     {"_id": profile['_id']},
                     {"$set": updates}
                 )
-                profile['preferences'].update(updates)
+                # Update in-memory profile
+                for key, value in updates.items():
+                    if '.' in key:
+                        parent_key, child_key = key.split('.', 1)
+                        if parent_key in profile:
+                            profile[parent_key][child_key] = value
+                
                 logger.info(f"Added default preferences to profile: {normalized_number}")
         
         return profile
