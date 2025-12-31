@@ -451,15 +451,18 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
 
 def handle_whatsapp_preference_message(from_number: str, message: str) -> Optional[str]:
     """
-    Main handler for WhatsApp messages - READ ONLY
-    Does NOT modify any global state
-    Returns response to send to client, or None if not a preference request
+    Main handler for WhatsApp preference changes
+    
+    NEW CONTROL PLANE INTEGRATION:
+    - Validates markets against Markets table (is_active + Selectable)
+    - Blocks unavailable markets BEFORE write
+    - Simplified confirmation (no marketing fluff)
     """
     
     if db is None:
         return None
     
-    # ✅ FIX: Normalize phone number and find client
+    # ✅ Normalize phone number and find client
     normalized_number = from_number.replace('whatsapp:', '').replace('whatsapp%3A', '')
     
     client = db['client_profiles'].find_one({
@@ -470,7 +473,6 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     })
     
     if not client:
-        # Not a recognized client - let normal handler deal with it
         return None
     
     logger.info(f"Client found: {client.get('_id')}")
@@ -485,14 +487,13 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         analysis = detect_preference_request(message, client)
     except Exception as e:
         logger.error(f"Error analyzing message: {e}", exc_info=True)
-        # Fall back to normal query handling
         return None
     
-    # If NOT a preference request, return None to use normal analyst
+    # If NOT a preference request, return None
     if not analysis.get('is_preference_request'):
         return None
     
-    # It IS a preference request - apply changes
+    # It IS a preference request - get changes
     changes = analysis.get('changes', {})
     
     if not changes:
@@ -503,7 +504,31 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             "• Report Depth (executive/detailed/deep)\n"
             "• Coverage Regions")
     
-    # ✅ CRITICAL FIX: Pass original message for intent detection
+    # ========================================
+    # NEW: VALIDATE MARKET AVAILABILITY (WRITE-TIME)
+    # ========================================
+    
+    if 'regions' in changes:
+        # Get client industry from Airtable
+        industry = client.get('industry', 'Private Real Estate')
+        new_regions = changes['regions']
+        new_region = new_regions[0] if isinstance(new_regions, list) else new_regions
+        
+        # Import market validation from whatsapp.py
+        from app.whatsapp import check_market_availability
+        
+        # Check Markets table for availability
+        availability = check_market_availability(industry, new_region)
+        
+        if not availability['available']:
+            # HARD REJECTION - DO NOT WRITE TO AIRTABLE
+            logger.warning(f"Market validation failed: {new_region} not available for {industry}")
+            return availability['message']
+    
+    # ========================================
+    # MARKET VALIDATED - PROCEED WITH UPDATE
+    # ========================================
+    
     success = apply_preference_changes(from_number, changes, message)
     
     if success:
@@ -525,23 +550,20 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         # ========================================
         
         try:
-            # Import at function level to avoid circular imports
             import asyncio
             from app.airtable_auto_sync import sync_usage_metrics
             
-            # Get event loop (create if doesn't exist)
             try:
                 loop = asyncio.get_event_loop()
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             
-            # Run async function in sync context
             loop.run_until_complete(
                 sync_usage_metrics(
                     whatsapp_number=from_number,
                     record_id=client.get('airtable_record_id'),
-                    table_name=client.get('airtable_table', 'Clients'),
+                    table_name=client.get('airtable_table', 'Accounts'),  # NEW: Updated table name
                     event_type='preference_changed',
                     metadata=changes
                 )
@@ -552,60 +574,79 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         except Exception as e:
             logger.error(f"Airtable auto-sync failed (non-critical): {e}")
         
-        # BUILD RICH CONFIRMATION MESSAGE (USING ACTUAL AIRTABLE VALUES)
-        today = datetime.now()
-        days_until_sunday = (6 - today.weekday()) % 7
-        if days_until_sunday == 0:
-            days_until_sunday = 7
-        next_sunday = today + timedelta(days=days_until_sunday)
+        # ========================================
+        # SIMPLIFIED CONFIRMATION (NO MARKETING)
+        # ========================================
         
         # Build change summary
         change_lines = []
         
         if 'competitor_focus' in changes:
-            # Use actual value from Airtable
             focus = changes.get('_actual_competitor_focus', changes['competitor_focus']).lower()
-            count = {'low': 3, 'medium': 6, 'high': 10}.get(focus, 6)
-            change_lines.append(f"• Competitor Analysis: {focus.upper()} ({count} agencies)")
+            change_lines.append(f"* Competitor Focus: {focus}")
         
         if 'report_depth' in changes:
-            # Use actual value from Airtable
             depth = changes.get('_actual_report_depth', changes['report_depth']).lower()
-            slides = {'executive': 5, 'detailed': 14, 'deep': '14+'}.get(depth, 14)
-            change_lines.append(f"• Report Depth: {depth.upper()} ({slides} slides)")
+            change_lines.append(f"* Report Depth: {depth}")
         
         if 'regions' in changes:
-            # CRITICAL FIX: Use actual value from Airtable
             regions = changes.get('_actual_regions', ', '.join(changes['regions']))
-            change_lines.append(f"• Coverage Areas: {regions}")
+            change_lines.append(f"* Coverage Area: {regions}")
         
-        # Final confirmation message
+        # WORLD-CLASS: Clean, executive-level confirmation
         confirmation = f"""✅ PREFERENCES UPDATED
 
 {chr(10).join(change_lines)}
 
-Your next intelligence deck arrives {next_sunday.strftime('%A, %B %d')} at 6:00 AM UTC.
-
-━━━━━━━━━━━━━━━━━━━━
-NEED THIS URGENTLY?
-
-Contact your Voxmill operator for immediate regeneration:
-Intel@voxmill.uk
-
-━━━━━━━━━━━━━━━━━━━━
-
-Voxmill Intelligence — Precision at Scale"""
+Standing by."""
         
         logger.info(f"✅ Preferences updated successfully for {from_number}")
         return confirmation
     else:
         logger.error(f"❌ Failed to update preferences for {from_number}")
-        return "❌ Unable to update preferences. Please try again or contact support."
+        return "Unable to update preferences.\n\nStanding by."
+```
 
+---
 
-# ============================================================================
-# INTEGRATION WITH EXISTING WHATSAPP HANDLER
-# ============================================================================
+## 🔑 **KEY CHANGES:**
+
+1. ✅ **Market validation BEFORE write** - Calls `check_market_availability()` from whatsapp.py
+2. ✅ **Hard rejection for unavailable markets** - Returns error message, prevents Airtable write
+3. ✅ **Updated table name** - `'Accounts'` instead of `'Clients'`
+4. ✅ **Simplified confirmation** - Removed marketing fluff, PDF schedules, email CTAs
+5. ✅ **Clean executive response** - Just "✅ PREFERENCES UPDATED" + changes + "Standing by."
+
+---
+
+## 📋 **WHAT THIS FIXES:**
+
+❌ **BEFORE:**
+```
+User: "Switch to Manchester"
+Bot: "✅ PREFERENCES UPDATED
+* Coverage Area: Manchester
+Your next intelligence deck arrives Sunday, January 04 at 6:00 AM UTC.
+━━━━━━━━━━━━━━━━━━━━
+NEED THIS URGENTLY?
+Contact your Voxmill operator...
+━━━━━━━━━━━━━━━━━━━━"
+
+[Then user tries to query Manchester]
+Bot: "INTELLIGENCE UNAVAILABLE
+No active market data for Manchester..."
+```
+
+✅ **AFTER:**
+```
+User: "Switch to Manchester"
+Bot: "No active coverage for Manchester.
+
+Active markets: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
+
+Standing by."
+
+[Preference change blocked - Manchester never written to Airtable]
 
 def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
     """
