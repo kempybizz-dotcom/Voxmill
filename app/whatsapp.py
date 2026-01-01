@@ -1842,23 +1842,20 @@ What market intelligence can I provide?"""
             update_client_history(sender, message_text, "cached", preferred_region)
             return
         
-        # ====================================================================
+# ====================================================================
         # REGION EXTRACTION FROM QUERY
         # ====================================================================
         
         message_lower = message_normalized.lower()
         
-        # Known regions
-        region_map = {
-            'mayfair': 'Mayfair',
-            'knightsbridge': 'Knightsbridge', 
-            'chelsea': 'Chelsea',
-            'belgravia': 'Belgravia',
-            'kensington': 'Kensington',
-            'marylebone': 'Marylebone',
-            'notting hill': 'Notting Hill',
-            'holland park': 'Holland Park'
-        }
+        # ✅ DYNAMIC: Query available markets from database (no hardcoded regions)
+        industry_code = client_profile.get('industry', 'real_estate')
+        available_markets = get_available_markets_from_db(industry_code)
+        
+        # Build dynamic region map from database
+        region_map = {}
+        for market in available_markets:
+            region_map[market.lower()] = market
         
         # Check if user mentioned a region
         query_region = preferred_region  # Default to preferred
@@ -1875,7 +1872,7 @@ What market intelligence can I provide?"""
         
         # Validate region
         if not query_region or len(query_region) < 3:
-            query_region = client_profile.get('active_market', 'Mayfair')
+            query_region = client_profile.get('active_market', available_markets[0] if available_markets else None)
         
         # Detect query patterns
         overview_patterns = ['market overview', 'what\'s up', 'what\'s the market', 'market status', 'how\'s the market', 'market update', 'what\'s happening', 'give me an update']
@@ -1894,18 +1891,18 @@ What market intelligence can I provide?"""
         if is_overview or is_decision or is_trend or is_timing or is_agent:
             logger.info(f"🎯 Loading dataset for region: '{query_region}'")
             
-            # ✅ FIXED: Pass industry parameter to load_dataset
-            dataset = load_dataset(
-                area=query_region,
-                industry=client_profile.get('industry', 'real_estate')
-            )
+            # ✅ FIXED: Remove industry parameter (not supported by load_dataset)
+            dataset = load_dataset(area=query_region)
             
             if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
+                # ✅ DYNAMIC: List actual available markets from database
+                markets_list = ', '.join(available_markets) if available_markets else 'No markets configured'
+                
                 fallback_response = f"""INTELLIGENCE UNAVAILABLE
 
 No active market data is currently available for {query_region}.
 
-Available coverage: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
+Available coverage: {markets_list}
 
 Request an alternate region or contact intel@voxmill.uk
 
@@ -1946,18 +1943,18 @@ Standing by."""
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
-        # ✅ FIXED: Pass industry parameter to load_dataset
-        dataset = load_dataset(
-            area=query_region,
-            industry=client_profile.get('industry', 'real_estate')
-        )
+        # ✅ FIXED: Remove industry parameter (not supported by load_dataset)
+        dataset = load_dataset(area=query_region)
         
         if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
+            # ✅ DYNAMIC: List actual available markets from database
+            markets_list = ', '.join(available_markets) if available_markets else 'No markets configured'
+            
             fallback_response = f"""INTELLIGENCE UNAVAILABLE
 
 No active market data for {query_region}.
 
-Available: Mayfair, Knightsbridge, Chelsea, Belgravia, Kensington
+Available: {markets_list}
 
 Standing by."""
             
