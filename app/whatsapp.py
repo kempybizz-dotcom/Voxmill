@@ -723,7 +723,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins), refreshing")
         
-        # ========================================
+# ========================================
         # STEP 3: LOAD FROM AIRTABLE IF NEEDED
         # ========================================
         
@@ -818,7 +818,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 logger.info(f"🆕 BRAND NEW USER DETECTED: {sender}")
                 should_send_welcome = True
                 
-                if client_profile.get('subscription_status') == 'trial':
+                # ✅ FIXED: Case-insensitive comparison
+                if client_profile.get('subscription_status', '').lower() == 'trial':
                     welcome_message_type = 'trial_start'
                 else:
                     welcome_message_type = 'first_active'
@@ -831,7 +832,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 logger.info(f"🆕 FIRST MESSAGE FROM EXISTING USER: {sender}")
                 should_send_welcome = True
                 
-                if client_profile.get('subscription_status') == 'trial':
+                # ✅ FIXED: Case-insensitive comparison
+                if client_profile.get('subscription_status', '').lower() == 'trial':
                     welcome_message_type = 'trial_start'
                 else:
                     welcome_message_type = 'first_active'
@@ -841,8 +843,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             # ================================================================
             
             elif previous_profile:
-                previous_status = previous_profile.get('subscription_status')
-                current_status = client_profile.get('subscription_status')
+                previous_status = previous_profile.get('subscription_status', '').lower()
+                current_status = client_profile.get('subscription_status', '').lower()
                 
                 # Detect status change to Active from any inactive state
                 if previous_status in ['cancelled', 'paused', 'suspended'] and current_status == 'active':
@@ -1248,7 +1250,8 @@ Standing by."""
         
         trial_sample_used = False
         
-        if client_profile.get('subscription_status') == 'trial':
+        # ✅ FIXED: Case-insensitive comparison
+        if client_profile.get('subscription_status', '').lower() == 'trial':
             try:
                 from pymongo import MongoClient
                 MONGODB_URI = os.getenv('MONGODB_URI')
@@ -1274,7 +1277,7 @@ Standing by."""
             sender=sender,
             client_profile=client_profile,
             system_state={
-                'subscription_active': client_profile.get('subscription_status') == 'active',
+                'subscription_active': client_profile.get('subscription_status', '').lower() == 'active',
                 'pin_unlocked': True,
                 'quota_remaining': 100,
                 'monitoring_active': len(client_profile.get('active_monitors', [])) > 0,
