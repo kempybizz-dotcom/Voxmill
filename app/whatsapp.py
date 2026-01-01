@@ -182,14 +182,17 @@ def get_client_from_airtable(sender: str) -> dict:
         # CRITICAL: Trust execution_allowed formula
         # ========================================
         
-        execution_allowed = fields.get('execution_allowed') == 1
+        # ✅ FIXED: Handle multiple possible values from Airtable
+        execution_allowed_value = fields.get('execution_allowed')
+        logger.info(f"🔍 DEBUG: execution_allowed raw value = {execution_allowed_value} (type: {type(execution_allowed_value)})")
+        execution_allowed = execution_allowed_value in [1, '1', True, 'true', 'True']
         
         if not execution_allowed:
             # Return minimal profile - access denied
             status = fields.get('Account Status (Execution Safe)', 'blocked')
             trial_expired = fields.get('Is Trial Expired') == 1
             
-            logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}")
+            logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}, execution_allowed={execution_allowed_value}")
             
             # ✅ Query default market from Markets table by industry
             default_markets = get_available_markets_from_db(industry_code)
@@ -206,7 +209,8 @@ def get_client_from_airtable(sender: str) -> dict:
                 'tier': 'tier_1',
                 'industry': industry_code,
                 'preferences': {'preferred_regions': [default_region] if default_region else []},  # ✅ From Markets table
-                'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0}
+                'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0},
+                'execution_allowed': False  # ✅ FIXED: Add this field
             }
         
         # ========================================
@@ -297,7 +301,8 @@ def get_client_from_airtable(sender: str) -> dict:
             'subscription_gate_enforced': True,
             'industry': industry,  # ✅ Lowercase code from Airtable
             'allowed_intelligence_modules': permissions.get('allowed_modules', []),
-            'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize()
+            'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize(),
+            'execution_allowed': True  # ✅ FIXED: Add this field
         }
     
     except Exception as e:
