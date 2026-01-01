@@ -1384,7 +1384,7 @@ Trial access provides limited intelligence sampling."""
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-        # ========================================
+# ========================================
         # CRITICAL: FORCE BEST-FIT INTENT FOR MANDATE-RELEVANT QUERIES
         # ========================================
         
@@ -1402,63 +1402,70 @@ Trial access provides limited intelligence sampling."""
             confidence = 0.75
         
         # ========================================
-        # LAYER 1: AIRTABLE MODULE ENFORCEMENT
+        # LAYER 1: MODULE ACCESS CHECK (TRIAL-ONLY RESTRICTION)
         # ========================================
         
-        # Map Intent to required modules (Airtable field names)
-        INTENT_TO_MODULES = {
-            Intent.STRATEGIC: ['Market Overview'],
-            Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
-            Intent.STATUS_CHECK: [],
-            Intent.META_STRATEGIC: ['Risk Analysis'],
-            Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
-            Intent.ADMINISTRATIVE: [],
-            Intent.META_AUTHORITY: [],  # No module required
-            Intent.PROFILE_STATUS: [],  # No module required
-            Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],  # Requires Portfolio module
-        }
+        subscription_status = client_profile.get('subscription_status', '').lower()
         
-        # Get required modules for this intent
-        required_modules = INTENT_TO_MODULES.get(intent, [])
-        
-        if required_modules:
-            # Get client's allowed modules from Airtable (via client_profile)
-            allowed_modules = client_profile.get('allowed_intelligence_modules', [])
+        if subscription_status == 'trial':
+            # ✅ TRIAL USERS: Module restrictions apply
             
-            # Normalize module names (handle case differences)
-            allowed_modules_normalized = [m.lower().strip() for m in allowed_modules] if allowed_modules else []
-            required_modules_normalized = [m.lower().strip() for m in required_modules]
+            # Map Intent to required modules (Airtable field names)
+            INTENT_TO_MODULES = {
+                Intent.STRATEGIC: ['Market Overview'],
+                Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
+                Intent.STATUS_CHECK: [],
+                Intent.META_STRATEGIC: ['Risk Analysis'],
+                Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
+                Intent.ADMINISTRATIVE: [],
+                Intent.META_AUTHORITY: [],
+                Intent.PROFILE_STATUS: [],
+                Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],
+            }
             
-            # Check if client has permission for ALL required modules
-            missing_modules = [
-                m for m in required_modules 
-                if m.lower().strip() not in allowed_modules_normalized
-            ]
+            # Get required modules for this intent
+            required_modules = INTENT_TO_MODULES.get(intent, [])
             
-            if missing_modules:
-                logger.warning(f"🚫 MODULE ACCESS DENIED: {sender} missing {missing_modules}")
-                logger.warning(f"   Required: {required_modules}")
-                logger.warning(f"   Allowed: {allowed_modules}")
+            if required_modules:
+                # Get client's allowed modules from Airtable (via client_profile)
+                allowed_modules = client_profile.get('allowed_intelligence_modules', [])
                 
-                # Format module names for user message
-                missing_display = ', '.join(missing_modules)
+                # Normalize module names (handle case differences)
+                allowed_modules_normalized = [m.lower().strip() for m in allowed_modules] if allowed_modules else []
+                required_modules_normalized = [m.lower().strip() for m in required_modules]
                 
-                return GovernanceResult(
-                    intent=Intent.UNKNOWN,
-                    confidence=1.0,
-                    blocked=True,
-                    silence_required=False,
-                    response=f"Module access required: {missing_display}\n\nContact intel@voxmill.uk to upgrade.",
-                    allowed_shapes=["REFUSAL"],
-                    max_words=30,
-                    analysis_allowed=False,
-                    data_load_allowed=False,
-                    llm_call_allowed=False,
-                    auto_scoped=False,
-                    semantic_category=semantic_category.value
-                )
-            else:
-                logger.info(f"✅ Module access granted: {required_modules}")
+                # Check if client has permission for ALL required modules
+                missing_modules = [
+                    m for m in required_modules 
+                    if m.lower().strip() not in allowed_modules_normalized
+                ]
+                
+                if missing_modules:
+                    logger.warning(f"🚫 TRIAL MODULE RESTRICTED: {sender} missing {missing_modules}")
+                    logger.warning(f"   Status: TRIAL (limited access)")
+                    logger.warning(f"   Required: {required_modules}")
+                    logger.warning(f"   Allowed: {allowed_modules}")
+                    
+                    return GovernanceResult(
+                        intent=Intent.UNKNOWN,
+                        confidence=1.0,
+                        blocked=True,
+                        silence_required=False,
+                        response="Trial access limited to sample intelligence.\n\nUpgrade for full analyst capabilities:\nintel@voxmill.uk",
+                        allowed_shapes=["REFUSAL"],
+                        max_words=30,
+                        analysis_allowed=False,
+                        data_load_allowed=False,
+                        llm_call_allowed=False,
+                        auto_scoped=False,
+                        semantic_category=semantic_category.value
+                    )
+                else:
+                    logger.info(f"✅ TRIAL: Module access granted: {required_modules}")
+        else:
+            # ✅ PAID USERS (ACTIVE/PREMIUM/SIGMA): FULL UNRESTRICTED ACCESS
+            logger.info(f"✅ FULL ACCESS GRANTED: {subscription_status.upper()} user - all world-class capabilities enabled")
+            # No module restrictions - paid users get everything
         
         # ========================================
         # LAYER 2: GET ENVELOPE FOR INTENT
