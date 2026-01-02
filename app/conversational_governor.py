@@ -441,7 +441,7 @@ JSON:"""
             logger.error(f"❌ LLM intent classification failed: {e}")
             return False, SemanticCategory.NON_DOMAIN, 0.5
     
-    # ========================================
+# ========================================
     # AUTO-SCOPING
     # ========================================
     
@@ -450,7 +450,7 @@ JSON:"""
         """
         Infer market, timeframe, and entities from context
         
-        SIMPLIFIED: No keyword matching, use client preferences + conversation context
+        ✅ FIXED: No hardcoded market defaults - returns None if no market configured
         """
         
         message_lower = message.lower().strip()
@@ -460,14 +460,22 @@ JSON:"""
         # ========================================
         
         market = None
-        market_source = "default"
+        market_source = "none"
         
         # Rule 1: User preference default (highest priority)
         if client_profile:
-            preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
-            if preferred_regions:
-                market = preferred_regions[0]
+            # ✅ FIXED: Use active_market field (matches Airtable schema)
+            active_market = client_profile.get('active_market')
+            
+            if active_market:
+                market = active_market
                 market_source = "user_preference"
+            else:
+                # Fallback to preferred_regions if active_market not set
+                preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+                if preferred_regions:
+                    market = preferred_regions[0]
+                    market_source = "user_preference"
         
         # Rule 2: Conversation context
         if not market and conversation_context:
@@ -476,10 +484,12 @@ JSON:"""
                 market = last_regions[-1]
                 market_source = "conversation_context"
         
-        # Rule 3: Default fallback
+        # ✅ FIXED: NO DEFAULT FALLBACK - let GATE 5 handle missing market
+        # Rule 3: Return None if no market found
         if not market:
-            market = "Mayfair"
-            market_source = "default"
+            market = None
+            market_source = "none"
+            logger.warning("⚠️ Auto-scope: No market configured, returning None")
         
         # ========================================
         # TIMEFRAME INFERENCE
@@ -510,10 +520,15 @@ JSON:"""
                 entities = [last_agents[-1]]
         
         # Calculate confidence
-        confidence = 0.95 if market_source == "user_preference" else 0.70
+        if market_source == "user_preference":
+            confidence = 0.95
+        elif market_source == "conversation_context":
+            confidence = 0.70
+        else:
+            confidence = 0.00  # ✅ No market = zero confidence
         
         return AutoScopeResult(
-            market=market,
+            market=market,  # ✅ Can be None
             timeframe=timeframe,
             entities=entities if entities else [],
             confidence=confidence,
@@ -607,6 +622,49 @@ JSON:"""
         # ========================================
         # SECURITY (95% threshold)
         # ========================================
+        
+        security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
+        if any(kw in message_clean for kw in security_keywords):
+            return Intent.SECURITY, 0.95
+        
+        # ========================================
+        # PROVOCATION (85% threshold)
+        # ========================================
+        
+        provocation_exact = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
+        if message_clean in provocation_exact:
+            return Intent.PROVOCATION, 0.98
+        
+        # ========================================
+        # CASUAL - HIGH CONFIDENCE (90% threshold)
+        # ========================================
+        
+        # Exact matches
+        casual_exact = [
+            'whats up', 'what up', 'sup', 'wassup', 'whatsup',
+            'hi', 'hello', 'hey', 'yo', 'hiya',
+            'good morning', 'good afternoon', 'good evening'
+        ]
+        
+        if message_clean in casual_exact:
+            return Intent.CASUAL, 0.95
+        
+        # Acknowledgments
+        acknowledgments = [
+            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
+            'ok', 'okay', 'noted', 'got it', 'gotit',
+            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
+            'cheers'
+        ]
+        
+        if message_clean in acknowledgments:
+            return Intent.CASUAL, 0.95
+        
+        # ========================================
+        # UNKNOWN (let LLM handle everything else)
+        # ========================================
+        
+        return Intent.UNKNOWN, 0.50
         
         security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
         if any(kw in message_clean for kw in security_keywords):
