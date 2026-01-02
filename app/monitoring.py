@@ -103,61 +103,151 @@ class MonitorManager:
         'tier_2': 3,
         'tier_3': 10
     }
-    
+
     @staticmethod
-    def parse_monitor_request(message: str, client_profile: dict) -> Tuple[bool, dict]:
-        """
-        Parse monitoring request and extract parameters with intelligent inference
+def parse_monitor_request(message: str, client_profile: dict) -> Tuple[bool, dict]:
+    """
+    Parse monitoring request with ADVANCED NLP
+    
+    ✅ HANDLES:
+    - Relative time: "38 hours", "this week", "5 days"
+    - Relative entities: "my top competitor", "the biggest agent"
+    - Flexible thresholds: "any movement", "significant changes"
+    """
+    
+    industry = client_profile.get('industry', 'real_estate')
+    
+    # Get available markets and competitors
+    from app.whatsapp import get_available_markets_from_db
+    available_markets = get_available_markets_from_db(industry)
+    available_competitors = get_available_competitors_from_airtable(industry)
+    
+    # ========================================
+    # EXTRACT DURATION (ENHANCED)
+    # ========================================
+    
+    duration_days = None
+    
+    # Pattern 1: Exact hours
+    hours_match = re.search(r'(\d+)\s*hours?', message, re.IGNORECASE)
+    if hours_match:
+        hours = int(hours_match.group(1))
+        duration_days = max(1, hours / 24)  # Convert to days, min 1 day
+        logger.info(f"Parsed duration: {hours} hours → {duration_days} days")
+    
+    # Pattern 2: Exact days
+    days_match = re.search(r'(\d+)\s*days?', message, re.IGNORECASE)
+    if days_match:
+        duration_days = int(days_match.group(1))
+        logger.info(f"Parsed duration: {duration_days} days")
+    
+    # Pattern 3: Weeks
+    weeks_match = re.search(r'(\d+)\s*weeks?', message, re.IGNORECASE)
+    if weeks_match:
+        duration_days = int(weeks_match.group(1)) * 7
+        logger.info(f"Parsed duration: {weeks_match.group(1)} weeks → {duration_days} days")
+    
+    # Pattern 4: Relative time
+    if 'this week' in message.lower():
+        duration_days = 7
+    elif 'this month' in message.lower():
+        duration_days = 30
+    elif 'today' in message.lower() or 'tonight' in message.lower():
+        duration_days = 1
+    
+    # Pattern 5: Until date
+    until_match = re.search(r'until\s+(\w+)', message, re.IGNORECASE)
+    if until_match:
+        # Try to parse date
+        import dateutil.parser
+        try:
+            target_date = dateutil.parser.parse(until_match.group(1))
+            days_until = (target_date - datetime.now(timezone.utc)).days
+            if days_until > 0:
+                duration_days = days_until
+                logger.info(f"Parsed 'until {until_match.group(1)}' → {duration_days} days")
+        except:
+            pass
+    
+    # Default: 7 days
+    if duration_days is None:
+        duration_days = 7
+    
+    # ========================================
+    # EXTRACT AGENT/COMPETITOR (ENHANCED)
+    # ========================================
+    
+    agent = None
+    
+    # Pattern 1: Explicit competitor mention
+    for competitor in available_competitors:
+        if competitor.lower() in message.lower():
+            agent = competitor
+            break
+    
+    # Pattern 2: Relative competitor ("my top competitor", "biggest agent")
+    if not agent:
+        relative_patterns = [
+            'my top competitor', 'top competitor', 'biggest competitor',
+            'my main competitor', 'main competitor', 'largest competitor',
+            'leading competitor', 'my competitor', 'the competitor'
+        ]
         
-        ✅ INDUSTRY AGNOSTIC - Queries Markets & Competitors tables dynamically
-        
-        Returns: (success, monitor_config)
-        """
-        
-        # ========================================
-        # GET INDUSTRY FROM CLIENT PROFILE
-        # ========================================
-        
-        industry = client_profile.get('industry', 'real_estate')
-        
-        # ========================================
-        # QUERY AVAILABLE MARKETS FROM AIRTABLE
-        # ========================================
-        
-        available_markets = get_available_markets_from_db(industry)
-        
-        if not available_markets:
-            logger.error(f"❌ NO MARKETS CONFIGURED for industry: {industry}")
-            return False, {'error': 'no_markets_configured'}
-        
-        # Extract region from message (match against available markets)
-        region = next((m for m in available_markets if m.lower() in message.lower()), None)
-        
-        # Fallback to client's preferred region
-        if not region:
-            preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
-            region = preferred_regions[0] if preferred_regions else None
-        
-        # Final fallback to first available market
-        if not region:
-            region = available_markets[0]
-        
-        # ========================================
-        # QUERY AVAILABLE COMPETITORS FROM AIRTABLE
-        # ========================================
-        
-        available_competitors = get_available_competitors_from_airtable(industry)
-        
-        # Extract agent/competitor from message (match against available competitors)
-        agent = next((c for c in available_competitors if c.lower() in message.lower()), None)
-        
-        # ========================================
-        # EXTRACT TRIGGERS (INDUSTRY-AGNOSTIC)
-        # ========================================
-        
-        triggers = []
-        
-        # Price drop trigger - flexible patterns
+        if any(pattern in message.lower() for pattern in relative_patterns):
+            # Need to query dataset to find top competitor
+            region = client_profile.get('active_market')
+            if region:
+                from app.dataset_loader import load_dataset
+                dataset = load_dataset(area=region, industry=industry)
+                
+                # Get top competitor by inventory count
+                agent_profiles = dataset.get('agent_profiles', [])
+                if agent_profiles:
+                    # Sort by inventory count
+                    sorted_agents = sorted(
+                        agent_profiles, 
+                        key=lambda x: x.get('inventory_count', 0), 
+                        reverse=True
+                    )
+                    agent = sorted_agents[0].get('agent')
+                    logger.info(f"Resolved 'top competitor' → {agent}")
+    
+    # ========================================
+    # EXTRACT MARKET (SAME AS BEFORE)
+    # ========================================
+    
+    region = next((m for m in available_markets if m.lower() in message.lower()), None)
+    
+    if not region:
+        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+        region = preferred_regions[0] if preferred_regions else None
+    
+    if not region:
+        region = available_markets[0] if available_markets else None
+    
+    # ========================================
+    # EXTRACT TRIGGERS (ENHANCED)
+    # ========================================
+    
+    triggers = []
+    
+    # Pattern 1: "Any movement" / "any changes"
+    any_movement_patterns = [
+        'any movement', 'any change', 'any changes', 'anything changes',
+        'if anything', 'significant movement', 'significant changes'
+    ]
+    
+    if any(pattern in message.lower() for pattern in any_movement_patterns):
+        # Very sensitive threshold
+        triggers.append({
+            "type": "price_drop",
+            "threshold": 2,  # 2% threshold
+            "unit": "percent"
+        })
+        logger.info("Detected 'any movement' → 2% threshold")
+    
+    # Pattern 2: Explicit percentage
+    else:
         price_patterns = [
             r'price.+?drop.+?(\d+)%',
             r'drop.+?(\d+)%',
@@ -177,101 +267,28 @@ class MonitorManager:
                     "unit": "percent"
                 })
                 break
-        
-        # Inventory increase trigger
-        inventory_patterns = [
-            r'inventory.+?increase.+?(\d+)%',
-            r'increase.+?(\d+)%',
-            r'inventory.*(\d+)%'
-        ]
-        
-        for pattern in inventory_patterns:
-            inventory_match = re.search(pattern, message, re.IGNORECASE)
-            if inventory_match:
-                threshold = int(inventory_match.group(1))
-                triggers.append({
-                    "type": "inventory_increase",
-                    "threshold": threshold,
-                    "unit": "percent"
-                })
-                break
-        
-        # Liquidity/velocity trigger (industry-agnostic)
-        velocity_patterns = [
-            r'velocity.+?below.+?(\d+)',
-            r'liquidity.+?below.+?(\d+)',
-            r'velocity.*(\d+)',
-            r'volume.+?below.+?(\d+)',
-            r'activity.+?below.+?(\d+)'
-        ]
-        
-        for pattern in velocity_patterns:
-            velocity_match = re.search(pattern, message, re.IGNORECASE)
-            if velocity_match:
-                threshold = int(velocity_match.group(1))
-                triggers.append({
-                    "type": "velocity_drop",
-                    "threshold": threshold,
-                    "unit": "absolute"
-                })
-                break
-        
-        # ========================================
-        # SMART DEFAULT TRIGGER
-        # ========================================
-        
-        if not triggers:
-            # Keywords indicating monitoring intent without specific threshold
-            monitor_keywords = ['monitor', 'watch', 'track', 'alert', 'notify']
-            has_monitor_intent = any(kw in message.lower() for kw in monitor_keywords)
-            
-            # Movement keywords (industry-agnostic)
-            movement_keywords = ['move', 'movement', 'change', 'competitor', 'shift']
-            has_movement_intent = any(kw in message.lower() for kw in movement_keywords)
-            
-            if has_monitor_intent and has_movement_intent and agent:
-                # Smart default: monitor for any significant price movement (>2%)
-                triggers.append({
-                    "type": "price_drop",
-                    "threshold": 2,
-                    "unit": "percent"
-                })
-                logger.info(f"Applied smart default: monitoring {agent} for >2% price movement")
-        
-        if not triggers:
-            logger.warning(f"No triggers extracted from: {message}")
-            return False, {}
-        
-        # ========================================
-        # EXTRACT DURATION
-        # ========================================
-        
-        duration_match = re.search(r'(\d+)\s*(?:days?|d)', message, re.IGNORECASE)
-        duration_days = int(duration_match.group(1)) if duration_match else None
-        
-        # Check for time-based keywords
-        if 'week' in message.lower() and not duration_days:
-            duration_days = 7
-        elif 'month' in message.lower() and not duration_days:
-            duration_days = 30
-        
-        # Check for "indefinite"
-        if 'indefinite' in message.lower() or 'unlimited' in message.lower():
-            duration_days = 365 * 10  # 10 years = effectively indefinite
-        
-        # Smart default: 7 days if not specified
-        if duration_days is None:
-            duration_days = 7
-        
-        logger.info(f"✅ Monitor parsed: industry={industry}, market={region}, agent={agent}, triggers={len(triggers)}, duration={duration_days}d")
-        
-        return True, {
-            'industry': industry,
-            'region': region,
-            'agent': agent,
-            'triggers': triggers,
-            'duration_days': duration_days
-        }
+    
+    # Default trigger if none found
+    if not triggers and agent:
+        triggers.append({
+            "type": "price_drop",
+            "threshold": 5,
+            "unit": "percent"
+        })
+        logger.info("No explicit trigger → default 5% threshold")
+    
+    if not triggers:
+        return False, {}
+    
+    logger.info(f"✅ Monitor parsed: market={region}, agent={agent}, triggers={len(triggers)}, duration={duration_days}d")
+    
+    return True, {
+        'industry': industry,
+        'region': region,
+        'agent': agent,
+        'triggers': triggers,
+        'duration_days': duration_days
+    }
     
     @staticmethod
     async def create_monitor_pending(whatsapp_number: str, config: dict, client_profile: dict) -> str:
