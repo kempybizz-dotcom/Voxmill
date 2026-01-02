@@ -1005,7 +1005,7 @@ Voxmill Intelligence — Precision at Scale"""
         
         logger.info(f"✅ GATE 3 PASSED: {client_profile.get('subscription_status')}")
         
-        # ====================================================================
+# ====================================================================
         # GATE 4: PIN AUTHENTICATION
         # ====================================================================
         
@@ -1279,18 +1279,107 @@ Standing by."""
                 sender,
                 f"""NO MARKETS CONFIGURED
 
-        Your account is set up for {industry_display} intelligence.
+Your account is set up for {industry_display} intelligence.
 
-        No {industry_display.lower()} markets are currently active in your coverage.
+No {industry_display.lower()} markets are currently active in your coverage.
 
-        Contact intel@voxmill.uk to activate market coverage.
+Contact intel@voxmill.uk to activate market coverage.
 
-        Standing by."""
+Standing by."""
             )
             logger.warning(f"🚫 NO MARKET: {sender} has industry={industry} but no active_market configured")
             return
 
         logger.info(f"✅ Region = '{preferred_region}'")
+        
+        # ====================================================================
+        # EARLY COMMAND ROUTING (BEFORE GOVERNANCE)
+        # ====================================================================
+        
+        # ====================================================================
+        # MANUAL PROFILE REFRESH
+        # ====================================================================
+        
+        refresh_keywords = ['refresh profile', 'refresh my profile', 'reload profile', 'update profile', 'sync profile']
+        
+        if any(kw in message_lower for kw in refresh_keywords):
+            try:
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    db['client_profiles'].delete_one({'whatsapp_number': sender})
+                    
+                    logger.info(f"✅ Profile cache cleared for {sender}")
+                    
+                    response = """PROFILE REFRESHED
+
+Your account data has been reloaded from Airtable.
+
+All settings are now current.
+
+Standing by."""
+                else:
+                    response = "Unable to refresh profile. Please try again."
+            
+            except Exception as e:
+                logger.error(f"Profile refresh failed: {e}")
+                response = "Profile refresh failed. Please contact intel@voxmill.uk"
+            
+            await send_twilio_message(sender, response)
+            
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'profile_refresh'}
+            )
+            
+            logger.info(f"✅ Profile refresh handled")
+            return
+        
+        # ====================================================================
+        # MONITOR COMMANDS (BEFORE GOVERNANCE)
+        # ====================================================================
+        
+        monitor_keywords = [
+            'monitor', 'watch', 'track', 'alert me', 'notify me', 
+            'keep an eye', 'keep watch', 'flag if', 'let me know if', 
+            'tell me if', 'stop monitor', 'resume monitor', 
+            'extend monitor', 'confirm', 'alert if', 'alert when'
+        ]
+        
+        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
+        
+        if is_monitor_request:
+            from app.monitoring import handle_monitor_request
+            response = await handle_monitor_request(sender, message_text, client_profile)
+            await send_twilio_message(sender, response)
+            
+            conversation = ConversationSession(sender)
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'monitoring_request'}
+            )
+            
+            from app.airtable_auto_sync import sync_usage_metrics
+            
+            await sync_usage_metrics(
+                whatsapp_number=sender,
+                record_id=client_profile.get('airtable_record_id'),
+                table_name=client_profile.get('airtable_table', 'Accounts'),
+                event_type='message_sent',
+                metadata={
+                    'tokens_used': 0,
+                    'category': 'monitoring_request'
+                }
+            )
+            
+            logger.info(f"✅ Monitor request handled")
+            return
         
         # ====================================================================
         # GOVERNANCE LAYER
@@ -1636,34 +1725,6 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             )
             
             logger.info(f"✅ Monitoring status handled")
-            return
-        
-        # ====================================================================
-        # MONITORING COMMANDS
-        # ====================================================================
-        
-        monitor_keywords = ['monitor', 'watch', 'track', 'alert me', 'notify me', 'keep an eye', 'keep watch', 'flag if', 'let me know if', 'tell me if', 'stop monitor', 'resume monitor', 'extend monitor', 'confirm']
-        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
-        
-        if is_monitor_request:
-            from app.monitoring import handle_monitor_request
-            response = await handle_monitor_request(sender, message_text, client_profile)
-            await send_twilio_message(sender, response)
-            
-            # Auto-sync to Airtable
-            from app.airtable_auto_sync import sync_usage_metrics
-            
-            await sync_usage_metrics(
-                whatsapp_number=sender,
-                record_id=client_profile.get('airtable_record_id'),
-                table_name=client_profile.get('airtable_table', 'Accounts'),
-                event_type='message_sent',
-                metadata={
-                    'tokens_used': 0,
-                    'category': 'monitoring_request'
-                }
-            )
-            
             return
         
         # ====================================================================
