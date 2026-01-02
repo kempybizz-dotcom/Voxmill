@@ -210,7 +210,8 @@ def get_client_from_airtable(sender: str) -> dict:
                 'industry': industry_code,
                 'preferences': {'preferred_regions': [default_region] if default_region else []},  # ✅ From Markets table
                 'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0},
-                'execution_allowed': False  # ✅ FIXED: Add this field
+                'execution_allowed': False,  # ✅ FIXED: Add this field
+                'active_market': default_region  # ✅ FIXED: Add active_market
             }
         
         # ========================================
@@ -255,7 +256,46 @@ def get_client_from_airtable(sender: str) -> dict:
             
             if not active_market_name:
                 logger.error(f"❌ NO MARKETS CONFIGURED for industry: {industry_code}")
-                # System cannot function without markets - this is a config error
+                
+                # ✅ FIX #2: RETURN BLOCKING PROFILE (no markets configured)
+                # Map Service Tier to tier_1/tier_2/tier_3
+                tier_map = {
+                    'core': 'tier_1',
+                    'premium': 'tier_2',
+                    'sigma': 'tier_3'
+                }
+                
+                tier = tier_map.get(fields.get('Service Tier', 'core'), 'tier_1')
+                status = fields.get('Account Status', 'trial')
+                
+                return {
+                    'name': search_number,
+                    'email': '',
+                    'subscription_status': status.capitalize(),
+                    'tier': tier,
+                    'trial_expired': fields.get('Is Trial Expired') == 1,
+                    'airtable_record_id': account_id,
+                    'airtable_table': 'Accounts',
+                    'preferences': {
+                        'preferred_regions': [],  # ✅ Empty - no markets
+                        'competitor_focus': 'medium',
+                        'report_depth': 'detailed'
+                    },
+                    'usage_metrics': {
+                        'messages_used_this_month': 0,
+                        'monthly_message_limit': permissions.get('monthly_message_limit', 100),
+                        'total_messages_sent': 0
+                    },
+                    'airtable_is_source_of_truth': True,
+                    'access_enabled': True,
+                    'subscription_gate_enforced': True,
+                    'industry': industry_code,
+                    'allowed_intelligence_modules': permissions.get('allowed_modules', []),
+                    'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize(),
+                    'execution_allowed': True,
+                    'active_market': None,  # ✅ CRITICAL: None = no market configured
+                    'no_markets_configured': True  # ✅ NEW FLAG
+                }
         
         # ========================================
         # MAP TO OLD SCHEMA FOR COMPATIBILITY
@@ -302,7 +342,8 @@ def get_client_from_airtable(sender: str) -> dict:
             'industry': industry,  # ✅ Lowercase code from Airtable
             'allowed_intelligence_modules': permissions.get('allowed_modules', []),
             'pin_enforcement_mode': fields.get('PIN Mode', 'strict').capitalize(),
-            'execution_allowed': True  # ✅ FIXED: Add this field
+            'execution_allowed': True,  # ✅ FIXED: Add this field
+            'active_market': active_market_name  # ✅ FIXED: Add active_market field
         }
     
     except Exception as e:
@@ -1220,13 +1261,35 @@ Standing by."""
         # GATE 5: REGION EXTRACTION
         # ====================================================================
         
-        # ✅ FIXED: Use active_market from client_profile
-        preferred_region = client_profile.get('active_market', 'Mayfair')
-        
-        # Fallback validation
-        if not preferred_region or len(preferred_region) < 3:
-            preferred_region = 'Mayfair'
-        
+        # ✅ FIXED: No hardcoded fallback - block if no market
+        preferred_region = client_profile.get('active_market')
+
+        # ✅ BLOCK ACCESS if no market configured
+        if not preferred_region:
+            industry = client_profile.get('industry', 'unknown')
+            industry_display = {
+                'real_estate': 'Real Estate',
+                'yachting': 'Yachting',
+                'automotive': 'Automotive',
+                'healthcare': 'Healthcare',
+                'hospitality': 'Hospitality'
+            }.get(industry, industry.title())
+    
+            await send_twilio_message(
+                sender,
+                f"""NO MARKETS CONFIGURED
+
+        Your account is set up for {industry_display} intelligence.
+
+        No {industry_display.lower()} markets are currently active in your coverage.
+
+        Contact intel@voxmill.uk to activate market coverage.
+
+        Standing by."""
+            )
+            logger.warning(f"🚫 NO MARKET: {sender} has industry={industry} but no active_market configured")
+            return
+
         logger.info(f"✅ Region = '{preferred_region}'")
         
         # ====================================================================
