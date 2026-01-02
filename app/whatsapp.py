@@ -1257,7 +1257,7 @@ Standing by."""
         
         logger.info(f"✅ GATE 4 PASSED: PIN verified")
         
-        # ====================================================================
+# ====================================================================
         # GATE 5: REGION EXTRACTION
         # ====================================================================
         
@@ -1295,6 +1295,126 @@ Standing by."""
         # ====================================================================
         # EARLY COMMAND ROUTING (BEFORE GOVERNANCE)
         # ====================================================================
+        
+        # ====================================================================
+        # MULTI-INTENT DETECTION
+        # ====================================================================
+        
+        from app.conversational_governor import ConversationalGovernor
+        
+        message_segments = ConversationalGovernor._detect_multi_intent(message_text)
+        
+        if len(message_segments) > 1:
+            logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments")
+            
+            responses = []
+            
+            for i, segment in enumerate(message_segments):
+                logger.info(f"Processing segment {i+1}/{len(message_segments)}: {segment}")
+                
+                # Check if segment is a monitor request
+                monitor_keywords = [
+                    'monitor', 'watch', 'track', 'alert me', 'notify me', 
+                    'keep an eye', 'keep watch', 'flag if', 'let me know if', 
+                    'tell me if', 'alert if', 'alert when'
+                ]
+                
+                is_monitor_request = any(kw in segment.lower() for kw in monitor_keywords)
+                
+                if is_monitor_request:
+                    from app.monitoring import handle_monitor_request
+                    response = await handle_monitor_request(sender, segment, client_profile)
+                    responses.append(response)
+                    continue
+                
+                # Check if segment is a PDF request
+                if 'pdf' in segment.lower() or 'report' in segment.lower():
+                    responses.append("PDF regeneration requested. Contact intel@voxmill.uk")
+                    continue
+                
+                # Otherwise, process through governance
+                conversation = ConversationSession(sender)
+                conversation_entities = conversation.get_last_mentioned_entities()
+                
+                conversation_context = {
+                    'regions': conversation_entities.get('regions', []),
+                    'agents': conversation_entities.get('agents', []),
+                    'topics': conversation_entities.get('topics', [])
+                }
+                
+                # Check trial sample status
+                trial_sample_used = False
+                if client_profile.get('subscription_status', '').lower() == 'trial':
+                    try:
+                        from pymongo import MongoClient
+                        MONGODB_URI = os.getenv('MONGODB_URI')
+                        
+                        if MONGODB_URI:
+                            mongo_client = MongoClient(MONGODB_URI)
+                            db = mongo_client['Voxmill']
+                            trial_usage = db['client_profiles'].find_one({'whatsapp_number': sender})
+                            if trial_usage:
+                                trial_sample_used = trial_usage.get('trial_sample_used', False)
+                    except Exception as e:
+                        logger.debug(f"Trial sample check failed: {e}")
+                
+                governance_result = await ConversationalGovernor.govern(
+                    message_text=segment,
+                    sender=sender,
+                    client_profile=client_profile,
+                    system_state={
+                        'subscription_active': client_profile.get('subscription_status', '').lower() == 'active',
+                        'pin_unlocked': True,
+                        'quota_remaining': 100,
+                        'monitoring_active': len(client_profile.get('active_monitors', [])) > 0,
+                        'trial_sample_used': trial_sample_used
+                    },
+                    conversation_context=conversation_context
+                )
+                
+                if governance_result.blocked:
+                    if governance_result.response and not governance_result.silence_required:
+                        responses.append(governance_result.response)
+                    continue
+                
+                # Process intelligence query
+                if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC]:
+                    from app.dataset_loader import load_dataset
+                    dataset = load_dataset(area=preferred_region, industry=industry)
+                    
+                    from app.instant_response import InstantIntelligence
+                    response = InstantIntelligence.get_full_market_snapshot(
+                        preferred_region, 
+                        dataset, 
+                        client_profile
+                    )
+                    responses.append(response)
+                elif governance_result.response:
+                    responses.append(governance_result.response)
+            
+            # Combine responses
+            if responses:
+                combined_response = "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(responses)
+                await send_twilio_message(sender, combined_response)
+                
+                conversation = ConversationSession(sender)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=combined_response,
+                    metadata={'category': 'multi_intent', 'segment_count': len(message_segments)}
+                )
+                
+                from app.airtable_auto_sync import sync_usage_metrics
+                await sync_usage_metrics(
+                    whatsapp_number=sender,
+                    record_id=client_profile.get('airtable_record_id'),
+                    table_name=client_profile.get('airtable_table', 'Accounts'),
+                    event_type='message_sent',
+                    metadata={'tokens_used': 0, 'category': 'multi_intent'}
+                )
+                
+                logger.info(f"✅ Multi-intent processed: {len(responses)} responses")
+                return
         
         # ====================================================================
         # MANUAL PROFILE REFRESH
