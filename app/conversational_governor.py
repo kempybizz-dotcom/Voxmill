@@ -4,12 +4,18 @@ VOXMILL CONVERSATIONAL GOVERNOR - WORLD-CLASS EDITION
 LLM-based intent classification with zero keyword dependency
 Surgical precision. Institutional authority. Elite social absorption.
 
-UPDATED: Added META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS intents
+✅ MULTI-INTENT DETECTION
+✅ VARIED ACKNOWLEDGMENTS
+✅ SELECTIVE NAME USAGE
+✅ NO HARDCODED MARKET DEFAULTS
+✅ INDUSTRY AGNOSTIC
 """
 
 import logging
 import os
 import json
+import re
+import random
 from enum import Enum
 from typing import Optional, List, Tuple, Dict
 from dataclasses import dataclass
@@ -104,7 +110,7 @@ class ConversationalGovernor:
     # LAYER -1: SOCIAL ABSORPTION - ELITE EDITION
     # ========================================
     
-@staticmethod
+    @staticmethod
     def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
         """
         Layer -1: Social Absorption - Elite Edition
@@ -151,7 +157,6 @@ class ConversationalGovernor:
             logger.info(f"🤝 Greeting absorbed: '{message_clean}'")
             
             # ✅ USE NAME 30% of the time (variety)
-            import random
             if random.random() < 0.3 and client_name != "there":
                 return True, f"Standing by, {client_name}."
             else:
@@ -258,7 +263,6 @@ class ConversationalGovernor:
                     logger.info(f"🤝 Typo greeting absorbed: '{message_clean}' → '{core}'")
                     
                     # ✅ USE NAME 30% of the time for typo greetings too
-                    import random
                     if random.random() < 0.3 and client_name != "there":
                         return True, f"Standing by, {client_name}."
                     else:
@@ -454,8 +458,8 @@ JSON:"""
         except Exception as e:
             logger.error(f"❌ LLM intent classification failed: {e}")
             return False, SemanticCategory.NON_DOMAIN, 0.5
-
-# ========================================
+    
+    # ========================================
     # AUTO-SCOPING
     # ========================================
     
@@ -636,49 +640,6 @@ JSON:"""
         # ========================================
         # SECURITY (95% threshold)
         # ========================================
-        
-        security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
-        if any(kw in message_clean for kw in security_keywords):
-            return Intent.SECURITY, 0.95
-        
-        # ========================================
-        # PROVOCATION (85% threshold)
-        # ========================================
-        
-        provocation_exact = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
-        if message_clean in provocation_exact:
-            return Intent.PROVOCATION, 0.98
-        
-        # ========================================
-        # CASUAL - HIGH CONFIDENCE (90% threshold)
-        # ========================================
-        
-        # Exact matches
-        casual_exact = [
-            'whats up', 'what up', 'sup', 'wassup', 'whatsup',
-            'hi', 'hello', 'hey', 'yo', 'hiya',
-            'good morning', 'good afternoon', 'good evening'
-        ]
-        
-        if message_clean in casual_exact:
-            return Intent.CASUAL, 0.95
-        
-        # Acknowledgments
-        acknowledgments = [
-            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-            'ok', 'okay', 'noted', 'got it', 'gotit',
-            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-            'cheers'
-        ]
-        
-        if message_clean in acknowledgments:
-            return Intent.CASUAL, 0.95
-        
-        # ========================================
-        # UNKNOWN (let LLM handle everything else)
-        # ========================================
-        
-        return Intent.UNKNOWN, 0.50
         
         security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
         if any(kw in message_clean for kw in security_keywords):
@@ -973,7 +934,7 @@ JSON:"""
         
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
-@staticmethod
+    @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
@@ -1038,8 +999,6 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         # ✅ VARIED ACKNOWLEDGMENTS
         if intent == Intent.CASUAL:
-            import random
-            
             # 20% chance: use name if available
             if client_name != "there" and random.random() < 0.2:
                 options = [
@@ -1523,7 +1482,7 @@ Trial access provides limited intelligence sampling."""
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-# ========================================
+        # ========================================
         # CRITICAL: FORCE BEST-FIT INTENT FOR MANDATE-RELEVANT QUERIES
         # ========================================
         
