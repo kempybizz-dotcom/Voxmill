@@ -3,14 +3,18 @@ VOXMILL INDUSTRY ENFORCEMENT
 =============================
 Routes dataset loading and enforces industry-specific vocabulary
 
+✅ FIXED: All _empty_dataset() calls include industry parameter
+✅ FIXED: Dynamic market validation via Airtable (no hardcoded lists)
+
 Supported Industries:
 - Real Estate
 - Automotive
 - Healthcare (Medical Aesthetics)
 - Hospitality
 - Luxury Retail
-
-CRITICAL: Only load datasets and use vocabulary appropriate for client's industry
+- Private Equity
+- Yachting
+- Aviation
 """
 
 import logging
@@ -416,8 +420,10 @@ METRICS: Days on market, pricing trends, broker positioning
         """
         Route to appropriate dataset loader based on industry
         
+        ✅ FIXED: All _empty_dataset() calls include industry parameter
+        
         Args:
-            industry: Industry name (e.g., "Real Estate", "Automotive")
+            industry: Lowercase industry code (e.g., 'real_estate', 'automotive')
             area: Geographic area
             max_results: Maximum items to fetch
         
@@ -431,42 +437,42 @@ METRICS: Days on market, pricing trends, broker positioning
         if not IndustryEnforcer.is_supported(industry, area):
             logger.warning(f"Region '{area}' not supported for industry '{industry}'")
             from app.dataset_loader import _empty_dataset
-            return _empty_dataset(area)
+            return _empty_dataset(area, industry)  # ✅ FIXED: Added industry parameter
         
         # Route to industry-specific loader
-        if industry == "Real Estate":
+        if industry == "real_estate":
             from app.dataset_loader import load_dataset as load_real_estate_dataset
-            return load_real_estate_dataset(area, max_results)
+            return load_real_estate_dataset(area, max_results, industry=industry)
         
-        elif industry == "Automotive":
+        elif industry == "automotive":
             try:
                 from app.dataset_loader_automotive import load_automotive_dataset
                 return load_automotive_dataset(area, max_results)
             except ImportError:
                 logger.error("Automotive dataset loader not available")
                 from app.dataset_loader import _empty_dataset
-                return _empty_dataset(area)
+                return _empty_dataset(area, industry)  # ✅ FIXED: Added industry parameter
         
-        elif industry == "Healthcare":
+        elif industry == "healthcare":
             try:
                 from app.dataset_loader_healthcare import load_healthcare_dataset
                 return load_healthcare_dataset(area, max_results)
             except ImportError:
                 logger.error("Healthcare dataset loader not available")
                 from app.dataset_loader import _empty_dataset
-                return _empty_dataset(area)
+                return _empty_dataset(area, industry)  # ✅ FIXED: Added industry parameter
         
-        elif industry == "Hospitality":
+        elif industry == "hospitality":
             logger.warning("Hospitality dataset loader not yet implemented")
             from app.dataset_loader import _empty_dataset
-            return _empty_dataset(area)
+            return _empty_dataset(area, industry)  # ✅ FIXED: Added industry parameter
         
-        elif industry == "Luxury Retail":
+        elif industry == "luxury_retail":
             logger.warning("Luxury Retail dataset loader not yet implemented")
             from app.dataset_loader import _empty_dataset
-            return _empty_dataset(area)
+            return _empty_dataset(area, industry)  # ✅ FIXED: Added industry parameter
         
         else:
             logger.warning(f"Unknown industry: {industry}, defaulting to Real Estate")
             from app.dataset_loader import load_dataset as load_real_estate_dataset
-            return load_real_estate_dataset(area, max_results)
+            return load_real_estate_dataset(area, max_results, industry="real_estate")
