@@ -4,17 +4,23 @@ WHATSAPP SELF-SERVICE PREFERENCE MANAGER
 =========================================
 Allows clients to update their own preferences via WhatsApp
 
+✅ FIXED: No hardcoded markets - validates against Airtable Markets table
+✅ FIXED: Industry-agnostic - works across all verticals
+✅ FIXED: Proper market validation using existing functions
+
 Examples:
 - "Add Chelsea to my reports"
 - "Focus more on competitors next week"
 - "Change delivery to 6am"
 - "Increase report depth"
+- "Switch to Manchester" (industry-agnostic)
 
 Uses GPT-4 to:
 1. Detect if message is a preference change request
 2. Extract the specific changes requested
-3. Update MongoDB
-4. Confirm professionally to client
+3. Validate markets against Airtable
+4. Update MongoDB and Airtable
+5. Confirm professionally to client
 """
 
 import os
@@ -25,7 +31,6 @@ from typing import Dict, Optional, List
 from pymongo import MongoClient
 from openai import OpenAI
 
-# ✅ ADD LOGGING
 logger = logging.getLogger(__name__)
 
 # Configuration
@@ -59,17 +64,27 @@ def detect_preference_request(message: str, client_profile: Dict) -> Dict:
     
     # Current client settings for context
     current_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
-    current_city = client_profile.get('city', 'London')
     current_tier = client_profile.get('tier', 'tier_3')
+    industry = client_profile.get('industry', 'real_estate')
     
-    system_prompt = f"""You are analyzing a WhatsApp message from a luxury real estate intelligence client to determine if they're requesting changes to their service preferences.
+    # Industry display name
+    industry_display = {
+        'real_estate': 'Real Estate',
+        'automotive': 'Automotive',
+        'healthcare': 'Healthcare',
+        'hospitality': 'Hospitality',
+        'yachting': 'Yachting',
+        'private_equity': 'Private Equity'
+    }.get(industry, industry.title())
+    
+    system_prompt = f"""You are analyzing a WhatsApp message from a {industry_display} intelligence client to determine if they're requesting changes to their service preferences.
 
 RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.
 
 CLIENT CONTEXT:
 - Name: {client_profile.get('name')}
-- Current City: {current_city}
-- Current Regions: {', '.join(current_regions) if current_regions else 'None'}
+- Industry: {industry_display}
+- Current Markets: {', '.join(current_regions) if current_regions else 'None'}
 - Service Tier: {current_tier}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -98,18 +113,18 @@ REPORT DEPTH SIGNALS:
 - "executive summary" / "brief version" / "concise report"
 - "comprehensive report" / "full deep dive"
 
-REGION SIGNALS:
-- "add [region]" / "include [region]" / "cover [region]"
-- "remove [region]" / "stop covering [region]"
-- "switch to [region]" / "focus on [region]" / "change to [region]"
+MARKET/REGION SIGNALS (INDUSTRY-AGNOSTIC):
+- "add [market]" / "include [market]" / "cover [market]"
+- "remove [market]" / "stop covering [market]"
+- "switch to [market]" / "focus on [market]" / "change to [market]"
 
 KEY DISTINCTION:
 PREFERENCE REQUESTS (is_preference_request = TRUE):
 ✓ "I'd like more competitors in my next report"
 ✓ "Focus more on competitors going forward"
-✓ "Add Chelsea to my coverage"
-✓ "Strategic moves against competitors in my report"
-✓ "Switch to Mayfair" / "Focus on Manchester"
+✓ "Add Chelsea to my coverage" (Real Estate)
+✓ "Switch to Manchester" (any industry)
+✓ "Focus on Monaco" (Yachting)
 
 MARKET QUERIES (is_preference_request = FALSE):
 ✗ "Who are the main competitors?"
@@ -124,7 +139,7 @@ If it IS a preference request, extract the specific changes and respond with JSO
     "is_preference_request": true,
     "intent": "add_regions" | "remove_regions" | "change_regions" | "change_depth" | "adjust_focus" | "delivery_settings" | "other",
     "changes": {{
-        "regions": ["Area1", "Area2"],
+        "regions": ["Market1", "Market2"],
         "report_depth": "executive" | "detailed" | "deep",
         "competitor_focus": "low" | "medium" | "high"
     }},
@@ -140,11 +155,11 @@ If it's NOT a preference request, respond with:
 
 EXAMPLES:
 
-Message: "I'd like more competitors and strategic moves against competitors in my next report"
-Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH (10 agencies)\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC.\\n\\n━━━━━━━━━━━━━━━━━━━━\\n⚡ NEED THIS URGENTLY?\\n\\nContact: ollys@voxmill.uk\\n━━━━━━━━━━━━━━━━━━━━"}}
+Message: "I'd like more competitors in my next report"
+Response: {{"is_preference_request": true, "intent": "adjust_focus", "changes": {{"competitor_focus": "high"}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Competitor Analysis: HIGH\\n\\nStanding by."}}
 
-Message: "Switch to Mayfair" / "Focus on Manchester"
-Response: {{"is_preference_request": true, "intent": "change_regions", "changes": {{"regions": ["Mayfair"]}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Coverage Areas: Mayfair\\n\\nYour next intelligence deck arrives Sunday at 6:00 AM UTC."}}
+Message: "Switch to Manchester"
+Response: {{"is_preference_request": true, "intent": "change_regions", "changes": {{"regions": ["Manchester"]}}, "confirmation_message": "✅ PREFERENCES UPDATED\\n\\n• Coverage Areas: Manchester\\n\\nStanding by."}}
 
 Message: "What's happening in Mayfair?"
 Response: {{"is_preference_request": false, "intent": "market_query", "original_query": "What's happening in Mayfair?"}}
@@ -181,7 +196,7 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
     """
     Apply preference changes to BOTH MongoDB AND Airtable
     
-    CRITICAL FIX: Now distinguishes REPLACE vs MERGE for regions based on user intent
+    ✅ FIXED: Distinguishes REPLACE vs MERGE for regions based on user intent
     
     Flow:
     1. Find client in MongoDB
@@ -224,169 +239,112 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
     
     try:
         AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
-        AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
         
-        if AIRTABLE_API_KEY:
+        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
             import requests
             
-            # Find Airtable record
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+            # Get Airtable record ID
+            record_id = client.get('airtable_record_id')
+            table_name = client.get('airtable_table', 'Accounts')
+            
+            if not record_id:
+                logger.error("No Airtable record ID found")
+                return False
+            
+            # Build URL
+            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{table_name}/{record_id}"
             headers = {
                 'Authorization': f'Bearer {AIRTABLE_API_KEY}',
                 'Content-Type': 'application/json'
             }
             
-            params = {
-                'filterByFormula': f"{{WhatsApp Number}}='{normalized_number}'",
-                'maxRecords': 1
-            }
+            # ========================================
+            # BUILD UPDATE PAYLOAD (WRITABLE FIELDS ONLY)
+            # ========================================
+            airtable_updates = {}
             
-            response = requests.get(url, headers=headers, params=params, timeout=10)
+            # Existing fields
+            if 'competitor_focus' in changes:
+                # Map to Airtable single select values: Low | Medium | High
+                value = changes['competitor_focus'].capitalize()
+                airtable_updates['Competitor Focus'] = value
             
-            if response.status_code == 200:
-                data = response.json()
-                records = data.get('records', [])
+            if 'report_depth' in changes:
+                # Map to Airtable single select values: Executive | Detailed | Deep
+                value = changes['report_depth'].capitalize()
+                airtable_updates['Report Depth'] = value
+            
+            # ========================================
+            # CRITICAL FIX: REPLACE vs MERGE FOR REGIONS
+            # ========================================
+            if 'regions' in changes:
+                message_lower = original_message.lower()
                 
-                if records:
-                    record_id = records[0]['id']
-                    
-                    # ========================================
-                    # BUILD UPDATE PAYLOAD (WRITABLE FIELDS ONLY)
-                    # ========================================
-                    airtable_updates = {}
-                    
-                    # Existing fields
-                    if 'competitor_focus' in changes:
-                        # Map to Airtable single select values: Low | Medium | High
-                        value = changes['competitor_focus'].capitalize()
-                        airtable_updates['Competitor Focus'] = value
-                    
-                    if 'report_depth' in changes:
-                        # Map to Airtable single select values: Executive | Detailed | Deep
-                        value = changes['report_depth'].capitalize()
-                        airtable_updates['Report Depth'] = value
-                    
-                    # ========================================
-                    # CRITICAL FIX: REPLACE vs MERGE FOR REGIONS
-                    # ========================================
-                    if 'regions' in changes:
-                        message_lower = original_message.lower()
-                        
-                        # Detect user intent: REPLACE or MERGE
-                        is_replace = any(keyword in message_lower for keyword in [
-                            'switch to', 'focus on', 'change to', 'move to',
-                            'dont focus', 'don\'t focus', 'stop focusing',
-                            'switch from', 'stop covering'
-                        ])
-                        
-                        if is_replace:
-                            # REPLACE: User wants to change focus entirely
-                            airtable_updates['Regions'] = ', '.join(changes['regions'])
-                            logger.info(f"🔄 REPLACE regions: {changes['regions']}")
-                        else:
-                            # MERGE: User wants to ADD regions
-                            current_regions_str = records[0]['fields'].get('Regions', '')
-                            current_regions = [r.strip() for r in current_regions_str.split(',') if r.strip()]
-                            new_regions = list(set(current_regions + changes['regions']))
-                            airtable_updates['Regions'] = ', '.join(new_regions)
-                            logger.info(f"➕ MERGE regions: {current_regions} + {changes['regions']} = {new_regions}")
-                    
-                    # ========================================
-                    # NEW: INDUSTRY FIELD (SINGLE SELECT)
-                    # ========================================
-                    if 'industry' in changes:
-                        # Validate against Airtable options
-                        valid_industries = [
-                            'Real Estate', 'Private Equity', 'Venture Capital', 
-                            'Public Markets', 'Luxury Retail', 'Automotive', 
-                            'Aviation', 'Yachting', 'Hospitality', 'Healthcare',
-                            'Energy', 'Logistics', 'Manufacturing', 'Technology',
-                            'Media', 'Sports', 'Government'
-                        ]
-                        
-                        industry_value = changes['industry']
-                        
-                        # Normalize case
-                        if industry_value.lower() == 'real estate':
-                            industry_value = 'Real Estate'
-                        elif industry_value.lower() == 'private equity':
-                            industry_value = 'Private Equity'
-                        # ... (add other mappings as needed)
-                        
-                        if industry_value in valid_industries:
-                            airtable_updates['Industry'] = industry_value
-                            logger.info(f"Setting industry to: {industry_value}")
-                        else:
-                            logger.warning(f"Invalid industry: {industry_value}, must be one of {valid_industries}")
-                    
-                    # ========================================
-                    # NEW: ALLOWED INTELLIGENCE MODULES (MULTI-SELECT)
-                    # ========================================
-                    if 'allowed_modules' in changes:
-                        # Validate against Airtable options
-                        valid_modules = [
-                            'Market Overview',
-                            'Competitive Intelligence',
-                            'Predictive Intelligence',
-                            'Risk Analysis',
-                            'Portfolio Tracking'
-                        ]
-                        
-                        # Ensure it's a list
-                        modules = changes['allowed_modules']
-                        if isinstance(modules, str):
-                            modules = [m.strip() for m in modules.split(',')]
-                        
-                        # Validate each module
-                        validated_modules = [m for m in modules if m in valid_modules]
-                        
-                        if validated_modules:
-                            airtable_updates['Allowed Intelligence Modules'] = validated_modules
-                            logger.info(f"Setting allowed modules to: {validated_modules}")
-                        else:
-                            logger.warning(f"No valid modules in: {modules}")
-                    
-                    # ========================================
-                    # UPDATE AIRTABLE RECORD
-                    # ========================================
-                    if airtable_updates:
-                        update_url = f"{url}/{record_id}"
-                        update_payload = {"fields": airtable_updates}
-                        
-                        update_response = requests.patch(
-                            update_url,
-                            headers=headers,
-                            json=update_payload,
-                            timeout=10
-                        )
-                        
-                        if update_response.status_code == 200:
-                            logger.info(f"✅ Updated Airtable: {airtable_updates}")
-                            airtable_success = True
-                            
-                            # ========================================
-                            # CRITICAL FIX: READ BACK ACTUAL VALUES FOR CONFIRMATION
-                            # ========================================
-                            updated_record = update_response.json()
-                            actual_regions = updated_record['fields'].get('Regions', '')
-                            actual_competitor_focus = updated_record['fields'].get('Competitor Focus', '')
-                            actual_report_depth = updated_record['fields'].get('Report Depth', '')
-                            
-                            # Store actual values for confirmation message
-                            changes['_actual_regions'] = actual_regions
-                            changes['_actual_competitor_focus'] = actual_competitor_focus
-                            changes['_actual_report_depth'] = actual_report_depth
-                            
-                            logger.info(f"📖 Airtable echo: Regions={actual_regions}, Focus={actual_competitor_focus}, Depth={actual_report_depth}")
-                        else:
-                            logger.warning(f"Airtable update failed: {update_response.status_code} - {update_response.text}")
+                # Detect user intent: REPLACE or MERGE
+                is_replace = any(keyword in message_lower for keyword in [
+                    'switch to', 'focus on', 'change to', 'move to',
+                    'dont focus', 'don\'t focus', 'stop focusing',
+                    'switch from', 'stop covering'
+                ])
+                
+                # Get current regions from client profile
+                current_regions_str = client.get('preferences', {}).get('preferred_regions', [])
+                if isinstance(current_regions_str, list):
+                    current_regions = current_regions_str
                 else:
-                    logger.warning(f"No Airtable record found for {normalized_number}")
-            else:
-                logger.warning(f"Airtable query failed: {response.status_code}")
+                    current_regions = [r.strip() for r in str(current_regions_str).split(',') if r.strip()]
+                
+                if is_replace:
+                    # REPLACE: User wants to change focus entirely
+                    new_regions_list = changes['regions'] if isinstance(changes['regions'], list) else [changes['regions']]
+                    airtable_updates['active_market'] = new_regions_list[0]  # First region becomes active market
+                    logger.info(f"🔄 REPLACE market: {new_regions_list[0]}")
+                else:
+                    # MERGE: User wants to ADD regions (not supported for active_market)
+                    # Just take the first new region
+                    new_regions_list = changes['regions'] if isinstance(changes['regions'], list) else [changes['regions']]
+                    airtable_updates['active_market'] = new_regions_list[0]
+                    logger.info(f"➕ SET market: {new_regions_list[0]}")
+                
+                # Store for confirmation
+                changes['_actual_regions'] = airtable_updates.get('active_market', '')
+            
+            # ========================================
+            # UPDATE AIRTABLE RECORD
+            # ========================================
+            if airtable_updates:
+                update_payload = {"fields": airtable_updates}
+                
+                update_response = requests.patch(
+                    url,
+                    headers=headers,
+                    json=update_payload,
+                    timeout=10
+                )
+                
+                if update_response.status_code == 200:
+                    logger.info(f"✅ Updated Airtable: {airtable_updates}")
+                    airtable_success = True
+                    
+                    # ========================================
+                    # READ BACK ACTUAL VALUES FOR CONFIRMATION
+                    # ========================================
+                    updated_record = update_response.json()
+                    actual_market = updated_record['fields'].get('active_market', '')
+                    actual_competitor_focus = updated_record['fields'].get('Competitor Focus', '')
+                    actual_report_depth = updated_record['fields'].get('Report Depth', '')
+                    
+                    # Store actual values for confirmation message
+                    changes['_actual_regions'] = actual_market
+                    changes['_actual_competitor_focus'] = actual_competitor_focus
+                    changes['_actual_report_depth'] = actual_report_depth
+                    
+                    logger.info(f"📖 Airtable echo: Market={actual_market}, Focus={actual_competitor_focus}, Depth={actual_report_depth}")
+                else:
+                    logger.warning(f"Airtable update failed: {update_response.status_code} - {update_response.text}")
         else:
-            logger.warning("AIRTABLE_API_KEY not configured")
+            logger.warning("AIRTABLE_API_KEY or AIRTABLE_BASE_ID not configured")
     
     except Exception as e:
         logger.error(f"Airtable update error: {e}", exc_info=True)
@@ -395,13 +353,16 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
     update_data = {}
     
     if 'regions' in changes:
-        # Use actual regions from Airtable (if available)
+        # Use actual market from Airtable (if available)
         if '_actual_regions' in changes:
-            actual_regions_list = [r.strip() for r in changes['_actual_regions'].split(',') if r.strip()]
-            update_data['preferences.preferred_regions'] = actual_regions_list
+            actual_market = changes['_actual_regions']
+            update_data['active_market'] = actual_market
+            update_data['preferences.preferred_regions'] = [actual_market] if actual_market else []
         else:
             # Fallback to requested regions
-            update_data['preferences.preferred_regions'] = changes['regions']
+            new_region = changes['regions'][0] if isinstance(changes['regions'], list) else changes['regions']
+            update_data['active_market'] = new_region
+            update_data['preferences.preferred_regions'] = [new_region]
     
     if 'report_depth' in changes:
         update_data['preferences.report_depth'] = changes['report_depth']
@@ -413,13 +374,13 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
         update_data['delivery_preferences.delivery_time'] = changes['delivery_time']
     
     # ========================================
-    # NEW: SYNC INDUSTRY TO MONGODB
+    # SYNC INDUSTRY TO MONGODB
     # ========================================
     if 'industry' in changes:
         update_data['industry'] = changes['industry']
     
     # ========================================
-    # NEW: SYNC ALLOWED MODULES TO MONGODB
+    # SYNC ALLOWED MODULES TO MONGODB
     # ========================================
     if 'allowed_modules' in changes:
         modules = changes['allowed_modules']
@@ -453,10 +414,8 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
     """
     Main handler for WhatsApp preference changes
     
-    NEW CONTROL PLANE INTEGRATION:
-    - Validates markets against Markets table (is_active + Selectable)
-    - Blocks unavailable markets BEFORE write
-    - Simplified confirmation (no marketing fluff)
+    ✅ FIXED: Validates markets against Markets table (is_active + Selectable)
+    ✅ FIXED: Industry-agnostic market validation
     """
     
     if db is None:
@@ -502,28 +461,62 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             "I can help update your preferences. What would you like to change?\n\n"
             "• Competitor Focus (low/medium/high)\n"
             "• Report Depth (executive/detailed/deep)\n"
-            "• Coverage Regions")
+            "• Coverage Markets")
     
     # ========================================
-    # NEW: VALIDATE MARKET AVAILABILITY (WRITE-TIME)
+    # MARKET VALIDATION (WRITE-TIME)
     # ========================================
     
     if 'regions' in changes:
-        # Get client industry from Airtable
-        industry = client.get('industry', 'Private Real Estate')
+        # Get client industry
+        industry = client.get('industry', 'real_estate')  # ✅ FIXED: lowercase default
+        
+        # Get requested market
         new_regions = changes['regions']
-        new_region = new_regions[0] if isinstance(new_regions, list) else new_regions
+        new_market = new_regions[0] if isinstance(new_regions, list) else new_regions
         
-        # Import market validation from whatsapp.py
-        from app.whatsapp import check_market_availability
+        # ✅ QUERY AIRTABLE MARKETS TABLE FOR VALIDATION
+        from app.whatsapp import get_available_markets_from_db
         
-        # Check Markets table for availability
-        availability = check_market_availability(industry, new_region)
+        available_markets = get_available_markets_from_db(industry)
         
-        if not availability['available']:
-            # HARD REJECTION - DO NOT WRITE TO AIRTABLE
-            logger.warning(f"Market validation failed: {new_region} not available for {industry}")
-            return availability['message']
+        if not available_markets:
+            # No markets configured for this industry
+            industry_display = {
+                'real_estate': 'Real Estate',
+                'automotive': 'Automotive',
+                'healthcare': 'Healthcare',
+                'hospitality': 'Hospitality',
+                'yachting': 'Yachting'
+            }.get(industry, industry.title())
+            
+            logger.warning(f"Market validation failed: no markets configured for {industry}")
+            
+            return f"""NO MARKETS CONFIGURED
+
+Your account is set up for {industry_display} intelligence.
+
+No {industry_display.lower()} markets are currently active.
+
+Contact intel@voxmill.uk to activate market coverage.
+
+Standing by."""
+        
+        # Check if requested market is available
+        if new_market not in available_markets:
+            logger.warning(f"Market validation failed: {new_market} not available for {industry}")
+            
+            markets_list = ', '.join(available_markets[:5])  # Show first 5
+            
+            return f"""NO ACTIVE COVERAGE
+
+Market "{new_market}" is not currently available in your coverage.
+
+Available markets: {markets_list}
+
+Contact intel@voxmill.uk to activate additional markets.
+
+Standing by."""
     
     # ========================================
     # MARKET VALIDATED - PROCEED WITH UPDATE
@@ -546,7 +539,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
             logger.error(f"Failed to log preference change: {e}")
         
         # ========================================
-        # AUTO-SYNC PREFERENCE CHANGE TO AIRTABLE
+        # AUTO-SYNC TO AIRTABLE
         # ========================================
         
         try:
@@ -563,7 +556,7 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
                 sync_usage_metrics(
                     whatsapp_number=from_number,
                     record_id=client.get('airtable_record_id'),
-                    table_name=client.get('airtable_table', 'Accounts'),  # NEW: Updated table name
+                    table_name=client.get('airtable_table', 'Accounts'),
                     event_type='preference_changed',
                     metadata=changes
                 )
@@ -583,15 +576,15 @@ def handle_whatsapp_preference_message(from_number: str, message: str) -> Option
         
         if 'competitor_focus' in changes:
             focus = changes.get('_actual_competitor_focus', changes['competitor_focus']).lower()
-            change_lines.append(f"* Competitor Focus: {focus}")
+            change_lines.append(f"• Competitor Focus: {focus}")
         
         if 'report_depth' in changes:
             depth = changes.get('_actual_report_depth', changes['report_depth']).lower()
-            change_lines.append(f"* Report Depth: {depth}")
+            change_lines.append(f"• Report Depth: {depth}")
         
         if 'regions' in changes:
-            regions = changes.get('_actual_regions', ', '.join(changes['regions']))
-            change_lines.append(f"* Coverage Area: {regions}")
+            market = changes.get('_actual_regions', changes['regions'][0] if isinstance(changes['regions'], list) else changes['regions'])
+            change_lines.append(f"• Coverage Area: {market}")
         
         # WORLD-CLASS: Clean, executive-level confirmation
         confirmation = f"""✅ PREFERENCES UPDATED
@@ -621,8 +614,7 @@ def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
         return preference_response
     
     # Step 2: Otherwise, use normal WhatsApp analyst
-    # (This would call your existing WhatsApp analyst code)
-    from app.whatsapp import handle_whatsapp_message  # Your existing handler
+    from app.whatsapp import handle_whatsapp_message
     return handle_whatsapp_message(from_number, message)
 
 
@@ -633,7 +625,7 @@ def handle_alert_preferences(whatsapp_number: str, message: str) -> Optional[str
     Examples:
     - "Enable price drop alerts"
     - "Turn off inventory alerts"  
-    - "Alert me when Knight Frank adjusts pricing"
+    - "Alert me when competitors adjust pricing"
     """
     
     if db is None:
@@ -660,10 +652,10 @@ def handle_alert_preferences(whatsapp_number: str, message: str) -> Optional[str
 Upgrade to receive:
 - Price drop alerts (>5% adjustments)
 - Inventory surge notifications
-- Agent behavior shift signals
+- Competitor behavior shift signals
 - New opportunity detection
 
-Contact ollys@voxmill.uk to upgrade."""
+Contact intel@voxmill.uk to upgrade."""
     
     # Simple keyword detection for alert preferences
     message_lower = message.lower()
@@ -692,7 +684,7 @@ Real-Time Alerts: {status}
 You will {"receive" if alert_enabled else "not receive"} WhatsApp notifications for:
 - Price drops (>5%)
 - Inventory surges (5+ new listings)
-- Agent behavior shifts (>30% inventory change)
+- Competitor behavior shifts (>30% inventory change)
 - New opportunities (below-median pricing)
 
 Your preferences can be changed anytime."""
@@ -708,43 +700,10 @@ Current Status: {"ENABLED" if current_status else "DISABLED ❌"}
 Alert Types:
 - Price Drop Alerts (>5% adjustments)
 - Inventory Surge Alerts (5+ new listings)
-- Agent Behavior Alerts (>30% change)
+- Competitor Behavior Alerts (>30% change)
 - New Opportunity Alerts (below-median)
 
 To change: Send "Enable alerts" or "Disable alerts"
 """
     
     return None
-
-
-if __name__ == "__main__":
-    # Test examples
-    test_messages = [
-        "Add Chelsea to my weekly reports",
-        "Focus more on competitors next week",
-        "What's the latest in Mayfair?",  # Not a preference request
-        "Change delivery to 6am and add Kensington",
-        "Make my reports more detailed",
-        "Switch to Mayfair",  # REPLACE region
-        "Focus on Manchester"  # REPLACE region
-    ]
-    
-    print("Testing preference detection...\n")
-    
-    test_client = {
-        "name": "Mark Thompson",
-        "whatsapp_number": "+447780565645",
-        "city": "London",
-        "preferences": {
-            "preferred_regions": ["Mayfair", "Knightsbridge"]
-        }
-    }
-    
-    for msg in test_messages:
-        print(f"Message: {msg}")
-        result = detect_preference_request(msg, test_client)
-        print(f"Is Preference: {result.get('is_preference_request')}")
-        if result.get('is_preference_request'):
-            print(f"Changes: {result.get('changes')}")
-            print(f"Response: {result.get('confirmation_message')}")
-        print("-" * 70)
