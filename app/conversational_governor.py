@@ -104,10 +104,12 @@ class ConversationalGovernor:
     # LAYER -1: SOCIAL ABSORPTION - ELITE EDITION
     # ========================================
     
-    @staticmethod
+@staticmethod
     def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
         """
         Layer -1: Social Absorption - Elite Edition
+        
+        ✅ USES CLIENT NAME SELECTIVELY (30% of greetings)
         
         Absorbs non-semantic social inputs with surgical precision
         
@@ -131,7 +133,7 @@ class ConversationalGovernor:
         message_clean = message_clean.replace("heyyyy", "hey")
         message_clean = message_clean.replace("hiii", "hi")
         
-        # CLASS A: GREETINGS (MULTI-LANGUAGE)
+        # CLASS A: GREETINGS (MULTI-LANGUAGE) - WITH VARIED RESPONSES
         greetings_exact = [
             'hi', 'hello', 'hey', 'yo', 'hiya', 'heya', 'hola', 'sup',
             'morning', 'afternoon', 'evening', 'night',
@@ -147,7 +149,13 @@ class ConversationalGovernor:
         
         if message_clean in greetings_exact:
             logger.info(f"🤝 Greeting absorbed: '{message_clean}'")
-            return True, "Standing by."
+            
+            # ✅ USE NAME 30% of the time (variety)
+            import random
+            if random.random() < 0.3 and client_name != "there":
+                return True, f"Standing by, {client_name}."
+            else:
+                return True, "Standing by."
         
         # CLASS B: POLITENESS TOKENS
         politeness_exact = [
@@ -248,7 +256,13 @@ class ConversationalGovernor:
             for core in greeting_core:
                 if ConversationalGovernor._is_typo_match(message_clean, core, max_distance=2):
                     logger.info(f"🤝 Typo greeting absorbed: '{message_clean}' → '{core}'")
-                    return True, "Standing by."
+                    
+                    # ✅ USE NAME 30% of the time for typo greetings too
+                    import random
+                    if random.random() < 0.3 and client_name != "there":
+                        return True, f"Standing by, {client_name}."
+                    else:
+                        return True, "Standing by."
         
         # NOT SOCIAL - PASS TO MANDATE RELEVANCE
         return False, None
@@ -440,7 +454,7 @@ JSON:"""
         except Exception as e:
             logger.error(f"❌ LLM intent classification failed: {e}")
             return False, SemanticCategory.NON_DOMAIN, 0.5
-    
+
 # ========================================
     # AUTO-SCOPING
     # ========================================
