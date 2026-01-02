@@ -959,13 +959,16 @@ JSON:"""
         
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
-    @staticmethod
+@staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
         
+        ✅ VARIED ACKNOWLEDGMENTS - rotates between options
         Intent-based responses only (no phrase matching)
         """
+        
+        client_name = client_profile.get('name', 'there') if client_profile else 'there'
         
         # META_AUTHORITY responses
         if intent == Intent.META_AUTHORITY:
@@ -1019,14 +1022,78 @@ You can add properties by sending an address, postcode, or Rightmove link."""
 
 For immediate regeneration, contact intel@voxmill.uk"""
         
-        # Intent-based responses
+        # ✅ VARIED ACKNOWLEDGMENTS
+        if intent == Intent.CASUAL:
+            import random
+            
+            # 20% chance: use name if available
+            if client_name != "there" and random.random() < 0.2:
+                options = [
+                    f"Standing by, {client_name}.",
+                    f"Ready, {client_name}.",
+                    f"Monitoring, {client_name}."
+                ]
+            else:
+                # 80% chance: no name (variety pool)
+                options = [
+                    "Standing by.",
+                    "Ready.",
+                    "Monitoring.",
+                    "Ready when you are.",
+                    "Standing by.",  # Weighted - appears twice for higher probability
+                    "Standing by."   # Weighted again
+                ]
+            
+            return random.choice(options)
+        
+        # Intent-based responses (non-casual)
         intent_responses = {
-            Intent.CASUAL: "Standing by.",
             Intent.UNKNOWN: "Outside intelligence scope.",
             Intent.SECURITY: "Enter your 4-digit code.",
         }
         
         return intent_responses.get(intent)
+    
+    @staticmethod
+    def _detect_multi_intent(message: str) -> List[str]:
+        """
+        Detect multiple intents in a single message
+        
+        Returns list of intent segments
+        
+        Examples:
+        - "PDF and market overview" → ["PDF", "market overview"]
+        - "Monitor X, also show Y" → ["Monitor X", "show Y"]
+        """
+        
+        # Split on conjunctions and transition words
+        separators = [
+            ', also ',
+            ', and ',
+            ' also ',
+            ' and then ',
+            ' then ',
+            '; ',
+            '. '
+        ]
+        
+        segments = [message]
+        
+        for sep in separators:
+            new_segments = []
+            for seg in segments:
+                if sep in seg.lower():
+                    parts = re.split(re.escape(sep), seg, flags=re.IGNORECASE)
+                    new_segments.extend(parts)
+                else:
+                    new_segments.append(seg)
+            segments = new_segments
+        
+        # Clean and filter
+        cleaned = [s.strip() for s in segments if s.strip()]
+        
+        # Only return multiple if we actually found splits
+        return cleaned if len(cleaned) > 1 else [message]
     
     # ========================================
     # MAIN GOVERNANCE ENTRY POINT
@@ -1047,7 +1114,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         Returns: GovernanceResult with intent, constraints, and optional response
         """
         
-# ========================================
+        # ========================================
         # LAYER -1: SOCIAL ABSORPTION
         # ========================================
         
