@@ -1,7 +1,10 @@
 """
 VOXMILL PORTFOLIO TRACKER
 =========================
-Track client property holdings and generate cross-property insights 
+Track client property holdings and generate cross-property insights
+
+✅ FIXED: No hardcoded region defaults
+✅ FIXED: Industry parameter added to load_dataset calls
 """
 
 import logging
@@ -103,11 +106,18 @@ Portfolio tracking active."""
         return "Failed to add property. Please try again."
 
 
-def get_portfolio_summary(whatsapp_number: str) -> dict:
+def get_portfolio_summary(whatsapp_number: str, industry: str = 'real_estate') -> dict:
     """
     Get client's full portfolio with INTELLIGENT valuations
     
+    ✅ FIXED: No hardcoded region defaults
+    ✅ FIXED: Industry parameter added
+    
     UPGRADE: Uses property-specific matching for accurate estimates
+    
+    Args:
+        whatsapp_number: Client's WhatsApp number
+        industry: Industry code (default: 'real_estate')
     """
     
     try:
@@ -124,11 +134,18 @@ def get_portfolio_summary(whatsapp_number: str) -> dict:
         total_current = 0
         
         for prop in portfolio['properties']:
-            region = prop.get('region', 'Mayfair')
+            # ✅ FIXED: No hardcoded default - skip property if no region
+            region = prop.get('region')
+            
+            if not region:
+                logger.warning(f"Property {prop.get('address')} has no region, skipping valuation")
+                continue
+            
             purchase_price = prop.get('purchase_price', 0)
             
             # Load market data for region
-            dataset = load_dataset(area=region)
+            # ✅ FIXED: Added industry parameter
+            dataset = load_dataset(area=region, industry=industry)
             
             # INTELLIGENT VALUATION
             # Match similar properties in market data
@@ -152,7 +169,7 @@ def get_portfolio_summary(whatsapp_number: str) -> dict:
                     purchase_date = datetime.fromisoformat(prop.get('purchase_date', '2023-01-01'))
                     days_held = (datetime.now(timezone.utc) - purchase_date).days
                     
-                    # Assume 5% annual appreciation for prime London
+                    # Assume 5% annual appreciation for prime properties
                     annual_appreciation = 0.05
                     years_held = days_held / 365
                     appreciation_multiplier = (1 + annual_appreciation) ** years_held
