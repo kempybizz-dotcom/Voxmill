@@ -708,6 +708,17 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     Identity → Trial → Subscription → PIN → Governance → Intelligence
     """
     
+    # ✅ CRITICAL IMPORTS - MUST BE AT TOP OF FUNCTION
+    from app.dataset_loader import load_dataset
+    from app.instant_response import InstantIntelligence
+    from app.cache_manager import CacheManager
+    from app.conversation_manager import ConversationSession
+    from app.response_enforcer import ResponseEnforcer
+    from app.validation import HallucinationDetector
+    from app.security import ResponseValidator
+    from app.airtable_auto_sync import sync_usage_metrics
+    from pymongo import MongoClient
+    
     try:
         logger.info(f"📱 Processing message from {sender}: {message_text}")
         
@@ -764,7 +775,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     should_refresh = True
                     logger.info(f"Cache stale ({int(cache_age_minutes)} mins), refreshing")
         
-# ========================================
+        # ========================================
         # STEP 3: LOAD FROM AIRTABLE IF NEEDED
         # ========================================
         
@@ -810,7 +821,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 }
                 
                 # Update MongoDB cache
-                from pymongo import MongoClient
                 MONGODB_URI = os.getenv('MONGODB_URI')
                 if MONGODB_URI:
                     mongo_client = MongoClient(MONGODB_URI)
