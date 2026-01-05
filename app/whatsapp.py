@@ -2267,7 +2267,7 @@ Standing by."""
         # Enforce response shape
         from app.response_enforcer import ResponseEnforcer
         
-        response_shape = ResponseEnforcer.select_shape_before_generation(governance_result.intent, allowed_response_shape)
+        response_shape = ResponseEnforcer.select_shape_before_generation(governance_result.intent, allowed_response_shape, message_text)
         formatted_response = ResponseEnforcer.enforce_shape(formatted_response, response_shape, max_words)
         
         # Validate response
