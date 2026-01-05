@@ -277,7 +277,7 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error updating session: {e}", exc_info=True)
     
-    def get_conversation_context(self) -> str:
+def get_conversation_context(self) -> str:
         """
         Generate conversation context string for LLM
         
@@ -456,8 +456,14 @@ class ConversationSession:
         
         # Extract context hints
         entities = session['context_entities']
+        
+        # ✅ CRITICAL FIX: Return last TWO regions for comparison queries
+        recent_regions = entities.get('regions', [])
+        last_two_regions = recent_regions[-2:] if len(recent_regions) >= 2 else recent_regions
+        
         context_hints = {
-            'last_region': entities.get('regions', [None])[-1] if entities.get('regions') else None,
+            'last_region': recent_regions[-1] if recent_regions else None,
+            'recent_regions': last_two_regions,  # ✅ NEW: For "compare them" queries
             'last_agent': entities.get('agents', [None])[-1] if entities.get('agents') else None,
             'last_topic': entities.get('topics', [None])[-1] if entities.get('topics') else None,
             'last_query': session['messages'][-1]['user'] if session['messages'] else None
@@ -506,9 +512,17 @@ class ConversationSession:
         
         entities = session['context_entities']
         
-        # Extract regions
-        regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington', 
-                  'South Kensington', 'Notting Hill', 'Marylebone']
+        # Extract regions (expanded to include major cities + neighborhoods)
+        regions = [
+            # Major cities
+            'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Newcastle',
+            'Bristol', 'Sheffield', 'Edinburgh', 'Glasgow', 'Cardiff',
+            'London',
+            # London neighborhoods
+            'Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington', 
+            'South Kensington', 'Notting Hill', 'Marylebone', 'Hampstead',
+            'Primrose Hill', 'St Johns Wood', 'Regent\'s Park'
+        ]
         
         for region in regions:
             if region.lower() in message.lower():
@@ -546,6 +560,13 @@ class ConversationSession:
                 category = metadata['category']
                 if category not in entities['topics']:
                     entities['topics'].append(category)
+            
+            # ✅ CRITICAL FIX: Extract region from metadata
+            if metadata.get('region'):
+                region = metadata['region']
+                if region not in entities['regions']:
+                    entities['regions'].append(region)
+                    logger.debug(f"✅ Extracted region from metadata: {region}")
         
         # Keep only last 3 of each entity type (prevent unbounded growth)
         for key in entities:
@@ -609,11 +630,16 @@ def resolve_reference(query: str, context_hints: Dict) -> str:
                 last_topic = context_hints.get('last_topic', 'market_overview')
                 return f"Provide {last_topic} analysis for {region.title()}"
     
-    # Pattern: "compare to [X]" or "vs [X]"
+    # Pattern: "compare to [X]" or "vs [X]" or "compare them"
     if 'compare' in query_lower or ' vs ' in query_lower or 'versus' in query_lower:
-        last_region = context_hints.get('last_region')
-        if last_region:
-            return f"{query} (previous context: {last_region})"
+        # ✅ CRITICAL FIX: Use last TWO regions for comparison
+        recent_regions = context_hints.get('recent_regions', [])
+        
+        if len(recent_regions) >= 2:
+            region1, region2 = recent_regions[-2], recent_regions[-1]
+            return f"Compare {region1} vs {region2} (from recent conversation)"
+        elif recent_regions:
+            return f"{query} (previous context: {recent_regions[-1]})"
     
     # Pattern: "more like that" or "show me similar"
     if any(phrase in query_lower for phrase in ['more like', 'similar', 'same', 'that']):
@@ -627,7 +653,6 @@ def resolve_reference(query: str, context_hints: Dict) -> str:
         return query
     
     return query
-
 
 def generate_contextualized_prompt(base_prompt: str, session: ConversationSession) -> str:
     """Enhance LLM prompt with conversation context"""
