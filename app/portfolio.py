@@ -106,7 +106,7 @@ Portfolio tracking active."""
         return "Failed to add property. Please try again."
 
 
-def get_portfolio_summary(whatsapp_number: str, industry: str = 'real_estate') -> dict:
+def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> dict:
     """
     Get client's full portfolio with INTELLIGENT valuations
     
@@ -145,6 +145,10 @@ def get_portfolio_summary(whatsapp_number: str, industry: str = 'real_estate') -
             
             # Load market data for region
             # ✅ FIXED: Added industry parameter
+            industry = 'real_estate'
+            if client_profile:
+                industry = client_profile.get('industry', 'real_estate')
+
             dataset = load_dataset(area=region, industry=industry)
             
             # INTELLIGENT VALUATION
