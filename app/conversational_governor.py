@@ -42,6 +42,7 @@ class Intent(Enum):
     STATUS_MONITORING = "status_monitoring"
     PORTFOLIO_MANAGEMENT = "portfolio_management"
     PORTFOLIO_STATUS = "portfolio_status"
+    PORTFOLIO_ADD = "portfolio_add"
     DELIVERY_REQUEST = "delivery_request"
     UNKNOWN = "unknown"
 
@@ -399,6 +400,9 @@ Examples:
 - "PDF?" → delivery_request (report delivery)
 - "What's my name?" → profile_status (about user identity)
 - "Show me my portfolio" → portfolio_status (portfolio viewing)
+- "Add this property to portfolio" → portfolio_add
+- "Track this property" → portfolio_add
+- "Property: 123 Main St, Purchase: £500000, Date: 2023-01-15, Region: Chelsea" → portfolio_add
 - "Market overview" → market_query (legitimate query)
 - "What's happening in Manhattan hedge funds?" → market_query (industry-specific query)
 - "Show me Dubai yacht market" → market_query (industry-specific query)
