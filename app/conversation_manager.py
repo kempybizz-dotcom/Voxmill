@@ -277,7 +277,7 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error updating session: {e}", exc_info=True)
     
-def get_conversation_context(self) -> str:
+    def get_conversation_context(self) -> str:
         """
         Generate conversation context string for LLM
         
