@@ -1,8 +1,16 @@
 """
-RESPONSE SHAPE ENFORCER V2
-==========================
+RESPONSE SHAPE ENFORCER V3 - WORLD-CLASS EDITION
+=================================================
 Enforces response shape with institutional-appropriate limits
-NOW WITH: Intelligent truncation at sentence boundaries
+NOW WITH: 
+- Intelligent truncation at sentence boundaries
+- Strategic query detection (prevents truncation of critical analysis)
+- Content-aware shape selection
+
+FIXES APPLIED:
+✅ Strategic keyword detection (risk, opportunity, timing, etc.)
+✅ Automatic upgrade to STRUCTURED_BRIEF for strategic queries
+✅ No more truncation of critical intelligence
 """
 
 import logging
@@ -152,14 +160,79 @@ class ResponseEnforcer:
         return content
     
     @staticmethod
-    def select_shape_before_generation(intent, envelope) -> ResponseShape:
+    def _detect_strategic_query(message: str) -> bool:
+        """
+        Detect if query requires strategic analysis regardless of intent
+        
+        Strategic signals: risk, opportunity, positioning, timing, should I, advise
+        
+        CRITICAL: This prevents truncation of queries like:
+        - "Where is risk hiding right now"
+        - "What opportunities am I missing"
+        - "Should I act on this"
+        """
+        
+        if not message:
+            return False
+        
+        message_lower = message.lower()
+        
+        # Strategic keywords that require full analysis
+        strategic_keywords = [
+            'risk', 'risks', 'risky', 'danger', 'threat', 'exposure',
+            'opportunity', 'opportunities', 'upside', 'potential',
+            'should i', 'should we', 'advise', 'recommend', 'guidance',
+            'strategic', 'strategy', 'positioning', 'advantage',
+            'timing', 'when should', 'best time', 'right time',
+            'hiding', 'hidden', 'overlooked', 'missing',
+            'implications', 'consequences', 'impact', 'effect',
+            'compare', 'versus', 'vs', 'difference between',
+            'trend', 'trajectory', 'direction', 'momentum',
+            'what if', 'scenario', 'forecast', 'outlook',
+            'competitive', 'competition', 'competitor', 'rivals',
+            'weakness', 'weaknesses', 'vulnerability', 'vulnerable',
+            'strength', 'strengths', 'edge', 'differentiation'
+        ]
+        
+        # Check if query contains strategic keywords
+        has_strategic_keyword = any(kw in message_lower for kw in strategic_keywords)
+        
+        # Check if query is a question (questions need more space)
+        is_question = message.strip().endswith('?') or any(
+            message_lower.startswith(q) for q in ['what', 'where', 'why', 'how', 'when', 'which', 'who']
+        )
+        
+        # Strategic if: has keyword OR (is question AND >6 words)
+        word_count = len(message.split())
+        
+        is_strategic = has_strategic_keyword or (is_question and word_count >= 6)
+        
+        if is_strategic:
+            logger.info(f"🎯 Strategic query detected: '{message[:50]}...'")
+        
+        return is_strategic
+    
+    @staticmethod
+    def select_shape_before_generation(intent, envelope, message: str = None) -> ResponseShape:
         """
         Select response shape BEFORE calling LLM
         
         This determines response envelope constraints
+        
+        CRITICAL: Now considers message content to detect strategic queries
+        
+        UPGRADE LOGIC:
+        - Strategic keywords (risk, opportunity, timing) → STRUCTURED_BRIEF
+        - Complex questions (>6 words) → STRUCTURED_BRIEF
+        - Otherwise → Intent-based shape
         """
         
         from app.conversational_governor import Intent
+        
+        # ✅ STRATEGIC QUERY OVERRIDE: Detect strategic language
+        if message and ResponseEnforcer._detect_strategic_query(message):
+            logger.info(f"🎯 Strategic query detected, upgrading to STRUCTURED_BRIEF")
+            return ResponseShape.STRUCTURED_BRIEF
         
         # UPDATED MAPPING: More appropriate shapes for each intent
         shape_map = {
@@ -173,6 +246,14 @@ class ResponseEnforcer:
             Intent.SECURITY: ResponseShape.STATUS_LINE,
             Intent.ADMINISTRATIVE: ResponseShape.STATUS_LINE,
             Intent.MONITORING_DIRECTIVE: ResponseShape.STATUS_LINE,
+            Intent.META_AUTHORITY: ResponseShape.STATUS_LINE,
+            Intent.PROFILE_STATUS: ResponseShape.STATUS_LINE,
+            Intent.VALUE_JUSTIFICATION: ResponseShape.STATUS_LINE,
+            Intent.TRUST_AUTHORITY: ResponseShape.STATUS_LINE,
+            Intent.STATUS_MONITORING: ResponseShape.STATUS_LINE,
+            Intent.PORTFOLIO_STATUS: ResponseShape.STRUCTURED_BRIEF,
+            Intent.PORTFOLIO_MANAGEMENT: ResponseShape.STATUS_LINE,
+            Intent.DELIVERY_REQUEST: ResponseShape.STATUS_LINE,
         }
         
         selected_shape = shape_map.get(intent, ResponseShape.STRUCTURED_BRIEF)
