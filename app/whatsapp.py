@@ -1796,11 +1796,11 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 logger.info(f"✅ Message processed: category={governance_result.intent.value}")
                 return
         
-        # ====================================================================
-        # VALUE_JUSTIFICATION / TRUST_AUTHORITY / PORTFOLIO_MANAGEMENT / DELIVERY_REQUEST ROUTING (NEW)
+# ====================================================================
+        # VALUE_JUSTIFICATION / PORTFOLIO_MANAGEMENT / DELIVERY_REQUEST ROUTING
         # ====================================================================
         
-        if governance_result.intent in [Intent.VALUE_JUSTIFICATION, Intent.TRUST_AUTHORITY, Intent.PORTFOLIO_MANAGEMENT, Intent.DELIVERY_REQUEST]:
+        if governance_result.intent in [Intent.VALUE_JUSTIFICATION, Intent.PORTFOLIO_MANAGEMENT, Intent.DELIVERY_REQUEST]:
             # These intents have hardcoded responses in governance_result.response
             if governance_result.response:
                 await send_twilio_message(sender, governance_result.response)
@@ -1811,7 +1811,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                     metadata={'category': governance_result.intent.value, 'intent': governance_result.intent.value}
                 )
                 
-                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
+                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response, 0, client_profile)
                 update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
                 
                 # Auto-sync to Airtable
@@ -1829,6 +1829,102 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 )
                 
                 logger.info(f"✅ Message processed: category={governance_result.intent.value}")
+                return
+        
+        # ====================================================================
+        # TRUST_AUTHORITY ROUTING (LLM-POWERED)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.TRUST_AUTHORITY:
+            try:
+                from openai import AsyncOpenAI
+                
+                logger.info(f"🔐 Trust authority query detected")
+                
+                # Get last response from conversation for context
+                conversation = ConversationSession(sender)
+                last_messages = conversation.get_last_n_messages(2)
+                
+                last_response = ""
+                if len(last_messages) >= 2:
+                    last_response = last_messages[-1].get('assistant', '')
+                
+                # Get industry from client_profile
+                industry = client_profile.get('industry', 'real_estate')
+                
+                # Build context-aware prompt
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""You are a market intelligence analyst. The client is questioning your confidence/authority.
+
+Client's question: "{message_text}"
+
+Last response you gave: "{last_response[:500]}"
+
+Respond with SUBSTANCE (not boilerplate):
+
+REQUIRED STRUCTURE:
+1. Direct answer (yes/no/quantified confidence)
+2. Evidence (specific metric, signal, or comparison)
+3. Known uncertainty (what could invalidate this)
+4. Next verification signal (what to watch)
+
+NEVER:
+- Repeat capabilities
+- End with "What market intelligence can I provide?"
+- Give product descriptions
+
+TONE: Confident but transparent. Like a senior analyst defending their thesis.
+
+Industry: {industry}
+Max length: 200 words
+
+Response:"""
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a senior market intelligence analyst. You defend your analysis with evidence, not marketing copy."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    max_tokens=300,
+                    temperature=0.7,
+                    timeout=10.0
+                )
+                
+                trust_response = response.choices[0].message.content.strip()
+                
+                # Send response
+                await send_twilio_message(sender, trust_response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=trust_response,
+                    metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "trust_authority", preferred_region)
+                
+                logger.info(f"✅ Message processed: category=trust_authority")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Trust authority error: {e}", exc_info=True)
+                # Fallback to simple acknowledgment
+                response = "Analysis backed by verified data sources. Standing by for specific questions."
+                await send_twilio_message(sender, response)
                 return
         
         # ====================================================================
