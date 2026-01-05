@@ -109,10 +109,12 @@ class PINAuthenticator:
             logger.error(f"Set PIN error: {e}", exc_info=True)
             return False, "System error - please try again"
     
-    @staticmethod
-    def verify_and_unlock(whatsapp_number: str, pin: str) -> Tuple[bool, str]:
+@staticmethod
+    def verify_and_unlock(whatsapp_number: str, pin: str, client_profile: dict = None) -> Tuple[bool, str]:
         """
         Verify PIN and unlock intelligence access
+        
+        UPDATED: Reads PIN State and PIN Mode from Airtable
         
         Returns: (success, message)
         """
@@ -121,32 +123,44 @@ class PINAuthenticator:
                 return False, "System error"
             
             # Get user profile
-            profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
-            
-            if not profile:
-                return False, "Profile not found"
+            if not client_profile:
+                profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
+                if not profile:
+                    return False, "Profile not found"
+            else:
+                profile = client_profile
             
             # ========================================
-            # CRITICAL: CHECK PIN ENFORCEMENT MODE FROM AIRTABLE
+            # CRITICAL: READ PIN STATE AND MODE FROM AIRTABLE
             # ========================================
-            pin_enforcement_mode = profile.get('pin_enforcement_mode', 'Strict')
+            # PIN State: 'locked', 'not_set', 'verified'
+            # PIN Mode: 'Off', 'Soft', 'Strict'
             
-            # Check if locked
-            if profile.get('pin_locked', False):
-                if pin_enforcement_mode == 'Soft':
-                    # Soft mode: warn but allow access
-                    logger.warning(f"⚠️ SOFT MODE: PIN locked but allowing access for {whatsapp_number}")
-                    # Don't return - continue to verification
-                else:
-                    # Strict mode: hard block
-                    return False, "locked"
+            pin_state = profile.get('pin_state', 'not_set')
+            pin_mode = profile.get('pin_mode', 'Strict')
             
-            # Get stored hash
+            logger.info(f"🔐 PIN Verify: {whatsapp_number} | State: {pin_state} | Mode: {pin_mode}")
+            
+            # ========================================
+            # CHECK 1: PIN STATE = 'locked' → HARD BLOCK
+            # ========================================
+            
+            if pin_state == 'locked':
+                logger.warning(f"🔒 PIN State = locked for {whatsapp_number}, blocking access")
+                return False, "locked"
+            
+            # ========================================
+            # CHECK 2: GET STORED HASH
+            # ========================================
+            
             pin_hash = profile.get('access_pin_hash')
             if not pin_hash:
                 return False, "PIN not set"
             
-            # Verify PIN
+            # ========================================
+            # VERIFY PIN
+            # ========================================
+            
             if PINAuthenticator.verify_pin(pin, pin_hash):
                 # Success - reset failed attempts and update verification time
                 db['client_profiles'].update_one(
@@ -155,12 +169,13 @@ class PINAuthenticator:
                         '$set': {
                             'last_verified_at': datetime.now(timezone.utc),
                             'failed_attempts': 0,
-                            'require_pin_verification': False
+                            'require_pin_verification': False,
+                            'pin_state': 'verified'  # ✅ UPDATE AIRTABLE FIELD
                         }
                     }
                 )
                 
-                logger.info(f" PIN verified for {whatsapp_number}")
+                logger.info(f"✅ PIN verified for {whatsapp_number}")
                 return True, "Access granted"
             else:
                 # Failed attempt
@@ -172,13 +187,13 @@ class PINAuthenticator:
                 
                 # Lock after max attempts (ONLY in Strict mode)
                 if failed_attempts >= PINAuthenticator.MAX_FAILED_ATTEMPTS:
-                    if pin_enforcement_mode == 'Strict':
-                        update_data['pin_locked'] = True
-                        logger.warning(f" STRICT MODE: PIN locked for {whatsapp_number} after {failed_attempts} attempts")
+                    if pin_mode == 'Strict':
+                        update_data['pin_state'] = 'locked'  # ✅ UPDATE AIRTABLE FIELD
+                        logger.warning(f"🔒 STRICT MODE: PIN locked for {whatsapp_number} after {failed_attempts} attempts")
                         return False, "locked"
                     else:
                         # Soft mode: log warning but don't lock
-                        logger.warning(f" SOFT MODE: {failed_attempts} failed attempts for {whatsapp_number}, but NOT locking")
+                        logger.warning(f"⚠️ SOFT MODE: {failed_attempts} failed attempts for {whatsapp_number}, but NOT locking")
                 
                 db['client_profiles'].update_one(
                     {'whatsapp_number': whatsapp_number},
@@ -186,7 +201,7 @@ class PINAuthenticator:
                 )
                 
                 attempts_remaining = PINAuthenticator.MAX_FAILED_ATTEMPTS - failed_attempts
-                logger.warning(f" Failed PIN attempt for {whatsapp_number} ({attempts_remaining} remaining)")
+                logger.warning(f"❌ Failed PIN attempt for {whatsapp_number} ({attempts_remaining} remaining)")
                 
                 return False, f"{attempts_remaining}"
                 
@@ -195,61 +210,87 @@ class PINAuthenticator:
             return False, "System error"
     
     @staticmethod
-    def check_needs_verification(whatsapp_number: str) -> Tuple[bool, str]:
+    def check_needs_verification(whatsapp_number: str, client_profile: dict = None) -> Tuple[bool, str]:
         """
         Check if user needs PIN verification
         
-        UPDATED: Respects PIN Enforcement Mode from Airtable
+        UPDATED: Reads PIN State and PIN Mode from Airtable (via client_profile)
         
         Returns: (needs_verification, reason)
-        Reasons: 'not_set', 'inactivity', 'subscription_change', 'manual_lock', 'none'
+        Reasons: 'not_set', 'inactivity', 'subscription_change', 'locked', 'none'
         """
         try:
             if db is None:
                 return False, "none"
             
-            profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
+            # ========================================
+            # CRITICAL: READ FROM AIRTABLE VIA CLIENT_PROFILE
+            # ========================================
             
-            if not profile:
+            if not client_profile:
+                # Fallback to MongoDB if client_profile not provided
+                profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
+                if not profile:
+                    return False, "none"
+            else:
+                profile = client_profile
+            
+            # ========================================
+            # READ PIN STATE FROM AIRTABLE (3 OPTIONS)
+            # ========================================
+            # Values: 'locked', 'not_set', 'verified'
+            
+            pin_state = profile.get('pin_state', 'not_set')
+            
+            # ========================================
+            # READ PIN MODE FROM AIRTABLE (3 OPTIONS)
+            # ========================================
+            # Values: 'Off', 'Soft', 'Strict'
+            
+            pin_mode = profile.get('pin_mode', 'Strict')
+            
+            logger.info(f"🔐 PIN Check: {whatsapp_number} | State: {pin_state} | Mode: {pin_mode}")
+            
+            # ========================================
+            # CRITICAL: PIN MODE = 'Off' → NEVER CHECK
+            # ========================================
+            
+            if pin_mode == 'Off':
+                logger.info(f"✅ PIN Mode = Off for {whatsapp_number}, skipping all checks")
                 return False, "none"
             
             # ========================================
-            # CRITICAL: READ PIN ENFORCEMENT MODE FROM AIRTABLE
+            # CHECK 1: PIN STATE = 'locked' → HARD BLOCK
             # ========================================
-            pin_enforcement_mode = profile.get('pin_enforcement_mode', 'Strict')
             
-            # Check if PIN is set
-            if not profile.get('access_pin_hash'):
-                if pin_enforcement_mode == 'Soft':
-                    # Soft mode: PIN not required
-                    logger.info(f"⚠️ SOFT MODE: PIN not set for {whatsapp_number}, but allowing access")
-                    return False, "none"
-                else:
-                    # Strict mode: PIN required
+            if pin_state == 'locked':
+                logger.warning(f"🔒 PIN State = locked for {whatsapp_number}")
+                return True, "locked"
+            
+            # ========================================
+            # CHECK 2: PIN STATE = 'not_set' → REQUIRE SETUP
+            # ========================================
+            
+            if pin_state == 'not_set':
+                # Check if PIN hash actually exists in MongoDB
+                if not profile.get('access_pin_hash'):
+                    logger.info(f"🔐 PIN not set for {whatsapp_number}")
                     return True, "not_set"
             
-            # Check if manually locked
-            if profile.get('pin_locked', False):
-                if pin_enforcement_mode == 'Soft':
-                    # Soft mode: warn but allow
-                    logger.warning(f"⚠️ SOFT MODE: PIN locked for {whatsapp_number}, but allowing access")
-                    return False, "none"
-                else:
-                    # Strict mode: hard block
-                    return True, "locked"
+            # ========================================
+            # CHECK 3: MANUAL RE-VERIFICATION FLAG
+            # ========================================
             
-            # Check if flagged for re-verification
             if profile.get('require_pin_verification', False):
-                if pin_enforcement_mode == 'Soft':
-                    # Soft mode: warn but allow
-                    logger.warning(f"⚠️ SOFT MODE: Re-verification flagged for {whatsapp_number}, but allowing access")
-                    return False, "none"
-                else:
-                    # Strict mode: require re-verification
-                    return True, "subscription_change"
+                logger.info(f"🔐 Manual re-verification required for {whatsapp_number}")
+                return True, "subscription_change"
             
-            # Check inactivity
+            # ========================================
+            # CHECK 4: TIME-BASED RE-VERIFICATION (MODE-DEPENDENT)
+            # ========================================
+            
             last_verified = profile.get('last_verified_at')
+            
             if last_verified:
                 # Make timezone-aware if needed
                 if isinstance(last_verified, str):
@@ -259,16 +300,26 @@ class PINAuthenticator:
                 if last_verified.tzinfo is None:
                     last_verified = last_verified.replace(tzinfo=timezone.utc)
                 
-                days_since_verification = (datetime.now(timezone.utc) - last_verified).days
+                hours_since_verification = (datetime.now(timezone.utc) - last_verified).total_seconds() / 3600
+                days_since_verification = hours_since_verification / 24
                 
-                if days_since_verification >= PINAuthenticator.INACTIVITY_DAYS:
-                    if pin_enforcement_mode == 'Soft':
-                        # Soft mode: warn but allow
-                        logger.warning(f"⚠️ SOFT MODE: {days_since_verification} days inactive for {whatsapp_number}, but allowing access")
-                        return False, "none"
-                    else:
-                        # Strict mode: require re-verification
-                        logger.info(f"PIN re-verification needed for {whatsapp_number} (inactive {days_since_verification} days)")
+                # ========================================
+                # MODE-BASED TIME LIMITS
+                # ========================================
+                # Strict: 24 hours
+                # Soft: 7 days (weekly)
+                # Off: Never (already returned above)
+                
+                if pin_mode == 'Strict':
+                    # RE-VERIFY EVERY 24 HOURS
+                    if hours_since_verification >= 24:
+                        logger.info(f"🔐 STRICT MODE: {hours_since_verification:.1f} hours since last verification for {whatsapp_number}, requiring re-auth")
+                        return True, "inactivity"
+                
+                elif pin_mode == 'Soft':
+                    # RE-VERIFY EVERY 7 DAYS
+                    if days_since_verification >= 7:
+                        logger.info(f"🔐 SOFT MODE: {days_since_verification:.1f} days since last verification for {whatsapp_number}, requiring re-auth")
                         return True, "inactivity"
             
             return False, "none"
@@ -435,14 +486,14 @@ Your subscription status has changed.
 For security, please re-verify your 4-digit code:"""
     
     elif reason == "locked":
-        return f""" ACCESS SUSPENDED
+        return f""" ACCESS LOCKED
 
 Your intelligence line has been locked for security.
 
-Too many failed attempts.
+To unlock or change your PIN, contact:
+intel@voxmill.uk
 
-Contact support:
-Intel@voxmill.uk"""
+Security verification required."""
     
     else:
         return f""" ACCESS CODE REQUIRED
