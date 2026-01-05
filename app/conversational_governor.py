@@ -868,16 +868,16 @@ JSON:"""
             ),
             
             Intent.TRUST_AUTHORITY: Envelope(
-                analysis_allowed=False,
-                max_response_length=80,
+                analysis_allowed=True,
+                max_response_length=200,
                 silence_allowed=False,
                 silence_required=False,
                 refusal_allowed=False,  # CRITICAL: NO REFUSAL
                 refusal_required=False,
                 decision_mode_eligible=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
-                allowed_shapes=["STATUS_LINE"]
+                data_load_allowed=True,
+                llm_call_allowed=True,  # Static response
+                allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
             
             Intent.STATUS_MONITORING: Envelope(
@@ -1006,11 +1006,7 @@ What market intelligence can I provide?"""
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
-            return """Every insight is sourced from verified APIs and cross-referenced datasets.
-
-Confidence levels disclosed. No hallucinations.
-
-What market intelligence can I provide?"""
+            return None
         
         # PORTFOLIO_MANAGEMENT responses
         if intent == Intent.PORTFOLIO_MANAGEMENT:
