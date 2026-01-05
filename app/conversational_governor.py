@@ -185,12 +185,11 @@ class ConversationalGovernor:
             'available', 'you available', 'u available',
             'free', 'you free', 'u free', 'are you free',
             'how you doing', 'how u doing', 'howdy doing',
-            'how you doing', 'how u doing', 'howdy doing',
             'you around', 'u around', 'are you around',
             'you here', 'you ready?', 'are you here',
             'hows it going', 'hows it goin', 'how goes it',
             'you good', 'u good', 'all good', 'everything good',
-            'anyone there', 'anybody there'
+            'anyone there', 'anybody there',
             'hows things', 'how are things',
             'whats up', 'what up', 'whats good', 'whats poppin',
             'whats crackin', 'whats happening', 'whats the word',
@@ -200,7 +199,7 @@ class ConversationalGovernor:
             'everything ok', 'all ok', 'everything alright'
         ]
         
-if message_clean in phatic_patterns:
+        if message_clean in phatic_patterns:
             logger.info(f"🤝 Phatic absorbed: '{message_clean}'")
             return True, "Standing by."
         
