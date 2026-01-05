@@ -717,6 +717,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     from app.validation import HallucinationDetector
     from app.security import ResponseValidator
     from app.airtable_auto_sync import sync_usage_metrics
+    from app.conversational_governor import ConversationalGovernor, Intent
     from pymongo import MongoClient
     
     try:
@@ -1515,7 +1516,6 @@ Standing by."""
         # GOVERNANCE LAYER
         # ====================================================================
         
-        from app.conversational_governor import ConversationalGovernor, Intent
         
         conversation = ConversationSession(sender)
         conversation_entities = conversation.get_last_mentioned_entities()
