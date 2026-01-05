@@ -1590,7 +1590,7 @@ Standing by."""
                 logger.info(f"✅ Governance override: {governance_result.intent.value}")
                 return
         
-        # ====================================================================
+# ====================================================================
         # MARK TRIAL SAMPLE AS USED (IF INTELLIGENCE QUERY FROM TRIAL USER)
         # ====================================================================
         
@@ -1628,7 +1628,64 @@ Standing by."""
         
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
         
- # ====================================================================
+        # ====================================================================
+        # PORTFOLIO ADD ROUTING
+        # ====================================================================
+        
+        if governance_result.intent == Intent.PORTFOLIO_ADD:
+            try:
+                from app.portfolio import parse_property_from_message, add_property_to_portfolio
+                
+                logger.info(f"➕ Portfolio add detected")
+                
+                # Parse property details
+                property_data = parse_property_from_message(message_text)
+                
+                if property_data:
+                    # Add to portfolio
+                    response = add_property_to_portfolio(sender, property_data)
+                else:
+                    response = """PROPERTY FORMAT REQUIRED
+
+Please provide:
+Property: [address]
+Purchase: £[price]
+Date: YYYY-MM-DD
+Region: [area]
+
+Example:
+Property: 123 Park Lane
+Purchase: £2500000
+Date: 2023-01-15
+Region: Mayfair"""
+                
+                # Send response
+                await send_twilio_message(sender, response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'portfolio_add', 'intent': 'portfolio_add'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "portfolio_add", response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "portfolio_add", preferred_region)
+                
+                logger.info(f"✅ Message processed: category=portfolio_add")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Portfolio add error: {e}", exc_info=True)
+                response = "Portfolio add failed. Contact intel@voxmill.uk"
+                await send_twilio_message(sender, response)
+                return
+        
+        # ====================================================================
         # PORTFOLIO STATUS ROUTING (NEW - CRITICAL)
         # ====================================================================
         
@@ -1639,7 +1696,7 @@ Standing by."""
                 logger.info(f"📊 Portfolio query detected")
                 
                 # Get portfolio data
-                portfolio = get_portfolio_summary(sender)
+                portfolio = get_portfolio_summary(sender, client_profile)
                 
                 if portfolio.get('error'):
                     response = "No properties in portfolio."
