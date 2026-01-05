@@ -1391,6 +1391,9 @@ Standing by."""
                 # Process intelligence query
                 if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC]:
                     from app.dataset_loader import load_dataset
+
+                    industry = client_profile.get('industry', 'real_estate')
+
                     dataset = load_dataset(area=preferred_region, industry=industry)
                     
                     from app.instant_response import InstantIntelligence
@@ -1625,7 +1628,7 @@ Standing by."""
         
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
         
-        # ====================================================================
+ # ====================================================================
         # PORTFOLIO STATUS ROUTING (NEW - CRITICAL)
         # ====================================================================
         
@@ -1643,22 +1646,26 @@ Standing by."""
                 else:
                     # Format portfolio response
                     total_properties = len(portfolio.get('properties', []))
-                    total_value = portfolio.get('total_current_value', 0)
-                    total_gain_loss = portfolio.get('total_gain_loss_pct', 0)
                     
-                    # Build property list (max 5)
-                    prop_list = []
-                    for prop in portfolio.get('properties', [])[:5]:
-                        address = prop.get('address', 'Unknown')
-                        current_estimate = prop.get('current_estimate', 0)
-                        gain_loss_pct = prop.get('gain_loss_pct', 0)
+                    if total_properties == 0:
+                        response = "No properties in portfolio."
+                    else:
+                        total_value = portfolio.get('total_current_value', 0)
+                        total_gain_loss = portfolio.get('total_gain_loss_pct', 0)
                         
-                        prop_list.append(
-                            f"• {address}: £{current_estimate:,.0f} ({gain_loss_pct:+.1f}%)"
-                        )
-                    
-                    # Construct response
-                    response = f"""PORTFOLIO SUMMARY
+                        # Build property list (max 5)
+                        prop_list = []
+                        for prop in portfolio.get('properties', [])[:5]:
+                            address = prop.get('address', 'Unknown')
+                            current_estimate = prop.get('current_estimate', 0)
+                            gain_loss_pct = prop.get('gain_loss_pct', 0)
+                            
+                            prop_list.append(
+                                f"• {address}: £{current_estimate:,.0f} ({gain_loss_pct:+.1f}%)"
+                            )
+                        
+                        # Construct response
+                        response = f"""PORTFOLIO SUMMARY
 
 {chr(10).join(prop_list)}
 
@@ -1676,7 +1683,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 )
                 
                 # Log interaction
-                log_interaction(sender, message_text, "portfolio_status", response)
+                log_interaction(sender, message_text, "portfolio_status", response, 0, client_profile)
                 
                 # Update client history
                 update_client_history(sender, message_text, "portfolio_status", preferred_region)
@@ -1685,12 +1692,17 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 return  # Exit early
                 
-            except ImportError:
-                logger.error("❌ Portfolio module not available")
-                # Fall through to normal processing
+            except ImportError as e:
+                logger.error(f"❌ Portfolio module not available: {e}")
+                response = "Portfolio tracking is not enabled on this account."
+                await send_twilio_message(sender, response)
+                return
+                
             except Exception as e:
-                logger.error(f"❌ Portfolio failed: {e}")
-                # Fall through to normal processing
+                logger.error(f"❌ Portfolio error: {e}", exc_info=True)
+                response = "Portfolio temporarily unavailable. Contact intel@voxmill.uk"
+                await send_twilio_message(sender, response)
+                return
         
         # ====================================================================
         # META_AUTHORITY / PROFILE_STATUS ROUTING (NEW - CRITICAL)
