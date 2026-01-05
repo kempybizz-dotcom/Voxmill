@@ -111,7 +111,7 @@ class ConversationalGovernor:
     # ========================================
     
     @staticmethod
-    def _absorb_social_input(message: str, client_name: str = "there") -> Tuple[bool, Optional[str]]:
+    def _absorb_social_input(message: str, client_name: str = "there", conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
         """
         Layer -1: Social Absorption - Elite Edition
         
@@ -181,6 +181,10 @@ class ConversationalGovernor:
         phatic_patterns = [
             'how are you', 'how r you', 'how are u', 'how r u', 'hru',
             'you there', 'u there', 'are you there', 'r u there',
+            'busy', 'you busy', 'u busy', 'are you busy', 'r u busy',
+            'available', 'you available', 'u available',
+            'free', 'you free', 'u free', 'are you free',
+            'how you doing', 'how u doing', 'howdy doing',
             'how you doing', 'how u doing', 'howdy doing',
             'you around', 'u around', 'are you around',
             'you here', 'you ready?', 'are you here',
@@ -196,7 +200,7 @@ class ConversationalGovernor:
             'everything ok', 'all ok', 'everything alright'
         ]
         
-        if message_clean in phatic_patterns:
+if message_clean in phatic_patterns:
             logger.info(f"🤝 Phatic absorbed: '{message_clean}'")
             return True, "Standing by."
         
@@ -218,7 +222,16 @@ class ConversationalGovernor:
                 'tell me', 'explain', 'interpret'
             ]
             
-            if not any(indicator in message_clean for indicator in market_question_indicators):
+            # ✅ CHECK CONVERSATION CONTEXT FOR TRUST CRISIS
+            recent_trust_crisis = False
+            if conversation_context:
+                recent_topics = conversation_context.get('topics', [])
+                trust_crisis_topics = ['comparative_analysis', 'market_overview', 'governance_override']
+                # Check last 3 topics for trust crisis signals
+                recent_trust_crisis = any(topic in trust_crisis_topics for topic in recent_topics[-3:])
+            
+            # ✅ DON'T SILENCE DURING TRUST CRISIS
+            if not any(indicator in message_clean for indicator in market_question_indicators) and not recent_trust_crisis:
                 logger.info(f"🤝 Mood statement absorbed (silence)")
                 return True, None
         
@@ -361,7 +374,7 @@ Classification rules:
 5. PORTFOLIO VIEWING = portfolio_status (e.g. "Show me my portfolio", "How's my portfolio?", "Portfolio summary")
 6. PORTFOLIO ACTIONS = portfolio_management (e.g. "Can I add assets?", "How do I track holdings?")
 7. VALUE QUESTIONS = value_justification (e.g. "Why Voxmill?", "Why should I use this?")
-8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?")
+8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you sure?", "Really?", "Certain?")
 9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?")
 10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF")
 11. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
@@ -373,6 +386,11 @@ Classification rules:
 
 Examples:
 - "What is Voxmill?" → meta_authority (about system capabilities)
+- "Quick update" → market_query (executive shorthand for status)
+- "Net position?" → market_query (executive shorthand for summary)
+- "Anything changed?" → market_query (executive shorthand for delta)
+- "Monitor Knight Frank" → status_monitoring (setting up monitor)
+- "What am I monitoring?" → status_monitoring (checking active monitors)
 - "Why should I use Voxmill?" → value_justification (about value proposition)
 - "Let's get started" → meta_authority (onboarding request)
 - "Show me what you can do" → meta_authority (capability demonstration)
@@ -386,6 +404,12 @@ Examples:
 - "What's happening in Manhattan hedge funds?" → market_query (industry-specific query)
 - "Show me Dubai yacht market" → market_query (industry-specific query)
 - "Beverly Hills luxury automotive trends" → market_query (industry-specific query)
+- "Back to Mayfair" → preference_change (returning to previous region)    
+- "Switch back to Manhattan" → preference_change (region switch)          
+- "Return to London" → preference_change (region switch)  
+- "Are you sure?" → trust_authority (expressing doubt)                    
+- "Really?" → trust_authority (skepticism)                                
+- "You certain?" → trust_authority (confidence check)                     
 
 JSON:"""
         
@@ -1096,6 +1120,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         is_social, social_response = ConversationalGovernor._absorb_social_input(
             message_text,
             client_name
+            conversation_context
         )
         
         if is_social:
