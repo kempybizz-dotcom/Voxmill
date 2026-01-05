@@ -1083,7 +1083,7 @@ Voxmill Intelligence — Precision at Scale"""
             logger.debug(f"PIN sync skipped: {e}")
         
         # PIN verification
-        needs_verification, reason = PINAuthenticator.check_needs_verification(sender)
+        needs_verification, reason = PINAuthenticator.check_needs_verification(sender, client_profile)  # ✅ FIX 1
         client_name = client_profile.get('name', 'there')
         
         if needs_verification:
@@ -1121,7 +1121,7 @@ Voxmill Intelligence — Precision at Scale"""
             
             else:
                 if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip())
+                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)  # ✅ FIX 2
                     
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
