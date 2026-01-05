@@ -1110,7 +1110,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         Returns: GovernanceResult with intent, constraints, and optional response
         """
         
-        # ========================================
+# ========================================
         # LAYER -1: SOCIAL ABSORPTION
         # ========================================
         
@@ -1118,7 +1118,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         is_social, social_response = ConversationalGovernor._absorb_social_input(
             message_text,
-            client_name
+            client_name,  # ✅ COMMA ADDED
             conversation_context
         )
         
