@@ -44,6 +44,7 @@ class Intent(Enum):
     PORTFOLIO_STATUS = "portfolio_status"
     PORTFOLIO_ADD = "portfolio_add"
     DELIVERY_REQUEST = "delivery_request"
+    EXECUTIVE_COMPRESSION = "executive_compression"
     UNKNOWN = "unknown"
 
 
@@ -377,12 +378,13 @@ Classification rules:
 8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you sure?", "Really?", "Certain?")
 9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?")
 10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF")
-11. IMPLICIT FOLLOW-UPS = follow_up (e.g. "So what?", "Why?", "Compare that")
-12. MARKET CHANGES = preference_change (e.g. "Switch to Manhattan", "Show me Dubai")
-13. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening?", "Show me trends")
-14. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
-15. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
-16. OFF-TOPIC = gibberish (anything not about markets, investments, or business intelligence)
+11. EXECUTIVE COMPRESSION = executive_compression (e.g. "Summarise in one line", "Bullet points", "So what?", "Bottom line", "Risk memo")
+12. IMPLICIT FOLLOW-UPS = follow_up (e.g. "Why?", "Compare that", "Meaning?")
+13. MARKET CHANGES = preference_change (e.g. "Switch to Manhattan", "Show me Dubai")
+14. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening?", "Show me trends")
+15. PURE GIBBERISH = gibberish (e.g. "ahsh", "shshs", "Oi")
+16. GREETINGS/POLITENESS = gibberish (handled separately, should not reach here)
+17. OFF-TOPIC = gibberish (anything not about markets, investments, or business intelligence)
 
 Examples:
 - "What is Voxmill?" → meta_authority (about system capabilities)
@@ -398,6 +400,13 @@ Examples:
 - "What am I waiting for?" → status_monitoring (about user's status)
 - "Can I add holdings?" → portfolio_management (portfolio action)
 - "PDF?" → delivery_request (report delivery)
+- "Summarise in one line" → executive_compression
+- "Now bullet points" → executive_compression
+- "So what?" → executive_compression
+- "Bottom line?" → executive_compression
+- "Takeaway?" → executive_compression
+- "Risk memo format" → executive_compression
+- "Anything else I should know?" → executive_compression
 - "What's my name?" → profile_status (about user identity)
 - "Show me my portfolio" → portfolio_status (portfolio viewing)
 - "Add this property to portfolio" → portfolio_add
@@ -904,6 +913,19 @@ JSON:"""
                 data_load_allowed=False,
                 llm_call_allowed=False,  # Static response
                 allowed_shapes=["STATUS_LINE"]
+            ),
+
+            Intent.EXECUTIVE_COMPRESSION: Envelope(
+                analysis_allowed=True,
+                max_response_length=300,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=True,  # ✅ LLM transforms last response
+                allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
             
             Intent.UNKNOWN: Envelope(
