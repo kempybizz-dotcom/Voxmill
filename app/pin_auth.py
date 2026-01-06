@@ -209,12 +209,12 @@ class PINAuthenticator:
             logger.error(f"Verify PIN error: {e}", exc_info=True)
             return False, "System error"
     
-    @staticmethod
+@staticmethod
     def check_needs_verification(whatsapp_number: str, client_profile: dict = None) -> Tuple[bool, str]:
         """
         Check if user needs PIN verification
         
-        UPDATED: Reads PIN State and PIN Mode from Airtable (via client_profile)
+        CRITICAL FIX: Always read fresh PIN state from MongoDB, not stale Airtable cache
         
         Returns: (needs_verification, reason)
         Reasons: 'not_set', 'inactivity', 'subscription_change', 'locked', 'none'
@@ -224,32 +224,26 @@ class PINAuthenticator:
                 return False, "none"
             
             # ========================================
-            # CRITICAL: READ FROM AIRTABLE VIA CLIENT_PROFILE
+            # CRITICAL: ALWAYS READ FROM MONGODB (FRESH DATA)
+            # Airtable cache can be stale, MongoDB has real-time verification status
             # ========================================
             
-            if not client_profile:
-                # Fallback to MongoDB if client_profile not provided
-                profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
-                if not profile:
-                    return False, "none"
+            profile = db['client_profiles'].find_one({'whatsapp_number': whatsapp_number})
+            
+            if not profile:
+                return False, "none"
+            
+            # ========================================
+            # READ PIN MODE FROM AIRTABLE (VIA client_profile)
+            # PIN Mode rarely changes, safe to read from cache
+            # ========================================
+            
+            if client_profile:
+                pin_mode = client_profile.get('pin_mode', 'Strict')
             else:
-                profile = client_profile
+                pin_mode = profile.get('pin_mode', 'Strict')
             
-            # ========================================
-            # READ PIN STATE FROM AIRTABLE (3 OPTIONS)
-            # ========================================
-            # Values: 'locked', 'not_set', 'verified'
-            
-            pin_state = profile.get('pin_state', 'not_set')
-            
-            # ========================================
-            # READ PIN MODE FROM AIRTABLE (3 OPTIONS)
-            # ========================================
-            # Values: 'Off', 'Soft', 'Strict'
-            
-            pin_mode = profile.get('pin_mode', 'Strict')
-            
-            logger.info(f"🔐 PIN Check: {whatsapp_number} | State: {pin_state} | Mode: {pin_mode}")
+            logger.info(f"🔐 PIN Check: {whatsapp_number} | Mode: {pin_mode}")
             
             # ========================================
             # CRITICAL: PIN MODE = 'Off' → NEVER CHECK
@@ -260,25 +254,15 @@ class PINAuthenticator:
                 return False, "none"
             
             # ========================================
-            # CHECK 1: PIN STATE = 'locked' → HARD BLOCK
+            # CHECK 1: NO PIN HASH → REQUIRE SETUP
             # ========================================
             
-            if pin_state == 'locked':
-                logger.warning(f"🔒 PIN State = locked for {whatsapp_number}")
-                return True, "locked"
+            if not profile.get('access_pin_hash'):
+                logger.info(f"🔐 PIN not set for {whatsapp_number}")
+                return True, "not_set"
             
             # ========================================
-            # CHECK 2: PIN STATE = 'not_set' → REQUIRE SETUP
-            # ========================================
-            
-            if pin_state == 'not_set':
-                # Check if PIN hash actually exists in MongoDB
-                if not profile.get('access_pin_hash'):
-                    logger.info(f"🔐 PIN not set for {whatsapp_number}")
-                    return True, "not_set"
-            
-            # ========================================
-            # CHECK 3: MANUAL RE-VERIFICATION FLAG
+            # CHECK 2: MANUAL RE-VERIFICATION FLAG
             # ========================================
             
             if profile.get('require_pin_verification', False):
@@ -286,41 +270,49 @@ class PINAuthenticator:
                 return True, "subscription_change"
             
             # ========================================
-            # CHECK 4: TIME-BASED RE-VERIFICATION (MODE-DEPENDENT)
+            # CHECK 3: TIME-BASED RE-VERIFICATION (MODE-DEPENDENT)
             # ========================================
             
             last_verified = profile.get('last_verified_at')
             
-            if last_verified:
-                # Make timezone-aware if needed
-                if isinstance(last_verified, str):
-                    from dateutil import parser
-                    last_verified = parser.parse(last_verified)
-                
-                if last_verified.tzinfo is None:
-                    last_verified = last_verified.replace(tzinfo=timezone.utc)
-                
-                hours_since_verification = (datetime.now(timezone.utc) - last_verified).total_seconds() / 3600
-                days_since_verification = hours_since_verification / 24
-                
-                # ========================================
-                # MODE-BASED TIME LIMITS
-                # ========================================
-                # Strict: 24 hours
-                # Soft: 7 days (weekly)
-                # Off: Never (already returned above)
-                
-                if pin_mode == 'Strict':
-                    # RE-VERIFY EVERY 24 HOURS
-                    if hours_since_verification >= 24:
-                        logger.info(f"🔐 STRICT MODE: {hours_since_verification:.1f} hours since last verification for {whatsapp_number}, requiring re-auth")
-                        return True, "inactivity"
-                
-                elif pin_mode == 'Soft':
-                    # RE-VERIFY EVERY 7 DAYS
-                    if days_since_verification >= 7:
-                        logger.info(f"🔐 SOFT MODE: {days_since_verification:.1f} days since last verification for {whatsapp_number}, requiring re-auth")
-                        return True, "inactivity"
+            if not last_verified:
+                # Never verified → require verification
+                logger.info(f"🔐 No verification timestamp for {whatsapp_number}")
+                return True, "not_set"
+            
+            # Make timezone-aware if needed
+            if isinstance(last_verified, str):
+                from dateutil import parser
+                last_verified = parser.parse(last_verified)
+            
+            if last_verified.tzinfo is None:
+                last_verified = last_verified.replace(tzinfo=timezone.utc)
+            
+            hours_since_verification = (datetime.now(timezone.utc) - last_verified).total_seconds() / 3600
+            days_since_verification = hours_since_verification / 24
+            
+            # ========================================
+            # MODE-BASED TIME LIMITS
+            # ========================================
+            # Strict: 24 hours
+            # Soft: 7 days (weekly)
+            # Off: Never (already returned above)
+            
+            if pin_mode == 'Strict':
+                # RE-VERIFY EVERY 24 HOURS
+                if hours_since_verification >= 24:
+                    logger.info(f"🔐 STRICT MODE: {hours_since_verification:.1f} hours since last verification, requiring re-auth")
+                    return True, "inactivity"
+                else:
+                    logger.info(f"✅ STRICT MODE: {hours_since_verification:.1f} hours since last verification, still valid")
+            
+            elif pin_mode == 'Soft':
+                # RE-VERIFY EVERY 7 DAYS
+                if days_since_verification >= 7:
+                    logger.info(f"🔐 SOFT MODE: {days_since_verification:.1f} days since last verification, requiring re-auth")
+                    return True, "inactivity"
+                else:
+                    logger.info(f"✅ SOFT MODE: {days_since_verification:.1f} days since last verification, still valid")
             
             return False, "none"
             
