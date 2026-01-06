@@ -1926,6 +1926,110 @@ Response:"""
                 response = "Analysis backed by verified data sources. Standing by for specific questions."
                 await send_twilio_message(sender, response)
                 return
+
+
+        # ====================================================================
+        # EXECUTIVE COMPRESSION ROUTING
+        # ====================================================================
+        
+        if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
+            try:
+                from openai import AsyncOpenAI
+                
+                logger.info(f"🔄 Executive compression detected")
+                
+                # Get last response from conversation
+                conversation = ConversationSession(sender)
+                last_messages = conversation.get_last_n_messages(2)
+                
+                if len(last_messages) < 2:
+                    response = "No previous response to transform."
+                    await send_twilio_message(sender, response)
+                    return
+                
+                last_response = last_messages[-1].get('assistant', '')
+                
+                if not last_response or len(last_response) < 20:
+                    response = "No substantive response to transform."
+                    await send_twilio_message(sender, response)
+                    return
+                
+                # Get industry from client_profile
+                industry = client_profile.get('industry', 'real_estate')
+                
+                # Build transformation prompt
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""Transform this intelligence response according to executive command.
+
+Original response:
+{last_response}
+
+Executive command: "{message_text}"
+
+Transform according to command:
+- "one line" / "summarise" → Single sentence, core insight only
+- "bullet points" → 3-5 bullets, key points only
+- "so what?" / "bottom line" → Strategic implication, 1-2 sentences
+- "takeaway" → Action-oriented conclusion
+- "risk memo" → Risk-focused format with exposure + mitigation
+- "anything else?" → What wasn't mentioned but matters
+
+CRITICAL:
+- Keep same data/facts
+- Change format/emphasis only
+- No marketing language
+- Executive tone
+
+Industry: {industry}
+Max length: 250 words
+
+Transformed response:"""
+                
+                response_obj = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You transform intelligence responses to executive formats. Preserve data, change presentation."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    max_tokens=400,
+                    temperature=0.3,
+                    timeout=10.0
+                )
+                
+                compressed_response = response_obj.choices[0].message.content.strip()
+                
+                # Send response
+                await send_twilio_message(sender, compressed_response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=compressed_response,
+                    metadata={'category': 'executive_compression', 'intent': 'executive_compression'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "executive_compression", compressed_response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "executive_compression", preferred_region)
+                
+                logger.info(f"✅ Message processed: category=executive_compression")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Executive compression error: {e}", exc_info=True)
+                response = "Transformation failed. Standing by."
+                await send_twilio_message(sender, response)
+                return
         
         # ====================================================================
         # STATUS_MONITORING ROUTING (NEW - CRITICAL)
