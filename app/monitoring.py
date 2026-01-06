@@ -122,7 +122,7 @@ class MonitorManager:
         available_markets = get_available_markets_from_db(industry)
         available_competitors = get_available_competitors_from_airtable(industry)
         
-        # ========================================
+# ========================================
         # EXTRACT DURATION (ENHANCED)
         # ========================================
         
@@ -177,6 +177,7 @@ class MonitorManager:
         # ========================================
         
         agent = None
+        defaults_applied = {}
         
         # Pattern 1: Explicit competitor mention
         for competitor in available_competitors:
@@ -189,12 +190,23 @@ class MonitorManager:
             relative_patterns = [
                 'my top competitor', 'top competitor', 'biggest competitor',
                 'my main competitor', 'main competitor', 'largest competitor',
-                'leading competitor', 'my competitor', 'the competitor'
+                'leading competitor', 'my competitor', 'the competitor',
+                'biggest agent', 'main agent', 'top agent'
             ]
             
             if any(pattern in message.lower() for pattern in relative_patterns):
                 # Need to query dataset to find top competitor
                 region = client_profile.get('active_market')
+                
+                # ✅ FALLBACK: Use preferred_regions if no active_market
+                if not region:
+                    preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+                    region = preferred_regions[0] if preferred_regions else None
+                
+                # ✅ FALLBACK: Use first available market
+                if not region and available_markets:
+                    region = available_markets[0]
+                
                 if region:
                     from app.dataset_loader import load_dataset
                     dataset = load_dataset(area=region, industry=industry)
@@ -209,7 +221,8 @@ class MonitorManager:
                             reverse=True
                         )
                         agent = sorted_agents[0].get('agent')
-                        logger.info(f"Resolved 'top competitor' → {agent}")
+                        logger.info(f"✅ Resolved 'top competitor' → {agent} in {region}")
+                        defaults_applied['competitor'] = f"{agent} (auto-resolved)"
         
         # ========================================
         # EXTRACT MARKET
@@ -267,26 +280,48 @@ class MonitorManager:
                     })
                     break
         
-        # Default trigger if none found
+        # ✅ INTELLIGENT DEFAULTS - No syntax policing
+        
+        # Default trigger if none found but agent specified
         if not triggers and agent:
             triggers.append({
                 "type": "price_drop",
                 "threshold": 5,
                 "unit": "percent"
             })
-            logger.info("No explicit trigger → default 5% threshold")
+            defaults_applied['threshold'] = "5% price drop"
+            logger.info("✅ Applied default trigger: 5% price drop")
         
-        if not triggers:
+        # Default duration if none specified
+        if not duration_days or duration_days == 7:
+            if 'duration' not in defaults_applied:
+                defaults_applied['duration'] = "7 days"
+        
+        # Still require EITHER agent OR region
+        if not agent and not region:
             return False, {}
         
+        # Default region to user's preference if missing
+        if not region:
+            preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+            region = preferred_regions[0] if preferred_regions else None
+            
+            if not region and available_markets:
+                region = available_markets[0]
+                defaults_applied['region'] = region
+        
         logger.info(f"✅ Monitor parsed: market={region}, agent={agent}, triggers={len(triggers)}, duration={duration_days}d")
+        
+        if defaults_applied:
+            logger.info(f"✅ Defaults applied: {defaults_applied}")
         
         return True, {
             'industry': industry,
             'region': region,
             'agent': agent,
             'triggers': triggers,
-            'duration_days': duration_days
+            'duration_days': duration_days,
+            'defaults_applied': defaults_applied
         }
     
     @staticmethod
@@ -378,13 +413,17 @@ Stop an existing monitor or upgrade tier."""
         execution_receipt = ""
         if defaults_applied:
             applied_parts = []
+            if defaults_applied.get('competitor'):
+                applied_parts.append(f"Competitor: {defaults_applied['competitor']}")
+            if defaults_applied.get('region'):
+                applied_parts.append(f"Region: {defaults_applied['region']}")
             if defaults_applied.get('threshold'):
-                applied_parts.append(f"{defaults_applied['threshold']}% threshold")
+                applied_parts.append(f"Threshold: {defaults_applied['threshold']}")
             if defaults_applied.get('duration'):
-                applied_parts.append(f"{defaults_applied['duration']} days")
+                applied_parts.append(f"Duration: {defaults_applied['duration']}")
             
             if applied_parts:
-                execution_receipt = f"\n\nDefault parameters applied: {' · '.join(applied_parts)}"
+                execution_receipt = f"\n\n✅ AUTO-RESOLVED:\n" + "\n".join([f"• {p}" for p in applied_parts])
         
         return f"""MONITOR REQUEST
 ————————————————————————————————————————
