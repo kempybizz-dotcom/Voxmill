@@ -326,3 +326,45 @@ class ResponseEnforcer:
             'max_sentences': None,
             'description': 'Default shape'
         })
+
+@staticmethod
+    def clean_response_ending(content: str, shape: ResponseShape) -> str:
+        """
+        Remove salesy/menu language from response endings
+        
+        CRITICAL: Never end with:
+        - "What market intelligence can I provide?"
+        - "What would you like to know?"
+        - "How can I help?"
+        - Menu-style prompts
+        
+        ALLOWED ENDINGS:
+        - Insight (data point, conclusion)
+        - "Standing by."
+        - Nothing (insight speaks for itself)
+        """
+        
+        # Remove common menu endings
+        menu_patterns = [
+            r'\s*What market intelligence can I provide\??',
+            r'\s*What would you like to know\??',
+            r'\s*How can I help( you)?\??',
+            r'\s*What can I help( you)? with\??',
+            r'\s*Let me know if you need anything else\.?',
+            r'\s*What else would you like to see\??',
+            r'\s*Would you like more details\??'
+        ]
+        
+        cleaned = content
+        for pattern in menu_patterns:
+            cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+        
+        cleaned = cleaned.strip()
+        
+        # For ACKNOWLEDGMENT and STATUS_LINE shapes, ensure clean ending
+        if shape in [ResponseShape.ACKNOWLEDGMENT, ResponseShape.STATUS_LINE]:
+            # If doesn't end with punctuation, add period
+            if cleaned and not cleaned[-1] in '.!?':
+                cleaned += '.'
+        
+        return cleaned
