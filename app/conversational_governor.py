@@ -983,12 +983,13 @@ JSON:"""
         
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
-    @staticmethod
+@staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
         
         ✅ VARIED ACKNOWLEDGMENTS - rotates between options
+        ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
         Intent-based responses only (no phrase matching)
         """
         
@@ -996,11 +997,9 @@ JSON:"""
         
         # META_AUTHORITY responses
         if intent == Intent.META_AUTHORITY:
-            return """I provide real-time market intelligence for luxury property markets.
+            return """I provide real-time market intelligence across industries.
 
-Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
-
-What market intelligence can I provide?"""
+Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
         
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
@@ -1014,7 +1013,7 @@ What market intelligence can I provide?"""
 Name: {name}
 Service Tier: {tier_display}
 
-What market intelligence can I provide?"""
+Standing by."""
             else:
                 return "Client profile loading..."
         
@@ -1022,13 +1021,11 @@ What market intelligence can I provide?"""
         if intent == Intent.VALUE_JUSTIFICATION:
             return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
 
-Real-time data. Fortune-500 presentation quality. Surgical precision.
-
-What market intelligence can I provide?"""
+Real-time data. Fortune-500 presentation quality. Surgical precision."""
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
-            return None
+            return None  # Handled by LLM
         
         # PORTFOLIO_MANAGEMENT responses
         if intent == Intent.PORTFOLIO_MANAGEMENT:
@@ -1044,22 +1041,18 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         # ✅ VARIED ACKNOWLEDGMENTS
         if intent == Intent.CASUAL:
-            # 20% chance: use name if available
-            if client_name != "there" and random.random() < 0.2:
+            # 30% chance: use name if available
+            if client_name != "there" and random.random() < 0.3:
                 options = [
                     f"Standing by, {client_name}.",
-                    f"Ready, {client_name}.",
-                    f"Monitoring, {client_name}."
+                    f"Ready, {client_name}."
                 ]
             else:
-                # 80% chance: no name (variety pool)
+                # 70% chance: no name (variety pool)
                 options = [
                     "Standing by.",
                     "Ready.",
-                    "Monitoring.",
-                    "Ready when you are.",
-                    "Standing by.",  # Weighted - appears twice for higher probability
-                    "Standing by."   # Weighted again
+                    "Standing by.",  # Weighted for higher probability
                 ]
             
             return random.choice(options)
