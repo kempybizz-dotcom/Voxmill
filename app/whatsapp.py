@@ -1761,102 +1761,32 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-        # ====================================================================
-        # META_AUTHORITY / PROFILE_STATUS ROUTING (NEW - CRITICAL)
-        # ====================================================================
-        
-        if governance_result.intent in [Intent.META_AUTHORITY, Intent.PROFILE_STATUS]:
-            # These intents have hardcoded responses in governance_result.response
-            if governance_result.response:
-                await send_twilio_message(sender, governance_result.response)
-                
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=governance_result.response,
-                    metadata={'category': governance_result.intent.value, 'intent': governance_result.intent.value}
-                )
-                
-                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response)
-                update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
-                
-                # Auto-sync to Airtable
-                from app.airtable_auto_sync import sync_usage_metrics
-                
-                await sync_usage_metrics(
-                    whatsapp_number=sender,
-                    record_id=client_profile.get('airtable_record_id'),
-                    table_name=client_profile.get('airtable_table', 'Accounts'),
-                    event_type='message_sent',
-                    metadata={
-                        'tokens_used': 0,
-                        'category': governance_result.intent.value
-                    }
-                )
-                
-                logger.info(f"✅ Message processed: category={governance_result.intent.value}")
-                return
-        
 # ====================================================================
-        # VALUE_JUSTIFICATION / PORTFOLIO_MANAGEMENT / DELIVERY_REQUEST ROUTING
+        # TRUST_AUTHORITY ROUTING (LLM-POWERED)
         # ====================================================================
         
-        if governance_result.intent in [Intent.VALUE_JUSTIFICATION, Intent.PORTFOLIO_MANAGEMENT, Intent.DELIVERY_REQUEST]:
-            # These intents have hardcoded responses in governance_result.response
-            if governance_result.response:
-                await send_twilio_message(sender, governance_result.response)
+        if governance_result.intent == Intent.TRUST_AUTHORITY:
+            try:
+                from openai import AsyncOpenAI
                 
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=governance_result.response,
-                    metadata={'category': governance_result.intent.value, 'intent': governance_result.intent.value}
-                )
+                logger.info(f"🔐 Trust authority query detected")
                 
-                log_interaction(sender, message_text, governance_result.intent.value, governance_result.response, 0, client_profile)
-                update_client_history(sender, message_text, governance_result.intent.value, preferred_region)
+                # Get last response from conversation for context
+                conversation = ConversationSession(sender)
+                last_messages = conversation.get_last_n_messages(2)
                 
-                # Auto-sync to Airtable
-                from app.airtable_auto_sync import sync_usage_metrics
+                last_response = ""
+                if last_messages and len(last_messages) >= 1:
+                    # Get the most recent assistant response
+                    last_response = last_messages[-1].get('assistant', '')
                 
-                await sync_usage_metrics(
-                    whatsapp_number=sender,
-                    record_id=client_profile.get('airtable_record_id'),
-                    table_name=client_profile.get('airtable_table', 'Accounts'),
-                    event_type='message_sent',
-                    metadata={
-                        'tokens_used': 0,
-                        'category': governance_result.intent.value
-                    }
-                )
+                # Get industry from client_profile
+                industry = client_profile.get('industry', 'real_estate')
                 
-                logger.info(f"✅ Message processed: category={governance_result.intent.value}")
-                return
-        
-# ====================================================================
-# TRUST_AUTHORITY ROUTING (LLM-POWERED)
-# ====================================================================
-
-if governance_result.intent == Intent.TRUST_AUTHORITY:
-    try:
-        from openai import AsyncOpenAI
-        
-        logger.info(f"🔐 Trust authority query detected")
-        
-        # Get last response from conversation for context
-        conversation = ConversationSession(sender)
-        last_messages = conversation.get_last_n_messages(2)
-        
-        last_response = ""
-        if last_messages and len(last_messages) >= 1:
-            # Get the most recent assistant response
-            last_response = last_messages[-1].get('assistant', '')
-        
-        # Get industry from client_profile
-        industry = client_profile.get('industry', 'real_estate')
-        
-        # Build context-aware confidence assessment prompt
-        client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        
-        prompt = f"""You are a market intelligence analyst being challenged on confidence.
+                # Build context-aware confidence assessment prompt
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""You are a market intelligence analyst being challenged on confidence.
 
 Last analysis provided:
 {last_response[:500] if last_response else 'No prior analysis in this session'}
@@ -1887,59 +1817,58 @@ What breaks this: A velocity spike above ~40 or coordinated price cuts by top ag
 What to watch: First price reductions in One Hyde Park or Grosvenor Square."
 
 NEVER use generic statements like "analysis backed by verified data sources"."""
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    max_tokens=300,
+                    temperature=0.2,
+                    timeout=10.0
+                )
+                
+                trust_response = response.choices[0].message.content.strip()
+                
+                # Clean any remaining menu language
+                from app.response_enforcer import ResponseEnforcer
+                enforcer = ResponseEnforcer()
+                trust_response = enforcer.clean_response_ending(trust_response, ResponseShape.STATUS_LINE)
+                
+                # Send response
+                await send_twilio_message(sender, trust_response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=trust_response,
+                    metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "trust_authority", preferred_region)
+                
+                logger.info(f"✅ Trust authority response sent: {len(trust_response)} chars")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Trust authority error: {e}", exc_info=True)
+                # Fallback to simple acknowledgment (last resort)
+                response = "Analysis backed by verified data sources. Standing by for specific questions."
+                await send_twilio_message(sender, response)
+                return
         
-        response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            max_tokens=300,
-            temperature=0.2,
-            timeout=10.0
-        )
-        
-        trust_response = response.choices[0].message.content.strip()
-        
-        # Clean any remaining menu language
-        from app.response_enforcer import ResponseEnforcer
-        enforcer = ResponseEnforcer()
-        trust_response = enforcer.clean_response_ending(trust_response)
-        
-        # Send response
-        await send_twilio_message(sender, trust_response)
-        
-        # Update session
-        conversation.update_session(
-            user_message=message_text,
-            assistant_response=trust_response,
-            metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
-        )
-        
-        # Log interaction
-        log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
-        
-        # Update client history
-        update_client_history(sender, message_text, "trust_authority", preferred_region)
-        
-        logger.info(f"✅ Trust authority response sent: {len(trust_response)} chars")
-        
-        return  # Exit early
-        
-    except Exception as e:
-        logger.error(f"❌ Trust authority error: {e}", exc_info=True)
-        # Fallback to simple acknowledgment (last resort)
-        response = "Analysis backed by verified data sources. Standing by for specific questions."
-        await send_twilio_message(sender, response)
-        return
-
-
         # ====================================================================
         # EXECUTIVE COMPRESSION ROUTING
         # ====================================================================
