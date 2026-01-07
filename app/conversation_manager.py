@@ -501,6 +501,42 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error getting last metadata for {self.client_id}: {e}", exc_info=True)
             return {}
+
+    def get_last_n_messages(self, n: int = 2) -> List[Dict]:
+    """
+    Get last N messages from conversation history
+    
+    Returns: List of dicts with 'user' and 'assistant' keys
+    
+    Used by: Trust authority handler in whatsapp.py
+    """
+    try:
+        session = self.get_session()
+        
+        if not session or not session.get('messages'):
+            logger.debug(f"No messages in session for {self.client_id}")
+            return []
+        
+        messages = session['messages']
+        
+        # Return last N messages
+        recent = messages[-n:] if len(messages) >= n else messages
+        
+        # Format for trust authority handler
+        formatted = []
+        for msg in recent:
+            formatted.append({
+                'user': msg.get('user', ''),
+                'assistant': msg.get('assistant', ''),
+                'timestamp': msg.get('timestamp', '')
+            })
+        
+        logger.debug(f"Retrieved last {len(formatted)} messages for {self.client_id}")
+        return formatted
+        
+    except Exception as e:
+        logger.error(f"Error getting last messages for {self.client_id}: {e}")
+        return []
     
     def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
         """
