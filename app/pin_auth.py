@@ -109,7 +109,7 @@ class PINAuthenticator:
             logger.error(f"Set PIN error: {e}", exc_info=True)
             return False, "System error - please try again"
     
-    @staticmethod
+@staticmethod
     def verify_and_unlock(whatsapp_number: str, pin: str, client_profile: dict = None) -> Tuple[bool, str]:
         """
         Verify PIN and unlock intelligence access
@@ -209,7 +209,7 @@ class PINAuthenticator:
             logger.error(f"Verify PIN error: {e}", exc_info=True)
             return False, "System error"
     
-@staticmethod
+    @staticmethod
     def check_needs_verification(whatsapp_number: str, client_profile: dict = None) -> Tuple[bool, str]:
         """
         Check if user needs PIN verification
