@@ -327,7 +327,7 @@ class ResponseEnforcer:
             'description': 'Default shape'
         })
 
-@staticmethod
+    @staticmethod
     def clean_response_ending(content: str, shape: ResponseShape) -> str:
         """
         Remove salesy/menu language from response endings
