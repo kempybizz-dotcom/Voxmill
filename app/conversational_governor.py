@@ -983,7 +983,7 @@ JSON:"""
         
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
-@staticmethod
+    @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
