@@ -50,7 +50,7 @@ async def queue_airtable_update(
 
 async def _process_queue():
     """
-    Background worker: processes Airtable writes
+    Background worker: processes Airtable writes with retry logic
     
     Rate limit: Max 5 requests/second (safe for all Airtable plans)
     """
@@ -60,25 +60,52 @@ async def _process_queue():
             # Get next item (blocks if queue empty)
             item = await _write_queue.get()
             
-            # Execute write
-            try:
-                url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{item['table'].replace(' ', '%20')}/{item['record_id']}"
-                headers = {
-                    "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-                    "Content-Type": "application/json"
-                }
-                
-                payload = {"fields": item['fields']}
-                
-                response = requests.patch(url, headers=headers, json=payload, timeout=5)
-                
-                if response.status_code == 200:
-                    logger.debug(f"✅ Airtable updated: {item['table']}/{item['record_id']}")
-                else:
-                    logger.warning(f"⚠️ Airtable update failed: {response.status_code}")
+            # Execute write with retry logic
+            max_retries = 3
+            retry_delay = 1  # Start with 1 second
+            
+            for attempt in range(max_retries):
+                try:
+                    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{item['table'].replace(' ', '%20')}/{item['record_id']}"
+                    headers = {
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json"
+                    }
                     
-            except Exception as e:
-                logger.error(f"❌ Airtable write error: {e}")
+                    payload = {"fields": item['fields']}
+                    
+                    response = requests.patch(url, headers=headers, json=payload, timeout=5)
+                    
+                    if response.status_code == 200:
+                        logger.debug(f"✅ Airtable updated: {item['table']}/{item['record_id']}")
+                        break  # Success - exit retry loop
+                    
+                    elif response.status_code == 422:
+                        # Schema error (unknown field) - don't retry
+                        error_msg = response.json().get('error', {}).get('message', 'Unknown error')
+                        logger.error(f"❌ Airtable schema error (not retrying): {error_msg}")
+                        logger.error(f"   Fields attempted: {list(item['fields'].keys())}")
+                        break
+                    
+                    else:
+                        # Retriable error
+                        logger.warning(f"⚠️ Airtable update failed (attempt {attempt + 1}/{max_retries}): {response.status_code}")
+                        
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(retry_delay)
+                            retry_delay *= 2  # Exponential backoff
+                        
+                except requests.exceptions.Timeout:
+                    logger.warning(f"⚠️ Airtable timeout (attempt {attempt + 1}/{max_retries})")
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2
+                
+                except Exception as e:
+                    logger.error(f"❌ Airtable write error (attempt {attempt + 1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2
             
             # Rate limit: 5 requests/second = 200ms between requests
             await asyncio.sleep(0.2)
