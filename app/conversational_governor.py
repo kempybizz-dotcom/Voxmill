@@ -646,9 +646,40 @@ JSON:"""
         if intent_type in tier_0_intent_types:
             logger.info(f"🎯 Tier 0 intent_type '{intent_type}' - routing directly, bypassing semantic mapping")
             
+            # ✅ CHATGPT FIX: Route meta_authority to trust_authority for pressure tests
+            if intent_type == 'meta_authority':
+                # Check if it's a strategic gap question (not a capability question)
+                message_lower = message.lower()
+                
+                gap_indicators = [
+                    'what am i missing', 'what breaks', 'what if wrong',
+                    "what's missing", 'blind spot', 'not seeing',
+                    'overlooking', 'what else should'
+                ]
+                
+                capability_indicators = [
+                    'what is voxmill', 'what can you do', 'what do you do',
+                    'tell me about', 'capabilities', 'features', 'what are you'
+                ]
+                
+                is_gap_question = any(phrase in message_lower for phrase in gap_indicators)
+                is_capability_question = any(phrase in message_lower for phrase in capability_indicators)
+                
+                if is_gap_question:
+                    logger.info(f"🎯 Meta authority → trust authority (strategic gap)")
+                    return Intent.TRUST_AUTHORITY  # Route to pressure test handler
+                elif is_capability_question:
+                    logger.info(f"🎯 Meta authority → capability question")
+                    return Intent.META_AUTHORITY  # Keep as capability question
+                else:
+                    # Ambiguous - default to pressure test
+                    logger.info(f"🎯 Meta authority → trust authority (default)")
+                    return Intent.TRUST_AUTHORITY
+            
+            # Standard Tier 0 routing
             intent_map = {
                 'trust_authority': Intent.TRUST_AUTHORITY,
-                'meta_authority': Intent.META_AUTHORITY,
+                'meta_authority': Intent.META_AUTHORITY,  # Only for capability questions now
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
                 'profile_status': Intent.PROFILE_STATUS,
                 'portfolio_status': Intent.PORTFOLIO_STATUS,
