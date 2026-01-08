@@ -1513,7 +1513,7 @@ Standing by."""
             logger.info(f"✅ Monitor request handled")
             return
         
-        # ====================================================================
+# ====================================================================
         # GOVERNANCE LAYER
         # ====================================================================
         
@@ -1575,6 +1575,10 @@ Standing by."""
                 return
             else:
                 await send_twilio_message(sender, governance_result.response)
+
+                # ✅ CHATGPT FIX: Store analysis for compression (even for governance overrides)
+                conversation.store_last_analysis(governance_result.response)
+
                 
                 try:
                     conversation.update_session(
@@ -1588,7 +1592,7 @@ Standing by."""
                 logger.info(f"✅ Governance override: {governance_result.intent.value}")
                 return
         
-# ====================================================================
+        # ====================================================================
         # MARK TRIAL SAMPLE AS USED (IF INTELLIGENCE QUERY FROM TRIAL USER)
         # ====================================================================
         
@@ -1659,6 +1663,9 @@ Region: Mayfair"""
                 
                 # Send response
                 await send_twilio_message(sender, response)
+
+                # ✅ CHATGPT FIX: Store analysis for compression
+                conversation.store_last_analysis(response)
                 
                 # Update session
                 conversation.update_session(
@@ -1729,6 +1736,9 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 # Send response
                 await send_twilio_message(sender, response)
+
+                # ✅ CHATGPT FIX: Store analysis for compression
+                conversation.store_last_analysis(response)
                 
                 # Update session
                 conversation.update_session(
@@ -1759,7 +1769,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
+        # ====================================================================
         # TRUST_AUTHORITY ROUTING (LLM-POWERED)
         # ====================================================================
         
@@ -1836,12 +1846,15 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 trust_response = response.choices[0].message.content.strip()
                 
                 # Clean any remaining menu language
-                from app.response_enforcer import ResponseEnforcer
+                from app.response_enforcer import ResponseEnforcer, ResponseShape
                 enforcer = ResponseEnforcer()
                 trust_response = enforcer.clean_response_ending(trust_response, ResponseShape.STATUS_LINE)
                 
                 # Send response
                 await send_twilio_message(sender, trust_response)
+
+                # ✅ CHATGPT FIX: Store analysis for compression
+                conversation.store_last_analysis(trust_response)
                 
                 # Update session
                 conversation.update_session(
@@ -1868,8 +1881,110 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 return
         
         # ====================================================================
-        # EXECUTIVE COMPRESSION ROUTING
+        # EXECUTIVE COMPRESSION ROUTING (CHATGPT FIX)
         # ====================================================================
+        
+        if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
+            logger.info(f"🎯 Executive compression detected")
+            
+            try:
+                from openai import AsyncOpenAI
+                
+                # Get last analysis from conversation
+                conversation = ConversationSession(sender)
+                last_analysis = conversation.get_last_analysis()
+                
+                if not last_analysis:
+                    logger.warning(f"❌ No analysis to compress for {sender}")
+                    await send_twilio_message(sender, "No recent analysis to compress.")
+                    
+                    log_interaction(sender, message_text, "compression_error", "No analysis available", 0, client_profile)
+                    return
+                
+                # Detect compression format
+                message_lower = message_text.lower()
+                
+                if 'one line' in message_lower or 'single line' in message_lower:
+                    format_instruction = "ONE LINE ONLY (max 150 chars). State → Signal."
+                    max_tokens = 50
+                elif 'bullet' in message_lower or 'points' in message_lower:
+                    format_instruction = "3-5 BULLET POINTS. Concise insights only."
+                    max_tokens = 150
+                elif 'risk memo' in message_lower or 'memo' in message_lower:
+                    format_instruction = "RISK MEMO FORMAT:\n\nPRIMARY RISK: [one line]\nBREAK CONDITION: [one line]\nACTION: [one line]"
+                    max_tokens = 100
+                elif 'so what' in message_lower or 'bottom line' in message_lower or 'takeaway' in message_lower:
+                    format_instruction = "BOTTOM LINE (2-3 sentences max). What matters and why."
+                    max_tokens = 80
+                else:
+                    # Default: executive summary
+                    format_instruction = "EXECUTIVE SUMMARY (3-4 sentences). Key insight and forward signal."
+                    max_tokens = 120
+                
+                logger.info(f"🎯 Compression format: {format_instruction}")
+                
+                # Transform with LLM
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""Transform this analysis into the requested format.
+
+ORIGINAL ANALYSIS:
+{last_analysis}
+
+REQUESTED FORMAT:
+{format_instruction}
+
+CRITICAL RULES:
+- Transform ONLY (do NOT add new analysis)
+- Preserve key numbers/metrics
+- No menu language ("standing by", "what intelligence", etc)
+- End with insight, not availability
+
+Transformed response:"""
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "You are a senior analyst transforming reports into executive formats. Preserve substance, change form."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=0.2,
+                    timeout=10.0
+                )
+                
+                compressed = response.choices[0].message.content.strip()
+                
+                # Clean response ending
+                from app.response_enforcer import ResponseEnforcer, ResponseShape
+                enforcer = ResponseEnforcer()
+                compressed = enforcer.clean_response_ending(compressed, ResponseShape.STATUS_LINE)
+                
+                # Send response
+                await send_twilio_message(sender, compressed)
+
+                # ✅ CHATGPT FIX: Store compressed version for potential re-compression
+                conversation.store_last_analysis(compressed)
+                
+                # Update session (compression is part of conversation flow)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=compressed,
+                    metadata={'category': 'executive_compression', 'intent': 'executive_compression'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "executive_compression", compressed, len(compressed.split()), client_profile)
+                update_client_history(sender, message_text, "executive_compression", preferred_region)
+                
+                logger.info(f"✅ Executive compression sent: {len(compressed)} chars")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Executive compression error: {e}", exc_info=True)
+                await send_twilio_message(sender, "Compression failed. Please try again.")
+                return
         
         if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
             try:
