@@ -408,7 +408,7 @@ class ConversationSession:
             logger.warning(f"Cross-session summary failed: {e}")
             return ""
     
-def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
+    def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
         """
         Detect if current query is a follow-up to previous conversation
         
