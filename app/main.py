@@ -322,7 +322,15 @@ async def reset_monthly_message_counters():
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("🚀 Starting Voxmill WhatsApp Intelligence Service...")
+    logger.info("🚀 Voxmill WhatsApp API starting...")
+    
+    # ✅ FIX: Start Airtable queue processor
+    try:
+        from app.airtable_queue import start_queue_processor
+        await start_queue_processor()
+        logger.info("✅ Airtable queue processor initialized")
+    except Exception as e:
+        logger.error(f"⚠️ Airtable queue processor failed to start: {e}")
     
     # ========================================
     # START AIRTABLE QUEUE PROCESSOR (CRITICAL FOR PRODUCTION)
