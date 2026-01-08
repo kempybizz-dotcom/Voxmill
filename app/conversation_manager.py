@@ -408,7 +408,7 @@ class ConversationSession:
             logger.warning(f"Cross-session summary failed: {e}")
             return ""
     
-    def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
+def detect_followup_query(self, current_query: str) -> Tuple[bool, Dict]:
         """
         Detect if current query is a follow-up to previous conversation
         
@@ -473,7 +473,7 @@ class ConversationSession:
         
         return True, context_hints
     
-def get_last_metadata(self) -> dict:
+    def get_last_metadata(self) -> dict:
         """
         Get metadata from the last message in the conversation
         
