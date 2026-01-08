@@ -26,9 +26,7 @@ import pytz
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timezone, timedelta
 import asyncio
-
 from twilio.rest import Client
-
 from app.instant_response import InstantIntelligence, should_use_instant_response
 from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
@@ -44,7 +42,7 @@ from app.pin_auth import (
     get_pin_response_message,
     sync_pin_status_to_airtable
 )
-
+from app.response_enforcer import ResponseEnforcer, ResponseShape
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
