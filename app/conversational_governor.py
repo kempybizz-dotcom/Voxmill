@@ -47,6 +47,38 @@ class Intent(Enum):
     EXECUTIVE_COMPRESSION = "executive_compression"
     UNKNOWN = "unknown"
 
+# ============================================================
+# INTENT PRIORITY TIERS - CHATGPT FIX
+# ============================================================
+# Tier 0: NEVER override these intents (non-negotiable routing)
+# Tier 1: High priority (prefer these over generic intents)
+# Tier 2: Default/fallback intents
+
+TIER_0_NON_OVERRIDABLE = [
+    Intent.SECURITY,              # PIN/auth must always work
+    Intent.ADMINISTRATIVE,        # Account management critical
+    Intent.TRUST_AUTHORITY,       # Confidence challenges
+    Intent.META_AUTHORITY,        # System capability questions
+    Intent.EXECUTIVE_COMPRESSION, # Transform last response
+    Intent.MONITORING_DIRECTIVE,  # Setup monitoring
+    Intent.PORTFOLIO_MANAGEMENT,  # Portfolio actions
+    Intent.PORTFOLIO_STATUS,      # Portfolio viewing
+    Intent.PROFILE_STATUS,        # Identity questions
+    Intent.VALUE_JUSTIFICATION,   # Value prop questions
+    Intent.STATUS_MONITORING,     # Check monitors
+    Intent.DELIVERY_REQUEST,      # Report delivery
+]
+
+TIER_1_HIGH_PRIORITY = [
+    Intent.DECISION_REQUEST,      # "Should I act?"
+    Intent.STRATEGIC,             # Strategic analysis
+]
+
+TIER_2_DEFAULT = [
+    Intent.STATUS_CHECK,          # Quick status
+    Intent.UNKNOWN,               # Fallback
+]
+
 
 class SemanticCategory(Enum):
     """Semantic categories for mandate relevance"""
@@ -589,7 +621,7 @@ JSON:"""
             inferred_from=market_source
         )
     
-    # ========================================
+# ========================================
     # INTENT CLASSIFICATION (MINIMAL)
     # ========================================
     
@@ -598,9 +630,41 @@ JSON:"""
         """
         Map semantic category + intent_type to best-fit intent
         Preserves nuance while blocking non-answers
+        
+        ✅ CHATGPT FIX: Tier 0 intents bypass semantic mapping
         """
         
-        # PRIORITY: Use LLM's intent_type if provided (NEW - EXPANDED)
+        # ========================================
+        # TIER 0 CHECK: Non-overridable intents route directly
+        # ========================================
+        tier_0_intent_types = [
+            'trust_authority', 'meta_authority', 'executive_compression',
+            'profile_status', 'portfolio_status', 'portfolio_management',
+            'value_justification', 'status_monitoring', 'delivery_request'
+        ]
+        
+        if intent_type in tier_0_intent_types:
+            logger.info(f"🎯 Tier 0 intent_type '{intent_type}' - routing directly, bypassing semantic mapping")
+            
+            intent_map = {
+                'trust_authority': Intent.TRUST_AUTHORITY,
+                'meta_authority': Intent.META_AUTHORITY,
+                'executive_compression': Intent.EXECUTIVE_COMPRESSION,
+                'profile_status': Intent.PROFILE_STATUS,
+                'portfolio_status': Intent.PORTFOLIO_STATUS,
+                'portfolio_management': Intent.PORTFOLIO_MANAGEMENT,
+                'value_justification': Intent.VALUE_JUSTIFICATION,
+                'status_monitoring': Intent.STATUS_MONITORING,
+                'delivery_request': Intent.DELIVERY_REQUEST,
+            }
+            
+            return intent_map.get(intent_type, Intent.STRATEGIC)
+        
+        # ========================================
+        # TIER 1/2: Semantic category mapping for market queries
+        # ========================================
+        
+        # PRIORITY: Use LLM's intent_type if provided (for non-Tier-0)
         if intent_type == "meta_authority":
             return Intent.META_AUTHORITY
         
@@ -1521,11 +1585,36 @@ Trial access provides limited intelligence sampling."""
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-        # ========================================
-        # CRITICAL: FORCE BEST-FIT INTENT FOR MANDATE-RELEVANT QUERIES
+# ========================================
+        # INTENT PRIORITY TIER CHECK (CHATGPT FIX)
         # ========================================
         
-        if is_mandate_relevant and intent == Intent.UNKNOWN:
+        # Step 1: Check if LLM detected a Tier 0 intent via intent_type_hint
+        tier_0_detected = False
+        if intent_type_hint:
+            # Map intent_type_hint to Intent enum
+            intent_type_map = {
+                'trust_authority': Intent.TRUST_AUTHORITY,
+                'meta_authority': Intent.META_AUTHORITY,
+                'executive_compression': Intent.EXECUTIVE_COMPRESSION,
+                'profile_status': Intent.PROFILE_STATUS,
+                'portfolio_status': Intent.PORTFOLIO_STATUS,
+                'portfolio_management': Intent.PORTFOLIO_MANAGEMENT,
+                'value_justification': Intent.VALUE_JUSTIFICATION,
+                'status_monitoring': Intent.STATUS_MONITORING,
+                'delivery_request': Intent.DELIVERY_REQUEST,
+            }
+            
+            detected_intent = intent_type_map.get(intent_type_hint)
+            
+            if detected_intent and detected_intent in TIER_0_NON_OVERRIDABLE:
+                logger.info(f"🎯 TIER 0 intent detected: {detected_intent.value} - NEVER OVERRIDE")
+                intent = detected_intent
+                confidence = 0.95
+                tier_0_detected = True
+        
+        # Step 2: Only force intent if NOT a Tier 0 intent
+        if not tier_0_detected and is_mandate_relevant and intent == Intent.UNKNOWN:
             # Force to best-fit intent based on semantic category + LLM hint
             forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
                 semantic_category,
