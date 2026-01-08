@@ -1301,17 +1301,36 @@ Standing by."""
 
         logger.info(f"✅ Region = '{preferred_region}'")
         
-        # ====================================================================
+# ====================================================================
         # EARLY COMMAND ROUTING (BEFORE GOVERNANCE)
         # ====================================================================
         
         # ====================================================================
-        # MULTI-INTENT DETECTION
+        # MULTI-INTENT DETECTION (WITH CONTRADICTION EXCEPTION)
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
         
-        message_segments = ConversationalGovernor._detect_multi_intent(message_text)
+        # ✅ CHATGPT FIX: Check for contradiction phrases BEFORE splitting
+        message_lower = message_text.lower()
+        
+        contradiction_phrases = [
+            'explain tension', 'explain the tension',
+            'feels off', 'doesn\'t feel right', 'something doesn\'t feel right',
+            'doesn\'t add up', 'doesn\'t make sense', 'something wrong',
+            'contradicts', 'contradiction', 'inconsistent',
+            'seems off', 'seems wrong', 'doesn\'t fit'
+        ]
+        
+        has_contradiction = any(phrase in message_lower for phrase in contradiction_phrases)
+        
+        if has_contradiction:
+            # ✅ DISABLE SPLITTING: Treat entire message as single intent
+            logger.info(f"🎯 Contradiction phrase detected - treating as single intent (no split)")
+            message_segments = [message_text]
+        else:
+            # Normal multi-intent detection
+            message_segments = ConversationalGovernor._detect_multi_intent(message_text)
         
         if len(message_segments) > 1:
             logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments")
@@ -1408,8 +1427,11 @@ Standing by."""
             if responses:
                 combined_response = "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(responses)
                 await send_twilio_message(sender, combined_response)
-                
+
+                # ✅ CHATGPT FIX: Store combined response for compression
                 conversation = ConversationSession(sender)
+                conversation.store_last_analysis(combined_response)
+                
                 conversation.update_session(
                     user_message=message_text,
                     assistant_response=combined_response,
