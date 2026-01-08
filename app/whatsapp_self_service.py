@@ -264,16 +264,17 @@ def apply_preference_changes(whatsapp_number: str, changes: Dict, original_messa
             # ========================================
             airtable_updates = {}
             
-            # Existing fields
+            # ✅ FIX: Removed deprecated fields (Competitor Focus, Report Depth)
+            # These fields were removed from new Control Plane schema
+            # They're still tracked in MongoDB for backward compatibility
+            
+            # NOTE: In new Control Plane, these preferences don't exist
+            # If user requests depth/focus changes, store in MongoDB only
             if 'competitor_focus' in changes:
-                # Map to Airtable single select values: Low | Medium | High
-                value = changes['competitor_focus'].capitalize()
-                airtable_updates['Competitor Focus'] = value
+                logger.debug(f"Competitor focus preference stored in MongoDB only (not in Airtable)")
             
             if 'report_depth' in changes:
-                # Map to Airtable single select values: Executive | Detailed | Deep
-                value = changes['report_depth'].capitalize()
-                airtable_updates['Report Depth'] = value
+                logger.debug(f"Report depth preference stored in MongoDB only (not in Airtable)")
             
             # ========================================
             # CRITICAL FIX: REPLACE vs MERGE FOR REGIONS
@@ -567,22 +568,25 @@ Standing by."""
         except Exception as e:
             logger.error(f"Airtable auto-sync failed (non-critical): {e}")
         
-        # ========================================
+# ========================================
         # SIMPLIFIED CONFIRMATION (NO MARKETING)
         # ========================================
         
         # Build change summary
         change_lines = []
         
+        # ✅ FIX: Removed _actual_* fields (deprecated from Control Plane)
+        # These preferences stored in MongoDB only
         if 'competitor_focus' in changes:
-            focus = changes.get('_actual_competitor_focus', changes['competitor_focus']).lower()
+            focus = changes['competitor_focus'].lower()
             change_lines.append(f"• Competitor Focus: {focus}")
         
         if 'report_depth' in changes:
-            depth = changes.get('_actual_report_depth', changes['report_depth']).lower()
+            depth = changes['report_depth'].lower()
             change_lines.append(f"• Report Depth: {depth}")
         
         if 'regions' in changes:
+            # ✅ Use _actual_regions if available (from Airtable echo)
             market = changes.get('_actual_regions', changes['regions'][0] if isinstance(changes['regions'], list) else changes['regions'])
             change_lines.append(f"• Coverage Area: {market}")
         
@@ -598,7 +602,6 @@ Standing by."""
     else:
         logger.error(f"❌ Failed to update preferences for {from_number}")
         return "Unable to update preferences.\n\nStanding by."
-
 
 def enhanced_whatsapp_handler(from_number: str, message: str) -> str:
     """
