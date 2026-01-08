@@ -1769,15 +1769,15 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-        # ====================================================================
-        # TRUST_AUTHORITY ROUTING (LLM-POWERED)
+# ====================================================================
+        # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST)
         # ====================================================================
         
         if governance_result.intent == Intent.TRUST_AUTHORITY:
             try:
                 from openai import AsyncOpenAI
                 
-                logger.info(f"🔐 Trust authority query detected")
+                logger.info(f"🔐 Trust authority / Pressure test query detected")
                 
                 # Get last response from conversation for context
                 conversation = ConversationSession(sender)
@@ -1791,10 +1791,61 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 # Get industry from client_profile
                 industry = client_profile.get('industry', 'real_estate')
                 
-                # Build context-aware confidence assessment prompt
+                # ✅ CHATGPT FIX: Detect query type (confidence vs strategic gap)
+                message_lower = message_text.lower()
+                
+                is_gap_question = any(phrase in message_lower for phrase in [
+                    'what am i missing', 'what breaks', 'what if wrong', 
+                    "what's missing", 'blind spot', 'not seeing',
+                    'what else', 'overlooking', 'miss'
+                ])
+                
+                # Build context-aware prompt based on query type
                 client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
                 
-                prompt = f"""You are a market intelligence analyst being challenged on confidence.
+                if is_gap_question:
+                    # STRATEGIC GAP / PRESSURE TEST
+                    logger.info(f"🎯 Strategic gap question detected")
+                    
+                    prompt = f"""You are a senior market intelligence analyst. The client is asking what they're NOT seeing.
+
+Last analysis provided:
+{last_response[:500] if last_response else 'No prior analysis in this session'}
+
+User's question: "{message_text}"
+
+Respond with STRATEGIC GAP ANALYSIS:
+
+What you're not missing: [State what they DO have]
+What you ARE missing: [The ONE thing they can't see from the data alone]
+Why it matters: [Forward consequence/action]
+
+CRITICAL RULES:
+- This is about JUDGMENT, not more data
+- Identify the strategic element invisible in the raw numbers
+- Examples: cascade signals, agent behavior patterns, timing inflection points
+- Be specific (use agent names, price points, velocity thresholds from analysis)
+- Maximum 100 words
+- No menu language, no "standing by"
+
+Example format:
+"You're not missing data—you're missing the CASCADE SIGNAL.
+
+When Sotheby's (22.6% share) adjusts pricing in One Hyde Park, it triggers network effects across Mayfair. That's the inflection point velocity alone can't capture.
+
+Watch their Q1 strategy shift—that's your early warning system."
+
+Industry: {industry}
+Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile else 'Mayfair'}"""
+                    
+                    system_message = "You are a senior market intelligence analyst. You identify strategic blind spots and forward signals that data alone cannot reveal."
+                    max_tokens = 200
+                    
+                else:
+                    # CONFIDENCE CHALLENGE
+                    logger.info(f"🎯 Confidence challenge detected")
+                    
+                    prompt = f"""You are a market intelligence analyst being challenged on confidence.
 
 Last analysis provided:
 {last_response[:500] if last_response else 'No prior analysis in this session'}
@@ -1825,20 +1876,18 @@ What breaks this: A velocity spike above ~40 or coordinated price cuts by top ag
 What to watch: First price reductions in One Hyde Park or Grosvenor Square."
 
 NEVER use generic statements like "analysis backed by verified data sources"."""
+                    
+                    system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
+                    max_tokens = 300
                 
+                # Generate response
                 response = await client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
-                        {
-                            "role": "system",
-                            "content": "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": prompt}
                     ],
-                    max_tokens=300,
+                    max_tokens=max_tokens,
                     temperature=0.2,
                     timeout=10.0
                 )
