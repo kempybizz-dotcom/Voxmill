@@ -537,6 +537,78 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error getting last messages for {self.client_id}: {e}")
             return []
+
+    def store_last_analysis(self, content: str):
+        """
+        Store the last assistant analysis separately from chat history
+        
+        Used by: Executive compression handler to transform responses
+        
+        CRITICAL: This is separate from update_session() to avoid circular storage
+        """
+        try:
+            session = self.get_session()
+            
+            # Store in a separate key for analysis payload
+            session['last_analysis_payload'] = {
+                'content': content[:2000],  # Truncate to 2000 chars (generous for compression)
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Save to Redis (if available)
+            if redis_available and redis_client:
+                try:
+                    redis_client.setex(
+                        self.session_key,
+                        self.SESSION_TTL,
+                        json.dumps(session)
+                    )
+                    logger.debug(f"💾 REDIS: Stored last analysis for {self.client_id}: {len(content)} chars")
+                except Exception as e:
+                    logger.warning(f"Redis analysis storage failed: {e}, using memory only")
+            
+            # ALWAYS save to memory as backup
+            with _memory_sessions_lock:
+                _memory_sessions[self.client_id] = session
+                logger.debug(f"💾 MEMORY: Stored last analysis for {self.client_id}: {len(content)} chars")
+            
+        except Exception as e:
+            logger.error(f"Error storing last analysis for {self.client_id}: {e}", exc_info=True)
+    
+    def get_last_analysis(self) -> Optional[str]:
+        """
+        Get the last assistant analysis payload
+        
+        Returns: Analysis content string or None if not found
+        
+        Used by: Executive compression handler to transform responses
+        """
+        try:
+            session = self.get_session()
+            
+            if not session:
+                logger.debug(f"No session found for {self.client_id}")
+                return None
+            
+            payload = session.get('last_analysis_payload')
+            
+            if not payload:
+                logger.debug(f"No last analysis stored for {self.client_id}")
+                return None
+            
+            content = payload.get('content')
+            timestamp = payload.get('timestamp')
+            
+            if content:
+                logger.debug(f"✅ Retrieved last analysis for {self.client_id}: {len(content)} chars, timestamp: {timestamp}")
+                return content
+            else:
+                logger.debug(f"Last analysis payload empty for {self.client_id}")
+                return None
+            
+        except Exception as e:
+            logger.error(f"Error getting last analysis for {self.client_id}: {e}", exc_info=True)
+            return None
     
     def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
         """
