@@ -842,6 +842,41 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
+
+        logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
+
+        # ====================================================================
+        # GATE 2: RATE LIMITING
+        # ====================================================================
+        
+        from app.rate_limiter import RateLimiter
+        
+        logger.info(f"🔐 GATE 2: Checking rate limit...")
+        
+        allowed, current_count, limit = RateLimiter.check_rate_limit(sender, client_profile)
+        
+        if not allowed:
+            reset_time = RateLimiter.get_reset_time(sender)
+            reset_minutes = reset_time // 60 if reset_time else 60
+            
+            logger.warning(f"🚫 GATE 2 FAILED: RATE LIMIT EXCEEDED: {sender} ({current_count}/{limit})")
+            
+            await send_twilio_message(
+                sender,
+                f"""RATE LIMIT EXCEEDED
+
+You've reached your hourly message limit ({limit} messages/hour).
+
+Current usage: {current_count} messages
+Limit resets in: ~{reset_minutes} minutes
+
+For higher limits, contact:
+intel@voxmill.uk"""
+            )
+            return
+        
+        logger.info(f"✅ GATE 2 PASSED: Rate limit OK ({current_count}/{limit})")
+
         
         # ====================================================================
         # AUTOMATED WELCOME MESSAGE DETECTION (FIRST MESSAGE ONLY)
