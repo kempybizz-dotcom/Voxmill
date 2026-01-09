@@ -1686,7 +1686,7 @@ Standing by."""
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
 
         
-        # ====================================================================
+# ====================================================================
         # PORTFOLIO MANAGEMENT ROUTING (ADD/UPDATE/REMOVE PROPERTIES)
         # ====================================================================
         
@@ -1763,6 +1763,13 @@ Or discuss a property first, then say:
         # ====================================================================
         
         if governance_result.intent == Intent.PORTFOLIO_STATUS:
+            # ✅ CRITICAL FIX: Skip if we just handled PORTFOLIO_MANAGEMENT
+            last_metadata = safe_get_last_metadata(conversation)
+            
+            if last_metadata.get('intent') == 'portfolio_management':
+                logger.info("⏭️ SKIP: Portfolio status check immediately after add operation")
+                return
+            
             try:
                 from app.portfolio import get_portfolio_summary
                 
@@ -1772,13 +1779,17 @@ Or discuss a property first, then say:
                 portfolio = get_portfolio_summary(sender, client_profile)
                 
                 if portfolio.get('error'):
-                    response = "No properties in portfolio."
+                    response = """Your portfolio is currently empty.
+
+You can add properties by sending an address, postcode, or Rightmove link."""
                 else:
                     # Format portfolio response
                     total_properties = len(portfolio.get('properties', []))
                     
                     if total_properties == 0:
-                        response = "No properties in portfolio."
+                        response = """Your portfolio is currently empty.
+
+You can add properties by sending an address, postcode, or Rightmove link."""
                     else:
                         total_value = portfolio.get('total_current_value', 0)
                         total_gain_loss = portfolio.get('total_gain_loss_pct', 0)
