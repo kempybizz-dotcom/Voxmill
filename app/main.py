@@ -9,6 +9,7 @@ import os
 import sys
 import logging
 import asyncio
+import requests  # ✅ ADDED
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
