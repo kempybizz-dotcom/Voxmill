@@ -705,8 +705,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     GATE SEQUENCE:
     Identity → Trial → Subscription → PIN → Governance → Intelligence
     """
-
-    import re
     
     # ✅ CRITICAL IMPORTS - MUST BE AT TOP OF FUNCTION
     from app.dataset_loader import load_dataset
@@ -1595,7 +1593,6 @@ Standing by."""
                         break
                     
                     # Pattern 2: Address extraction (basic)
-                    import re
                     address_pattern = r'([A-Z][a-z]+ [A-Z][a-z]+(?:, [A-Z][a-z]+)?)'
                     address_match = re.search(address_pattern, assistant_text)
                     
@@ -1711,7 +1708,7 @@ Region: Mayfair"
             logger.info(f"✅ Monitor request handled")
             return
         
-# ====================================================================
+        # ====================================================================
         # GOVERNANCE LAYER
         # ====================================================================
         
