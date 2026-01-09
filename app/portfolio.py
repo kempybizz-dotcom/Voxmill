@@ -39,6 +39,8 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
         }
     """
     
+    import re as regex_module  # ✅ FIX: Use alias to avoid shadowing
+    
     try:
         message_clean = message.strip()
         
@@ -48,21 +50,21 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
         
         # Check if message has structured format
         has_price = 'purchase:' in message.lower() or '£' in message
-        has_date = re.search(r'\d{4}-\d{2}-\d{2}', message)
+        has_date = regex_module.search(r'\d{4}-\d{2}-\d{2}', message)
         has_region_keyword = 'region:' in message.lower()
         
         if has_price and has_date and has_region_keyword:
             # Parse structured format
-            address_match = re.search(r'Property:\s*([^,]+)', message, re.IGNORECASE)
+            address_match = regex_module.search(r'Property:\s*([^,]+)', message, regex_module.IGNORECASE)
             address = address_match.group(1).strip() if address_match else None
             
-            price_match = re.search(r'Purchase:\s*£?([\d,]+)', message, re.IGNORECASE)
+            price_match = regex_module.search(r'Purchase:\s*£?([\d,]+)', message, regex_module.IGNORECASE)
             price = int(price_match.group(1).replace(',', '')) if price_match else None
             
-            date_match = re.search(r'Date:\s*(\d{4}-\d{2}-\d{2})', message, re.IGNORECASE)
+            date_match = regex_module.search(r'Date:\s*(\d{4}-\d{2}-\d{2})', message, regex_module.IGNORECASE)
             date = date_match.group(1) if date_match else None
             
-            region_match = re.search(r'Region:\s*([A-Za-z\s]+)', message, re.IGNORECASE)
+            region_match = regex_module.search(r'Region:\s*([A-Za-z\s]+)', message, regex_module.IGNORECASE)
             region = region_match.group(1).strip() if region_match else None
             
             if address and price and date and region:
@@ -93,7 +95,7 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
         region = None
         
         # UK postcode pattern (e.g., SW1X, W1K, etc.)
-        postcode_match = re.search(r'\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b', address)
+        postcode_match = regex_module.search(r'\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b', address)
         if postcode_match:
             postcode = postcode_match.group(1)
             # Map postcode to region (simple heuristic)
@@ -229,7 +231,6 @@ Standing by."""
         return "Failed to add property. Please try again."
 
 
-
 def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> dict:
     """
     Get client's full portfolio with INTELLIGENT valuations
@@ -241,7 +242,7 @@ def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> 
     
     Args:
         whatsapp_number: Client's WhatsApp number
-        industry: Industry code (default: 'real_estate')
+        client_profile: Client profile dict with industry
     """
     
     try:
