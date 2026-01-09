@@ -228,27 +228,34 @@ def calculate_engagement_level(client: Dict) -> str:
     # Calculate messages per day
     created_at = client.get('created_at')
     if created_at:
-        # ✅ Ensure timezone-aware datetime
-        if isinstance(created_at, str):
-            from dateutil import parser as dateutil_parser
-            created_at = dateutil_parser.parse(created_at)
-        
-        # Make timezone-aware if naive
-        if created_at.tzinfo is None:
-            created_at = created_at.replace(tzinfo=timezone.utc)
-        
-        days_active = (datetime.now(timezone.utc) - created_at).days
-        if days_active < 1:
-            days_active = 1
-        
-        messages_per_day = total_messages / days_active
-        
-        if messages_per_day >= 5:
-            return 'High'
-        elif messages_per_day >= 1:
-            return 'Medium'
-        else:
-            return 'Low'
+        try:
+            # ✅ FIX: Ensure timezone-aware datetime
+            if isinstance(created_at, str):
+                from dateutil import parser as dateutil_parser
+                created_at = dateutil_parser.parse(created_at)
+            
+            # ✅ FIX: Make timezone-aware if naive
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+            
+            # ✅ FIX: Ensure datetime.now() is also timezone-aware
+            now = datetime.now(timezone.utc)
+            
+            days_active = (now - created_at).days
+            if days_active < 1:
+                days_active = 1
+            
+            messages_per_day = total_messages / days_active
+            
+            if messages_per_day >= 5:
+                return 'High'
+            elif messages_per_day >= 1:
+                return 'Medium'
+            else:
+                return 'Low'
+        except Exception as e:
+            logger.error(f"Engagement level calculation failed: {e}")
+            # Fallback to total-based calculation
     
     # Fallback: use total only
     if total_messages >= 50:
