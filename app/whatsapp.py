@@ -1983,7 +1983,7 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
             # Fallback to simple acknowledgment (last resort)
             response = "Analysis backed by verified data sources. Standing by for specific questions."
             await send_twilio_message(sender, response)
-            return'''
+            return
 
 
         # ====================================================================
