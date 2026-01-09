@@ -442,6 +442,11 @@ Examples:
 - "Risk memo format" → executive_compression
 - "Anything else I should know?" → executive_compression
 - "What's my name?" → profile_status (about user identity)
+- "What am I missing?" → trust_authority (strategic gap question)
+- "What am I missing this week?" → trust_authority (strategic gap with timeframe)
+- "What am I missing today?" → trust_authority (strategic gap with timeframe)
+- "What have I missed?" → trust_authority (strategic gap question)
+- "What's the blind spot?" → trust_authority (strategic gap question)
 - "Show me my portfolio" → portfolio_status (portfolio viewing)
 - "Add this property to portfolio" → portfolio_add
 - "Track this property" → portfolio_add
@@ -692,6 +697,17 @@ JSON:"""
             }
             
             return intent_map.get(intent_type, Intent.STRATEGIC)
+
+
+        
+    @staticmethod
+    def _is_protected_intent(intent: Intent) -> bool:
+    """
+    Check if intent is Tier 0 (non-overridable)
+    
+    These intents NEVER get downgraded to ACK/SILENCE
+    """
+    return intent in TIER_0_NON_OVERRIDABLE
         
         # ========================================
         # TIER 1/2: Semantic category mapping for market queries
