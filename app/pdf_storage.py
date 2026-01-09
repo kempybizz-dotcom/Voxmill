@@ -237,7 +237,10 @@ def get_latest_pdf_for_client(whatsapp_number: str, area: str) -> Optional[str]:
                     
                     # Return it anyway if it's not too old (30 days)
                     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
-                    if any_pdf.get('uploadDate', datetime.min.replace(tzinfo=timezone.utc)) > thirty_days_ago:
+                    
+                    # ✅ FIX: Use Unix epoch as default instead of datetime.min
+                    upload_date = any_pdf.get('uploadDate')
+                    if upload_date and upload_date > thirty_days_ago:
                         logger.info(f"✅ Returning PDF from last 30 days ({pdf_area})")
                         file_doc = any_pdf
             
