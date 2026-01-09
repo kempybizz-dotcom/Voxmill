@@ -340,7 +340,7 @@ Timing score: {timing_score}/100 ({timing_rec})"""]
         
         return "\n".join(sections)
     
-@staticmethod
+    @staticmethod
     def get_agent_analysis(area: str, dataset: Dict) -> str:
         """
         INSTANT AGENT ANALYSIS - Show agent behaviors
