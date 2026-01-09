@@ -340,7 +340,7 @@ Timing score: {timing_score}/100 ({timing_rec})"""]
         
         return "\n".join(sections)
     
-    @staticmethod
+@staticmethod
     def get_agent_analysis(area: str, dataset: Dict) -> str:
         """
         INSTANT AGENT ANALYSIS - Show agent behaviors
@@ -372,12 +372,69 @@ Requires 30+ days of tracking."""
         aggressive = [a for a in agent_profiles if 'aggressive' in a.get('archetype', '').lower()]
         if aggressive:
             sections.append(f"""
-  TACTICAL SIGNAL
+TACTICAL SIGNAL
 {aggressive[0]['agent']} showing aggressive pricing.
 Cascade analysis available: "What if {aggressive[0]['agent']} drops 5%?"
 """)
         
         return "\n".join(sections)
+    
+    @staticmethod
+    def get_net_position(area: str, dataset: Dict) -> str:
+        """
+        NET POSITION - Structured decision format
+        
+        Format: Position → Why → Upside Trigger → Downside Risk
+        Maximum clarity, zero decoration
+        """
+        
+        metrics = dataset.get('metrics', {})
+        intelligence = dataset.get('intelligence', {})
+        
+        # Get key metrics
+        inventory = metrics.get('property_count', 0)
+        avg_price = metrics.get('avg_price', 0)
+        sentiment = intelligence.get('market_sentiment', 'neutral').lower()
+        
+        # Get velocity if available
+        velocity_data = dataset.get('liquidity_velocity', {})
+        velocity_score = velocity_data.get('velocity_score', 50)
+        velocity_class = velocity_data.get('velocity_class', 'moderate').lower()
+        
+        # DETERMINE NET POSITION (rule-based logic)
+        if velocity_score > 70 and sentiment in ['bullish', 'neutral']:
+            position = "Long"
+            why = f"Velocity {velocity_score}/100 with {inventory} units—window open"
+            upside = "Coordinated price increases if velocity sustains >75"
+            downside = "Velocity reversal below 60 closes entry window"
+        
+        elif velocity_score < 35:
+            position = "Hold"
+            why = f"Velocity sub-35 with flat inventory—illiquid conditions"
+            upside = "Velocity recovery >50 reopens entry"
+            downside = f"Extended DOM >60 days in £{int(avg_price/1_000_000):.0f}m band locks capital"
+        
+        elif sentiment == 'bearish' and velocity_score < 50:
+            position = "Short (Exit bias)"
+            why = f"Bearish sentiment with velocity {velocity_score}/100—deteriorating"
+            upside = "Sentiment shift to neutral + velocity >55"
+            downside = "Continued decline, liquidity dries up further"
+        
+        else:
+            # Neutral default
+            position = "Neutral"
+            why = f"Velocity {velocity_score}/100, sentiment {sentiment}—balanced"
+            upside = f"Velocity >60 or first coordinated price cuts"
+            downside = f"Velocity sustained <40 or inventory spike >15%"
+        
+        # Build response
+        return f"""NET POSITION: {position}
+
+Why: {why}
+
+Upside trigger: {upside}
+
+Downside risk: {downside}"""
 
 
 def should_use_instant_response(message: str, category: str) -> bool:
@@ -397,7 +454,9 @@ def should_use_instant_response(message: str, category: str) -> bool:
         'trends',
         'timing',
         'agents',
-        'decision mode'
+        'decision mode',
+        'net position',
+        'market position'
     ]
     
     message_lower = message.lower()
