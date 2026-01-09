@@ -701,22 +701,20 @@ JSON:"""
                 'delivery_request': Intent.DELIVERY_REQUEST,
             }
             
-            return intent_map.get(intent_type, Intent.STRATEGIC)
-
-
-        
-    @staticmethod
-    def _is_protected_intent(intent: Intent) -> bool:
-    """
-    Check if intent is Tier 0 (non-overridable)
-    
-    These intents NEVER get downgraded to ACK/SILENCE
-    """
-    return intent in TIER_0_NON_OVERRIDABLE
+  return intent_map.get(intent_type, Intent.STRATEGIC)
         
         # ========================================
         # TIER 1/2: Semantic category mapping for market queries
         # ========================================
+    
+    @staticmethod
+    def _is_protected_intent(intent: Intent) -> bool:
+        """
+        Check if intent is Tier 0 (non-overridable)
+        
+        These intents NEVER get downgraded to ACK/SILENCE
+        """
+        return intent in TIER_0_NON_OVERRIDABLE
         
         # PRIORITY: Use LLM's intent_type if provided (for non-Tier-0)
         if intent_type == "meta_authority":
