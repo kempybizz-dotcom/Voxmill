@@ -1183,7 +1183,7 @@ Voxmill Intelligence — Precision at Scale"""
         # PIN commands
         message_lower = message_text.lower().strip()
         
-        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock my account', 'lock it', 'lock this', 'lock down', 'secure account']
+        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock session', 'lock my account', 'lock it', 'lock this', 'lock down', 'secure account']
         if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
             success, message = PINAuthenticator.manual_lock(sender)
             
