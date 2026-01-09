@@ -122,7 +122,7 @@ class RateLimiter:
             # Fail open (allow request if rate limiter breaks)
             return True, 0, cls.DEFAULT_LIMIT
     
-@classmethod
+    @classmethod
     def get_reset_time(cls, client_id: str) -> Optional[int]:
         """
         Get seconds until rate limit resets
