@@ -142,7 +142,18 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
 
 
 def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
-    """Add property to client's portfolio (flexible data)"""
+    """
+    Add property to client's portfolio with MongoDB persistence
+    
+    ✅ CHATGPT FIX: Returns structured confirmation message
+    
+    Args:
+        whatsapp_number: Client's WhatsApp number
+        property_data: Dict with address, region, purchase_price, etc.
+    
+    Returns:
+        Confirmation message in portfolio format
+    """
     
     try:
         # Build property document (handle None values)
@@ -161,7 +172,8 @@ def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
         if property_data.get('purchase_date'):
             property_doc['purchase_date'] = property_data.get('purchase_date')
         
-        db['client_portfolios'].update_one(
+        # ✅ CRITICAL: WRITE TO MONGODB
+        result = db['client_portfolios'].update_one(
             {'whatsapp_number': whatsapp_number},
             {
                 '$push': {'properties': property_doc},
@@ -170,31 +182,47 @@ def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
             upsert=True
         )
         
-        logger.info(f"✅ Property added to portfolio: {whatsapp_number}")
-        
-        # ✅ FIX: Show what was actually added
-        address = property_data.get('address')
-        region = property_data.get('region')
-        price = property_data.get('purchase_price')
-        
-        if price:
-            return f"""PROPERTY ADDED
+        # ✅ VERIFY WRITE SUCCESS
+        if result.modified_count > 0 or result.upserted_id:
+            logger.info(f"✅ Property added to portfolio: {whatsapp_number}")
+            
+            # Get portfolio count
+            portfolio = db['client_portfolios'].find_one({'whatsapp_number': whatsapp_number})
+            portfolio_count = len(portfolio.get('properties', [])) if portfolio else 1
+            
+            # ✅ CHATGPT FIX: Structured confirmation format
+            address = property_data.get('address')
+            region = property_data.get('region')
+            price = property_data.get('purchase_price')
+            
+            if price:
+                return f"""PORTFOLIO UPDATED
 
+Asset added:
 {address}
-Purchase: £{price:,.0f}
 Region: {region}
+Purchase price: £{price:,.0f}
 
-Portfolio tracking active."""
+Portfolio size: {portfolio_count} asset{"s" if portfolio_count != 1 else ""}
+
+Standing by."""
+            else:
+                return f"""PORTFOLIO UPDATED
+
+Asset added:
+{address}
+Region: {region}
+Estimated value: Market rate
+
+Portfolio size: {portfolio_count} asset{"s" if portfolio_count != 1 else ""}
+
+Note: Add purchase price for precise tracking:
+"Update property: {address}, Purchase: £[amount]"
+
+Standing by."""
         else:
-            return f"""PROPERTY ADDED
-
-{address}
-Region: {region}
-
-Note: Add purchase price for valuation tracking:
-"Update property: [address], Purchase: £[price]"
-
-Portfolio tracking active."""
+            logger.error(f"Portfolio update failed: no documents modified")
+            return "Failed to add property. Please try again."
         
     except Exception as e:
         logger.error(f"Add property error: {e}", exc_info=True)
