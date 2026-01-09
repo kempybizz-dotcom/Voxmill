@@ -1687,67 +1687,65 @@ Standing by."""
         
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
         
-        # ====================================================================
-        # PORTFOLIO ADD ROUTING
+# ====================================================================
+        # PORTFOLIO MANAGEMENT ROUTING (ADD/UPDATE/REMOVE PROPERTIES)
         # ====================================================================
         
-        if governance_result.intent == Intent.PORTFOLIO_ADD:
+        if governance_result.intent == Intent.PORTFOLIO_MANAGEMENT:
             try:
                 from app.portfolio import parse_property_from_message, add_property_to_portfolio
                 
-                logger.info(f"➕ Portfolio add detected")
+                logger.info(f"📊 Portfolio modification detected")
                 
-                # Parse property details
+                # Parse property from message
                 property_data = parse_property_from_message(message_text)
                 
-                if property_data:
-                    # Add to portfolio
-                    response = add_property_to_portfolio(sender, property_data)
-                else:
-                    response = """PROPERTY FORMAT REQUIRED
+                if not property_data:
+                    response = """Property format not recognized.
 
-Please provide:
-Property: [address]
-Purchase: £[price]
-Date: YYYY-MM-DD
-Region: [area]
+Examples:
+- "Add property: One Hyde Park, Knightsbridge, London SW1X"
+- "123 Park Lane, Mayfair"
+- "Property: Chelsea Harbour, Purchase: £3500000, Date: 2024-01-15, Region: Chelsea"
 
-Example:
-Property: 123 Park Lane
-Purchase: £2500000
-Date: 2023-01-15
-Region: Mayfair"""
+Try again with an address."""
+                    
+                    await send_twilio_message(sender, response)
+                    return
                 
-                # Send response
+                # Add to portfolio
+                response = add_property_to_portfolio(sender, property_data)
+                
+                # Send confirmation
                 await send_twilio_message(sender, response)
-
-                # ✅ CHATGPT FIX: Store analysis for compression
+                
+                # Store for compression
                 conversation.store_last_analysis(response)
                 
                 # Update session
                 conversation.update_session(
                     user_message=message_text,
                     assistant_response=response,
-                    metadata={'category': 'portfolio_add', 'intent': 'portfolio_add'}
+                    metadata={'category': 'portfolio_management', 'intent': 'portfolio_management'}
                 )
                 
                 # Log interaction
-                log_interaction(sender, message_text, "portfolio_add", response, 0, client_profile)
+                log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
                 
                 # Update client history
-                update_client_history(sender, message_text, "portfolio_add", preferred_region)
+                update_client_history(sender, message_text, "portfolio_management", preferred_region)
                 
-                logger.info(f"✅ Message processed: category=portfolio_add")
+                logger.info(f"✅ Portfolio property added successfully")
                 
                 return  # Exit early
                 
             except Exception as e:
-                logger.error(f"❌ Portfolio add error: {e}", exc_info=True)
-                response = "Portfolio add failed. Contact intel@voxmill.uk"
+                logger.error(f"❌ Portfolio management error: {e}", exc_info=True)
+                response = "Failed to add property. Please try again or contact intel@voxmill.uk"
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
+        # ====================================================================
         # PORTFOLIO STATUS ROUTING (WORLD-CLASS)
         # ====================================================================
         
