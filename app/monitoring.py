@@ -781,10 +781,21 @@ async def check_monitors_and_alert():
             if monitor.get('status') != 'active':
                 continue
             
-            # Check if it's time to check
+            # ✅ FIX: Ensure next_check is timezone-aware before comparison
             next_check = monitor.get('next_check')
-            if not next_check or datetime.now(timezone.utc) < next_check:
-                continue
+            
+            if next_check:
+                # Convert string to datetime if needed
+                if isinstance(next_check, str):
+                    next_check = dateutil_parser.parse(next_check)
+                
+                # Make timezone-aware if naive
+                if next_check.tzinfo is None:
+                    next_check = next_check.replace(tzinfo=timezone.utc)
+                
+                # Now safe to compare
+                if datetime.now(timezone.utc) < next_check:
+                    continue
             
             # Load current data
             from app.dataset_loader import load_dataset
