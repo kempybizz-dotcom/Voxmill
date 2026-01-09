@@ -2676,14 +2676,45 @@ Standing by."""
             logger.info(f"✅ Instant response sent (<1s)")
             return
         
-        # ====================================================================
+# ====================================================================
         # COMPLEX QUERIES: LOAD DATASET AND USE GPT-4
         # ====================================================================
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
-        # ✅ FIXED: Remove industry parameter (not supported by load_dataset)
-        dataset = load_dataset(area=query_region)
+        # ====================================================================
+        # COMPARISON QUERY DETECTION
+        # ====================================================================
+        
+        comparison_keywords = ['compare', 'vs', 'versus', 'difference', 'compare them', 'how do they compare']
+        is_comparison = any(kw in message_lower for kw in comparison_keywords)
+        
+        comparison_datasets = None
+        
+        if is_comparison:
+            # Get regions from conversation context
+            conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
+            
+            if len(conversation_regions) >= 2:
+                # User said "compare them" - use last 2 regions mentioned
+                region_1 = conversation_regions[-2]
+                region_2 = conversation_regions[-1]
+                
+                logger.info(f"🔀 Comparison detected: {region_1} vs {region_2}")
+                
+                # Load datasets for both regions
+                dataset = load_dataset(area=region_1)
+                dataset_2 = load_dataset(area=region_2)
+                
+                comparison_datasets = [dataset_2]
+                query_region = region_1
+            else:
+                # Fall back to preferred region
+                logger.warning(f"⚠️ Comparison requested but only {len(conversation_regions)} regions in context")
+                dataset = load_dataset(area=query_region)
+        else:
+            # Standard single-region query
+            dataset = load_dataset(area=query_region)
         
         if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
             # ✅ DYNAMIC: List actual available markets from database
@@ -2704,7 +2735,7 @@ Standing by."""
             message_normalized,
             dataset,
             client_profile=client_profile,
-            comparison_datasets=None
+            comparison_datasets=comparison_datasets
         )
         
         # Track usage
