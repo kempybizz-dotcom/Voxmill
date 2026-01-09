@@ -1747,8 +1747,8 @@ Region: Mayfair"""
                 await send_twilio_message(sender, response)
                 return
         
-        # ====================================================================
-        # PORTFOLIO STATUS ROUTING (NEW - CRITICAL)
+# ====================================================================
+        # PORTFOLIO STATUS ROUTING (WORLD-CLASS)
         # ====================================================================
         
         if governance_result.intent == Intent.PORTFOLIO_STATUS:
@@ -1826,8 +1826,8 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
-        # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST)
+        # ====================================================================
+        # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST - WORLD-CLASS)
         # ====================================================================
         
         if governance_result.intent == Intent.TRUST_AUTHORITY:
@@ -1913,12 +1913,14 @@ Respond with STRUCTURED CONFIDENCE ASSESSMENT:
 
 Confidence Level: [High/Medium/Low] (X/10)
 Primary Signal: [The ONE metric driving this view]
+Confidence Reduced Because: [REQUIRED if <8/10: specific data limitation - thin transaction data, lagging registry, limited time window, small sample size, etc.]
 Break Condition: [What would invalidate this view]
 Forward Signal: [What to watch next]
 
 CRITICAL RULES:
 - Be specific (use numbers from the analysis, not platitudes)
 - State what would prove you WRONG
+- If confidence <8/10, you MUST explain WHY (data limitation, not vague uncertainty)
 - No menus, no "standing by", no "available intelligence"
 - End with actionable insight (not availability statement)
 - Maximum 200 words
@@ -1927,12 +1929,65 @@ Industry: {industry}
 Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile else 'Mayfair'}
 
 Example format:
-"Confidence: High (8/10)
+"Confidence: Medium (6/10)
 Why: Liquidity velocity has remained sub-35 for 21 days with flat inventory.
+Confidence reduced because: Only 14-day transaction window available—registry data lags by 30 days, limiting forward visibility.
 What breaks this: A velocity spike above ~40 or coordinated price cuts by top agents.
 What to watch: First price reductions in One Hyde Park or Grosvenor Square."
 
 NEVER use generic statements like "analysis backed by verified data sources"."""
+                    
+                    system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate. You MUST explain reduced confidence with specific data limitations."
+                    max_tokens = 300
+                
+                # Generate response
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=0.2,
+                    timeout=10.0
+                )
+                
+                trust_response = response.choices[0].message.content.strip()
+                
+                # Clean any remaining menu language
+                from app.response_enforcer import ResponseEnforcer, ResponseShape
+                enforcer = ResponseEnforcer()
+                trust_response = enforcer.clean_response_ending(trust_response, ResponseShape.STATUS_LINE)
+                
+                # Send response
+                await send_twilio_message(sender, trust_response)
+
+                # ✅ CHATGPT FIX: Store analysis for compression
+                conversation.store_last_analysis(trust_response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=trust_response,
+                    metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "trust_authority", preferred_region)
+                
+                logger.info(f"✅ Trust authority response sent: {len(trust_response)} chars")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Trust authority error: {e}", exc_info=True)
+                # Fallback to simple acknowledgment (last resort)
+                response = "Analysis backed by verified data sources. Standing by for specific questions."
+                await send_twilio_message(sender, response)
+                return
                     
                     system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
                     max_tokens = 300
