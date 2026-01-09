@@ -139,7 +139,8 @@ class RateLimiter:
             
             ttl = redis_client.ttl(rate_key)
             
-            if ttl and ttl > 0:
+            # ✅ FIX: Check for None before comparison
+            if ttl is not None and ttl > 0:
                 return ttl
             else:
                 return 3600  # Default to 1 hour
