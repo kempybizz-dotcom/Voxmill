@@ -705,6 +705,8 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     GATE SEQUENCE:
     Identity → Trial → Subscription → PIN → Governance → Intelligence
     """
+
+    import re
     
     # ✅ CRITICAL IMPORTS - MUST BE AT TOP OF FUNCTION
     from app.dataset_loader import load_dataset
