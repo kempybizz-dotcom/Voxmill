@@ -662,11 +662,11 @@ JSON:"""
                     'what am i missing', 'what breaks', 'what if wrong',
                     "what's missing", 'blind spot', 'not seeing',
                     'overlooking', 'what else should',
-                    'what am i missing this week',  # ← ADD
-                    'what am i missing today',      # ← ADD
-                    'what have i missed',           # ← ADD
-                    'whats the blind spot',         # ← ADD
-                    'anything i should know'        # ← ADD
+                    'what am i missing this week',
+                    'what am i missing today',
+                    'what have i missed',
+                    'whats the blind spot',
+                    'anything i should know'
                 ]
                 
                 capability_indicators = [
@@ -691,7 +691,7 @@ JSON:"""
             # Standard Tier 0 routing
             intent_map = {
                 'trust_authority': Intent.TRUST_AUTHORITY,
-                'meta_authority': Intent.META_AUTHORITY,  # Only for capability questions now
+                'meta_authority': Intent.META_AUTHORITY,
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
                 'profile_status': Intent.PROFILE_STATUS,
                 'portfolio_status': Intent.PORTFOLIO_STATUS,
@@ -701,20 +701,11 @@ JSON:"""
                 'delivery_request': Intent.DELIVERY_REQUEST,
             }
             
-  return intent_map.get(intent_type, Intent.STRATEGIC)
+            return intent_map.get(intent_type, Intent.STRATEGIC)
         
         # ========================================
         # TIER 1/2: Semantic category mapping for market queries
         # ========================================
-    
-    @staticmethod
-    def _is_protected_intent(intent: Intent) -> bool:
-        """
-        Check if intent is Tier 0 (non-overridable)
-        
-        These intents NEVER get downgraded to ACK/SILENCE
-        """
-        return intent in TIER_0_NON_OVERRIDABLE
         
         # PRIORITY: Use LLM's intent_type if provided (for non-Tier-0)
         if intent_type == "meta_authority":
@@ -775,6 +766,15 @@ JSON:"""
         
         else:
             return Intent.STRATEGIC
+    
+    @staticmethod
+    def _is_protected_intent(intent: Intent) -> bool:
+        """
+        Check if intent is Tier 0 (non-overridable)
+        
+        These intents NEVER get downgraded to ACK/SILENCE
+        """
+        return intent in TIER_0_NON_OVERRIDABLE
     
     @staticmethod
     def _classify_intent(message: str) -> tuple[Intent, float]:
