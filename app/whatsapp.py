@@ -843,8 +843,6 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
 
-        logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
-
         # ====================================================================
         # GATE 2: RATE LIMITING
         # ====================================================================
