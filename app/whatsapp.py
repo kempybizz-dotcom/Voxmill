@@ -1894,7 +1894,7 @@ Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile els
                 system_message = "You are a senior market intelligence analyst. You identify strategic blind spots and forward signals that data alone cannot reveal."
                 max_tokens = 200
                 
-            else:
+                else:
                 # CONFIDENCE CHALLENGE
                 logger.info(f"🎯 Confidence challenge detected")
                 
