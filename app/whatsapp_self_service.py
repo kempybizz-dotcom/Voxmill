@@ -539,21 +539,16 @@ Standing by."""
         except Exception as e:
             logger.error(f"Failed to log preference change: {e}")
         
-        # ========================================
-        # AUTO-SYNC TO AIRTABLE
+# ========================================
+        # AUTO-SYNC TO AIRTABLE (FIXED - NO NESTED EVENT LOOPS)
         # ========================================
         
         try:
-            import asyncio
             from app.airtable_auto_sync import sync_usage_metrics
             
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-            
-            loop.run_until_complete(
+            # ✅ FIX: Use asyncio.create_task() instead of run_until_complete()
+            # This avoids "event loop already running" error
+            asyncio.create_task(
                 sync_usage_metrics(
                     whatsapp_number=from_number,
                     record_id=client.get('airtable_record_id'),
@@ -563,12 +558,12 @@ Standing by."""
                 )
             )
             
-            logger.info(f"✅ Preference change synced to Airtable")
+            logger.info(f"✅ Preference change queued for Airtable sync")
             
         except Exception as e:
             logger.error(f"Airtable auto-sync failed (non-critical): {e}")
         
-# ========================================
+        # ========================================
         # SIMPLIFIED CONFIRMATION (NO MARKETING)
         # ========================================
         
