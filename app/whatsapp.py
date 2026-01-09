@@ -1989,8 +1989,8 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 await send_twilio_message(sender, response)
                 return
                     
-                    system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
-                    max_tokens = 300
+                system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate."
+                max_tokens = 300
                 
                 # Generate response
                 response = await client.chat.completions.create(
