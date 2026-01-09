@@ -432,6 +432,8 @@ Examples:
 - "What am I waiting for?" → status_monitoring (about user's status)
 - "Can I add holdings?" → portfolio_management (portfolio action)
 - "PDF?" → delivery_request (report delivery)
+- "Lock session" → preference_change (session control)
+- "Lock" → preference_change (session control)
 - "Summarise in one line" → executive_compression
 - "Now bullet points" → executive_compression
 - "So what?" → executive_compression
