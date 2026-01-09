@@ -1890,15 +1890,15 @@ Watch their Q1 strategy shift—that's your early warning system."
 
 Industry: {industry}
 Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile else 'Mayfair'}"""
-                    
-                    system_message = "You are a senior market intelligence analyst. You identify strategic blind spots and forward signals that data alone cannot reveal."
-                    max_tokens = 200
-                    
-                else:
-                    # CONFIDENCE CHALLENGE
-                    logger.info(f"🎯 Confidence challenge detected")
-                    
-                    prompt = f"""You are a market intelligence analyst being challenged on confidence.
+                
+                system_message = "You are a senior market intelligence analyst. You identify strategic blind spots and forward signals that data alone cannot reveal."
+                max_tokens = 200
+                
+            else:
+                # CONFIDENCE CHALLENGE
+                logger.info(f"🎯 Confidence challenge detected")
+                
+                prompt = f"""You are a market intelligence analyst being challenged on confidence.
 
 Last analysis provided:
 {last_response[:500] if last_response else 'No prior analysis in this session'}
@@ -1932,60 +1932,60 @@ What breaks this: A velocity spike above ~40 or coordinated price cuts by top ag
 What to watch: First price reductions in One Hyde Park or Grosvenor Square."
 
 NEVER use generic statements like "analysis backed by verified data sources"."""
-                    
-                    system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate. You MUST explain reduced confidence with specific data limitations."
-                    max_tokens = 300
                 
-                # Generate response
-                response = await client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_message},
-                        {"role": "user", "content": prompt}
+                system_message = "You are a senior market intelligence analyst. You defend your analysis with evidence and quantified confidence, not boilerplate. You MUST explain reduced confidence with specific data limitations."
+                max_tokens = 300
+            
+            # Generate response
+            response = await client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
                     ],
-                    max_tokens=max_tokens,
-                    temperature=0.2,
-                    timeout=10.0
-                )
-                
-                trust_response = response.choices[0].message.content.strip()
-                
-                # Clean any remaining menu language
-                from app.response_enforcer import ResponseEnforcer, ResponseShape
-                enforcer = ResponseEnforcer()
-                trust_response = enforcer.clean_response_ending(trust_response, ResponseShape.STATUS_LINE)
-                
-                # Send response
-                await send_twilio_message(sender, trust_response)
+                max_tokens=max_tokens,
+                temperature=0.2,
+                timeout=10.0
+            )
+            
+            trust_response = response.choices[0].message.content.strip()
+            
+            # Clean any remaining menu language
+            from app.response_enforcer import ResponseEnforcer, ResponseShape
+            enforcer = ResponseEnforcer()
+            trust_response = enforcer.clean_response_ending(trust_response, ResponseShape.STATUS_LINE)
+            
+            # Send response
+            await send_twilio_message(sender, trust_response)
 
-                # ✅ CHATGPT FIX: Store analysis for compression
-                conversation.store_last_analysis(trust_response)
-                
-                # Update session
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=trust_response,
-                    metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
-                )
-                
-                # Log interaction
-                log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
-                
-                # Update client history
-                update_client_history(sender, message_text, "trust_authority", preferred_region)
-                
-                logger.info(f"✅ Trust authority response sent: {len(trust_response)} chars")
-                
-                return  # Exit early
-                
-            except Exception as e:
-                logger.error(f"❌ Trust authority error: {e}", exc_info=True)
-                # Fallback to simple acknowledgment (last resort)
-                response = "Analysis backed by verified data sources. Standing by for specific questions."
-                await send_twilio_message(sender, response)
-                return
-        
-        
+            # ✅ CHATGPT FIX: Store analysis for compression
+            conversation.store_last_analysis(trust_response)
+            
+            # Update session
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=trust_response,
+                metadata={'category': 'trust_authority', 'intent': 'trust_authority'}
+            )
+            
+            # Log interaction
+            log_interaction(sender, message_text, "trust_authority", trust_response, 0, client_profile)
+            
+            # Update client history
+            update_client_history(sender, message_text, "trust_authority", preferred_region)
+            
+            logger.info(f"✅ Trust authority response sent: {len(trust_response)} chars")
+            
+            return  # Exit early
+            
+        except Exception as e:
+            logger.error(f"❌ Trust authority error: {e}", exc_info=True)
+            # Fallback to simple acknowledgment (last resort)
+            response = "Analysis backed by verified data sources. Standing by for specific questions."
+            await send_twilio_message(sender, response)
+            return'''
+
+
         # ====================================================================
         # STATUS_MONITORING ROUTING (NEW - CRITICAL)
         # ====================================================================
