@@ -410,7 +410,7 @@ Classification rules:
 8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you sure?", "Really?", "Certain?")
 9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?")
 10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF")
-11. EXECUTIVE COMPRESSION = executive_compression (e.g. "Summarise in one line", "Bullet points", "So what?", "Bottom line", "Risk memo")
+11. EXECUTIVE COMPRESSION = executive_compression (e.g., "Summarise in one line", "Bullet points", "So what?", "Bottom line", "Risk memo", "Compress", "Condense", "Brief", "TLDR", "Executive summary", "Takeaway", "One line summary")
 12. IMPLICIT FOLLOW-UPS = follow_up (e.g. "Why?", "Compare that", "Meaning?")
 13. MARKET CHANGES = preference_change (e.g. "Switch to Manhattan", "Show me Dubai")
 14. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening?", "Show me trends")
@@ -661,7 +661,12 @@ JSON:"""
                 gap_indicators = [
                     'what am i missing', 'what breaks', 'what if wrong',
                     "what's missing", 'blind spot', 'not seeing',
-                    'overlooking', 'what else should'
+                    'overlooking', 'what else should',
+                    'what am i missing this week',  # ← ADD
+                    'what am i missing today',      # ← ADD
+                    'what have i missed',           # ← ADD
+                    'whats the blind spot',         # ← ADD
+                    'anything i should know'        # ← ADD
                 ]
                 
                 capability_indicators = [
@@ -1812,6 +1817,16 @@ Trial access provides limited intelligence sampling."""
                 auto_scoped=False,
                 semantic_category=semantic_category.value
             )
+        
+        # ========================================
+        # CRITICAL: BLOCK ACK FOR NON-CASUAL INTENTS
+        # ========================================
+        
+        if intent not in [Intent.CASUAL, Intent.PROVOCATION] and hardcoded_response:
+            if hardcoded_response in ["Standing by.", "Noted.", "Monitoring."]:
+                # Force proper handler execution instead
+                logger.warning(f"⚠️ Blocked ACK fallback for {intent.value} - forcing handler execution")
+                hardcoded_response = None
         
         # ========================================
         # GOVERNANCE PASSED - RETURN CONSTRAINTS
