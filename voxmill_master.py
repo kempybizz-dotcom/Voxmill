@@ -36,11 +36,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ✅ Environment variables
+# ✅ Environment variables (UPDATED FOR CONTROL PLANE)
 MONGODB_URI = os.getenv('MONGODB_URI')
 AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
 AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID', 'apptsyINaEjzWgCha')
-AIRTABLE_TABLE_NAME = os.getenv('AIRTABLE_TABLE_NAME', 'Clients')
+
+# ✅ NEW: Control Plane table names
+ACCOUNTS_TABLE = 'Accounts'
+PERMISSIONS_TABLE = 'Permissions'
+PREFERENCES_TABLE = 'Preferences'
+MARKETS_TABLE = 'Markets'
 
 # MongoDB connection
 mongo_client = MongoClient(MONGODB_URI) if MONGODB_URI else None
@@ -67,32 +72,34 @@ def sync_client_to_mongodb(client_data: dict) -> bool:
     try:
         clients_collection = db['client_profiles']
         
-        # Use email as unique identifier
-        email = client_data.get('email')
-        if not email:
-            logger.warning(f"Cannot sync client without email: {client_data.get('name')}")
+        # Use whatsapp_number as unique identifier
+        whatsapp = client_data.get('whatsapp_number')
+        if not whatsapp:
+            logger.warning(f"Cannot sync client without WhatsApp: {client_data.get('name')}")
             return False
         
         # Prepare MongoDB document
         mongo_doc = {
-            'email': email,
+            'whatsapp_number': whatsapp,
             'name': client_data.get('name'),
-            'whatsapp_number': client_data.get('whatsapp_number'),
+            'email': client_data.get('email'),
             'company': client_data.get('company'),
-            'city': client_data.get('city'),
+            'industry': client_data.get('industry', 'real_estate'),
+            'subscription_status': client_data.get('subscription_status', 'trial'),
+            'tier': client_data.get('tier', 'tier_1'),
             'regions': client_data.get('regions', []),
             'preferences': {
                 'competitor_focus': client_data.get('competitor_focus', 'medium'),
                 'report_depth': client_data.get('report_depth', 'detailed')
             },
-            'subscription_status': client_data.get('subscription_status', 'Active'),
             'last_synced_from_airtable': datetime.now(timezone.utc).isoformat(),
-            'source': 'airtable_batch_sync'
+            'source': 'airtable_batch_sync',
+            'airtable_record_id': client_data.get('airtable_record_id')
         }
         
         # Upsert (update if exists, create if not)
         result = clients_collection.update_one(
-            {'email': email},
+            {'whatsapp_number': whatsapp},
             {'$set': mongo_doc},
             upsert=True
         )
@@ -111,7 +118,13 @@ def sync_client_to_mongodb(client_data: dict) -> bool:
 
 def load_clients_from_airtable() -> list:
     """
-    Load ALL active clients from Airtable (source of truth)
+    ✅ UPDATED: Load clients from NEW Control Plane schema
+    
+    Queries:
+    1. Accounts table (active accounts)
+    2. Permissions table (linked regions)
+    3. Preferences table (competitor focus, report depth)
+    4. Markets table (market names)
     
     Returns: List of client dicts with all necessary fields
     """
@@ -127,67 +140,182 @@ def load_clients_from_airtable() -> list:
     try:
         import requests
         
-        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
         headers = {
             'Authorization': f'Bearer {AIRTABLE_API_KEY}',
             'Content-Type': 'application/json'
         }
         
-        # Query all active clients
+        # ========================================
+        # STEP 1: Load Accounts (active only)
+        # ========================================
+        
+        accounts_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{ACCOUNTS_TABLE}"
+        
         params = {
-            'filterByFormula': "{Subscription Status}='Active'",
+            'filterByFormula': "AND({Account Status}='active', {WhatsApp Number}!='')",
             'maxRecords': 100
         }
         
-        response = requests.get(url, headers=headers, params=params, timeout=15)
+        response = requests.get(accounts_url, headers=headers, params=params, timeout=15)
         
         if response.status_code != 200:
             raise Exception(f"Airtable API error {response.status_code}: {response.text[:200]}")
         
-        data = response.json()
-        records = data.get('records', [])
+        accounts_data = response.json()
+        accounts = accounts_data.get('records', [])
         
-        logger.info(f"📋 Found {len(records)} active clients in Airtable")
+        logger.info(f"📋 Found {len(accounts)} active accounts")
+        
+        # ========================================
+        # STEP 2: Load Permissions (regions)
+        # ========================================
+        
+        permissions_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{PERMISSIONS_TABLE}"
+        
+        permissions_response = requests.get(
+            permissions_url,
+            headers=headers,
+            params={'maxRecords': 500},
+            timeout=15
+        )
+        
+        if permissions_response.status_code != 200:
+            logger.warning(f"⚠️ Permissions table query failed: {permissions_response.status_code}")
+            permissions_records = []
+        else:
+            permissions_records = permissions_response.json().get('records', [])
+        
+        logger.info(f"📋 Loaded {len(permissions_records)} permission records")
+        
+        # ========================================
+        # STEP 3: Load Markets (for region names)
+        # ========================================
+        
+        markets_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{MARKETS_TABLE}"
+        
+        markets_response = requests.get(
+            markets_url,
+            headers=headers,
+            params={'filterByFormula': '{is_active}=TRUE()', 'maxRecords': 200},
+            timeout=15
+        )
+        
+        if markets_response.status_code != 200:
+            logger.warning(f"⚠️ Markets table query failed: {markets_response.status_code}")
+            markets_records = []
+        else:
+            markets_records = markets_response.json().get('records', [])
+        
+        # Build market lookup: record_id → market_name
+        markets_lookup = {}
+        for market in markets_records:
+            market_id = market['id']
+            market_name = market['fields'].get('market_name', '')
+            if market_name:
+                markets_lookup[market_id] = market_name
+        
+        logger.info(f"📋 Loaded {len(markets_lookup)} markets")
+        
+        # ========================================
+        # STEP 4: Load Preferences
+        # ========================================
+        
+        preferences_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{PREFERENCES_TABLE}"
+        
+        preferences_response = requests.get(
+            preferences_url,
+            headers=headers,
+            params={'maxRecords': 200},
+            timeout=15
+        )
+        
+        if preferences_response.status_code != 200:
+            logger.warning(f"⚠️ Preferences table query failed: {preferences_response.status_code}")
+            preferences_records = []
+        else:
+            preferences_records = preferences_response.json().get('records', [])
+        
+        # Build preferences lookup: account_id → {competitor_focus, report_depth}
+        preferences_lookup = {}
+        for pref in preferences_records:
+            account_links = pref['fields'].get('Account', [])
+            if account_links:
+                account_id = account_links[0]
+                preferences_lookup[account_id] = {
+                    'competitor_focus': pref['fields'].get('Competitor Focus', 'medium'),
+                    'report_depth': pref['fields'].get('Report Depth', 'detailed')
+                }
+        
+        logger.info(f"📋 Loaded {len(preferences_lookup)} preference records")
+        
+        # ========================================
+        # STEP 5: Build client list
+        # ========================================
         
         clients = []
         
-        for record in records:
-            fields = record['fields']
+        for account in accounts:
+            account_id = account['id']
+            fields = account['fields']
             
-            # Extract email (REQUIRED)
-            email = fields.get('Email', '').strip()
-            if not email:
-                logger.warning(f"⚠️  Skipping client {fields.get('Name', 'Unknown')} - no email")
+            # Extract WhatsApp (REQUIRED)
+            whatsapp = fields.get('WhatsApp Number', '').strip()
+            if not whatsapp:
+                logger.warning(f"⚠️ Skipping account {account_id} - no WhatsApp number")
                 continue
             
-            # Extract regions (comma-separated → list)
-            regions_str = fields.get('Regions', '').strip()
-            regions = [r.strip() for r in regions_str.split(',') if r.strip()] if regions_str else []
+            # Extract regions from Permissions table
+            regions = []
+            for perm in permissions_records:
+                perm_account_links = perm['fields'].get('Account', [])
+                if account_id in perm_account_links:
+                    # Get linked market IDs
+                    market_links = perm['fields'].get('Market', [])
+                    for market_id in market_links:
+                        if market_id in markets_lookup:
+                            regions.append(markets_lookup[market_id])
             
-            # Fallback: Use Preferred City as region if Regions empty
+            # Fallback: Use "London" if no regions
             if not regions:
-                preferred_city = fields.get('Preferred City', 'London').strip()
-                regions = [preferred_city]
-                logger.info(f"   ℹ️  {fields.get('Name')} has no Regions - using Preferred City: {preferred_city}")
+                regions = ['London']
+                logger.info(f"   ℹ️  {whatsapp} has no regions - using default: London")
+            
+            # Get preferences
+            prefs = preferences_lookup.get(account_id, {
+                'competitor_focus': 'medium',
+                'report_depth': 'detailed'
+            })
+            
+            # Get account details
+            account_status = fields.get('Account Status', 'trial').lower()
+            service_tier = fields.get('Service Tier', 'core').lower()
+            industry = fields.get('Industry', 'real_estate').lower()
+            
+            # Map service tier to internal tier codes
+            tier_map = {'core': 'tier_1', 'premium': 'tier_2', 'sigma': 'tier_3'}
+            tier = tier_map.get(service_tier, 'tier_1')
             
             # Build client dict
             client = {
-                'email': email,
-                'name': fields.get('Name', 'Valued Client').strip(),
-                'whatsapp_number': fields.get('WhatsApp Number', '').strip(),
-                'company': fields.get('Company', '').strip(),
-                'city': fields.get('Preferred City', 'London').strip(),
-                'regions': regions,  # ✅ LIST of all regions
-                'competitor_focus': fields.get('Competitor Focus', 'Medium').lower(),
-                'report_depth': fields.get('Report Depth', 'Detailed').lower(),
-                'subscription_status': fields.get('Subscription Status', 'Active'),
-                'airtable_record_id': record['id']
+                'whatsapp_number': whatsapp,
+                'name': fields.get('Company Name', 'Valued Client').strip() or whatsapp,
+                'email': fields.get('Email', f"user_{whatsapp.replace('+', '')}@temp.voxmill.uk").strip(),
+                'company': fields.get('Company Name', '').strip(),
+                'industry': industry,
+                'subscription_status': account_status,
+                'tier': tier,
+                'city': 'London',  # Can extract from regions if needed
+                'regions': regions,  # ✅ LIST of all regions from Permissions
+                'competitor_focus': prefs.get('competitor_focus', 'medium').lower(),
+                'report_depth': prefs.get('report_depth', 'detailed').lower(),
+                'airtable_record_id': account_id
             }
             
             clients.append(client)
             
-            logger.info(f"   ✅ {client['name']}: {email}")
+            logger.info(f"   ✅ {client['whatsapp_number']}: {client['email']}")
             logger.info(f"      Regions: {', '.join(regions)}")
+            logger.info(f"      Industry: {industry}")
             logger.info(f"      Preferences: {client['competitor_focus']}, {client['report_depth']}")
         
         logger.info(f"\n✅ Loaded {len(clients)} valid clients from Airtable")
@@ -218,7 +346,9 @@ def load_clients_from_mongodb_fallback() -> list:
     
     try:
         clients_collection = db['client_profiles']
-        cursor = clients_collection.find({'subscription_status': 'Active'})
+        cursor = clients_collection.find({
+            'subscription_status': {'$in': ['active', 'trial', 'premium']}
+        })
         
         clients = []
         
@@ -226,18 +356,20 @@ def load_clients_from_mongodb_fallback() -> list:
             prefs = doc.get('preferences', {})
             
             client = {
-                'email': doc.get('email', ''),
-                'name': doc.get('name', 'Valued Client'),
                 'whatsapp_number': doc.get('whatsapp_number', ''),
+                'name': doc.get('name', 'Valued Client'),
+                'email': doc.get('email', ''),
                 'company': doc.get('company', ''),
-                'city': doc.get('city', 'London'),
-                'regions': doc.get('regions', []),
+                'industry': doc.get('industry', 'real_estate'),
+                'subscription_status': doc.get('subscription_status', 'trial'),
+                'tier': doc.get('tier', 'tier_1'),
+                'city': 'London',
+                'regions': doc.get('regions', ['London']),
                 'competitor_focus': prefs.get('competitor_focus', 'medium'),
-                'report_depth': prefs.get('report_depth', 'detailed'),
-                'subscription_status': doc.get('subscription_status', 'Active')
+                'report_depth': prefs.get('report_depth', 'detailed')
             }
             
-            if client['email']:
+            if client['whatsapp_number']:
                 clients.append(client)
         
         logger.warning(f"⚠️  Loaded {len(clients)} clients from MongoDB (last synced data)")
@@ -247,7 +379,6 @@ def load_clients_from_mongodb_fallback() -> list:
     except Exception as e:
         logger.error(f"❌ MongoDB fallback failed: {e}")
         return []
-
 
 # ============================================================================
 # WORKSPACE MANAGEMENT
@@ -353,6 +484,11 @@ def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
         all_properties = []
         region_stats = {}
         
+        # ✅ FIX: Handle empty regions list
+        if not workspace.regions:
+            logger.warning("   ⚠️  No regions configured for this client - using 'London' as default")
+            workspace.regions = ['London']
+        
         # Collect data for each region
         for i, region in enumerate(workspace.regions, 1):
             logger.info(f"\n   [{i}/{len(workspace.regions)}] Collecting data for: {region}, {workspace.city}")
@@ -360,7 +496,8 @@ def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
             try:
                 dataset = load_dataset(
                     area=region,
-                    max_properties=100
+                    max_properties=100,
+                    industry='real_estate'  # ✅ FIX: Added industry parameter
                 )
                 
                 properties = dataset.get('properties', [])
@@ -391,7 +528,7 @@ def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
                     'name': 'Real Estate',
                     'vertical': 'uk-real-estate'
                 },
-                'area': workspace.regions[0],  # ✅ FIX: First region for ai_analyzer
+                'area': workspace.regions[0] if workspace.regions else 'Unknown',  # ✅ FIX: Safe access
                 'regions': workspace.regions,  # ✅ ALL regions
                 'city': workspace.city,
                 'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -416,7 +553,6 @@ def run_multi_region_data_collection(workspace: ExecutionWorkspace) -> bool:
     except Exception as e:
         logger.error(f"❌ Multi-region data collection error: {e}", exc_info=True)
         return False
-
 
 def run_ai_analysis(workspace: ExecutionWorkspace) -> bool:
     """
