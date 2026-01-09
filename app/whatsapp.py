@@ -1528,6 +1528,36 @@ Standing by."""
             return
         
         # ====================================================================
+        # EXECUTIVE COMPRESSION DETECTION (CHATGPT FIX - CRITICAL)
+        # ====================================================================
+        
+        # ✅ NO KEYWORDS: Check if governance classified as EXECUTIVE_COMPRESSION
+        if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
+            logger.info(f"🎯 Executive compression detected by governance")
+            
+            # Get last analysis from conversation
+            conversation = ConversationSession(sender)
+            last_analysis = conversation.get_last_analysis()
+            
+            if not last_analysis:
+                # No previous analysis to compress
+                response = "No previous analysis to transform. Ask me a market intelligence question first."
+                await send_twilio_message(sender, response)
+                
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'compression_failed'}
+                )
+                
+                logger.info(f"⚠️ Compression failed: no previous analysis")
+                return
+            
+            # Force compression routing (override any governance blocks)
+            logger.info(f"✅ Compression routing confirmed - proceeding to handler")
+            
+        
+        # ====================================================================
         # MONITOR COMMANDS (BEFORE GOVERNANCE)
         # ====================================================================
         
