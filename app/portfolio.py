@@ -23,46 +23,117 @@ db = mongo_client['Voxmill']
 
 def parse_property_from_message(message: str) -> Optional[Dict]:
     """
-    Parse property details from user message
+    Parse property details from user message (FLEXIBLE)
     
-    Expected format:
-    "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair"
+    Supports formats:
+    1. Full: "Property: 123 Park Lane, Purchase: £2500000, Date: 2023-01-15, Region: Mayfair"
+    2. Simple: "Add property: One Hyde Park, Knightsbridge"
+    3. Free text: "One Hyde Park, Knightsbridge, London SW1X"
     
     Returns:
         {
             'address': '123 Park Lane',
-            'purchase_price': 2500000,
-            'purchase_date': '2023-01-15',
-            'region': 'Mayfair'
+            'purchase_price': 2500000 or None,
+            'purchase_date': '2023-01-15' or today,
+            'region': 'Mayfair' or extracted from address
         }
     """
     
     try:
-        # Extract address
-        address_match = re.search(r'Property:\s*([^,]+)', message, re.IGNORECASE)
-        address = address_match.group(1).strip() if address_match else None
+        message_clean = message.strip()
         
-        # Extract price
-        price_match = re.search(r'Purchase:\s*£?([\d,]+)', message, re.IGNORECASE)
-        price = int(price_match.group(1).replace(',', '')) if price_match else None
+        # ========================================
+        # METHOD 1: STRUCTURED FORMAT (FULL DATA)
+        # ========================================
         
-        # Extract date
-        date_match = re.search(r'Date:\s*(\d{4}-\d{2}-\d{2})', message, re.IGNORECASE)
-        date = date_match.group(1) if date_match else None
+        # Check if message has structured format
+        has_price = 'purchase:' in message.lower() or '£' in message
+        has_date = re.search(r'\d{4}-\d{2}-\d{2}', message)
+        has_region_keyword = 'region:' in message.lower()
         
-        # Extract region
-        region_match = re.search(r'Region:\s*([A-Za-z\s]+)', message, re.IGNORECASE)
-        region = region_match.group(1).strip() if region_match else None
+        if has_price and has_date and has_region_keyword:
+            # Parse structured format
+            address_match = re.search(r'Property:\s*([^,]+)', message, re.IGNORECASE)
+            address = address_match.group(1).strip() if address_match else None
+            
+            price_match = re.search(r'Purchase:\s*£?([\d,]+)', message, re.IGNORECASE)
+            price = int(price_match.group(1).replace(',', '')) if price_match else None
+            
+            date_match = re.search(r'Date:\s*(\d{4}-\d{2}-\d{2})', message, re.IGNORECASE)
+            date = date_match.group(1) if date_match else None
+            
+            region_match = re.search(r'Region:\s*([A-Za-z\s]+)', message, re.IGNORECASE)
+            region = region_match.group(1).strip() if region_match else None
+            
+            if address and price and date and region:
+                return {
+                    'address': address,
+                    'purchase_price': price,
+                    'purchase_date': date,
+                    'region': region
+                }
         
-        # Validate all fields present
-        if not all([address, price, date, region]):
+        # ========================================
+        # METHOD 2: FREE TEXT ADDRESS (SMART PARSING)
+        # ========================================
+        
+        # Remove common command prefixes
+        for prefix in ['add property:', 'add property', 'property:', 'track:', 'add:']:
+            if message_clean.lower().startswith(prefix):
+                message_clean = message_clean[len(prefix):].strip()
+                break
+        
+        # Extract address (everything that's left)
+        address = message_clean
+        
+        if not address or len(address) < 5:
             return None
         
+        # Extract region from address (common patterns)
+        region = None
+        
+        # UK postcode pattern (e.g., SW1X, W1K, etc.)
+        postcode_match = re.search(r'\b([A-Z]{1,2}\d{1,2}[A-Z]?)\b', address)
+        if postcode_match:
+            postcode = postcode_match.group(1)
+            # Map postcode to region (simple heuristic)
+            postcode_to_region = {
+                'SW1': 'Belgravia', 'SW1X': 'Knightsbridge', 'SW1W': 'Belgravia',
+                'SW3': 'Chelsea', 'SW7': 'South Kensington',
+                'W1': 'Mayfair', 'W1K': 'Mayfair', 'W1J': 'Mayfair',
+                'W8': 'Kensington', 'W11': 'Notting Hill',
+                'NW1': 'Regent\'s Park', 'NW3': 'Hampstead', 'NW8': 'St Johns Wood'
+            }
+            
+            for code, area in postcode_to_region.items():
+                if postcode.startswith(code):
+                    region = area
+                    break
+        
+        # Neighborhood name detection
+        neighborhoods = [
+            'Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington',
+            'South Kensington', 'Notting Hill', 'Hampstead', 'Primrose Hill',
+            'St Johns Wood', "Regent's Park", 'Marylebone', 'Holland Park'
+        ]
+        
+        if not region:
+            for neighborhood in neighborhoods:
+                if neighborhood.lower() in address.lower():
+                    region = neighborhood
+                    break
+        
+        # Default region if still not found
+        if not region:
+            region = 'Central London'  # Generic fallback
+        
+        # Return with smart defaults
         return {
             'address': address,
-            'purchase_price': price,
-            'purchase_date': date,
-            'region': region
+            'purchase_price': None,  # User can update later
+            'purchase_date': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+            'region': region,
+            'property_type': 'apartment'  # Default for luxury London
         }
         
     except Exception as e:
@@ -71,21 +142,29 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
 
 
 def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
-    """Add property to client's portfolio"""
+    """Add property to client's portfolio (flexible data)"""
     
     try:
+        # Build property document (handle None values)
+        property_doc = {
+            'id': f"prop_{int(datetime.now(timezone.utc).timestamp())}",
+            'address': property_data.get('address'),
+            'region': property_data.get('region'),
+            'property_type': property_data.get('property_type', 'apartment'),
+            'added_at': datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Only add price/date if provided
+        if property_data.get('purchase_price'):
+            property_doc['purchase_price'] = property_data.get('purchase_price')
+        
+        if property_data.get('purchase_date'):
+            property_doc['purchase_date'] = property_data.get('purchase_date')
+        
         db['client_portfolios'].update_one(
             {'whatsapp_number': whatsapp_number},
             {
-                '$push': {'properties': {
-                    'id': f"prop_{int(datetime.now(timezone.utc).timestamp())}",
-                    'address': property_data.get('address'),
-                    'purchase_price': property_data.get('purchase_price'),
-                    'purchase_date': property_data.get('purchase_date'),
-                    'region': property_data.get('region'),
-                    'property_type': property_data.get('property_type'),
-                    'added_at': datetime.now(timezone.utc).isoformat()
-                }},
+                '$push': {'properties': property_doc},
                 '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
             },
             upsert=True
@@ -93,17 +172,34 @@ def add_property_to_portfolio(whatsapp_number: str, property_data: dict) -> str:
         
         logger.info(f"✅ Property added to portfolio: {whatsapp_number}")
         
-        return f"""PROPERTY ADDED TO PORTFOLIO
+        # ✅ FIX: Show what was actually added
+        address = property_data.get('address')
+        region = property_data.get('region')
+        price = property_data.get('purchase_price')
+        
+        if price:
+            return f"""PROPERTY ADDED
 
-{property_data.get('address')}
-Purchase: £{property_data.get('purchase_price'):,.0f}
-Region: {property_data.get('region')}
+{address}
+Purchase: £{price:,.0f}
+Region: {region}
+
+Portfolio tracking active."""
+        else:
+            return f"""PROPERTY ADDED
+
+{address}
+Region: {region}
+
+Note: Add purchase price for valuation tracking:
+"Update property: [address], Purchase: £[price]"
 
 Portfolio tracking active."""
         
     except Exception as e:
         logger.error(f"Add property error: {e}", exc_info=True)
         return "Failed to add property. Please try again."
+
 
 
 def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> dict:
