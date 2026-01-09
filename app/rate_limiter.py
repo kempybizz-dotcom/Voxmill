@@ -104,6 +104,9 @@ class RateLimiter:
             
             # Increment counter
             count = redis_client.incr(rate_key)
+
+            if count is None:
+                count = 0
             
             # Set expiry on first increment
             if count == 1:
