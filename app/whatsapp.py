@@ -1978,7 +1978,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
+        # ====================================================================
         # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST - WORLD-CLASS)
         # ====================================================================
         
