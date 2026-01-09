@@ -536,13 +536,6 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 'any news': "Monitoring.",
                 'any updates': "Holding position.",
                 
-                # Blind spots (most common meta-strategic)
-                'any blind': "Off-market flow. Agent intent.",
-                'blind spot': "Liquidity timing. Entry precision.",
-                'what am i missing': "Who moves first.",
-                'whats missing': "Off-market flow.",
-                'what\'s missing': "Off-market flow.",
-                'am i missing': "Agent positioning.",
                 
                 # Feeling queries
                 'feel': "Noise precedes direction.",
