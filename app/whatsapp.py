@@ -1339,27 +1339,40 @@ Standing by."""
         # ====================================================================
         
         # ====================================================================
-        # MULTI-INTENT DETECTION (WITH CONTRADICTION EXCEPTION)
+        # MULTI-INTENT DETECTION (WITH COMPRESSION + CONTRADICTION EXCEPTION)
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
         
-        # ✅ CHATGPT FIX: Check for contradiction phrases BEFORE splitting
+        # ✅ FIX: Check for phrases that should NEVER be split
         message_lower = message_text.lower()
         
+        # Contradiction phrases (ChatGPT fix)
         contradiction_phrases = [
             'explain tension', 'explain the tension',
             'feels off', 'doesn\'t feel right', 'something doesn\'t feel right',
             'doesn\'t add up', 'doesn\'t make sense', 'something wrong',
-            'contradicts', 'contradiction', 'inconsistent',
+            'contradicts', 'contradiction', 'inconsistent', 'inconsistency',
             'seems off', 'seems wrong', 'doesn\'t fit'
         ]
         
-        has_contradiction = any(phrase in message_lower for phrase in contradiction_phrases)
+        # ✅ NEW: Compression phrases (must stay together)
+        compression_phrases = [
+            'summarise', 'summarize', 'bullet', 'bullets', 'bullet points',
+            'compress', 'tldr', 'one line', 'risk memo', 'condense',
+            'turn your last', 'turn that into', 'rewrite as', 'reformat as',
+            'no intro', 'no preamble', 'just the', 'only the'
+        ]
         
+        has_contradiction = any(phrase in message_lower for phrase in contradiction_phrases)
+        has_compression = any(phrase in message_lower for phrase in compression_phrases)
+        
+        # ✅ DISABLE SPLITTING for these special cases
         if has_contradiction:
-            # ✅ DISABLE SPLITTING: Treat entire message as single intent
             logger.info(f"🎯 Contradiction phrase detected - treating as single intent (no split)")
+            message_segments = [message_text]
+        elif has_compression:
+            logger.info(f"🔄 Compression phrase detected - treating as single intent (no split)")
             message_segments = [message_text]
         else:
             # Normal multi-intent detection
@@ -1687,74 +1700,94 @@ Standing by."""
 
         
 # ====================================================================
-        # PORTFOLIO MANAGEMENT ROUTING (ADD/UPDATE/REMOVE PROPERTIES)
+        # PORTFOLIO_MANAGEMENT ROUTING (ADD/REMOVE PROPERTIES)
         # ====================================================================
         
         if governance_result.intent == Intent.PORTFOLIO_MANAGEMENT:
             try:
-                from app.portfolio import parse_property_from_message, add_property_to_portfolio
-                
                 logger.info(f"📊 Portfolio modification detected")
                 
-                # Parse property from message
+                message_lower = message_text.lower()
+                
+                # ✅ FIX: DETECT REMOVAL/RESET COMMANDS FIRST
+                removal_keywords = [
+                    'remove', 'delete', 'clear', 'reset', 'refresh',
+                    'empty', 'wipe', 'erase', 'clean'
+                ]
+                
+                is_removal = any(keyword in message_lower for keyword in removal_keywords)
+                
+                if is_removal:
+                    # This is a REMOVAL command, not an address
+                    logger.info(f"🗑️ Portfolio removal command detected: {message_text}")
+                    
+                    # Clear all portfolio items
+                    from app.portfolio import clear_portfolio
+                    clear_portfolio(sender)
+                    
+                    response = "PORTFOLIO CLEARED\n\nAll properties removed.\n\nStanding by."
+                    await send_twilio_message(sender, response)
+                    
+                    # Log interaction
+                    log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                    update_client_history(sender, message_text, "portfolio_management", preferred_region)
+                    
+                    logger.info(f"✅ Portfolio cleared successfully")
+                    return  # Exit early
+                
+                # Otherwise, treat as ADD command
+                from app.portfolio import parse_property_from_message, add_property_to_portfolio
+                
                 property_data = parse_property_from_message(message_text)
                 
-                if not property_data:
-                    response = """PROPERTY FORMAT NOT RECOGNIZED
-
-Send property details in one of these formats:
-
-1. Full address:
-"One Hyde Park, Knightsbridge, London SW1X"
-
-2. Postcode only:
-"SW1X"
-
-3. Landmark:
-"One Hyde Park"
-
-4. Structured format:
-"Property: 123 Park Lane, Mayfair
-Purchase: £5000000
-Date: 2024-01-15
-Region: Mayfair"
-
-Or discuss a property first, then say:
-"Add it to my portfolio"
-"""
-                    
+                if not property_data or not property_data.get('address'):
+                    # No valid property found
+                    response = "PROPERTY NOT RECOGNIZED\n\nFormat: \"Add property: [Full Address]\"\n\nStanding by."
                     await send_twilio_message(sender, response)
                     return
                 
-                # ✅ ADD TO PORTFOLIO (with MongoDB write)
-                response = add_property_to_portfolio(sender, property_data)
+                # Add property to portfolio
+                success = add_property_to_portfolio(sender, property_data)
                 
-                # Send confirmation
-                await send_twilio_message(sender, response)
-                
-                # Store for compression
-                conversation.store_last_analysis(response)
-                
-                # Update session
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'portfolio_management', 'intent': 'portfolio_management'}
-                )
-                
-                # Log interaction
-                log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
-                
-                # Update client history
-                update_client_history(sender, message_text, "portfolio_management", preferred_region)
-                
-                logger.info(f"✅ Portfolio property added successfully")
+                if success:
+                    # Get updated portfolio count
+                    from app.portfolio import get_portfolio
+                    portfolio = get_portfolio(sender)
+                    portfolio_size = len(portfolio)
+                    
+                    address = property_data.get('address', 'Unknown')
+                    region = property_data.get('region', 'Central London')
+                    
+                    response = f"""PORTFOLIO UPDATED
+
+Asset added:
+{address}
+Region: {region}
+Estimated value: Market rate
+
+Portfolio size: {portfolio_size} assets
+
+Note: Add purchase price for precise tracking:
+\"Update property: {address}, Purchase: £[amount]\"
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, response)
+                    
+                    # Log interaction
+                    log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                    update_client_history(sender, message_text, "portfolio_management", preferred_region)
+                    
+                    logger.info(f"✅ Portfolio property added successfully")
+                else:
+                    response = "PORTFOLIO UPDATE FAILED\n\nPlease try again.\n\nStanding by."
+                    await send_twilio_message(sender, response)
                 
                 return  # Exit early
                 
             except Exception as e:
                 logger.error(f"❌ Portfolio management error: {e}", exc_info=True)
-                response = "Failed to add property. Please try again or contact intel@voxmill.uk"
+                response = "Portfolio modification failed. Please try again."
                 await send_twilio_message(sender, response)
                 return
         
@@ -2562,8 +2595,8 @@ Standing by."""
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
-        # ====================================================================
-        # COMPARISON QUERY DETECTION
+# ====================================================================
+        # COMPARISON QUERY DETECTION (FIXED)
         # ====================================================================
         
         comparison_keywords = ['compare', 'vs', 'versus', 'difference', 'compare them', 'how do they compare']
@@ -2572,14 +2605,45 @@ Standing by."""
         comparison_datasets = None
         
         if is_comparison:
-            # Get regions from conversation context
-            conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
+            import re
             
-            if len(conversation_regions) >= 2:
-                # User said "compare them" - use last 2 regions mentioned
-                region_1 = conversation_regions[-2]
-                region_2 = conversation_regions[-1]
-                
+            # ✅ FIX: Parse regions directly from message text
+            region_1 = None
+            region_2 = None
+            
+            # Try multiple patterns
+            patterns = [
+                r'compare\s+(\w+)\s+to\s+(\w+)',           # "compare Bristol to Mayfair"
+                r'compare\s+(\w+)\s+vs\.?\s+(\w+)',        # "compare Bristol vs Mayfair"
+                r'(\w+)\s+vs\.?\s+(\w+)',                  # "Bristol vs Mayfair"
+                r'compare.*?to\s+(\w+)',                   # "compare that to London"
+                r'compare.*?with\s+(\w+)',                 # "compare with London"
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, message_lower)
+                if match:
+                    groups = match.groups()
+                    if len(groups) == 2:
+                        region_1 = groups[0].title()
+                        region_2 = groups[1].title()
+                        break
+                    elif len(groups) == 1:
+                        # "Compare to X" format - use last mentioned region as region_1
+                        region_2 = groups[0].title()
+                        conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
+                        if conversation_regions:
+                            region_1 = conversation_regions[-1]
+                        break
+            
+            # Fallback: use conversation context
+            if not region_1 or not region_2:
+                conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
+                if len(conversation_regions) >= 2:
+                    region_1 = conversation_regions[-2] if not region_1 else region_1
+                    region_2 = conversation_regions[-1] if not region_2 else region_2
+            
+            if region_1 and region_2:
                 logger.info(f"🔀 Comparison detected: {region_1} vs {region_2}")
                 
                 # Load datasets for both regions
@@ -2589,8 +2653,8 @@ Standing by."""
                 comparison_datasets = [dataset_2]
                 query_region = region_1
             else:
-                # Fall back to preferred region
-                logger.warning(f"⚠️ Comparison requested but only {len(conversation_regions)} regions in context")
+                # Comparison requested but can't extract regions
+                logger.warning(f"⚠️ Comparison requested but regions unclear")
                 dataset = load_dataset(area=query_region)
         else:
             # Standard single-region query
