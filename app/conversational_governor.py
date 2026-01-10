@@ -1097,7 +1097,7 @@ JSON:"""
             ),
         }
         
-        return envelopes.get(intent, envelopes[Intent.UNKNOWN])
+return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
     @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
@@ -1106,6 +1106,7 @@ JSON:"""
         
         ✅ VARIED ACKNOWLEDGMENTS - rotates between options
         ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
+        ✅ NO PORTFOLIO RESPONSES - let handlers execute
         Intent-based responses only (no phrase matching)
         """
         
@@ -1143,11 +1144,12 @@ Real-time data. Fortune-500 presentation quality. Surgical precision."""
         if intent == Intent.TRUST_AUTHORITY:
             return None  # Handled by LLM
         
-        # PORTFOLIO_MANAGEMENT responses
+        # ✅ CRITICAL FIX: PORTFOLIO HANDLERS MUST EXECUTE, NOT GENERATE RESPONSES HERE
         if intent == Intent.PORTFOLIO_MANAGEMENT:
-            return """Your portfolio is currently empty.
-
-You can add properties by sending an address, postcode, or Rightmove link."""
+            return None  # ✅ Let whatsapp.py handler execute
+        
+        if intent == Intent.PORTFOLIO_STATUS:
+            return None  # ✅ Let whatsapp.py handler execute
         
         # DELIVERY_REQUEST responses
         if intent == Intent.DELIVERY_REQUEST:
