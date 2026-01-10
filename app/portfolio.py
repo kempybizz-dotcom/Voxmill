@@ -79,11 +79,35 @@ def parse_property_from_message(message: str) -> Optional[Dict]:
         # METHOD 2: FREE TEXT ADDRESS (SMART PARSING)
         # ========================================
         
-        # Remove common command prefixes
-        for prefix in ['add property:', 'add property', 'property:', 'track:', 'add:']:
+        # ✅ COMPREHENSIVE PREFIX REMOVAL
+        prefixes_to_remove = [
+            'add this property to my portfolio:',
+            'add this property to my portfolio -',
+            'add this property to my portfolio',
+            'add property to my portfolio:',
+            'add property to my portfolio',
+            'add a property to my portfolio:',
+            'add a property to my portfolio',
+            'add to my portfolio:',
+            'add to my portfolio',
+            'add property:',
+            'add property',
+            'add a propert',  # Common typo
+            'add properly:',  # Common typo
+            'property:',
+            'track:',
+            'add:',
+            'add'  # Catch-all last
+        ]
+        
+        # Try each prefix
+        for prefix in prefixes_to_remove:
             if message_clean.lower().startswith(prefix):
                 message_clean = message_clean[len(prefix):].strip()
                 break
+        
+        # Additional cleanup: remove leading dash, colon, or "to my portfolio"
+        message_clean = message_clean.lstrip(':-').strip()
         
         # Extract address (everything that's left)
         address = message_clean
