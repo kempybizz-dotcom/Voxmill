@@ -473,7 +473,7 @@ class ConversationSession:
         
         return True, context_hints
     
-def get_last_metadata(self) -> dict:
+    def get_last_metadata(self) -> dict:
         """
         Get metadata from the last message in the conversation
         
