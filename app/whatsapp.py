@@ -1848,7 +1848,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-        # ====================================================================
+# ====================================================================
         # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST - WORLD-CLASS)
         # ====================================================================
         
@@ -2011,6 +2011,113 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 await send_twilio_message(sender, response)
                 return
         
+        # ====================================================================
+        # EXECUTIVE_COMPRESSION ROUTING (TRANSFORM LAST RESPONSE)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
+            try:
+                from openai import AsyncOpenAI
+                
+                logger.info(f"🔄 Executive compression detected")
+                
+                # Get last analysis from conversation
+                conversation = ConversationSession(sender)
+                last_analysis = conversation.get_last_analysis()
+                
+                if not last_analysis:
+                    response = "No previous analysis to compress."
+                    await send_twilio_message(sender, response)
+                    return
+                
+                # Determine compression format from message
+                message_lower = message_text.lower()
+                
+                if 'bullet' in message_lower or 'bullets' in message_lower:
+                    compression_format = "bullet points"
+                    system_instruction = "Convert this analysis into concise bullet points. Each bullet should be 1-2 sentences maximum. Preserve key numbers and insights."
+                elif 'one line' in message_lower or 'tldr' in message_lower:
+                    compression_format = "one line"
+                    system_instruction = "Compress this entire analysis into ONE sentence (maximum 25 words). State only the most critical insight."
+                elif 'risk memo' in message_lower:
+                    compression_format = "risk memo"
+                    system_instruction = "Reformat as a risk memo: (1) Primary Risk, (2) Impact, (3) Mitigation. Maximum 100 words total."
+                elif 'contradiction' in message_lower:
+                    compression_format = "contradiction explanation"
+                    system_instruction = "Explain the apparent contradiction in 3 parts: (1) The tension (what conflicts), (2) Why it exists (root cause), (3) What resolves it (insight). Maximum 80 words. No confidence scores."
+                else:
+                    # Default: concise summary
+                    compression_format = "concise summary"
+                    system_instruction = "Compress this analysis to its essence. Remove all filler. Keep only critical insights and numbers. Maximum 100 words."
+                
+                # Call LLM to transform
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""Transform the following analysis according to these instructions:
+
+{system_instruction}
+
+ORIGINAL ANALYSIS:
+{last_analysis}
+
+CRITICAL RULES:
+- Preserve all specific numbers, percentages, and agent names
+- No menu language ("Standing by", "Available intelligence", etc.)
+- No meta-commentary about the transformation
+- End with insight, not availability statement"""
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": f"You transform market intelligence into {compression_format}. You preserve precision while reducing length."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    max_tokens=200 if compression_format == "one line" else 400,
+                    temperature=0.2,
+                    timeout=10.0
+                )
+                
+                compressed_response = response.choices[0].message.content.strip()
+                
+                # Clean any remaining menu language
+                from app.response_enforcer import ResponseEnforcer
+                enforcer = ResponseEnforcer()
+                compressed_response = enforcer.clean_response_ending(compressed_response, ResponseShape.STRUCTURED_BRIEF)
+                
+                # Send compressed response
+                await send_twilio_message(sender, compressed_response)
+                
+                # Store new compressed version for potential re-compression
+                conversation.store_last_analysis(compressed_response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=compressed_response,
+                    metadata={'category': 'executive_compression', 'format': compression_format}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "executive_compression", compressed_response, 0, client_profile)
+                
+                # Update client history
+                update_client_history(sender, message_text, "executive_compression", preferred_region)
+                
+                logger.info(f"✅ Executive compression sent: {compression_format}, {len(compressed_response)} chars")
+                
+                return  # Exit early
+                
+            except Exception as e:
+                logger.error(f"❌ Executive compression error: {e}", exc_info=True)
+                response = "Compression failed. Please try again."
+                await send_twilio_message(sender, response)
+                return
         
         # ====================================================================
         # STATUS_MONITORING ROUTING (NEW - CRITICAL)
