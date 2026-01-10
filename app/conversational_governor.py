@@ -410,7 +410,7 @@ Classification rules:
 8. TRUST QUESTIONS = trust_authority (e.g. "Can I trust you?", "How confident are you?", "Are you sure?", "Really?", "Certain?")
 9. STATUS QUERIES = status_monitoring (e.g. "What am I waiting for?", "What am I monitoring?")
 10. DELIVERY REQUESTS = delivery_request (e.g. "PDF?", "Send report", "Weekly PDF")
-11. EXECUTIVE COMPRESSION = executive_compression (e.g., "Summarise in one line", "Bullet points", "So what?", "Bottom line", "Risk memo", "Compress", "Condense", "Brief", "TLDR", "Executive summary", "Takeaway", "One line summary")
+11. EXECUTIVE COMPRESSION = executive_compression (e.g., "Summarise in one line", "Bullet points", "Summarise in bullet points", "Just bullets", "So what?", "Bottom line", "Contradiction", "Explain contradiction", "Why?", "Risk memo", "Compress", "Condense", "Brief", "TLDR", "Executive summary", "Takeaway")
 12. IMPLICIT FOLLOW-UPS = follow_up (e.g. "Why?", "Compare that", "Meaning?")
 13. MARKET CHANGES = preference_change (e.g. "Switch to Manhattan", "Show me Dubai")
 14. MARKET QUERIES = market_query (e.g. "Market overview", "What's happening?", "Show me trends")
@@ -436,11 +436,22 @@ Examples:
 - "Lock" → preference_change (session control)
 - "Summarise in one line" → executive_compression
 - "Now bullet points" → executive_compression
+- "Summarise in bullet points" → executive_compression
+- "Summarise your last response in bullet points" → executive_compression
+- "Just bullet points" → executive_compression
+- "Just bullets" → executive_compression
 - "So what?" → executive_compression
 - "Bottom line?" → executive_compression
 - "Takeaway?" → executive_compression
 - "Risk memo format" → executive_compression
 - "Anything else I should know?" → executive_compression
+- "Contradiction" → executive_compression
+- "Explain contradiction" → executive_compression
+- "Explain the contradiction" → executive_compression
+- "Why contradiction" → executive_compression
+- "Feels off, why?" → executive_compression
+- "Why feels off" → executive_compression
+- "Why?" → executive_compression (when following analysis)
 - "What's my name?" → profile_status (about user identity)
 - "What am I missing?" → trust_authority (strategic gap question)
 - "What am I missing this week?" → trust_authority (strategic gap with timeframe)
@@ -460,7 +471,7 @@ Examples:
 - "Return to London" → preference_change (region switch)  
 - "Are you sure?" → trust_authority (expressing doubt)                    
 - "Really?" → trust_authority (skepticism)                                
-- "You certain?" → trust_authority (confidence check)                     
+- "You certain?" → trust_authority (confidence check)                  
 
 JSON:"""
         
