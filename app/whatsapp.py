@@ -2011,13 +2011,14 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 await send_twilio_message(sender, response)
                 return
         
-        # ====================================================================
+# ====================================================================
         # EXECUTIVE_COMPRESSION ROUTING (TRANSFORM LAST RESPONSE)
         # ====================================================================
         
         if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
             try:
                 from openai import AsyncOpenAI
+                from app.response_enforcer import ResponseEnforcer, ResponseShape  # ✅ FIXED
                 
                 logger.info(f"🔄 Executive compression detected")
                 
@@ -2086,7 +2087,6 @@ CRITICAL RULES:
                 compressed_response = response.choices[0].message.content.strip()
                 
                 # Clean any remaining menu language
-                from app.response_enforcer import ResponseEnforcer
                 enforcer = ResponseEnforcer()
                 compressed_response = enforcer.clean_response_ending(compressed_response, ResponseShape.STRUCTURED_BRIEF)
                 
