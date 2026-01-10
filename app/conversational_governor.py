@@ -1097,7 +1097,7 @@ JSON:"""
             ),
         }
         
-return envelopes.get(intent, envelopes[Intent.UNKNOWN])
+        return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
     @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
