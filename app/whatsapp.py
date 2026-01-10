@@ -1230,7 +1230,7 @@ Example: 1234 5678"""
         
         # Check PIN reset flow
         conversation = ConversationSession(sender)
-        last_metadata = safe_get_last_metadata(conversation)
+        last_metadata = conversation.get_last_metadata()
         
         if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
             digits_only = ''.join(c for c in message_text if c.isdigit())
@@ -1764,7 +1764,7 @@ Or discuss a property first, then say:
         
         if governance_result.intent == Intent.PORTFOLIO_STATUS:
             # ✅ CRITICAL FIX: Skip if we just handled PORTFOLIO_MANAGEMENT
-            last_metadata = safe_get_last_metadata(conversation)
+            last_metadata = conversation.get_last_metadata()  # ✅ FIXED: Call method on object
             
             if last_metadata.get('intent') == 'portfolio_management':
                 logger.info("⏭️ SKIP: Portfolio status check immediately after add operation")
