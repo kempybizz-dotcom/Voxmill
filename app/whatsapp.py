@@ -2605,7 +2605,7 @@ Standing by."""
         comparison_datasets = None
         
         if is_comparison:
-            import re
+            
             
             # ✅ FIX: Parse regions directly from message text
             region_1 = None
