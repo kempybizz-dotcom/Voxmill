@@ -359,3 +359,37 @@ def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> 
     except Exception as e:
         logger.error(f"Portfolio summary error: {e}", exc_info=True)
         return {'error': 'calculation_failed'}
+
+def clear_portfolio(client_id: str) -> bool:
+    """
+    Clear all properties from a client's portfolio
+    
+    Args:
+        client_id: WhatsApp number
+    
+    Returns: True if successful
+    """
+    try:
+        # Get client record
+        client_record = get_client_record(client_id)
+        
+        if not client_record:
+            logger.warning(f"No client found for {client_id}")
+            return False
+        
+        record_id = client_record['id']
+        
+        # Clear portfolio field
+        airtable_client.table('Accounts').update(
+            record_id,
+            {
+                'portfolio': []  # Empty array
+            }
+        )
+        
+        logger.info(f"✅ Portfolio cleared for {client_id}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to clear portfolio for {client_id}: {e}")
+        return False
