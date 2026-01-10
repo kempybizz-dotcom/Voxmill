@@ -473,7 +473,7 @@ class ConversationSession:
         
         return True, context_hints
     
-    def get_last_metadata(self) -> dict:
+def get_last_metadata(self) -> dict:
         """
         Get metadata from the last message in the conversation
         
@@ -537,7 +537,7 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error getting last messages for {self.client_id}: {e}")
             return []
-
+    
     def store_last_analysis(self, content: str):
         """
         Store the last assistant analysis separately from chat history
