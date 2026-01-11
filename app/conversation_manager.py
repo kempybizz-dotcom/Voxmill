@@ -276,6 +276,114 @@ class ConversationSession:
             
         except Exception as e:
             logger.error(f"Error updating session: {e}", exc_info=True)
+
+    def get_consecutive_gibberish_count(self) -> int:
+    """Get count of consecutive gibberish messages"""
+    try:
+        session = self.get_session()
+        return session.get('consecutive_gibberish', 0)
+    except Exception as e:
+        logger.error(f"Error getting gibberish count: {e}")
+        return 0
+
+    def set_consecutive_gibberish_count(self, count: int):
+    """Set consecutive gibberish count"""
+    try:
+        session = self.get_session()
+        session['consecutive_gibberish'] = count
+        
+        # Save to Redis
+        if redis_available and redis_client:
+            try:
+                redis_client.setex(
+                    self.session_key,
+                    self.SESSION_TTL,
+                    json.dumps(session)
+                )
+            except Exception as e:
+                logger.warning(f"Redis gibberish count save failed: {e}")
+        
+        # Save to memory
+        with _memory_sessions_lock:
+            _memory_sessions[self.client_id] = session
+        
+        logger.debug(f"✅ Gibberish count set to {count} for {self.client_id}")
+        
+    except Exception as e:
+        logger.error(f"Error setting gibberish count: {e}")
+
+    def set_silence_mode(self, duration: int):
+    """
+    Silence user for duration seconds (spam protection)
+    
+    Args:
+        duration: Silence duration in seconds
+    """
+    try:
+        session = self.get_session()
+        
+        silence_until = (datetime.now(timezone.utc) + timedelta(seconds=duration)).isoformat()
+        
+        session['silenced_until'] = silence_until
+        
+        # Save to Redis
+        if redis_available and redis_client:
+            try:
+                redis_client.setex(
+                    self.session_key,
+                    self.SESSION_TTL,
+                    json.dumps(session)
+                )
+            except Exception as e:
+                logger.warning(f"Redis silence mode save failed: {e}")
+        
+        # Save to memory
+        with _memory_sessions_lock:
+            _memory_sessions[self.client_id] = session
+        
+        logger.warning(f"🔇 SILENCED: {self.client_id} until {silence_until}")
+        
+    except Exception as e:
+        logger.error(f"Error setting silence mode: {e}")
+
+    def is_silenced(self) -> bool:
+    """Check if user is currently silenced"""
+    try:
+        session = self.get_session()
+        
+        silenced_until = session.get('silenced_until')
+        
+        if not silenced_until:
+            return False
+        
+        silence_expiry = datetime.fromisoformat(silenced_until)
+        
+        if datetime.now(timezone.utc) < silence_expiry:
+            logger.debug(f"🔇 User {self.client_id} is silenced until {silenced_until}")
+            return True
+        else:
+            # Silence expired - clear it
+            if 'silenced_until' in session:
+                del session['silenced_until']
+                
+                # Save cleared state
+                with _memory_sessions_lock:
+                    _memory_sessions[self.client_id] = session
+            
+            return False
+        
+    except Exception as e:
+        logger.error(f"Error checking silence mode: {e}")
+        return False
+
+    def get_silence_expiry(self) -> Optional[str]:
+    """Get silence expiry timestamp"""
+    try:
+        session = self.get_session()
+        return session.get('silenced_until')
+    except Exception as e:
+        logger.error(f"Error getting silence expiry: {e}")
+        return None
     
     def get_conversation_context(self) -> str:
         """
