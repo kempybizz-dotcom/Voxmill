@@ -739,6 +739,27 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, "I specialise in market intelligence analysis. What would you like to explore?")
             return
         
+# ====================================================================
+        # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION)
+        # ====================================================================
+        
+        from app.rate_limiter import RateLimiter
+        
+        logger.info(f"🔐 GATE 1.5: Checking for duplicates...")
+        
+        is_duplicate, cached_response = RateLimiter.check_duplicate(sender, message_text)
+        
+        if is_duplicate:
+            if cached_response:
+                logger.info(f"🔁 DUPLICATE: Returning cached response")
+                await send_twilio_message(sender, cached_response)
+            else:
+                logger.info(f"🔁 DUPLICATE: Acknowledged silently")
+                await send_twilio_message(sender, "Acknowledged.")
+            return  # TERMINAL
+        
+        logger.info(f"✅ GATE 1.5 PASSED: Not a duplicate")
+        
         # ====================================================================
         # GATE 1: IDENTITY - AIRTABLE CONTROL PLANE INTEGRATION
         # ====================================================================
@@ -840,58 +861,158 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
 
-# ====================================================================
-        # GATE 2: RATE LIMITING
+        # ====================================================================
+        # GATE 2: TOKEN BUCKET (LAYER 2 - CORE LIMITER)
         # ====================================================================
         
-        from app.rate_limiter import RateLimiter
+        logger.info(f"🔐 GATE 2: Checking token bucket...")
         
-        logger.info(f"🔐 GATE 2: Checking rate limit...")
+        client_tier = client_profile.get('tier', 'tier_1')
         
-        allowed, current_count, limit = RateLimiter.check_rate_limit(sender, client_profile)
+        # Check token bucket with message cost
+        allowed, current_tokens, capacity = RateLimiter.check_token_bucket(
+            client_id=sender,
+            operation='message',
+            client_tier=client_tier
+        )
         
         if not allowed:
-            reset_time = RateLimiter.get_reset_time(sender)
-            reset_minutes = reset_time // 60 if reset_time else 60
-            
-            logger.warning(f"🚫 GATE 2 FAILED: RATE LIMIT EXCEEDED: {sender} ({current_count}/{limit})")
+            logger.warning(f"🚫 GATE 2 FAILED: TOKEN BUCKET DEPLETED: {sender} ({current_tokens}/{capacity})")
             
             await send_twilio_message(
                 sender,
-                f"""RATE LIMIT EXCEEDED
+                f"""RATE LIMIT ACTIVE
 
-You've reached your hourly message limit ({limit} messages/hour).
+Token bucket depleted ({current_tokens}/{capacity} tokens remaining).
 
-Current usage: {current_count} messages
-Limit resets in: ~{reset_minutes} minutes
+Your tier: {client_tier.upper()}
+Refill rate: Automatic
 
-For higher limits, contact:
-intel@voxmill.uk"""
+Wait 30 seconds and try again.
+
+For higher limits, contact: intel@voxmill.uk"""
             )
             return
         
-        logger.info(f"✅ GATE 2 PASSED: Rate limit OK ({current_count}/{limit})")
+        logger.info(f"✅ GATE 2 PASSED: Token bucket OK ({current_tokens}/{capacity} after deduction)")
         
         # ====================================================================
-        # GATE 2.5: BURST DETECTION (SPAM PROTECTION)
+        # GATE 2.3: ABUSE SCORING (LAYER 4 - ANOMALY DETECTION)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 2.3: Checking abuse score...")
+        
+        blocked, action, abuse_score = RateLimiter.check_abuse_threshold(sender)
+        
+        if blocked:
+            if action == 'require_verification':
+                logger.warning(f"🚫 GATE 2.3 FAILED: VERIFICATION REQUIRED: {sender} (score: {abuse_score})")
+                
+                RateLimiter.set_challenge_required(sender, 'verify')
+                
+                await send_twilio_message(
+                    sender,
+                    """VERIFICATION REQUIRED
+
+Abnormal activity detected.
+
+To continue, re-verify your PIN:
+Reply: VERIFY [your PIN]
+
+Contact intel@voxmill.uk if you need assistance."""
+                )
+                return
+            
+            elif action == 'hard_block':
+                logger.warning(f"🚫 GATE 2.3 FAILED: HARD BLOCK: {sender} (score: {abuse_score})")
+                
+                await send_twilio_message(
+                    sender,
+                    """ACCESS TEMPORARILY RESTRICTED
+
+Abnormal request volume detected.
+
+Access restored in: 1 hour
+
+Contact intel@voxmill.uk if this is an error."""
+                )
+                return
+        
+        elif action == 'soft_throttle':
+            logger.warning(f"⚠️ GATE 2.3: SOFT THROTTLE: {sender} (score: {abuse_score})")
+            # Continue but log - responses will be slower
+        
+        logger.info(f"✅ GATE 2.3 PASSED: Abuse score OK ({abuse_score})")
+        
+        # ====================================================================
+        # GATE 2.4: CHALLENGE CHECK (LAYER 5)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 2.4: Checking for challenge requirement...")
+        
+        challenge_required, challenge_type = RateLimiter.is_challenge_required(sender)
+        
+        if challenge_required:
+            # Check if this message is the challenge response
+            if message_text.upper().startswith('VERIFY '):
+                # Extract PIN from message
+                parts = message_text.split()
+                if len(parts) >= 2:
+                    submitted_pin = parts[1]
+                    
+                    # Verify PIN
+                    from app.pin_auth import verify_pin
+                    
+                    if verify_pin(sender, submitted_pin, client_profile):
+                        RateLimiter.clear_challenge(sender)
+                        RateLimiter.update_abuse_score(sender, 'successful_pin', -10)
+                        
+                        await send_twilio_message(sender, "✅ Verification successful. Access restored.\n\nStanding by.")
+                        logger.info(f"✅ Challenge passed: {sender}")
+                        return
+                    else:
+                        await send_twilio_message(sender, "❌ Invalid PIN. Try again or contact intel@voxmill.uk")
+                        logger.warning(f"❌ Challenge failed: {sender}")
+                        return
+            
+            # Challenge still required
+            logger.warning(f"🚫 GATE 2.4 FAILED: CHALLENGE REQUIRED: {sender}")
+            
+            await send_twilio_message(
+                sender,
+                """VERIFICATION REQUIRED
+
+Reply: VERIFY [your PIN]
+
+Contact intel@voxmill.uk if you need assistance."""
+            )
+            return
+        
+        logger.info(f"✅ GATE 2.4 PASSED: No challenge required")
+        
+        # ====================================================================
+        # GATE 2.5: BURST DETECTION (LAYER 3 - FLOOD PROTECTION)
         # ====================================================================
         
         logger.info(f"🔐 GATE 2.5: Checking burst limit...")
         
-        burst_allowed, burst_count, burst_limit = RateLimiter.check_burst_limit(sender)
+        burst_allowed, burst_count = RateLimiter.check_burst_limit(sender)
         
         if not burst_allowed:
-            logger.warning(f"🚫 GATE 2.5 FAILED: BURST LIMIT: {sender} sent {burst_count} messages in 30s")
+            logger.warning(f"🚫 GATE 2.5 FAILED: BURST FLOOD: {sender} ({burst_count} in 3s)")
+            
+            # Update abuse score
+            RateLimiter.update_abuse_score(sender, 'burst_flood', 5)
             
             # Send ONE warning, then silence
-            if burst_count == burst_limit + 1:
-                response = f"Too many messages ({burst_count} in 30s). Wait 60 seconds."
+            if burst_count == 6:  # First violation
+                response = "Rate limit active. Wait 30 seconds."
                 await send_twilio_message(sender, response)
             
             # Don't respond to further spam
             return
         
-        logger.info(f"✅ GATE 2.5 PASSED: Burst check OK ({burst_count}/{burst_limit})")
+        logger.info(f"✅ GATE 2.5 PASSED: Burst check OK ({burst_count}/5)")
         
         # ====================================================================
         # GATE 2.6: SILENCE MODE CHECK
@@ -924,11 +1045,15 @@ intel@voxmill.uk"""
             gibberish_count += 1
             conversation.set_consecutive_gibberish_count(gibberish_count)
             
+            # Update abuse score
+            RateLimiter.update_abuse_score(sender, 'gibberish', 2)
+            
             logger.warning(f"🗑️ GATE 2.7 FAILED: Obvious gibberish detected ({gibberish_count}/3): '{message_text}'")
             
             if gibberish_count >= 3:
                 # SILENCE MODE
                 conversation.set_silence_mode(duration=300)  # 5 minutes
+                RateLimiter.update_abuse_score(sender, 'gibberish_spam', 5)
                 
                 response = "Noise threshold exceeded. Silenced for 5 minutes."
                 await send_twilio_message(sender, response)
@@ -941,7 +1066,6 @@ intel@voxmill.uk"""
             return  # TERMINAL
         
         logger.info(f"✅ GATE 2.7 PASSED: Not obvious gibberish")
-
         
         # ====================================================================
         # AUTOMATED WELCOME MESSAGE DETECTION (FIRST MESSAGE ONLY)
