@@ -268,3 +268,77 @@ def log_security_event(event_type: str, details: dict):
             db['security_events'].insert_one(security_log)
     except Exception as e:
         logger.error(f"Failed to log security event to MongoDB: {e}")
+
+@classmethod
+def is_obvious_gibberish(cls, text: str) -> bool:
+    """
+    Detect gibberish without expensive LLM call
+    
+    Returns: True if obvious gibberish (no LLM needed)
+    """
+    
+    if not text or len(text.strip()) == 0:
+        return True
+    
+    text_clean = text.strip()
+    
+    # Pattern 1: Too short and all caps random letters (no real words)
+    if text_clean.isupper() and len(text_clean) < 12:
+        # Check if it's a known command or real word
+        known_patterns = ['HELP', 'STOP', 'START', 'RESET', 'CONFIRM', 'CANCEL']
+        if not any(pattern in text_clean for pattern in known_patterns):
+            # Check for vowels (real words have vowels)
+            vowels = set('AEIOU')
+            if not any(c in vowels for c in text_clean):
+                logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
+                return True
+    
+    # Pattern 2: Repeated characters (more than 70% same char)
+    if len(text_clean) > 3:
+        char_freq = {}
+        for char in text_clean.lower():
+            if char.isalpha():
+                char_freq[char] = char_freq.get(char, 0) + 1
+        
+        if char_freq:
+            max_freq = max(char_freq.values())
+            total_alpha = sum(char_freq.values())
+            
+            if total_alpha > 0 and max_freq / total_alpha > 0.7:
+                logger.info(f"🗑️ Gibberish pre-filter: Excessive repetition in '{text_clean}'")
+                return True
+    
+    # Pattern 3: No vowels at all (and not a command)
+    vowels = set('aeiouAEIOU')
+    alpha_chars = [c for c in text_clean if c.isalpha()]
+    
+    if len(alpha_chars) >= 4:  # At least 4 letters
+        if not any(c in vowels for c in alpha_chars):
+            logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
+            return True
+    
+    # Pattern 4: Very short nonsense (1-3 chars that aren't numbers or known abbreviations)
+    if len(text_clean) <= 3 and text_clean.isalpha():
+        # Allow common abbreviations
+        allowed_short = ['OK', 'YES', 'NO', 'WHY', 'HOW', 'WHO', 'PIN']
+        if text_clean.upper() not in allowed_short:
+            logger.info(f"🗑️ Gibberish pre-filter: Too short '{text_clean}'")
+            return True
+    
+    # Pattern 5: Only consonants in sequence (5+)
+    consonants = 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
+    consonant_seq = 0
+    max_consonant_seq = 0
+    
+    for char in text_clean:
+        if char in consonants:
+            consonant_seq += 1
+            max_consonant_seq = max(max_consonant_seq, consonant_seq)
+        else:
+            consonant_seq = 0
+    
+    if max_consonant_seq >= 6:
+        logger.info(f"🗑️ Gibberish pre-filter: Consonant sequence in '{text_clean}'")
+        return True
+    
+    return False
