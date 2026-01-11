@@ -2854,25 +2854,39 @@ Standing by."""
             reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
             is_reverse = any(kw in message_lower for kw in reverse_keywords)
             
-            if is_reverse:
-                # Get locked comparison
-                locked_regions = conversation.get_locked_comparison()
-                
-                if locked_regions and len(locked_regions) == 2:
-                    # TRANSFORM ONLY - swap order
-                    region_1, region_2 = locked_regions[1], locked_regions[0]  # Reversed
-                    
-                    logger.info(f"🔄 Reverse transformation: {locked_regions} → [{region_1}, {region_2}]")
-                    
-                    # Load datasets for both regions
-                    dataset = load_dataset(area=region_1)
-                    dataset_2 = load_dataset(area=region_2)
-                    
-                    comparison_datasets = [dataset_2]
-                    query_region = region_1
-                    
-                    # Lock the reversed comparison
-                    conversation.lock_comparison_state(region_1, region_2)
+    if is_reverse:
+    locked_regions = conversation.get_locked_comparison()
+    
+    if locked_regions and len(locked_regions) == 2:
+        # ✅ CHATGPT FIX: Transform-only (NO LLM CALL)
+        
+        # Get last response from conversation
+        last_analysis = conversation.get_last_analysis()
+        
+        if not last_analysis:
+            response = "No comparison to reverse. Please run a comparison first."
+            await send_twilio_message(sender, response)
+            log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
+            return  # TERMINAL
+        
+        # Swap region names in cached text
+        region_1_old, region_2_old = locked_regions[0], locked_regions[1]
+        region_1_new, region_2_new = locked_regions[1], locked_regions[0]
+        
+        # String replacement (order matters)
+        reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
+        reversed_response = reversed_response.replace(region_2_old, region_1_old)
+        reversed_response = reversed_response.replace("__TEMP__", region_2_old)
+        
+        # Lock reversed comparison
+        conversation.lock_comparison_state(region_1_new, region_2_new)
+        
+        # Send cached + swapped response (NO LLM)
+        await send_twilio_message(sender, reversed_response)
+        log_interaction(sender, message_text, "comparison_reversed", reversed_response, 0, client_profile)
+        
+        logger.info(f"✅ Reverse transform-only: {region_1_old} ↔ {region_2_old} (no LLM call)")
+        return  # TERMINAL
                     
                 else:
                     # No locked comparison - ask for clarification
