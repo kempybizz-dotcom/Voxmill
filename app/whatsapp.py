@@ -1771,8 +1771,8 @@ Standing by."""
                 # ========================================
                 
                 if "confirm" in message_lower:
-                    # Extract action ID from message
-                    import re
+                    
+                    
                     action_id_match = re.search(r'P-[A-Z0-9]{5}', message_text.upper())
                     
                     if not action_id_match:
@@ -2834,7 +2834,7 @@ Standing by."""
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
-# ====================================================================
+        # ====================================================================
         # COMPARISON QUERY DETECTION (CHATGPT PHASE 2)
         # ====================================================================
         
