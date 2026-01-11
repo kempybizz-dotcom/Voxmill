@@ -173,43 +173,43 @@ class RateLimiter:
         except Exception as e:
             logger.error(f"Get current usage error: {e}")
             return 0
-
+    
     @classmethod
     def check_burst_limit(cls, client_id: str) -> Tuple[bool, int, int]:
-    """
-    Check if client is sending messages too fast (burst detection)
-    
-    Returns: (allowed, messages_in_window, burst_limit)
-    """
-    
-    BURST_WINDOW = 30  # seconds
-    BURST_LIMIT = 5    # messages per 30s
-    
-    if not redis_available or not redis_client:
-        return True, 0, BURST_LIMIT
-    
-    try:
-        # Use second-precision bucket
-        current_second = int(datetime.now(timezone.utc).timestamp())
-        burst_key = f"voxmill:burst:{client_id}:{current_second // BURST_WINDOW}"
+        """
+        Check if client is sending messages too fast (burst detection)
         
-        # Increment burst counter
-        count = redis_client.incr(burst_key)
+        Returns: (allowed, messages_in_window, burst_limit)
+        """
         
-        if count is None:
-            count = 0
+        BURST_WINDOW = 30  # seconds
+        BURST_LIMIT = 5    # messages per 30s
         
-        # Set expiry
-        if count == 1:
-            redis_client.expire(burst_key, BURST_WINDOW)
+        if not redis_available or not redis_client:
+            return True, 0, BURST_LIMIT
         
-        # Check if over burst limit
-        if count > BURST_LIMIT:
-            logger.warning(f"🚫 BURST LIMIT EXCEEDED: {client_id} ({count}/{BURST_LIMIT} in {BURST_WINDOW}s)")
-            return False, count, BURST_LIMIT
-        
-        return True, count, BURST_LIMIT
-        
-    except Exception as e:
-        logger.error(f"Burst limit check error: {e}")
-        return True, 0, BURST_LIMIT
+        try:
+            # Use second-precision bucket
+            current_second = int(datetime.now(timezone.utc).timestamp())
+            burst_key = f"voxmill:burst:{client_id}:{current_second // BURST_WINDOW}"
+            
+            # Increment burst counter
+            count = redis_client.incr(burst_key)
+            
+            if count is None:
+                count = 0
+            
+            # Set expiry
+            if count == 1:
+                redis_client.expire(burst_key, BURST_WINDOW)
+            
+            # Check if over burst limit
+            if count > BURST_LIMIT:
+                logger.warning(f"🚫 BURST LIMIT EXCEEDED: {client_id} ({count}/{BURST_LIMIT} in {BURST_WINDOW}s)")
+                return False, count, BURST_LIMIT
+            
+            return True, count, BURST_LIMIT
+            
+        except Exception as e:
+            logger.error(f"Burst limit check error: {e}")
+            return True, 0, BURST_LIMIT
