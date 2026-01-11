@@ -609,6 +609,102 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error getting last analysis for {self.client_id}: {e}", exc_info=True)
             return None
+
+    def lock_comparison_state(self, region1: str, region2: str):
+        """
+        Lock comparison set for 'reverse/flip' commands
+        
+        CHATGPT SPEC: Automatic lock on first comparison, 10-minute expiry
+        """
+        try:
+            session = self.get_session()
+            
+            session['locked_comparison'] = {
+                'regions': [region1, region2],
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+            }
+            
+            # Save to Redis (if available)
+            if redis_available and redis_client:
+                try:
+                    redis_client.setex(
+                        self.session_key,
+                        self.SESSION_TTL,
+                        json.dumps(session)
+                    )
+                    logger.debug(f"🔒 REDIS: Comparison locked for {self.client_id}: {region1} vs {region2}")
+                except Exception as e:
+                    logger.warning(f"Redis comparison lock failed: {e}, using memory only")
+            
+            # ALWAYS save to memory as backup
+            with _memory_sessions_lock:
+                _memory_sessions[self.client_id] = session
+                logger.info(f"🔒 MEMORY: Comparison locked: {region1} vs {region2} (expires in 10 min)")
+            
+        except Exception as e:
+            logger.error(f"Error locking comparison for {self.client_id}: {e}", exc_info=True)
+    
+    def get_locked_comparison(self) -> Optional[List[str]]:
+        """
+        Get locked comparison if exists and not expired
+        
+        Returns: [region1, region2] or None
+        """
+        try:
+            session = self.get_session()
+            
+            if not session:
+                return None
+            
+            locked = session.get('locked_comparison')
+            
+            if not locked:
+                return None
+            
+            # Check if expired (>10 minutes)
+            expires_at = datetime.fromisoformat(locked['expires_at'])
+            
+            if datetime.now(timezone.utc) > expires_at:
+                logger.debug(f"🔓 Comparison lock expired for {self.client_id}")
+                return None
+            
+            regions = locked['regions']
+            logger.info(f"✅ Retrieved locked comparison for {self.client_id}: {regions}")
+            
+            return regions
+            
+        except Exception as e:
+            logger.error(f"Error getting locked comparison for {self.client_id}: {e}", exc_info=True)
+            return None
+    
+    def clear_comparison_lock(self):
+        """Clear comparison lock (when new comparison starts)"""
+        try:
+            session = self.get_session()
+            
+            if 'locked_comparison' in session:
+                del session['locked_comparison']
+                
+                # Save to Redis
+                if redis_available and redis_client:
+                    try:
+                        redis_client.setex(
+                            self.session_key,
+                            self.SESSION_TTL,
+                            json.dumps(session)
+                        )
+                    except Exception as e:
+                        logger.warning(f"Redis lock clear failed: {e}")
+                
+                # Save to memory
+                with _memory_sessions_lock:
+                    _memory_sessions[self.client_id] = session
+                
+                logger.info(f"🔓 Comparison lock cleared for {self.client_id}")
+        
+        except Exception as e:
+            logger.error(f"Error clearing comparison lock: {e}", exc_info=True)
     
     def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
         """
@@ -724,42 +820,85 @@ def resolve_reference(query: str, context_hints: Dict) -> str:
     """
     Resolve ambiguous references in query using conversation context
     
-    Example: "What about Chelsea?" → "What's the market overview for Chelsea?"
+    CHATGPT SPEC: Only apply when followup/comparative/pronoun detected
+    
+    Example: "Compare that to Chelsea" → "Compare Mayfair to Chelsea"
     """
     
     query_lower = query.lower()
     
-    # Pattern: "what about [X]"
-    if query_lower.startswith('what about ') or query_lower.startswith('how about '):
-        # Check if X is a region
-        for region in ['mayfair', 'chelsea', 'knightsbridge', 'belgravia', 'kensington']:
-            if region in query_lower:
-                # Assume they want same analysis as before, but for new region
-                last_topic = context_hints.get('last_topic', 'market_overview')
-                return f"Provide {last_topic} analysis for {region.title()}"
+    # ========================================
+    # PATTERN 1: "REVERSE / FLIP" TRANSFORMATIONS
+    # ========================================
     
-    # Pattern: "compare to [X]" or "vs [X]" or "compare them"
-    if 'compare' in query_lower or ' vs ' in query_lower or 'versus' in query_lower:
-        # ✅ CRITICAL FIX: Use last TWO regions for comparison
+    reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
+    
+    if any(keyword in query_lower for keyword in reverse_keywords):
+        # Check for locked comparison
         recent_regions = context_hints.get('recent_regions', [])
         
         if len(recent_regions) >= 2:
             region1, region2 = recent_regions[-2], recent_regions[-1]
-            return f"Compare {region1} vs {region2} (from recent conversation)"
-        elif recent_regions:
-            return f"{query} (previous context: {recent_regions[-1]})"
+            
+            # SWAP ORDER (transform-only)
+            return f"Compare {region2} vs {region1} (reversed from previous comparison)"
+        else:
+            return f"{query} (insufficient context for reversal)"
     
-    # Pattern: "more like that" or "show me similar"
-    if any(phrase in query_lower for phrase in ['more like', 'similar', 'same', 'that']):
-        last_topic = context_hints.get('last_topic', 'opportunities')
-        last_region = context_hints.get('last_region', 'Mayfair')
-        return f"Show more {last_topic} for {last_region}"
+    # ========================================
+    # PATTERN 2: "COMPARE THAT/THEM" RESOLUTIONS
+    # ========================================
     
-    # Pattern: "what if [agent] does [X]" - needs agent context
-    if 'what if' in query_lower and context_hints.get('last_agent'):
-        # Already has context, return as-is
-        return query
+    if 'compare' in query_lower or ' vs ' in query_lower or 'versus' in query_lower:
+        recent_regions = context_hints.get('recent_regions', [])
+        
+        # "compare them" or "compare that"
+        if any(pronoun in query_lower for pronoun in ['that', 'them', 'those', 'it']):
+            if len(recent_regions) >= 2:
+                region1, region2 = recent_regions[-2], recent_regions[-1]
+                return f"Compare {region1} vs {region2} (from recent conversation)"
+            elif recent_regions:
+                return f"{query} (context: {recent_regions[-1]})"
+        
+        # "compare to [X]" with implicit first region
+        if 'compare to' in query_lower or 'vs' in query_lower:
+            if recent_regions and 'that' not in query_lower:
+                # Has explicit second region, just need first
+                last_region = recent_regions[-1]
+                return f"{query} (previous context: {last_region})"
     
+    # ========================================
+    # PATTERN 3: "THAT" / "IT" GENERIC REFERENCES
+    # ========================================
+    
+    if any(pronoun in query_lower for pronoun in ['that', 'it', 'this']):
+        last_region = context_hints.get('last_region')
+        
+        if last_region:
+            # Replace pronouns with actual region
+            resolved = query
+            resolved = resolved.replace(' that', f' {last_region}')
+            resolved = resolved.replace(' it', f' {last_region}')
+            resolved = resolved.replace(' this', f' {last_region}')
+            resolved = resolved.replace('That ', f'{last_region} ')
+            resolved = resolved.replace('It ', f'{last_region} ')
+            resolved = resolved.replace('This ', f'{last_region} ')
+            
+            if resolved != query:
+                return resolved
+    
+    # ========================================
+    # PATTERN 4: "EARLIER" / "BEFORE" TEMPORAL REFS
+    # ========================================
+    
+    if any(temporal in query_lower for temporal in ['earlier', 'before', 'previous', 'last']):
+        recent_regions = context_hints.get('recent_regions', [])
+        
+        if recent_regions:
+            regions_str = ', '.join(recent_regions)
+            return f"{query} (recent regions: {regions_str})"
+    
+    # No resolution needed
     return query
 
 def generate_contextualized_prompt(base_prompt: str, session: ConversationSession) -> str:
