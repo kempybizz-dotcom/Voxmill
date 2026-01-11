@@ -688,22 +688,17 @@ def smart_split_message(message: str, max_length: int) -> list:
 
 
 # ============================================================================
-# MAIN MESSAGE HANDLER - OPTIMIZED
+# MAIN MESSAGE HANDLER - INSTITUTIONAL GOVERNANCE
 # ============================================================================
 
 async def handle_whatsapp_message(sender: str, message_text: str):
     """
-    OPTIMIZED WhatsApp message handler
-    
-    OPTIMIZATIONS FROM V1:
-    - Single Airtable call per message (was 2-3x)
-    - Selective dataset loading (instant queries <1s, complex queries 15s)
-    - Removed 3 duplicate gate checks
-    - Added missing helper functions
-    - Removed 450 lines of dead code
+    INSTITUTIONAL WhatsApp message handler
     
     GATE SEQUENCE:
-    Identity → Trial → Subscription → PIN → Governance → Intelligence
+    Identity → Rate Limit → Subscription → PIN → FSM State → Command Grammar → LLM Intent → Intelligence
+    
+    CRITICAL: FSM state check BEFORE any other control logic
     """
     
     # ✅ CRITICAL IMPORTS - MUST BE AT TOP OF FUNCTION
@@ -716,6 +711,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     from app.security import ResponseValidator
     from app.airtable_auto_sync import sync_usage_metrics
     from app.conversational_governor import ConversationalGovernor, Intent
+    from app.pending_actions import action_manager, ActionType
     from pymongo import MongoClient
     
     try:
@@ -1047,7 +1043,7 @@ Voxmill Intelligence — Precision at Scale"""
         
         logger.info(f"✅ GATE 3 PASSED: {client_profile.get('subscription_status')}")
         
-# ====================================================================
+        # ====================================================================
         # GATE 4: PIN AUTHENTICATION
         # ====================================================================
         
@@ -1114,7 +1110,7 @@ Voxmill Intelligence — Precision at Scale"""
             logger.debug(f"PIN sync skipped: {e}")
         
         # PIN verification
-        needs_verification, reason = PINAuthenticator.check_needs_verification(sender, client_profile)  # ✅ FIX 1
+        needs_verification, reason = PINAuthenticator.check_needs_verification(sender, client_profile)
         client_name = client_profile.get('name', 'there')
         
         if needs_verification:
@@ -1152,7 +1148,7 @@ Voxmill Intelligence — Precision at Scale"""
             
             else:
                 if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)  # ✅ FIX 2
+                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
                     
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
@@ -1180,11 +1176,10 @@ Voxmill Intelligence — Precision at Scale"""
                     await send_twilio_message(sender, response)
                     return
         
-        # PIN commands
+        # PIN commands (READ-ONLY - keywords only as routing hints)
         message_lower = message_text.lower().strip()
         
-        lock_keywords = ['lock intelligence', 'lock access', 'lock account', 'lock session', 'lock my account', 'lock it', 'lock this', 'lock down', 'secure account']
-        if any(kw in message_lower for kw in lock_keywords) or message_lower == 'lock':
+        if message_lower == 'lock' or 'lock intelligence' in message_lower or 'lock access' in message_lower:
             success, message = PINAuthenticator.manual_lock(sender)
             
             if success:
@@ -1200,16 +1195,14 @@ Enter your 4-digit code to unlock."""
             await send_twilio_message(sender, response)
             return
         
-        verify_keywords = ['verify pin', 'verify my pin', 'reverify', 're-verify', 'verify code', 'verify access']
-        if any(kw in message_lower for kw in verify_keywords):
+        if 'verify pin' in message_lower or 'verify my pin' in message_lower:
             response = """PIN VERIFICATION
 
 Enter your 4-digit access code to verify your account."""
             await send_twilio_message(sender, response)
             return
         
-        reset_keywords = ['reset pin', 'change pin', 'reset code', 'reset my pin', 'change my pin', 'reset access code', 'new pin', 'update pin']
-        if any(kw in message_lower for kw in reset_keywords):
+        if 'reset pin' in message_lower or 'change pin' in message_lower:
             conversation = ConversationSession(sender)
             conversation.update_session(
                 user_message=message_text,
@@ -1299,8 +1292,128 @@ Standing by."""
         
         logger.info(f"✅ GATE 4 PASSED: PIN verified")
         
-# ====================================================================
-        # GATE 5: REGION EXTRACTION
+        # ====================================================================
+        # GATE 5: FSM STATE CHECK (INSTITUTIONAL CONTROL - FIRST LOGIC GATE)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 5: FSM state check...")
+        
+        pending_action = action_manager.get_pending_action(sender)
+        
+        if pending_action:
+            # ========================================
+            # LOCKED STATE - Only CONFIRM/CANCEL accepted
+            # ========================================
+            
+            logger.info(f"🔒 FSM LOCKED: Pending action {pending_action.action_id} ({pending_action.action_type.value})")
+            
+            # Check for CONFIRM
+            if re.search(r'CONFIRM\s+' + re.escape(pending_action.action_id), message_text.upper()):
+                # Route to Portfolio handler for execution
+                from app.portfolio import clear_portfolio, remove_property_from_portfolio
+                
+                if pending_action.action_type == ActionType.RESET_PORTFOLIO:
+                    success = clear_portfolio(sender)
+                    
+                    if success:
+                        response = """PORTFOLIO CLEARED
+
+All properties removed.
+
+Standing by."""
+                        
+                        action_manager.complete_action(
+                            pending_action.action_id,
+                            {
+                                'success': True,
+                                'properties_before': pending_action.data.get('property_count', 0),
+                                'properties_after': 0
+                            }
+                        )
+                        logger.info(f"✅ FSM: Reset executed and logged")
+                    else:
+                        response = "Reset failed. Please try again."
+                        action_manager.complete_action(pending_action.action_id, {'success': False})
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "portfolio_reset", response, 0, client_profile)
+                    return  # TERMINAL
+                
+                elif pending_action.action_type == ActionType.REMOVE_PROPERTY:
+                    property_address = pending_action.data.get('address')
+                    
+                    result = remove_property_from_portfolio(sender, property_address)
+                    
+                    response = result['message']
+                    
+                    action_manager.complete_action(
+                        pending_action.action_id,
+                        {'success': result['success'], 'address': property_address}
+                    )
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "portfolio_remove", response, 0, client_profile)
+                    logger.info(f"✅ FSM: Removal executed and logged")
+                    return  # TERMINAL
+            
+            # Check for CANCEL
+            elif re.search(r'CANCEL\s+' + re.escape(pending_action.action_id), message_text.upper()):
+                action_manager.cancel_action(sender)
+                
+                response = f"""ACTION CANCELLED
+
+{pending_action.action_type.value.replace('_', ' ').title()} cancelled.
+
+Standing by."""
+                
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "action_cancelled", response, 0, client_profile)
+                logger.info(f"✅ FSM: Action cancelled")
+                return  # TERMINAL
+            
+            # Any other message = rejection
+            else:
+                response = f"""PENDING ACTION
+
+Action: {pending_action.action_type.value.replace('_', ' ').title()}
+ID: {pending_action.action_id}
+Expires: {pending_action.expires_at.strftime('%H:%M UTC')}
+
+Reply: CONFIRM {pending_action.action_id}
+Or: CANCEL {pending_action.action_id}
+
+No other actions permitted."""
+                
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "fsm_locked", response, 0, client_profile)
+                logger.info(f"🚫 FSM LOCKED: Rejected non-confirmation message")
+                return  # TERMINAL
+        
+        logger.info(f"✅ GATE 5 PASSED: FSM IDLE state")
+        
+        # ====================================================================
+        # GATE 6: COMMAND GRAMMAR PARSER (DETERMINISTIC - NO KEYWORDS)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 6: Command grammar parser...")
+        
+        from app.portfolio_commands import parse_portfolio_command, execute_portfolio_command
+        
+        command = parse_portfolio_command(message_text)
+        
+        if command:
+            logger.info(f"📋 Command matched: {command.type}")
+            
+            response = await execute_portfolio_command(sender, command, client_profile)
+            await send_twilio_message(sender, response)
+            log_interaction(sender, message_text, f"portfolio_{command.type}", response, 0, client_profile)
+            logger.info(f"✅ GATE 6: Command executed")
+            return  # TERMINAL
+        
+        logger.info(f"✅ GATE 6 PASSED: No command matched, continuing to LLM")
+        
+        # ====================================================================
+        # GATE 7: REGION EXTRACTION
         # ====================================================================
         
         # ✅ FIXED: No hardcoded fallback - block if no market
@@ -1335,59 +1448,13 @@ Standing by."""
         logger.info(f"✅ Region = '{preferred_region}'")
         
 # ====================================================================
-        # EARLY COMMAND ROUTING (BEFORE GOVERNANCE)
-        # ====================================================================
-        
-# ====================================================================
-        # MULTI-INTENT DETECTION (WITH COMPARISON + COMPRESSION + CONTRADICTION EXCEPTION)
+        # MULTI-INTENT DETECTION (LLM-BASED - NO KEYWORD CONTROL)
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
         
-        # ✅ CHATGPT SPEC: Check for phrases that should NEVER be split
-        message_lower = message_text.lower()
-        
-        # Comparison keywords (CHATGPT SPEC - Priority 1)
-        comparison_keywords = [
-            'compare', 'vs', 'versus', 'reverse', 'flip', 'swap',
-            'other way', 'opposite', 'them', 'that to', 'those to',
-            'difference between', 'how does', 'better than'
-        ]
-        
-        # Contradiction phrases (CHATGPT SPEC - Priority 2)
-        contradiction_phrases = [
-            'explain tension', 'explain the tension',
-            'feels off', 'doesn\'t feel right', 'something doesn\'t feel right',
-            'doesn\'t add up', 'doesn\'t make sense', 'something wrong',
-            'contradicts', 'contradiction', 'inconsistent', 'inconsistency',
-            'seems off', 'seems wrong', 'doesn\'t fit'
-        ]
-        
-        # Compression phrases (CHATGPT SPEC - Priority 3)
-        compression_phrases = [
-            'summarise', 'summarize', 'bullet', 'bullets', 'bullet points',
-            'compress', 'tldr', 'one line', 'risk memo', 'condense',
-            'turn your last', 'turn that into', 'rewrite as', 'reformat as',
-            'no intro', 'no preamble', 'just the', 'only the'
-        ]
-        
-        has_comparison = any(kw in message_lower for kw in comparison_keywords)
-        has_contradiction = any(phrase in message_lower for phrase in contradiction_phrases)
-        has_compression = any(phrase in message_lower for phrase in compression_phrases)
-        
-        # ✅ CHATGPT SPEC: DISABLE SPLITTING for these special cases
-        if has_comparison:
-            logger.info(f"🔒 Comparison detected - treating as single intent (no split)")
-            message_segments = [message_text]
-        elif has_contradiction:
-            logger.info(f"🎯 Contradiction phrase detected - treating as single intent (no split)")
-            message_segments = [message_text]
-        elif has_compression:
-            logger.info(f"🔄 Compression phrase detected - treating as single intent (no split)")
-            message_segments = [message_text]
-        else:
-            # Normal multi-intent detection
-            message_segments = ConversationalGovernor._detect_multi_intent(message_text)
+        # Let the LLM handle splitting intelligently (no keyword soup)
+        message_segments = ConversationalGovernor._detect_multi_intent(message_text)
         
         if len(message_segments) > 1:
             logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments")
@@ -1397,27 +1464,7 @@ Standing by."""
             for i, segment in enumerate(message_segments):
                 logger.info(f"Processing segment {i+1}/{len(message_segments)}: {segment}")
                 
-                # Check if segment is a monitor request
-                monitor_keywords = [
-                    'monitor', 'watch', 'track', 'alert me', 'notify me', 
-                    'keep an eye', 'keep watch', 'flag if', 'let me know if', 
-                    'tell me if', 'alert if', 'alert when'
-                ]
-                
-                is_monitor_request = any(kw in segment.lower() for kw in monitor_keywords)
-                
-                if is_monitor_request:
-                    from app.monitoring import handle_monitor_request
-                    response = await handle_monitor_request(sender, segment, client_profile)
-                    responses.append(response)
-                    continue
-                
-                # Check if segment is a PDF request
-                if 'pdf' in segment.lower() or 'report' in segment.lower():
-                    responses.append("PDF regeneration requested. Contact intel@voxmill.uk")
-                    continue
-                
-                # Otherwise, process through governance
+                # Process through governance (LLM classifies intent)
                 conversation = ConversationSession(sender)
                 conversation_entities = conversation.get_last_mentioned_entities()
                 
@@ -1427,13 +1474,10 @@ Standing by."""
                     'topics': conversation_entities.get('topics', [])
                 }
                 
-                # Check trial sample status
                 trial_sample_used = False
                 if client_profile.get('subscription_status', '').lower() == 'trial':
                     try:
-                        from pymongo import MongoClient
                         MONGODB_URI = os.getenv('MONGODB_URI')
-                        
                         if MONGODB_URI:
                             mongo_client = MongoClient(MONGODB_URI)
                             db = mongo_client['Voxmill']
@@ -1462,15 +1506,11 @@ Standing by."""
                         responses.append(governance_result.response)
                     continue
                 
-                # Process intelligence query
+                # Route based on LLM-classified intent
                 if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC]:
-                    from app.dataset_loader import load_dataset
-
                     industry = client_profile.get('industry', 'real_estate')
-
                     dataset = load_dataset(area=preferred_region, industry=industry)
                     
-                    from app.instant_response import InstantIntelligence
                     response = InstantIntelligence.get_full_market_snapshot(
                         preferred_region, 
                         dataset, 
@@ -1485,7 +1525,6 @@ Standing by."""
                 combined_response = "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(responses)
                 await send_twilio_message(sender, combined_response)
 
-                # ✅ CHATGPT FIX: Store combined response for compression
                 conversation = ConversationSession(sender)
                 conversation.store_last_analysis(combined_response)
                 
@@ -1495,7 +1534,6 @@ Standing by."""
                     metadata={'category': 'multi_intent', 'segment_count': len(message_segments)}
                 )
                 
-                from app.airtable_auto_sync import sync_usage_metrics
                 await sync_usage_metrics(
                     whatsapp_number=sender,
                     record_id=client_profile.get('airtable_record_id'),
@@ -1508,7 +1546,7 @@ Standing by."""
                 return
         
         # ====================================================================
-        # MANUAL PROFILE REFRESH
+        # MANUAL PROFILE REFRESH (READ-ONLY - SOFT ROUTING HINT)
         # ====================================================================
         
         refresh_keywords = ['refresh profile', 'refresh my profile', 'reload profile', 'update profile', 'sync profile']
