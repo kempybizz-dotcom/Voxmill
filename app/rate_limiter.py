@@ -164,7 +164,7 @@ class RateLimiter:
     # LAYER 0: IDEMPOTENCY (DUPLICATE DETECTION)
     # ================================================================
     
-    @classmethod
+@classmethod
     def check_duplicate(cls, sender: str, message_text: str) -> Tuple[bool, Optional[str]]:
         """
         Check if message is a duplicate (Twilio retry)
@@ -188,25 +188,27 @@ class RateLimiter:
             
             dedup_key = f"voxmill:dedup:{fingerprint}"
             
-            # Check if seen
-            is_duplicate = not redis_client.setnx(dedup_key, "1")
+            # ✅ FIX: SETNX returns True if key was SET (first time seeing it)
+            was_set = redis_client.setnx(dedup_key, "1")
             
-            if is_duplicate:
+            if was_set:
+                # First time seeing this message - set expiry
+                redis_client.expire(dedup_key, 60)
+                logger.debug(f"✅ NEW MESSAGE: {sender} (fingerprint: {fingerprint})")
+                return False, None  # NOT a duplicate
+            else:
+                # Already seen this message
                 logger.warning(f"🔁 DUPLICATE MESSAGE DETECTED: {sender} (fingerprint: {fingerprint})")
                 
                 # Try to get cached response
                 cache_key = f"voxmill:response_cache:{fingerprint}"
                 cached_response = redis_client.get(cache_key)
                 
-                return True, cached_response
-            else:
-                # First time seeing this - set expiry
-                redis_client.expire(dedup_key, 60)
-                return False, None
+                return True, cached_response  # IS a duplicate
         
         except Exception as e:
             logger.error(f"Duplicate check error: {e}")
-            return False, None
+            return False, None  # Fail open - treat as NOT duplicate
     
     @classmethod
     def cache_response(cls, sender: str, message_text: str, response: str):
@@ -226,6 +228,8 @@ class RateLimiter:
             
             cache_key = f"voxmill:response_cache:{fingerprint}"
             redis_client.setex(cache_key, 60, response)
+            
+            logger.debug(f"💾 Cached response for fingerprint: {fingerprint}")
             
         except Exception as e:
             logger.error(f"Response cache error: {e}")
