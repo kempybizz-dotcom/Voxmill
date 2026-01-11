@@ -840,7 +840,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
 
-        # ====================================================================
+# ====================================================================
         # GATE 2: RATE LIMITING
         # ====================================================================
         
@@ -871,6 +871,76 @@ intel@voxmill.uk"""
             return
         
         logger.info(f"✅ GATE 2 PASSED: Rate limit OK ({current_count}/{limit})")
+        
+        # ====================================================================
+        # GATE 2.5: BURST DETECTION (SPAM PROTECTION)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 2.5: Checking burst limit...")
+        
+        burst_allowed, burst_count, burst_limit = RateLimiter.check_burst_limit(sender)
+        
+        if not burst_allowed:
+            logger.warning(f"🚫 GATE 2.5 FAILED: BURST LIMIT: {sender} sent {burst_count} messages in 30s")
+            
+            # Send ONE warning, then silence
+            if burst_count == burst_limit + 1:
+                response = f"Too many messages ({burst_count} in 30s). Wait 60 seconds."
+                await send_twilio_message(sender, response)
+            
+            # Don't respond to further spam
+            return
+        
+        logger.info(f"✅ GATE 2.5 PASSED: Burst check OK ({burst_count}/{burst_limit})")
+        
+        # ====================================================================
+        # GATE 2.6: SILENCE MODE CHECK
+        # ====================================================================
+        
+        from app.conversation_manager import ConversationSession
+        
+        logger.info(f"🔐 GATE 2.6: Checking silence mode...")
+        
+        conversation = ConversationSession(sender)
+        
+        if conversation.is_silenced():
+            silence_expiry = conversation.get_silence_expiry()
+            logger.info(f"🔇 GATE 2.6 FAILED: User silenced until {silence_expiry} - ignoring message")
+            return  # TERMINAL (no response)
+        
+        logger.info(f"✅ GATE 2.6 PASSED: Not silenced")
+        
+        # ====================================================================
+        # GATE 2.7: GIBBERISH PRE-FILTER (SAVE MONEY)
+        # ====================================================================
+        
+        from app.security import SecurityValidator
+        
+        logger.info(f"🔐 GATE 2.7: Checking for obvious gibberish...")
+        
+        if SecurityValidator.is_obvious_gibberish(message_text):
+            # Don't call LLM - just increment gibberish counter
+            gibberish_count = conversation.get_consecutive_gibberish_count()
+            gibberish_count += 1
+            conversation.set_consecutive_gibberish_count(gibberish_count)
+            
+            logger.warning(f"🗑️ GATE 2.7 FAILED: Obvious gibberish detected ({gibberish_count}/3): '{message_text}'")
+            
+            if gibberish_count >= 3:
+                # SILENCE MODE
+                conversation.set_silence_mode(duration=300)  # 5 minutes
+                
+                response = "Noise threshold exceeded. Silenced for 5 minutes."
+                await send_twilio_message(sender, response)
+                
+                logger.warning(f"🔇 User silenced for spam: {sender}")
+                return  # TERMINAL
+            
+            # Send "Standing by" for first 2 gibberish messages
+            await send_twilio_message(sender, "Standing by.")
+            return  # TERMINAL
+        
+        logger.info(f"✅ GATE 2.7 PASSED: Not obvious gibberish")
 
         
         # ====================================================================
@@ -1631,7 +1701,7 @@ Standing by."""
             logger.info(f"✅ Monitor request handled")
             return
         
-        # ====================================================================
+# ====================================================================
         # GOVERNANCE LAYER
         # ====================================================================
         
@@ -1709,6 +1779,33 @@ Standing by."""
                 
                 logger.info(f"✅ Governance override: {governance_result.intent.value}")
                 return
+        
+        # ====================================================================
+        # GIBBERISH THROTTLE (3-STRIKE RULE - CHATGPT SPAM FIX)
+        # ====================================================================
+        
+        from app.conversational_governor import Intent
+        
+        if governance_result.intent == Intent.GIBBERISH:
+            gibberish_count = conversation.get_consecutive_gibberish_count()
+            gibberish_count += 1
+            conversation.set_consecutive_gibberish_count(gibberish_count)
+            
+            logger.warning(f"🗑️ Gibberish classified by LLM ({gibberish_count}/3): '{message_text}'")
+            
+            if gibberish_count >= 3:
+                # SILENCE MODE
+                conversation.set_silence_mode(duration=300)  # 5 minutes
+                
+                response = "Noise threshold exceeded. Silenced for 5 minutes."
+                await send_twilio_message(sender, response)
+                
+                logger.warning(f"🔇 User silenced for spam: {sender}")
+                return  # TERMINAL
+        else:
+            # Real query - reset gibberish counter
+            conversation.set_consecutive_gibberish_count(0)
+            logger.debug(f"✅ Real query detected - gibberish counter reset")
         
         # ====================================================================
         # MARK TRIAL SAMPLE AS USED (IF INTELLIGENCE QUERY FROM TRIAL USER)
