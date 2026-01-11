@@ -739,7 +739,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, "I specialise in market intelligence analysis. What would you like to explore?")
             return
         
-# ====================================================================
+        # ====================================================================
         # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION)
         # ====================================================================
         
