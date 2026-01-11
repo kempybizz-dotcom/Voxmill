@@ -1700,90 +1700,280 @@ Standing by."""
 
         
 # ====================================================================
-        # PORTFOLIO_MANAGEMENT ROUTING (ADD/REMOVE PROPERTIES)
+        # PORTFOLIO_MANAGEMENT ROUTING (FSM-BASED - CHATGPT SPEC)
         # ====================================================================
         
         if governance_result.intent == Intent.PORTFOLIO_MANAGEMENT:
             try:
+                from app.pending_actions import action_manager, ActionType
+                from app.portfolio import (
+                    parse_property_from_message, 
+                    add_property_to_portfolio,
+                    clear_portfolio,
+                    remove_property_from_portfolio
+                )
+                
                 logger.info(f"📊 Portfolio modification detected")
                 
-                message_lower = message_text.lower()
+                message_lower = message_text.lower().strip()
                 
-                # ✅ FIX: DETECT REMOVAL/RESET COMMANDS FIRST
-                removal_keywords = [
-                    'remove', 'delete', 'clear', 'reset', 'refresh',
-                    'empty', 'wipe', 'erase', 'clean'
-                ]
+                # ========================================
+                # STEP 1: CHECK FOR CONFIRMATION FIRST
+                # ========================================
                 
-                is_removal = any(keyword in message_lower for keyword in removal_keywords)
-                
-                if is_removal:
-                    # This is a REMOVAL command, not an address
-                    logger.info(f"🗑️ Portfolio removal command detected: {message_text}")
+                if "confirm" in message_lower:
+                    # Extract action ID from message
+                    import re
+                    action_id_match = re.search(r'P-[A-Z0-9]{5}', message_text.upper())
                     
-                    # Clear all portfolio items
-                    from app.portfolio import clear_portfolio
-                    clear_portfolio(sender)
-                    
-                    response = "PORTFOLIO CLEARED\n\nAll properties removed.\n\nStanding by."
-                    await send_twilio_message(sender, response)
-                    
-                    # Log interaction
-                    log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
-                    update_client_history(sender, message_text, "portfolio_management", preferred_region)
-                    
-                    logger.info(f"✅ Portfolio cleared successfully")
-                    return  # Exit early
-                
-                # Otherwise, treat as ADD command
-                from app.portfolio import parse_property_from_message, add_property_to_portfolio
-                
-                property_data = parse_property_from_message(message_text)
-                
-                if not property_data or not property_data.get('address'):
-                    # No valid property found
-                    response = "PROPERTY NOT RECOGNIZED\n\nFormat: \"Add property: [Full Address]\"\n\nStanding by."
-                    await send_twilio_message(sender, response)
-                    return
-                
-                # Add property to portfolio
-                success = add_property_to_portfolio(sender, property_data)
-                
-                if success:
-                    # Get updated portfolio count
-                    from app.portfolio import get_portfolio
-                    portfolio = get_portfolio(sender)
-                    portfolio_size = len(portfolio)
-                    
-                    address = property_data.get('address', 'Unknown')
-                    region = property_data.get('region', 'Central London')
-                    
-                    response = f"""PORTFOLIO UPDATED
+                    if not action_id_match:
+                        # Check if there's a pending action (user just typed "confirm")
+                        pending = action_manager.get_pending_action(sender)
+                        
+                        if pending:
+                            response = f"""NO ACTION ID PROVIDED
 
-Asset added:
-{address}
-Region: {region}
-Estimated value: Market rate
+Your pending action: {pending.action_id}
 
-Portfolio size: {portfolio_size} assets
+Reply: CONFIRM {pending.action_type.value.upper().replace('_', ' ')} {pending.action_id}
 
-Note: Add purchase price for precise tracking:
-\"Update property: {address}, Purchase: £[amount]\"
+Expires: {pending.expires_at.strftime('%H:%M UTC')}"""
+                            
+                            await send_twilio_message(sender, response)
+                            log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                            logger.info(f"✅ Confirmation prompt sent for {pending.action_id}")
+                            return
+                        else:
+                            response = "No pending actions."
+                            await send_twilio_message(sender, response)
+                            log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                            logger.info(f"✅ No pending actions for {sender}")
+                            return
+                    
+                    else:
+                        action_id = action_id_match.group(0)
+                        
+                        # Confirm action
+                        confirmed_action = action_manager.confirm_action(sender, action_id)
+                        
+                        if not confirmed_action:
+                            response = "No pending actions."
+                            await send_twilio_message(sender, response)
+                            log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                            logger.info(f"❌ Invalid confirmation for {sender}")
+                            return
+                        
+                        # ========================================
+                        # EXECUTE CONFIRMED ACTION
+                        # ========================================
+                        
+                        if confirmed_action.action_type == ActionType.RESET_PORTFOLIO:
+                            # Execute reset
+                            success = clear_portfolio(sender)
+                            
+                            if success:
+                                response = """PORTFOLIO CLEARED
+
+All properties removed.
 
 Standing by."""
+                                
+                                # Complete action with audit
+                                action_manager.complete_action(
+                                    action_id,
+                                    {
+                                        'success': True,
+                                        'properties_before': confirmed_action.data.get('property_count', 0),
+                                        'properties_after': 0
+                                    }
+                                )
+                                
+                                logger.info(f"✅ Portfolio reset confirmed: {action_id}")
+                            else:
+                                response = "Reset failed. Please try again."
+                                action_manager.complete_action(action_id, {'success': False})
+                            
+                            await send_twilio_message(sender, response)
+                            log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                            update_client_history(sender, message_text, "portfolio_management", preferred_region)
+                            logger.info(f"✅ Portfolio cleared successfully")
+                            return
+                        
+                        elif confirmed_action.action_type == ActionType.REMOVE_PROPERTY:
+                            # Execute removal
+                            property_address = confirmed_action.data.get('address')
+                            
+                            result = remove_property_from_portfolio(sender, property_address)
+                            
+                            response = result['message']
+                            
+                            action_manager.complete_action(
+                                action_id,
+                                {'success': result['success'], 'address': property_address}
+                            )
+                            
+                            await send_twilio_message(sender, response)
+                            log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                            update_client_history(sender, message_text, "portfolio_management", preferred_region)
+                            logger.info(f"✅ Property removal processed: {action_id}")
+                            return
+                
+                # ========================================
+                # STEP 2: CHECK FOR DESTRUCTIVE COMMANDS
+                # ========================================
+                
+                # RESET detection
+                reset_keywords = ['reset', 'clear', 'wipe', 'empty', 'delete all']
+                is_reset = any(kw in message_lower for kw in reset_keywords)
+                
+                # REMOVE detection (but not reset)
+                remove_keywords = ['remove', 'delete']
+                is_remove = any(kw in message_lower for kw in remove_keywords) and not is_reset
+                
+                if is_reset and 'portfolio' in message_lower:
+                    logger.info(f"🗑️ Portfolio reset command detected: {message_text}")
+                    
+                    # Get current portfolio count
+                    from app.portfolio import get_portfolio_summary
+                    portfolio = get_portfolio_summary(sender, client_profile)
+                    property_count = len(portfolio.get('properties', [])) if not portfolio.get('error') else 0
+                    
+                    try:
+                        # Create pending action (don't execute yet)
+                        pending = action_manager.create_action(
+                            sender,
+                            ActionType.RESET_PORTFOLIO,
+                            data={'property_count': property_count}
+                        )
+                        
+                        response = f"""PORTFOLIO RESET REQUESTED
+
+No action taken.
+
+Current portfolio: {property_count} asset{"s" if property_count != 1 else ""}
+
+Reply: CONFIRM RESET {pending.action_id} within 5 minutes."""
+                        
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        logger.info(f"✅ Reset confirmation required: {pending.action_id}")
+                        return
+                        
+                    except ValueError as e:
+                        # Already has pending action
+                        response = str(e)
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        return
+                
+                elif is_remove and not is_reset:
+                    logger.info(f"🗑️ Portfolio removal command detected: {message_text}")
+                    
+                    # Extract property address
+                    address = None
+                    
+                    if "remove property:" in message_lower:
+                        address = message_text.split("remove property:", 1)[1].strip()
+                    elif "remove:" in message_lower:
+                        address = message_text.split("remove:", 1)[1].strip()
+                    elif "delete property:" in message_lower:
+                        address = message_text.split("delete property:", 1)[1].strip()
+                    elif "delete:" in message_lower:
+                        address = message_text.split("delete:", 1)[1].strip()
+                    
+                    if not address or len(address) < 3:
+                        response = """REMOVAL FORMAT
+
+Specify property:
+"remove property: [address]"
+
+Example: "remove property: One Hyde Park"
+
+Standing by."""
+                        
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        return
+                    
+                    try:
+                        # Create pending action
+                        pending = action_manager.create_action(
+                            sender,
+                            ActionType.REMOVE_PROPERTY,
+                            data={'address': address}
+                        )
+                        
+                        response = f"""PROPERTY REMOVAL REQUESTED
+
+No action taken.
+
+Target: {address}
+
+Reply: CONFIRM REMOVE {pending.action_id} within 5 minutes."""
+                        
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        logger.info(f"✅ Removal confirmation required: {pending.action_id}")
+                        return
+                        
+                    except ValueError as e:
+                        response = str(e)
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        return
+                
+                # ========================================
+                # STEP 3: ONLY NOW - PARSE FOR ADDS
+                # ========================================
+                
+                # CRITICAL: Commands never reach here (handled above)
+                
+                # Check for "add" keywords
+                add_keywords = ['add property', 'add asset', 'track property']
+                is_add = any(kw in message_lower for kw in add_keywords)
+                
+                if is_add:
+                    logger.info(f"📊 Portfolio add detected: {message_text}")
+                    
+                    # Parse property
+                    property_data = parse_property_from_message(message_text)
+                    
+                    if not property_data or not property_data.get('address'):
+                        response = """PROPERTY FORMAT
+
+Format:
+"add property: [address]"
+
+Example: "add property: One Hyde Park, Knightsbridge, SW1X"
+
+Standing by."""
+                        
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                        return
+                    
+                    # Execute add (no confirmation needed for adds)
+                    response = add_property_to_portfolio(sender, property_data)
                     
                     await send_twilio_message(sender, response)
-                    
-                    # Log interaction
                     log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
                     update_client_history(sender, message_text, "portfolio_management", preferred_region)
-                    
-                    logger.info(f"✅ Portfolio property added successfully")
-                else:
-                    response = "PORTFOLIO UPDATE FAILED\n\nPlease try again.\n\nStanding by."
-                    await send_twilio_message(sender, response)
+                    logger.info(f"✅ Property added to portfolio")
+                    return
                 
-                return  # Exit early
+                # If we get here, unrecognized portfolio command
+                response = """PORTFOLIO COMMANDS
+
+View: "show portfolio"
+Add: "add property: [address]"
+Remove: "remove property: [address]"
+Reset: "reset portfolio"
+
+Standing by."""
+                
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
+                return
                 
             except Exception as e:
                 logger.error(f"❌ Portfolio management error: {e}", exc_info=True)
@@ -1797,7 +1987,7 @@ Standing by."""
         
         if governance_result.intent == Intent.PORTFOLIO_STATUS:
             # ✅ CRITICAL FIX: Skip if we just handled PORTFOLIO_MANAGEMENT
-            last_metadata = conversation.get_last_metadata()  # ✅ FIXED: Call method on object
+            last_metadata = conversation.get_last_metadata()
             
             if last_metadata.get('intent') == 'portfolio_management':
                 logger.info("⏭️ SKIP: Portfolio status check immediately after add operation")
@@ -1867,7 +2057,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 
                 logger.info(f"✅ Message processed: category=portfolio_status, intent=portfolio_status")
                 
-                return  # Exit early
+                return
                 
             except ImportError as e:
                 logger.error(f"❌ Portfolio module not available: {e}")
