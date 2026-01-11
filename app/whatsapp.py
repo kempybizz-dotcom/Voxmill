@@ -1338,16 +1338,23 @@ Standing by."""
         # EARLY COMMAND ROUTING (BEFORE GOVERNANCE)
         # ====================================================================
         
-        # ====================================================================
-        # MULTI-INTENT DETECTION (WITH COMPRESSION + CONTRADICTION EXCEPTION)
+# ====================================================================
+        # MULTI-INTENT DETECTION (WITH COMPARISON + COMPRESSION + CONTRADICTION EXCEPTION)
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
         
-        # ✅ FIX: Check for phrases that should NEVER be split
+        # ✅ CHATGPT SPEC: Check for phrases that should NEVER be split
         message_lower = message_text.lower()
         
-        # Contradiction phrases (ChatGPT fix)
+        # Comparison keywords (CHATGPT SPEC - Priority 1)
+        comparison_keywords = [
+            'compare', 'vs', 'versus', 'reverse', 'flip', 'swap',
+            'other way', 'opposite', 'them', 'that to', 'those to',
+            'difference between', 'how does', 'better than'
+        ]
+        
+        # Contradiction phrases (CHATGPT SPEC - Priority 2)
         contradiction_phrases = [
             'explain tension', 'explain the tension',
             'feels off', 'doesn\'t feel right', 'something doesn\'t feel right',
@@ -1356,7 +1363,7 @@ Standing by."""
             'seems off', 'seems wrong', 'doesn\'t fit'
         ]
         
-        # ✅ NEW: Compression phrases (must stay together)
+        # Compression phrases (CHATGPT SPEC - Priority 3)
         compression_phrases = [
             'summarise', 'summarize', 'bullet', 'bullets', 'bullet points',
             'compress', 'tldr', 'one line', 'risk memo', 'condense',
@@ -1364,11 +1371,15 @@ Standing by."""
             'no intro', 'no preamble', 'just the', 'only the'
         ]
         
+        has_comparison = any(kw in message_lower for kw in comparison_keywords)
         has_contradiction = any(phrase in message_lower for phrase in contradiction_phrases)
         has_compression = any(phrase in message_lower for phrase in compression_phrases)
         
-        # ✅ DISABLE SPLITTING for these special cases
-        if has_contradiction:
+        # ✅ CHATGPT SPEC: DISABLE SPLITTING for these special cases
+        if has_comparison:
+            logger.info(f"🔒 Comparison detected - treating as single intent (no split)")
+            message_segments = [message_text]
+        elif has_contradiction:
             logger.info(f"🎯 Contradiction phrase detected - treating as single intent (no split)")
             message_segments = [message_text]
         elif has_compression:
@@ -2779,14 +2790,14 @@ Standing by."""
             logger.info(f"✅ Instant response sent (<1s)")
             return
         
-# ====================================================================
+        # ====================================================================
         # COMPLEX QUERIES: LOAD DATASET AND USE GPT-4
         # ====================================================================
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
 # ====================================================================
-        # COMPARISON QUERY DETECTION (FIXED)
+        # COMPARISON QUERY DETECTION (CHATGPT PHASE 2)
         # ====================================================================
         
         comparison_keywords = ['compare', 'vs', 'versus', 'difference', 'compare them', 'how do they compare']
@@ -2795,57 +2806,157 @@ Standing by."""
         comparison_datasets = None
         
         if is_comparison:
+            logger.info(f"🔀 Comparison query detected")
             
+            # ========================================
+            # STEP 1: CHECK FOR REVERSE/FLIP COMMANDS
+            # ========================================
             
-            # ✅ FIX: Parse regions directly from message text
-            region_1 = None
-            region_2 = None
+            reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
+            is_reverse = any(kw in message_lower for kw in reverse_keywords)
             
-            # Try multiple patterns
-            patterns = [
-                r'compare\s+(\w+)\s+to\s+(\w+)',           # "compare Bristol to Mayfair"
-                r'compare\s+(\w+)\s+vs\.?\s+(\w+)',        # "compare Bristol vs Mayfair"
-                r'(\w+)\s+vs\.?\s+(\w+)',                  # "Bristol vs Mayfair"
-                r'compare.*?to\s+(\w+)',                   # "compare that to London"
-                r'compare.*?with\s+(\w+)',                 # "compare with London"
-            ]
-            
-            for pattern in patterns:
-                match = re.search(pattern, message_lower)
-                if match:
-                    groups = match.groups()
-                    if len(groups) == 2:
-                        region_1 = groups[0].title()
-                        region_2 = groups[1].title()
-                        break
-                    elif len(groups) == 1:
-                        # "Compare to X" format - use last mentioned region as region_1
-                        region_2 = groups[0].title()
-                        conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
-                        if conversation_regions:
-                            region_1 = conversation_regions[-1]
-                        break
-            
-            # Fallback: use conversation context
-            if not region_1 or not region_2:
-                conversation_regions = conversation.get_last_mentioned_entities().get('regions', [])
-                if len(conversation_regions) >= 2:
-                    region_1 = conversation_regions[-2] if not region_1 else region_1
-                    region_2 = conversation_regions[-1] if not region_2 else region_2
-            
-            if region_1 and region_2:
-                logger.info(f"🔀 Comparison detected: {region_1} vs {region_2}")
+            if is_reverse:
+                # Get locked comparison
+                locked_regions = conversation.get_locked_comparison()
                 
-                # Load datasets for both regions
-                dataset = load_dataset(area=region_1)
-                dataset_2 = load_dataset(area=region_2)
-                
-                comparison_datasets = [dataset_2]
-                query_region = region_1
+                if locked_regions and len(locked_regions) == 2:
+                    # TRANSFORM ONLY - swap order
+                    region_1, region_2 = locked_regions[1], locked_regions[0]  # Reversed
+                    
+                    logger.info(f"🔄 Reverse transformation: {locked_regions} → [{region_1}, {region_2}]")
+                    
+                    # Load datasets for both regions
+                    dataset = load_dataset(area=region_1)
+                    dataset_2 = load_dataset(area=region_2)
+                    
+                    comparison_datasets = [dataset_2]
+                    query_region = region_1
+                    
+                    # Lock the reversed comparison
+                    conversation.lock_comparison_state(region_1, region_2)
+                    
+                else:
+                    # No locked comparison - ask for clarification
+                    response = """COMPARISON CONTEXT MISSING
+
+Which two markets should I compare?
+
+Example: "Compare Mayfair to Manchester"
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison", response, 0, client_profile)
+                    return
+            
             else:
-                # Comparison requested but can't extract regions
-                logger.warning(f"⚠️ Comparison requested but regions unclear")
-                dataset = load_dataset(area=query_region)
+                # ========================================
+                # STEP 2: APPLY REFERENCE RESOLUTION
+                # ========================================
+                
+                # Get conversation context
+                is_followup, context_hints = conversation.detect_followup_query(message_text)
+                
+                if is_followup or any(pronoun in message_lower for pronoun in ['that', 'them', 'it', 'earlier', 'those']):
+                    from app.conversation_manager import resolve_reference
+                    
+                    resolved_query = resolve_reference(message_text, context_hints)
+                    
+                    logger.info(f"🔄 Reference resolved: '{message_text}' → '{resolved_query}'")
+                    
+                    # Use resolved query for extraction
+                    message_text_for_extraction = resolved_query
+                else:
+                    message_text_for_extraction = message_text
+                
+                # ========================================
+                # STEP 3: EXTRACT REGIONS FROM RESOLVED QUERY
+                # ========================================
+                
+                region_1 = None
+                region_2 = None
+                
+                # Try multiple patterns on RESOLVED query
+                patterns = [
+                    r'compare\s+([A-Za-z\s]+)\s+to\s+([A-Za-z\s]+)',      # "compare Bristol to Mayfair"
+                    r'compare\s+([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)',   # "compare Bristol vs Mayfair"
+                    r'([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)',             # "Bristol vs Mayfair"
+                    r'compare.*?to\s+([A-Za-z\s]+)',                      # "compare that to London"
+                    r'compare.*?with\s+([A-Za-z\s]+)',                    # "compare with London"
+                ]
+                
+                for pattern in patterns:
+                    match = re.search(pattern, message_text_for_extraction, re.IGNORECASE)
+                    if match:
+                        groups = match.groups()
+                        if len(groups) == 2:
+                            region_1 = groups[0].strip().title()
+                            region_2 = groups[1].strip().title()
+                            
+                            # Clean up common words from resolution
+                            for word in ['From', 'Recent', 'Conversation', 'Previous', 'Context', 'Reversed']:
+                                region_1 = region_1.replace(word, '').strip()
+                                region_2 = region_2.replace(word, '').strip()
+                            
+                            break
+                        elif len(groups) == 1:
+                            # "Compare to X" format
+                            region_2 = groups[0].strip().title()
+                            
+                            # Clean up common words
+                            for word in ['From', 'Recent', 'Conversation', 'Previous', 'Context']:
+                                region_2 = region_2.replace(word, '').strip()
+                            
+                            # Get first region from context
+                            last_region = context_hints.get('last_region') if is_followup else preferred_region
+                            
+                            if last_region:
+                                region_1 = last_region
+                                break
+                
+                # Fallback: use conversation context
+                if not region_1 or not region_2:
+                    conversation_regions = context_hints.get('recent_regions', []) if is_followup else []
+                    
+                    if len(conversation_regions) >= 2:
+                        region_1 = conversation_regions[-2] if not region_1 else region_1
+                        region_2 = conversation_regions[-1] if not region_2 else region_2
+                        logger.info(f"📍 Using regions from context: {region_1}, {region_2}")
+                
+                if region_1 and region_2:
+                    logger.info(f"🔀 Comparison detected: {region_1} vs {region_2}")
+                    
+                    # Load datasets for both regions
+                    dataset = load_dataset(area=region_1)
+                    dataset_2 = load_dataset(area=region_2)
+                    
+                    comparison_datasets = [dataset_2]
+                    query_region = region_1
+                    
+                    # ========================================
+                    # STEP 4: LOCK COMPARISON (CHATGPT SPEC)
+                    # ========================================
+                    
+                    conversation.lock_comparison_state(region_1, region_2)
+                    logger.info(f"🔒 Comparison locked: {region_1} vs {region_2} (10min expiry)")
+                    
+                else:
+                    # Comparison requested but can't extract regions
+                    logger.warning(f"⚠️ Comparison requested but regions unclear")
+                    
+                    response = """COMPARISON FORMAT
+
+Specify two markets:
+"Compare [Market A] to [Market B]"
+
+Example: "Compare Mayfair to Manchester"
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison", response, 0, client_profile)
+                    return
+        
         else:
             # Standard single-region query
             dataset = load_dataset(area=query_region)
