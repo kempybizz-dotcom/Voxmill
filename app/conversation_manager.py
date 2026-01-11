@@ -277,7 +277,7 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error updating session: {e}", exc_info=True)
 
-  def get_consecutive_gibberish_count(self) -> int:
+    def get_consecutive_gibberish_count(self) -> int:
         """Get count of consecutive gibberish messages"""
         try:
             session = self.get_session()
