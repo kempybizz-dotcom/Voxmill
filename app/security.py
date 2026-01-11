@@ -1,7 +1,14 @@
 """
-VOXMILL SECURITY MODULE
-========================
+VOXMILL SECURITY MODULE - WORLD CLASS
+======================================
 Prompt injection protection, input sanitization, and security validation
+
+LAYERS:
+- Input validation (injection, XSS, SQL)
+- LLM sanitization
+- Gibberish detection (pre-filter)
+- Response validation
+- Security event logging
 """
 
 import re
@@ -173,6 +180,96 @@ class SecurityValidator:
         text = re.sub(r'([!?.]){4,}', r'\1\1\1', text)
         
         return text
+    
+    @classmethod
+    def is_obvious_gibberish(cls, text: str) -> bool:
+        """
+        Detect gibberish without expensive LLM call
+        
+        CHATGPT SPEC: Pre-filter to save money on spam
+        
+        Returns: True if obvious gibberish (no LLM needed)
+        """
+        
+        if not text or len(text.strip()) == 0:
+            return True
+        
+        text_clean = text.strip()
+        
+        # Pattern 1: Too short and all caps random letters (no real words)
+        if text_clean.isupper() and len(text_clean) < 12:
+            # Check if it's a known command or real word
+            known_patterns = ['HELP', 'STOP', 'START', 'RESET', 'CONFIRM', 'CANCEL', 
+                            'STATUS', 'VERIFY', 'PORTFOLIO', 'MARKET', 'PRICE']
+            if not any(pattern in text_clean for pattern in known_patterns):
+                # Check for vowels (real words have vowels)
+                vowels = set('AEIOU')
+                if not any(c in vowels for c in text_clean):
+                    logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
+                    return True
+        
+        # Pattern 2: Repeated characters (more than 70% same char)
+        if len(text_clean) > 3:
+            char_freq = {}
+            for char in text_clean.lower():
+                if char.isalpha():
+                    char_freq[char] = char_freq.get(char, 0) + 1
+            
+            if char_freq:
+                max_freq = max(char_freq.values())
+                total_alpha = sum(char_freq.values())
+                
+                if total_alpha > 0 and max_freq / total_alpha > 0.7:
+                    logger.info(f"🗑️ Gibberish pre-filter: Excessive repetition in '{text_clean}'")
+                    return True
+        
+        # Pattern 3: No vowels at all (and not a command)
+        vowels = set('aeiouAEIOU')
+        alpha_chars = [c for c in text_clean if c.isalpha()]
+        
+        if len(alpha_chars) >= 4:  # At least 4 letters
+            if not any(c in vowels for c in alpha_chars):
+                logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
+                return True
+        
+        # Pattern 4: Very short nonsense (1-3 chars that aren't numbers or known abbreviations)
+        if len(text_clean) <= 3 and text_clean.isalpha():
+            # Allow common abbreviations
+            allowed_short = ['OK', 'YES', 'NO', 'WHY', 'HOW', 'WHO', 'PIN', 'ADD', 'VS']
+            if text_clean.upper() not in allowed_short:
+                logger.info(f"🗑️ Gibberish pre-filter: Too short '{text_clean}'")
+                return True
+        
+        # Pattern 5: Only consonants in sequence (6+)
+        consonants = 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
+        consonant_seq = 0
+        max_consonant_seq = 0
+        
+        for char in text_clean:
+            if char in consonants:
+                consonant_seq += 1
+                max_consonant_seq = max(max_consonant_seq, consonant_seq)
+            else:
+                consonant_seq = 0
+        
+        if max_consonant_seq >= 6:
+            logger.info(f"🗑️ Gibberish pre-filter: Consonant sequence in '{text_clean}'")
+            return True
+        
+        # Pattern 6: Keyboard mashing detection (adjacent keys on QWERTY)
+        keyboard_patterns = [
+            'asdf', 'qwer', 'zxcv', 'hjkl', 'uiop', 'bnm',
+            'fdsa', 'rewq', 'vcxz', 'lkjh', 'poiu', 'mnb',
+            'sdfg', 'dfgh', 'fghj', 'ghjk', 'jkl;', 'wertyuiop'
+        ]
+        
+        text_lower = text_clean.lower()
+        for pattern in keyboard_patterns:
+            if pattern in text_lower and len(text_clean) < 15:
+                logger.info(f"🗑️ Gibberish pre-filter: Keyboard mashing in '{text_clean}'")
+                return True
+        
+        return False
 
 
 class ResponseValidator:
@@ -228,14 +325,14 @@ class ResponseValidator:
             logger.warning(f"Response too long: {len(response)} chars")
             return False, "excessive_length"
         
-        # Check 4: Toxic content markers
+        # Check 4: Toxic content markers (light check - institutional tone allows strong language)
+        # This is informational only, not blocking
         toxic_patterns = [
-            r'\b(fuck|shit|damn|ass|bitch)\b',  # Profanity
+            r'\b(fuck|shit|damn|ass|bitch)\b',
         ]
         
         for pattern in toxic_patterns:
             if re.search(pattern, response, re.IGNORECASE):
-                # This is a soft warning - institutional clients might use strong language
                 logger.info("Profanity detected in response (acceptable for institutional tone)")
         
         return True, "safe"
