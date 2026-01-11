@@ -12,6 +12,7 @@ import re
 from datetime import datetime, timezone
 from typing import Dict, Optional
 from pymongo import MongoClient
+from app.pending_actions import action_manager, ActionType
 import os
 
 logger = logging.getLogger(__name__)
@@ -360,9 +361,13 @@ def get_portfolio_summary(whatsapp_number: str, client_profile: dict = None) -> 
         logger.error(f"Portfolio summary error: {e}", exc_info=True)
         return {'error': 'calculation_failed'}
 
+# REPLACE clear_portfolio() function
+
 def clear_portfolio(client_id: str) -> bool:
     """
     Clear all properties from a client's portfolio
+    
+    ✅ CHATGPT FIX: Direct MongoDB write, no undefined functions
     
     Args:
         client_id: WhatsApp number
@@ -370,26 +375,88 @@ def clear_portfolio(client_id: str) -> bool:
     Returns: True if successful
     """
     try:
-        # Get client record
-        client_record = get_client_record(client_id)
-        
-        if not client_record:
-            logger.warning(f"No client found for {client_id}")
-            return False
-        
-        record_id = client_record['id']
-        
-        # Clear portfolio field
-        airtable_client.table('Accounts').update(
-            record_id,
+        # Direct MongoDB update (no get_client_record needed)
+        result = db['client_portfolios'].update_one(
+            {'whatsapp_number': client_id},
             {
-                'portfolio': []  # Empty array
+                '$set': {
+                    'properties': [],
+                    'updated_at': datetime.now(timezone.utc).isoformat()
+                }
             }
         )
         
-        logger.info(f"✅ Portfolio cleared for {client_id}")
-        return True
+        if result.modified_count > 0:
+            logger.info(f"✅ Portfolio cleared for {client_id}")
+            return True
+        else:
+            # No existing portfolio to clear
+            logger.info(f"ℹ️ No portfolio found for {client_id}, nothing to clear")
+            return True
         
     except Exception as e:
         logger.error(f"Failed to clear portfolio for {client_id}: {e}")
         return False
+
+
+# ADD NEW FUNCTION
+
+def remove_property_from_portfolio(client_id: str, property_address: str) -> Dict:
+    """
+    Remove specific property from portfolio
+    
+    Args:
+        client_id: WhatsApp number
+        property_address: Exact address to remove
+    
+    Returns: {success: bool, message: str}
+    """
+    try:
+        # Get portfolio
+        portfolio = db['client_portfolios'].find_one({'whatsapp_number': client_id})
+        
+        if not portfolio or not portfolio.get('properties'):
+            return {'success': False, 'message': 'Portfolio is empty.'}
+        
+        properties = portfolio['properties']
+        
+        # Find matching property (exact or fuzzy)
+        matches = [p for p in properties if property_address.lower() in p['address'].lower()]
+        
+        if not matches:
+            return {
+                'success': False,
+                'message': f"Property not found: {property_address}\n\nCurrent portfolio:\n" + 
+                          "\n".join([f"• {p['address']}" for p in properties[:5]])
+            }
+        
+        if len(matches) > 1:
+            return {
+                'success': False,
+                'message': f"Multiple matches found:\n" +
+                          "\n".join([f"• {p['address']}" for p in matches]) +
+                          "\n\nPlease be more specific."
+            }
+        
+        # Remove property
+        property_to_remove = matches[0]
+        
+        result = db['client_portfolios'].update_one(
+            {'whatsapp_number': client_id},
+            {
+                '$pull': {'properties': {'address': property_to_remove['address']}},
+                '$set': {'updated_at': datetime.now(timezone.utc).isoformat()}
+            }
+        )
+        
+        if result.modified_count > 0:
+            return {
+                'success': True,
+                'message': f"PORTFOLIO UPDATED\n\nRemoved:\n{property_to_remove['address']}\n\nStanding by."
+            }
+        else:
+            return {'success': False, 'message': 'Removal failed. Please try again.'}
+        
+    except Exception as e:
+        logger.error(f"Remove property error: {e}", exc_info=True)
+        return {'success': False, 'message': 'Removal failed. Please try again.'}
