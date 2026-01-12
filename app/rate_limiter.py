@@ -87,9 +87,26 @@ try:
                 return self._execute(["SETEX", key, seconds, value])
             
             def setnx(self, key: str, value: str):
-                """Set if not exists"""
+                """
+                Set if not exists
+                Returns True if key was SET (first time), False if key already exists
+                
+                ✅ FIX 1: Proper handling of Upstash REST API integer response
+                """
                 result = self._execute(["SETNX", key, value])
-                return result == 1
+                
+                # Upstash REST API returns integer:
+                # 1 = key was set (didn't exist before) = True
+                # 0 = key already exists (not set) = False
+                if result is None:
+                    return False
+                
+                # Convert properly: int/str to boolean
+                try:
+                    return bool(int(result))
+                except (ValueError, TypeError):
+                    # Fallback for unexpected response types
+                    return bool(result)
         
         redis_client = UpstashRedisClient(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)
         redis_available = True
