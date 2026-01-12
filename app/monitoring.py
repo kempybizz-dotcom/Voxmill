@@ -937,7 +937,7 @@ async def check_monitors_and_alert():
             if alert_triggered:
                 # Send alert
                 agent_str = f"{monitor['agent']} " if monitor.get('agent') else ""
-                alert_msg = f"""🚨 MONITORING ALERT
+                alert_msg = f""" MONITORING ALERT
 
 {agent_str}{monitor['region']}
 
