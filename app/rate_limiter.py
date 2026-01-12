@@ -164,7 +164,7 @@ class RateLimiter:
     # LAYER 0: IDEMPOTENCY (DUPLICATE DETECTION)
     # ================================================================
     
-@classmethod
+    @classmethod
     def check_duplicate(cls, sender: str, message_text: str) -> Tuple[bool, Optional[str]]:
         """
         Check if message is a duplicate (Twilio retry)
