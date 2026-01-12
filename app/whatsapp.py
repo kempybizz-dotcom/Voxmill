@@ -740,25 +740,31 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             return
         
         # ====================================================================
-        # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION)
+        # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION) - DISABLED
         # ====================================================================
         
-        from app.rate_limiter import RateLimiter
+        # CRITICAL: DISABLED - Was flagging all messages as duplicates
+        # TODO: Debug why SETNX logic is inverted in production
         
-        logger.info(f"🔐 GATE 1.5: Checking for duplicates...")
+        # from app.rate_limiter import RateLimiter
+        # 
+        # logger.info(f"🔐 GATE 1.5: Checking for duplicates...")
+        # 
+        # is_duplicate, cached_response = RateLimiter.check_duplicate(sender, message_text)
+        # 
+        # if is_duplicate:
+        #     if cached_response:
+        #         logger.info(f"🔁 DUPLICATE: Returning cached response")
+        #         await send_twilio_message(sender, cached_response)
+        #     else:
+        #         logger.info(f"🔁 DUPLICATE: Acknowledged silently")
+        #         await send_twilio_message(sender, "Acknowledged.")
+        #     return  # TERMINAL
+        # 
+        # logger.info(f"✅ GATE 1.5 PASSED: Not a duplicate")
         
-        is_duplicate, cached_response = RateLimiter.check_duplicate(sender, message_text)
+        logger.info(f"⚠️ GATE 1.5: DISABLED (idempotency layer)")
         
-        if is_duplicate:
-            if cached_response:
-                logger.info(f"🔁 DUPLICATE: Returning cached response")
-                await send_twilio_message(sender, cached_response)
-            else:
-                logger.info(f"🔁 DUPLICATE: Acknowledged silently")
-                await send_twilio_message(sender, "Acknowledged.")
-            return  # TERMINAL
-        
-        logger.info(f"✅ GATE 1.5 PASSED: Not a duplicate")
         
         # ====================================================================
         # GATE 1: IDENTITY - AIRTABLE CONTROL PLANE INTEGRATION
