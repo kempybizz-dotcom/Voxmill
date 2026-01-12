@@ -443,7 +443,7 @@ Customize duration: "CONFIRM, 30 days" / "CONFIRM, 60 days"
 
 Request expires: 5 minutes.{execution_receipt}"""
     
-    @staticmethod
+@staticmethod
     async def confirm_monitor(whatsapp_number: str, message: str = "") -> str:
         """Activate pending monitor after confirmation with optional duration override"""
         
@@ -620,6 +620,104 @@ Reactivate anytime."""
 
 
 # ============================================================
+# ✅ FIX 6: DEFENSIVE MONITOR LISTING
+# ============================================================
+
+def list_monitors(client_id: str) -> str:
+    """
+    List all active monitors - NEVER crash
+    
+    ✅ FIX 6: Defensive monitor listing with graceful fallback
+    """
+    
+    try:
+        if not db:
+            logger.error("MongoDB not connected")
+            return """ACTIVE MONITORS
+
+Unable to retrieve monitor list.
+
+Try: "Monitor Mayfair for 30 days"
+
+Standing by."""
+        
+        # Query client's monitors
+        client = db['client_profiles'].find_one({'whatsapp_number': client_id})
+        
+        if not client:
+            logger.warning(f"Client not found: {client_id}")
+            return """ACTIVE MONITORS
+
+Unable to retrieve monitor list.
+
+Try: "Monitor Mayfair for 30 days"
+
+Standing by."""
+        
+        monitors = client.get('active_monitors', [])
+        
+        # Filter for active/paused monitors only
+        active_monitors = [m for m in monitors if m.get('status') in ['active', 'paused']]
+        
+        if not active_monitors:
+            return """ACTIVE MONITORS
+
+No monitors currently active.
+
+To create: "Monitor Mayfair for 30 days"
+
+Standing by."""
+        
+        # Build response
+        response_lines = ["ACTIVE MONITORS\n"]
+        
+        for monitor in active_monitors:
+            target = monitor.get("region", "Unknown")
+            agent = monitor.get("agent")
+            status = monitor.get("status", "unknown")
+            
+            # Format target with agent if present
+            if agent:
+                target = f"{agent} {target}"
+            
+            # Get expiry date
+            expires_at = monitor.get("expires_at")
+            if expires_at:
+                if isinstance(expires_at, str):
+                    expires_at = dateutil_parser.parse(expires_at)
+                
+                expires_str = expires_at.strftime("%d %b %Y")
+            else:
+                expires_str = "Unknown"
+            
+            # Status indicator
+            status_icon = "●" if status == "active" else "⏸"
+            
+            response_lines.append(f"{status_icon} {target}")
+            response_lines.append(f"  Expires: {expires_str}")
+            response_lines.append("")
+        
+        response_lines.append("Commands:")
+        response_lines.append('"Stop monitoring [target]" — Deactivate')
+        response_lines.append('"Extend monitoring" — Add 30 days')
+        response_lines.append("\nStanding by.")
+        
+        return "\n".join(response_lines)
+        
+    except Exception as e:
+        logger.error(f"Monitor list error: {e}", exc_info=True)
+        
+        # ✅ NEVER crash - return graceful fallback
+        return """ACTIVE MONITORS
+
+Unable to retrieve monitor list.
+
+Try: "Monitor Mayfair for 30 days"
+
+Standing by."""
+
+
+# ============================================================
 # MAIN HANDLER
 # ============================================================
 
@@ -666,9 +764,9 @@ Required:
         region = next((m for m in available_markets if m.lower() in message_lower), None)
         return await MonitorManager.stop_monitor(whatsapp_number, region)
     
-    # Show monitors
+    # ✅ FIX 6: Show monitors - defensive implementation
     if 'show monitor' in message_lower or 'list monitor' in message_lower or 'my monitor' in message_lower:
-        return await show_monitors(whatsapp_number)
+        return list_monitors(whatsapp_number)
     
     # Resume monitoring
     if 'resume monitor' in message_lower:
@@ -749,6 +847,20 @@ Standing by."""
         markets_str = ', '.join(available_markets[:3]) if available_markets else 'No markets configured'
         
         return f"""MONITORING REQUEST UNCLEAR
+
+Provide monitoring directive:
+
+Format: "Monitor [target], alert if [condition]"
+
+Examples:
+- "Monitor [competitor] {available_markets[0] if available_markets else 'MARKET'}, alert if prices drop 5%"
+- "Track inventory, notify if listings increase 10%"
+
+Available markets: {markets_str}
+
+Standing by."""
+    
+    return await MonitorManager.create_monitor_pending(whatsapp_number, config, client_profile)
 
 Provide monitoring directive:
 
