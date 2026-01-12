@@ -30,6 +30,7 @@ class Intent(Enum):
     ADMINISTRATIVE = "administrative"
     PROVOCATION = "provocation"
     CASUAL = "casual"
+    GIBBERISH = "gibberish"
     STATUS_CHECK = "status_check"
     STRATEGIC = "strategic"
     DECISION_REQUEST = "decision_request"
