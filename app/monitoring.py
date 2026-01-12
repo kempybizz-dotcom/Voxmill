@@ -443,7 +443,7 @@ Customize duration: "CONFIRM, 30 days" / "CONFIRM, 60 days"
 
 Request expires: 5 minutes.{execution_receipt}"""
     
-@staticmethod
+    @staticmethod
     async def confirm_monitor(whatsapp_number: str, message: str = "") -> str:
         """Activate pending monitor after confirmation with optional duration override"""
         
