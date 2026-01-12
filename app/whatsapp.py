@@ -14,6 +14,10 @@ Changes from V1:
 ✅ Removed 3 duplicate gate checks
 ✅ Selective dataset loading (15s → <1s for instant queries)
 ✅ Removed dead PDF/enhancement code
+✅ FIX 1: SETNX wrapper corrected (idempotency layer)
+✅ FIX 2: Canonical market resolver integrated
+✅ FIX 3: Structural comparison fallback
+✅ FIX 6: Defensive monitor listing
 """
 
 import os
@@ -43,6 +47,8 @@ from app.pin_auth import (
     sync_pin_status_to_airtable
 )
 from app.response_enforcer import ResponseEnforcer, ResponseShape
+from app.market_canonicalizer import MarketCanonicalizer  # ✅ FIX 2
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -180,17 +186,27 @@ def get_client_from_airtable(sender: str) -> dict:
         # CRITICAL: Trust execution_allowed formula
         # ========================================
         
-        # ✅ FIXED: Handle multiple possible values from Airtable
-        execution_allowed_value = fields.get('execution_allowed')
-        logger.info(f"🔍 DEBUG: execution_allowed raw value = {execution_allowed_value} (type: {type(execution_allowed_value)})")
-        execution_allowed = execution_allowed_value in [1, '1', True, 'true', 'True']
+        # ✅ FIXED: Defensive type normalization
+        execution_allowed_raw = fields.get('execution_allowed')
+        
+        if isinstance(execution_allowed_raw, str):
+            execution_allowed = execution_allowed_raw.lower() in ['1', 'true', 'yes']
+        elif isinstance(execution_allowed_raw, (int, float)):
+            execution_allowed = bool(execution_allowed_raw)
+        elif isinstance(execution_allowed_raw, bool):
+            execution_allowed = execution_allowed_raw
+        else:
+            execution_allowed = False
+            logger.warning(f"Unexpected execution_allowed type: {type(execution_allowed_raw)} = {execution_allowed_raw}")
+        
+        logger.info(f"🔍 execution_allowed: {execution_allowed_raw} → {execution_allowed}")
         
         if not execution_allowed:
             # Return minimal profile - access denied
             status = fields.get('Account Status (Execution Safe)', 'blocked')
             trial_expired = fields.get('Is Trial Expired') == 1
             
-            logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}, execution_allowed={execution_allowed_value}")
+            logger.warning(f"Execution blocked for {sender}: status={status}, trial_expired={trial_expired}, execution_allowed={execution_allowed_raw}")
             
             # ✅ Query default market from Markets table by industry
             default_markets = get_available_markets_from_db(industry_code)
@@ -255,7 +271,7 @@ def get_client_from_airtable(sender: str) -> dict:
             if not active_market_name:
                 logger.error(f"❌ NO MARKETS CONFIGURED for industry: {industry_code}")
                 
-                # ✅ FIX #2: RETURN BLOCKING PROFILE (no markets configured)
+                # ✅ FIX: RETURN BLOCKING PROFILE (no markets configured)
                 # Map Service Tier to tier_1/tier_2/tier_3
                 tier_map = {
                     'core': 'tier_1',
@@ -746,25 +762,28 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         from app.rate_limiter import RateLimiter
         
         # ====================================================================
-        # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION)
+        # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION) - ⚠️ DISABLED
         # ====================================================================
         
-        from app.rate_limiter import RateLimiter
+        # ⚠️ TEMPORARILY DISABLED until SETNX fix confirmed in production
+        logger.info(f"⚠️ GATE 1.5: DISABLED (idempotency layer under maintenance)")
         
-        logger.info(f"🔐 GATE 1.5: Checking for duplicates...")
-        
-        is_duplicate, cached_response = RateLimiter.check_duplicate(sender, message_text)
-        
-        if is_duplicate:
-            if cached_response:
-                logger.info(f"🔁 DUPLICATE: Returning cached response")
-                await send_twilio_message(sender, cached_response)
-            else:
-                logger.info(f"🔁 DUPLICATE: Acknowledged silently")
-                await send_twilio_message(sender, "Acknowledged.")
-            return  # TERMINAL
-        
-        logger.info(f"✅ GATE 1.5 PASSED: Not a duplicate")
+        # from app.rate_limiter import RateLimiter
+        # 
+        # logger.info(f"🔐 GATE 1.5: Checking for duplicates...")
+        # 
+        # is_duplicate, cached_response = RateLimiter.check_duplicate(sender, message_text)
+        # 
+        # if is_duplicate:
+        #     if cached_response:
+        #         logger.info(f"🔁 DUPLICATE: Returning cached response")
+        #         await send_twilio_message(sender, cached_response)
+        #     else:
+        #         logger.info(f"🔁 DUPLICATE: Acknowledged silently")
+        #         await send_twilio_message(sender, "Acknowledged.")
+        #     return  # TERMINAL
+        # 
+        # logger.info(f"✅ GATE 1.5 PASSED: Not a duplicate")
         
         
         # ====================================================================
@@ -821,10 +840,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
                     'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
                     'industry': client_profile_airtable.get('industry', 'real_estate'),
-                    'active_market': client_profile_airtable.get('active_market', 'Mayfair'),
+                    'active_market': client_profile_airtable.get('active_market'),  # ✅ Can be None
                     
                     'preferences': {
-                        'preferred_regions': [client_profile_airtable.get('active_market', 'Mayfair')],
+                        'preferred_regions': [client_profile_airtable.get('active_market')] if client_profile_airtable.get('active_market') else [],
                         'competitor_set': [],
                         'risk_appetite': 'balanced',
                         'budget_range': {'min': 0, 'max': 100000000},
@@ -837,6 +856,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'trial_expired': client_profile_airtable.get('trial_expired', False),
                     'execution_allowed': client_profile_airtable.get('execution_allowed', False),
                     'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
+                    'no_markets_configured': client_profile_airtable.get('no_markets_configured', False),  # ✅ NEW FLAG
                     
                     'total_queries': old_total,
                     'query_history': old_history,
@@ -866,8 +886,36 @@ async def handle_whatsapp_message(sender: str, message_text: str):
             await send_twilio_message(sender, "This number is not authorized for Voxmill Intelligence.\n\nFor institutional access, contact:\nintel@voxmill.uk")
             return
         
-        logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
+        # ========================================
+        # STEP 5: NO MARKETS CONFIGURED CHECK
+        # ========================================
+        
+        if client_profile.get('no_markets_configured'):
+            industry = client_profile.get('industry', 'unknown')
+            industry_display = {
+                'real_estate': 'Real Estate',
+                'yachting': 'Yachting',
+                'automotive': 'Automotive',
+                'healthcare': 'Healthcare',
+                'hospitality': 'Hospitality'
+            }.get(industry, industry.title())
+            
+            await send_twilio_message(
+                sender,
+                f"""NO MARKETS CONFIGURED
 
+Your account is set up for {industry_display} intelligence.
+
+No {industry_display.lower()} markets are currently active in your coverage.
+
+Contact intel@voxmill.uk to activate market coverage.
+
+Standing by."""
+            )
+            logger.warning(f"🚫 GATE 1 FAILED: No markets configured for {sender} (industry={industry})")
+            return  # TERMINAL
+        
+        logger.info(f"✅ GATE 1 PASSED: {sender} ({client_profile.get('airtable_table', 'Accounts')})")
         # ====================================================================
         # GATE 2: TOKEN BUCKET (LAYER 2 - CORE LIMITER)
         # ====================================================================
@@ -1008,8 +1056,11 @@ Contact intel@voxmill.uk if you need assistance."""
         if not burst_allowed:
             logger.warning(f"🚫 GATE 2.5 FAILED: BURST FLOOD: {sender} ({burst_count} in 3s)")
             
-            # Update abuse score
-            RateLimiter.update_abuse_score(sender, 'burst_flood', 5)
+            # Update abuse score (with error handling)
+            try:
+                RateLimiter.update_abuse_score(sender, 'burst_flood', 5)
+            except Exception as e:
+                logger.error(f"Failed to update abuse score: {e}")
             
             # Send ONE warning, then silence
             if burst_count == 6:  # First violation
@@ -1052,15 +1103,22 @@ Contact intel@voxmill.uk if you need assistance."""
             gibberish_count += 1
             conversation.set_consecutive_gibberish_count(gibberish_count)
             
-            # Update abuse score
-            RateLimiter.update_abuse_score(sender, 'gibberish', 2)
+            # Update abuse score (with error handling)
+            try:
+                RateLimiter.update_abuse_score(sender, 'gibberish', 2)
+            except Exception as e:
+                logger.error(f"Failed to update abuse score: {e}")
             
             logger.warning(f"🗑️ GATE 2.7 FAILED: Obvious gibberish detected ({gibberish_count}/3): '{message_text}'")
             
             if gibberish_count >= 3:
                 # SILENCE MODE
                 conversation.set_silence_mode(duration=300)  # 5 minutes
-                RateLimiter.update_abuse_score(sender, 'gibberish_spam', 5)
+                
+                try:
+                    RateLimiter.update_abuse_score(sender, 'gibberish_spam', 5)
+                except Exception as e:
+                    logger.error(f"Failed to update abuse score: {e}")
                 
                 response = "Noise threshold exceeded. Silenced for 5 minutes."
                 await send_twilio_message(sender, response)
@@ -1201,29 +1259,33 @@ Voxmill Intelligence — Precision at Scale"""
                 # Send welcome message
                 await send_twilio_message(sender, welcome_msg)
                 
-                # Mark welcome as sent in MongoDB
+                # Mark welcome as sent in MongoDB (atomic operation to prevent race condition)
                 if welcome_message_type == 'reactivation':
                     db['client_profiles'].update_one(
-                        {'whatsapp_number': sender},
+                        {
+                            'whatsapp_number': sender,
+                            'reactivation_welcome_sent': {'$ne': True}  # Only if not already sent
+                        },
                         {
                             '$set': {
                                 'reactivation_welcome_sent': True,
                                 'last_reactivation_welcome': datetime.now(timezone.utc)
                             }
-                        },
-                        upsert=True
+                        }
                     )
                 else:
                     db['client_profiles'].update_one(
-                        {'whatsapp_number': sender},
+                        {
+                            'whatsapp_number': sender,
+                            'welcome_message_sent': {'$ne': True}  # Only if not already sent
+                        },
                         {
                             '$set': {
                                 'welcome_message_sent': True,
                                 'welcome_sent_at': datetime.now(timezone.utc),
                                 'welcome_type': welcome_message_type
                             }
-                        },
-                        upsert=True
+                        }
                     )
                 
                 logger.info(f"✅ Automated welcome sent: {welcome_message_type}")
@@ -1648,12 +1710,15 @@ Standing by."""
             return
 
         logger.info(f"✅ Region = '{preferred_region}'")
-        
-# ====================================================================
-        # MULTI-INTENT DETECTION (ATOMIC INTENT GUARDS)
+        # ====================================================================
+        # GOVERNANCE LAYER - AFTER GATE 7
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
+        
+        # ====================================================================
+        # MULTI-INTENT DETECTION (ATOMIC INTENT GUARDS)
+        # ====================================================================
         
         # ✅ FIX 4: ATOMIC INTENT GUARDS - Never split critical intents
         ATOMIC_INTENT_PATTERNS = [
@@ -1753,10 +1818,30 @@ Standing by."""
                 # Route based on LLM-classified intent
                 if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC]:
                     industry = client_profile.get('industry', 'real_estate')
-                    dataset = load_dataset(area=preferred_region, industry=industry)
+                    
+                    # ✅ FIX 2: CANONICALIZE BEFORE LOADING
+                    canonical_region, is_structural = MarketCanonicalizer.canonicalize(preferred_region)
+                    
+                    if is_structural:
+                        # Return structural-only response
+                        structural_response = f"""STRUCTURAL ANALYSIS
+
+{preferred_region} - Regime overview only (no live data)
+
+Market characteristics:
+- Scale: Regional/metropolitan
+- Liquidity: Retail-driven
+- Buyer profile: Local/domestic
+
+For detailed analysis, contact intel@voxmill.uk"""
+                        
+                        responses.append(structural_response)
+                        continue
+                    
+                    dataset = load_dataset(area=canonical_region, industry=industry)
                     
                     response = InstantIntelligence.get_full_market_snapshot(
-                        preferred_region, 
+                        canonical_region, 
                         dataset, 
                         client_profile
                     )
@@ -1834,50 +1919,8 @@ Standing by."""
             return
         
         # ====================================================================
-        # MONITOR COMMANDS (BEFORE GOVERNANCE)
+        # GOVERNANCE LAYER (MAIN)
         # ====================================================================
-        
-        monitor_keywords = [
-            'monitor', 'watch', 'track', 'alert me', 'notify me', 
-            'keep an eye', 'keep watch', 'flag if', 'let me know if', 
-            'tell me if', 'stop monitor', 'resume monitor', 
-            'extend monitor', 'confirm', 'alert if', 'alert when'
-        ]
-        
-        is_monitor_request = any(kw in message_lower for kw in monitor_keywords)
-        
-        if is_monitor_request:
-            from app.monitoring import handle_monitor_request
-            response = await handle_monitor_request(sender, message_text, client_profile)
-            await send_twilio_message(sender, response)
-            
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=response,
-                metadata={'category': 'monitoring_request'}
-            )
-            
-            from app.airtable_auto_sync import sync_usage_metrics
-            
-            await sync_usage_metrics(
-                whatsapp_number=sender,
-                record_id=client_profile.get('airtable_record_id'),
-                table_name=client_profile.get('airtable_table', 'Accounts'),
-                event_type='message_sent',
-                metadata={
-                    'tokens_used': 0,
-                    'category': 'monitoring_request'
-                }
-            )
-            
-            logger.info(f"✅ Monitor request handled")
-            return
-        
-# ====================================================================
-        # GOVERNANCE LAYER
-        # ====================================================================
-        
         
         conversation = ConversationSession(sender)
         conversation_entities = conversation.get_last_mentioned_entities()
@@ -1889,7 +1932,7 @@ Standing by."""
         }
         
         # ====================================================================
-        # CHECK TRIAL SAMPLE STATUS (FOR GOVERNOR)
+        # CHECK TRIAL SAMPLE STATUS (FOR GOVERNOR) - QUERY ONCE
         # ====================================================================
         
         trial_sample_used = False
@@ -1984,7 +2027,7 @@ Standing by."""
         # MARK TRIAL SAMPLE AS USED (IF INTELLIGENCE QUERY FROM TRIAL USER)
         # ====================================================================
         
-        if client_profile.get('subscription_status') == 'trial':
+        if client_profile.get('subscription_status', '').lower() == 'trial':
             if governance_result.intent in [Intent.STATUS_CHECK, Intent.STRATEGIC, Intent.DECISION_REQUEST]:
                 if not trial_sample_used:
                     # Mark as used in MongoDB
@@ -2019,7 +2062,7 @@ Standing by."""
         logger.info(f"✅ Governance passed: intent={governance_result.intent.value}")
 
         
-# ====================================================================
+        # ====================================================================
         # PORTFOLIO_MANAGEMENT ROUTING (FSM-BASED - CHATGPT SPEC)
         # ====================================================================
         
@@ -2042,7 +2085,6 @@ Standing by."""
                 # ========================================
                 
                 if "confirm" in message_lower:
-                    
                     
                     action_id_match = re.search(r'P-[A-Z0-9]{5}', message_text.upper())
                     
@@ -2306,13 +2348,6 @@ Standing by."""
         # ====================================================================
         
         if governance_result.intent == Intent.PORTFOLIO_STATUS:
-            # ✅ CRITICAL FIX: Skip if we just handled PORTFOLIO_MANAGEMENT
-            last_metadata = conversation.get_last_metadata()
-            
-            if last_metadata.get('intent') == 'portfolio_management':
-                logger.info("⏭️ SKIP: Portfolio status check immediately after add operation")
-                return
-            
             try:
                 from app.portfolio import get_portfolio_summary
                 
@@ -2391,7 +2426,7 @@ Value: £{total_value:,.0f} ({total_gain_loss:+.1f}%)"""
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
+        # ====================================================================
         # TRUST_AUTHORITY ROUTING (LLM-POWERED + PRESSURE TEST - WORLD-CLASS)
         # ====================================================================
         
@@ -2458,7 +2493,7 @@ When Sotheby's (22.6% share) adjusts pricing in One Hyde Park, it triggers netwo
 Watch their Q1 strategy shift—that's your early warning system."
 
 Industry: {industry}
-Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile else 'Mayfair'}"""
+Region: {preferred_region}"""
                     
                     system_message = "You are a senior market intelligence analyst. You identify strategic blind spots and forward signals that data alone cannot reveal."
                     max_tokens = 200
@@ -2474,13 +2509,13 @@ Last analysis provided:
 
 User's challenge: "{message_text}"
 
-Respond with STRUCTURED CONFIDENCE ASSESSMENT:
+Respond with CONFIDENCE DEFENSE:
 
-Confidence Level: [High/Medium/Low] (X/10)
-Primary Signal: [The ONE metric driving this view]
-Confidence Reduced Because: [REQUIRED if <8/10: specific data limitation - thin transaction data, lagging registry, limited time window, small sample size, etc.]
-Break Condition: [What would invalidate this view]
-Forward Signal: [What to watch next]
+Confidence: [High/Medium/Low] (X/10)
+Why: [What the data shows]
+Confidence reduced because: [Specific data limitation, not vague uncertainty]
+What breaks this: [Falsifiable condition]
+What to watch: [Actionable signal]
 
 CRITICAL RULES:
 - Be specific (use numbers from the analysis, not platitudes)
@@ -2491,7 +2526,7 @@ CRITICAL RULES:
 - Maximum 200 words
 
 Industry: {industry}
-Region: {client_profile.get('preferred_region', 'Mayfair') if client_profile else 'Mayfair'}
+Region: {preferred_region}
 
 Example format:
 "Confidence: Medium (6/10)
@@ -2554,14 +2589,14 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 await send_twilio_message(sender, response)
                 return
         
-# ====================================================================
+        # ====================================================================
         # EXECUTIVE_COMPRESSION ROUTING (TRANSFORM LAST RESPONSE)
         # ====================================================================
         
         if governance_result.intent == Intent.EXECUTIVE_COMPRESSION:
             try:
                 from openai import AsyncOpenAI
-                from app.response_enforcer import ResponseEnforcer, ResponseShape  # ✅ FIXED
+                from app.response_enforcer import ResponseEnforcer, ResponseShape
                 
                 logger.info(f"🔄 Executive compression detected")
                 
@@ -2663,17 +2698,14 @@ CRITICAL RULES:
                 return
         
         # ====================================================================
-        # STATUS_MONITORING ROUTING (NEW - CRITICAL)
+        # STATUS_MONITORING ROUTING (✅ FIX 6 INTEGRATED)
         # ====================================================================
         
         if governance_result.intent == Intent.STATUS_MONITORING:
-            # Simplified response - no database lookup needed
-            response = """No active monitors.
-
-Create one:
-"Monitor [agent] [region], alert if [condition]"
-
-Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
+            # ✅ FIX 6: Use defensive list_monitors function
+            from app.monitoring import list_monitors
+            
+            response = list_monitors(sender)
             
             await send_twilio_message(sender, response)
             
@@ -2683,7 +2715,7 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
                 metadata={'category': 'status_monitoring', 'intent': 'status_monitoring'}
             )
             
-            log_interaction(sender, message_text, "status_monitoring", response)
+            log_interaction(sender, message_text, "status_monitoring", response, 0, client_profile)
             update_client_history(sender, message_text, "status_monitoring", preferred_region)
             
             # Auto-sync to Airtable
@@ -2716,48 +2748,6 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             return
         
         # ====================================================================
-        # MONITORING STATUS QUERIES
-        # ====================================================================
-        
-        status_keywords = ['show monitor', 'what am i monitoring', 'monitoring status', 'my monitor', 'active monitor', 'current monitor', 'monitoring']
-        
-        if any(kw in message_lower for kw in status_keywords):
-            fallback_response = """No active monitors.
-
-Create one:
-"Monitor [agent] [region], alert if [condition]"
-
-Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
-            
-            await send_twilio_message(sender, fallback_response)
-            
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=fallback_response,
-                metadata={'category': 'monitoring_status'}
-            )
-            
-            log_interaction(sender, message_text, "monitoring_status", fallback_response)
-            update_client_history(sender, message_text, "monitoring_status", preferred_region)
-            
-            # Auto-sync to Airtable
-            from app.airtable_auto_sync import sync_usage_metrics
-            
-            await sync_usage_metrics(
-                whatsapp_number=sender,
-                record_id=client_profile.get('airtable_record_id'),
-                table_name=client_profile.get('airtable_table', 'Accounts'),
-                event_type='message_sent',
-                metadata={
-                    'tokens_used': 0,
-                    'category': 'monitoring_status'
-                }
-            )
-            
-            logger.info(f"✅ Monitoring status handled")
-            return
-        
-        # ====================================================================
         # SECURITY VALIDATION
         # ====================================================================
         
@@ -2770,80 +2760,15 @@ Example: "Monitor Knight Frank Mayfair, alert if prices drop 5%"""
             return
         
         if threats:
+            logger.warning(f"Security threats sanitized: {threats}")
             message_text = sanitized_input
         
         message_normalized = normalize_query(message_text)
         
         # ====================================================================
-        # RATE LIMITING
+        # MESSAGE LENGTH LIMIT
         # ====================================================================
         
-        update_client_history(sender, message_text, "rate_check", preferred_region)
-        client_profile = get_client_profile(sender)
-        query_history = client_profile.get('query_history', [])
-        
-        # Spam protection
-        if query_history:
-            last_real_query = None
-            for q in reversed(query_history):
-                if q.get('category') != 'rate_check':
-                    last_real_query = q
-                    break
-            
-            if last_real_query:
-                last_query_time = last_real_query.get('timestamp')
-                if last_query_time:
-                    if last_query_time.tzinfo is None:
-                        last_query_time = last_query_time.replace(tzinfo=timezone.utc)
-                    
-                    seconds_since_last = (datetime.now(timezone.utc) - last_query_time).total_seconds()
-                    
-                    if seconds_since_last < 2:
-                        logger.warning(f"Spam protection: {seconds_since_last:.1f}s since last")
-                        return
-        
-        # Rate limiting by tier
-        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
-        recent_queries = []
-        
-        for q in query_history:
-            if q.get('category') == 'rate_check':
-                continue
-            
-            timestamp = q.get('timestamp')
-            if timestamp:
-                if timestamp.tzinfo is None:
-                    timestamp = timestamp.replace(tzinfo=timezone.utc)
-                
-                if timestamp > one_hour_ago:
-                    recent_queries.append(q)
-        
-        tier = client_profile.get('tier', 'tier_1')
-        limits = {'tier_1': 10, 'tier_2': 50, 'tier_3': 200}
-        max_queries = limits.get(tier, 10)
-        
-        if len(recent_queries) >= max_queries:
-            oldest_timestamp = min(q['timestamp'] for q in recent_queries)
-            
-            if oldest_timestamp.tzinfo is None:
-                oldest_timestamp = oldest_timestamp.replace(tzinfo=timezone.utc)
-            
-            time_until_reset = (oldest_timestamp + timedelta(hours=1) - datetime.now(timezone.utc))
-            minutes_until_reset = int(time_until_reset.total_seconds() / 60)
-            
-            rate_limit_msg = f"""RATE LIMIT REACHED
-
-Your current access permits {max_queries} intelligence requests per hour.
-
-Reset in: {minutes_until_reset} minutes
-
-To upgrade, contact intel@voxmill.uk"""
-            
-            await send_twilio_message(sender, rate_limit_msg)
-            logger.warning(f"Rate limit: {len(recent_queries)}/{max_queries}")
-            return
-        
-        # Message length limit
         if len(message_text) > 500:
             await send_twilio_message(sender, f"Message too long ({len(message_text)} characters). Please keep queries under 500 characters.")
             return
@@ -2883,11 +2808,11 @@ To upgrade, contact intel@voxmill.uk"""
                         'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
                         'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
                         'industry': client_profile_airtable.get('industry', 'real_estate'),
-                        'active_market': client_profile_airtable.get('active_market', 'Mayfair'),
+                        'active_market': client_profile_airtable.get('active_market'),
                         
                         # ✅ PREFERENCES: Built from active_market
                         'preferences': {
-                            'preferred_regions': [client_profile_airtable.get('active_market', 'Mayfair')],
+                            'preferred_regions': [client_profile_airtable.get('active_market')] if client_profile_airtable.get('active_market') else [],
                             'competitor_set': [],
                             'risk_appetite': 'balanced',
                             'budget_range': {'min': 0, 'max': 100000000},
@@ -2922,64 +2847,22 @@ To upgrade, contact intel@voxmill.uk"""
                         )
                     
                     # ✅ USE NEW active_market FIELD
-                    preferred_region = client_profile.get('active_market', 'Mayfair')
+                    preferred_region = client_profile.get('active_market')
                     
                     logger.info(f"✅ Profile reloaded: region = '{preferred_region}'")
                     
                     # ============================================================
                     # INVALIDATE CACHE FOR NEW REGION
                     # ============================================================
-                    CacheManager.clear_dataset_cache(preferred_region)
-                    logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
+                    if preferred_region:
+                        CacheManager.clear_dataset_cache(preferred_region)
+                        logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
                 
                 # Send preference confirmation and EXIT
                 await send_twilio_message(sender, pref_response)
                 update_client_history(sender, message_text, "preference_update", "Self-Service")
                 logger.info(f"✅ Preference updated (TERMINAL - no intelligence generation)")
                 return  # ← HARD STOP - NO INTELLIGENCE ALLOWED
-        
-        # ====================================================================
-        # FIRST-TIME WELCOME
-        # ====================================================================
-        
-        is_first_time = client_profile.get('total_queries', 0) == 0
-        
-        if is_first_time:
-            await send_first_time_welcome(sender, client_profile)
-        
-        # ====================================================================
-        # META-QUESTIONS
-        # ====================================================================
-        
-        meta_keywords = ['who am i', 'what is my name', 'my profile', 'client profile', 'my details', 'know about me', 'aware of my', 'what do you know']
-        is_meta_question = any(kw in message_normalized.lower() for kw in meta_keywords)
-        
-        if is_meta_question:
-            client_name = client_profile.get('name', 'Unknown')
-            tier = client_profile.get('tier', 'tier_1')
-            
-            tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}[tier]
-            greeting = get_time_appropriate_greeting(client_name)
-            
-            profile_response = f"""{greeting}
-
-CLIENT PROFILE
-
-Name: {client_name}
-Service Tier: {tier_display}
-Preferred Region: {preferred_region}
-
-Your intelligence is personalized to your preferences.
-
-What market intelligence can I provide?"""
-            
-            await send_twilio_message(sender, profile_response)
-            conversation.update_session(user_message=message_text, assistant_response=profile_response, metadata={'category': 'profile_query'})
-            log_interaction(sender, message_text, "profile_query", profile_response)
-            update_client_history(sender, message_text, "profile_query", "None")
-            
-            logger.info(f"✅ Profile query handled")
-            return
         
         # ====================================================================
         # RESPONSE CACHE CHECK
@@ -2995,11 +2878,11 @@ What market intelligence can I provide?"""
             logger.info(f"Cache hit")
             await send_twilio_message(sender, cached_response)
             conversation.update_session(user_message=message_text, assistant_response=cached_response, metadata={'cached': True, 'region': preferred_region})
-            log_interaction(sender, message_text, "cached", cached_response)
+            log_interaction(sender, message_text, "cached", cached_response, 0, client_profile)
             update_client_history(sender, message_text, "cached", preferred_region)
             return
         
-# ====================================================================
+        # ====================================================================
         # REGION EXTRACTION FROM QUERY
         # ====================================================================
         
@@ -3023,12 +2906,9 @@ What market intelligence can I provide?"""
                 logger.info(f"🗺️ Region extracted from query: '{query_region}' (overriding '{preferred_region}')")
                 break
         
-# ====================================================================
+        # ====================================================================
         # SELECTIVE DATASET LOADING (OPTIMIZED)
         # ====================================================================
-        
-        # ✅ FIX 2: Import canonical resolver
-        from app.market_canonicalizer import MarketCanonicalizer
         
         # Validate region
         if not query_region or len(query_region) < 3:
@@ -3053,8 +2933,27 @@ What market intelligence can I provide?"""
         if is_overview or is_decision or is_trend or is_timing or is_agent or is_net_position:
             logger.info(f"🎯 Loading dataset for region: '{query_region}'")
             
-            # ✅ FIXED: Remove industry parameter (not supported by load_dataset)
-            dataset = load_dataset(area=query_region)
+            # ✅ FIX 2: CANONICALIZE BEFORE LOADING
+            canonical_region, is_structural = MarketCanonicalizer.canonicalize(query_region)
+            
+            if is_structural:
+                # Return structural-only response
+                structural_response = f"""STRUCTURAL ANALYSIS
+
+{query_region} - Regime overview only (no live data)
+
+Market characteristics:
+- Scale: Regional/metropolitan
+- Liquidity: Retail-driven
+- Buyer profile: Local/domestic
+
+For detailed analysis, contact intel@voxmill.uk"""
+                
+                await send_twilio_message(sender, structural_response)
+                logger.info(f"✅ Structural analysis sent (no dataset load)")
+                return
+            
+            dataset = load_dataset(area=canonical_region, industry=industry_code)
             
             if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
                 # ✅ DYNAMIC: List actual available markets from database
@@ -3076,28 +2975,28 @@ Standing by."""
             
             # Route to instant intelligence
             if is_overview:
-                formatted_response = InstantIntelligence.get_full_market_snapshot(query_region, dataset, client_profile)
+                formatted_response = InstantIntelligence.get_full_market_snapshot(canonical_region, dataset, client_profile)
                 category = "market_overview"
             elif is_decision:
-                formatted_response = InstantIntelligence.get_instant_decision(query_region, dataset, client_profile)
+                formatted_response = InstantIntelligence.get_instant_decision(canonical_region, dataset, client_profile)
                 category = "decision_mode"
             elif is_trend:
-                formatted_response = InstantIntelligence.get_trend_analysis(query_region, dataset)
+                formatted_response = InstantIntelligence.get_trend_analysis(canonical_region, dataset)
                 category = "trend_analysis"
             elif is_timing:
-                formatted_response = InstantIntelligence.get_timing_analysis(query_region, dataset)
+                formatted_response = InstantIntelligence.get_timing_analysis(canonical_region, dataset)
                 category = "timing_analysis"
             elif is_agent:
-                formatted_response = InstantIntelligence.get_agent_analysis(query_region, dataset)
+                formatted_response = InstantIntelligence.get_agent_analysis(canonical_region, dataset)
                 category = "agent_analysis"
             elif is_net_position:
-                formatted_response = InstantIntelligence.get_net_position(query_region, dataset)
+                formatted_response = InstantIntelligence.get_net_position(canonical_region, dataset)
                 category = "net_position"
             
             await send_twilio_message(sender, formatted_response)
             conversation.update_session(user_message=message_text, assistant_response=formatted_response, metadata={'category': category, 'response_type': 'instant'})
-            log_interaction(sender, message_text, category, formatted_response)
-            update_client_history(sender, message_text, category, query_region)
+            log_interaction(sender, message_text, category, formatted_response, 0, client_profile)
+            update_client_history(sender, message_text, category, canonical_region)
             
             logger.info(f"✅ Instant response sent (<1s)")
             return
@@ -3109,7 +3008,7 @@ Standing by."""
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
         
         # ====================================================================
-        # COMPARISON QUERY DETECTION (CHATGPT PHASE 2)
+        # COMPARISON QUERY DETECTION (✅ PHASE 1 FIXES INTEGRATED)
         # ====================================================================
         
         comparison_keywords = ['compare', 'vs', 'versus', 'difference', 'compare them', 'how do they compare']
@@ -3181,7 +3080,7 @@ Standing by."""
             
             # Follow-up context resolution
             last_context = conversation.get_last_context()
-            resolved_message = resolve_references(message_text, last_context)
+            resolved_message = resolve_reference(message_text, last_context)
             logger.info(f"🔄 Reference resolved: '{message_text}' → '{resolved_message}'")
             
             # Extract market names from comparison query
@@ -3199,24 +3098,15 @@ Standing by."""
                 market2, is_structural2 = MarketCanonicalizer.canonicalize(market2_raw)
                 
                 logger.info(f"🔀 Comparison detected: {market1} vs {market2}")
+                logger.info(f"🔀 Structural flags: {market1}={is_structural1}, {market2}={is_structural2}")
                 
-                # ✅ FIX 3: CHECK IF EITHER MARKET IS STRUCTURAL-ONLY
+                # ✅ FIX 3: STRUCTURAL COMPARISON FALLBACK
                 if is_structural1 or is_structural2:
                     # One or both markets are structural-only
-                    has_data_market = market1 if not is_structural1 else market2
+                    has_data_market = market2 if is_structural1 else market1
                     no_data_market = market1 if is_structural1 else market2
                     
                     logger.info(f"🔀 STRUCTURAL COMPARISON: {has_data_market} (data) vs {no_data_market} (structural)")
-                    
-                    # Load dataset for market with data (if available)
-                    data_dataset = None
-                    if not is_structural1 and not is_structural2:
-                        # Both have potential data - load both
-                        pass
-                    elif not is_structural1:
-                        data_dataset = load_dataset(area=market1)
-                    elif not is_structural2:
-                        data_dataset = load_dataset(area=market2)
                     
                     # Generate structural comparison
                     structural_response = f"""STRUCTURAL COMPARISON
@@ -3235,7 +3125,7 @@ Standing by."""
 Comparison framework:
 - Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = regional scale
 - Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
-- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = local/regional
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = local/domestic
 
 Standing by."""
                     
@@ -3244,117 +3134,56 @@ Standing by."""
                     
                     logger.info(f"✅ Structural comparison sent (no dataset load)")
                     return  # TERMINAL
-            
-            else:
-                # ========================================
-                # STEP 2: APPLY REFERENCE RESOLUTION
-                # ========================================
                 
-                # Get conversation context
-                is_followup, context_hints = conversation.detect_followup_query(message_text)
+                # Both markets have data - load datasets
+                logger.info(f"🔀 Both markets have data - loading datasets")
                 
-                if is_followup or any(pronoun in message_lower for pronoun in ['that', 'them', 'it', 'earlier', 'those']):
-                    from app.conversation_manager import resolve_reference
+                dataset = load_dataset(area=market1, industry=industry_code)
+                dataset_2 = load_dataset(area=market2, industry=industry_code)
+                
+                # ✅ FIX 3: STRUCTURAL FALLBACK IF DATASET MISSING
+                if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
+                    logger.info(f"🔀 Dataset 2 missing - using structural fallback")
                     
-                    resolved_query = resolve_reference(message_text, context_hints)
-                    
-                    logger.info(f"🔄 Reference resolved: '{message_text}' → '{resolved_query}'")
-                    
-                    # Use resolved query for extraction
-                    message_text_for_extraction = resolved_query
-                else:
-                    message_text_for_extraction = message_text
-                
-                # ========================================
-                # STEP 3: EXTRACT REGIONS FROM RESOLVED QUERY
-                # ========================================
-                
-                region_1 = None
-                region_2 = None
-                
-                # Try multiple patterns on RESOLVED query
-                patterns = [
-                    r'compare\s+([A-Za-z\s]+)\s+to\s+([A-Za-z\s]+)',      # "compare Bristol to Mayfair"
-                    r'compare\s+([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)',   # "compare Bristol vs Mayfair"
-                    r'([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)',             # "Bristol vs Mayfair"
-                    r'compare.*?to\s+([A-Za-z\s]+)',                      # "compare that to London"
-                    r'compare.*?with\s+([A-Za-z\s]+)',                    # "compare with London"
-                ]
-                
-                for pattern in patterns:
-                    match = re.search(pattern, message_text_for_extraction, re.IGNORECASE)
-                    if match:
-                        groups = match.groups()
-                        if len(groups) == 2:
-                            region_1 = groups[0].strip().title()
-                            region_2 = groups[1].strip().title()
-                            
-                            # Clean up common words from resolution
-                            for word in ['From', 'Recent', 'Conversation', 'Previous', 'Context', 'Reversed']:
-                                region_1 = region_1.replace(word, '').strip()
-                                region_2 = region_2.replace(word, '').strip()
-                            
-                            break
-                        elif len(groups) == 1:
-                            # "Compare to X" format
-                            region_2 = groups[0].strip().title()
-                            
-                            # Clean up common words
-                            for word in ['From', 'Recent', 'Conversation', 'Previous', 'Context']:
-                                region_2 = region_2.replace(word, '').strip()
-                            
-                            # Get first region from context
-                            last_region = context_hints.get('last_region') if is_followup else preferred_region
-                            
-                            if last_region:
-                                region_1 = last_region
-                                break
-                
-                # Fallback: use conversation context
-                if not region_1 or not region_2:
-                    conversation_regions = context_hints.get('recent_regions', []) if is_followup else []
-                    
-                    if len(conversation_regions) >= 2:
-                        region_1 = conversation_regions[-2] if not region_1 else region_1
-                        region_2 = conversation_regions[-1] if not region_2 else region_2
-                        logger.info(f"📍 Using regions from context: {region_1}, {region_2}")
-                
-                if region_1 and region_2:
-                    logger.info(f"🔀 Comparison detected: {region_1} vs {region_2}")
-                    
-                    # Load datasets for both regions
-                    dataset = load_dataset(area=region_1)
-                    dataset_2 = load_dataset(area=region_2)
-                    
-                    # ✅ CHATGPT FIX: Block if no data for region 2
-                    if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
-                        response = f"""COMPARISON BLOCKED
+                    structural_response = f"""STRUCTURAL COMPARISON
 
-{region_2} has no active market data.
+{market1} vs {market2}
 
-Cannot generate comparison without verified data.
+{market1}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{market2}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
+- Liquidity: {market1} = institutional, {market2} = retail-driven
+- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
 
 Standing by."""
-                        
-                        await send_twilio_message(sender, response)
-                        log_interaction(sender, message_text, "comparison_blocked", response, 0, client_profile)
-                        return  # TERMINAL
                     
-                    comparison_datasets = [dataset_2]
-                    query_region = region_1
-                    
-                    # ========================================
-                    # STEP 4: LOCK COMPARISON (CHATGPT SPEC)
-                    # ========================================
-                    
-                    conversation.lock_comparison_state(region_1, region_2)
-                    logger.info(f"🔒 Comparison locked: {region_1} vs {region_2} (10min expiry)")
-                    
-                else:
-                    # Comparison requested but can't extract regions
-                    logger.warning(f"⚠️ Comparison requested but regions unclear")
-                    
-                    response = """COMPARISON FORMAT
+                    await send_twilio_message(sender, structural_response)
+                    log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                    return  # TERMINAL
+                
+                comparison_datasets = [dataset_2]
+                query_region = market1
+                
+                # ========================================
+                # STEP 3: LOCK COMPARISON (CHATGPT SPEC)
+                # ========================================
+                
+                conversation.lock_comparison_state(market1, market2)
+                logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
+            
+            else:
+                # Comparison requested but can't extract regions
+                logger.warning(f"⚠️ Comparison requested but regions unclear")
+                
+                response = """COMPARISON FORMAT
 
 Specify two markets:
 "Compare [Market A] to [Market B]"
@@ -3362,14 +3191,34 @@ Specify two markets:
 Example: "Compare Mayfair to Manchester"
 
 Standing by."""
-                    
-                    await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "comparison", response, 0, client_profile)
-                    return
+                
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "comparison", response, 0, client_profile)
+                return
         
         else:
-            # Standard single-region query
-            dataset = load_dataset(area=query_region)
+            # ✅ FIX 2: CANONICALIZE BEFORE LOADING (STANDARD SINGLE-REGION QUERY)
+            canonical_region, is_structural = MarketCanonicalizer.canonicalize(query_region)
+            
+            if is_structural:
+                # Return structural-only response
+                structural_response = f"""STRUCTURAL ANALYSIS
+
+{query_region} - Regime overview only (no live data)
+
+Market characteristics:
+- Scale: Regional/metropolitan
+- Liquidity: Retail-driven
+- Buyer profile: Local/domestic
+
+For detailed analysis, contact intel@voxmill.uk"""
+                
+                await send_twilio_message(sender, structural_response)
+                logger.info(f"✅ Structural analysis sent (no dataset load)")
+                return
+            
+            dataset = load_dataset(area=canonical_region, industry=industry_code)
+            query_region = canonical_region  # Use canonical region for rest of flow
         
         if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
             # ✅ DYNAMIC: List actual available markets from database
@@ -3520,3 +3369,5 @@ Standing by."""
     except Exception as e:
         logger.error(f"Error handling message: {str(e)}", exc_info=True)
         await send_twilio_message(sender, "System encountered an error. Please try again.")
+        
+
