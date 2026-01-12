@@ -1650,16 +1650,58 @@ Standing by."""
         logger.info(f"✅ Region = '{preferred_region}'")
         
 # ====================================================================
-        # MULTI-INTENT DETECTION (LLM-BASED - NO KEYWORD CONTROL)
+        # MULTI-INTENT DETECTION (ATOMIC INTENT GUARDS)
         # ====================================================================
         
         from app.conversational_governor import ConversationalGovernor
         
-        # Let the LLM handle splitting intelligently (no keyword soup)
-        message_segments = ConversationalGovernor._detect_multi_intent(message_text)
+        # ✅ FIX 4: ATOMIC INTENT GUARDS - Never split critical intents
+        ATOMIC_INTENT_PATTERNS = [
+            # Decision phrases
+            r'\bif you were me\b',
+            r'\bone move\b',
+            r'\bwhat would you do\b',
+            r'\bshould i\b',
+            r'\bwould you\b',
+            r'\brecommend\b.*\baction\b',
+            r'\bmake the call\b',
+            
+            # Contradiction phrases  
+            r'\bfeels off\b',
+            r'\bdoesn\'t add up\b',
+            r'\bdoesn\'t make sense\b',
+            r'\bcontradiction\b',
+            r'\bbut\b.*\b(agents?|velocity|market|pricing|demand|supply)\b',
+            r'\bhowever\b.*\b(agents?|velocity|market|pricing|demand|supply)\b',
+            
+            # Comparison phrases
+            r'\bcompare\b',
+            r'\b vs\.? \b',
+            r'\bversus\b',
+            r'\bhow do they compare\b',
+        ]
+        
+        # Check if message contains atomic intent (never split)
+        message_lower = message_text.lower()
+        is_atomic = any(re.search(pattern, message_lower, re.IGNORECASE) for pattern in ATOMIC_INTENT_PATTERNS)
+        
+        if is_atomic:
+            logger.info(f"✅ ATOMIC INTENT detected - no splitting (decision/contradiction/comparison)")
+            message_segments = [message_text]  # Keep as single segment
+        else:
+            # Let the LLM handle splitting intelligently (but only on semicolons/newlines)
+            # ✅ FIX 4: Only split on semicolon or newline (NOT periods)
+            if "; " in message_text or "\n" in message_text:
+                message_segments = re.split(r'[;\n]\s*', message_text)
+                message_segments = [s.strip() for s in message_segments if s.strip()]
+                logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments (split on ; or \\n)")
+            else:
+                # No semicolon/newline - treat as single intent
+                message_segments = [message_text]
+                logger.info(f"✅ Single intent - no splitting")
         
         if len(message_segments) > 1:
-            logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments")
+            logger.info(f"🔀 Processing {len(message_segments)} segments")
             
             responses = []
             
@@ -2985,6 +3027,9 @@ What market intelligence can I provide?"""
         # SELECTIVE DATASET LOADING (OPTIMIZED)
         # ====================================================================
         
+        # ✅ FIX 2: Import canonical resolver
+        from app.market_canonicalizer import MarketCanonicalizer
+        
         # Validate region
         if not query_region or len(query_region) < 3:
             query_region = client_profile.get('active_market', available_markets[0] if available_markets else None)
@@ -3129,6 +3174,76 @@ Standing by."""
                     await send_twilio_message(sender, response)
                     log_interaction(sender, message_text, "comparison", response, 0, client_profile)
                     return
+            
+            # ========================================
+            # STEP 2: EXTRACT COMPARISON MARKETS
+            # ========================================
+            
+            # Follow-up context resolution
+            last_context = conversation.get_last_context()
+            resolved_message = resolve_references(message_text, last_context)
+            logger.info(f"🔄 Reference resolved: '{message_text}' → '{resolved_message}'")
+            
+            # Extract market names from comparison query
+            comparison_match = re.search(
+                r'(?:compare|vs\.?|versus)\s+([^,]+?)\s+(?:to|vs\.?|versus|and|with)\s+([^,.]+)', 
+                resolved_message.lower()
+            )
+            
+            if comparison_match:
+                market1_raw = comparison_match.group(1).strip()
+                market2_raw = comparison_match.group(2).strip()
+                
+                # ✅ FIX 2: CANONICALIZE MARKETS BEFORE PROCESSING
+                market1, is_structural1 = MarketCanonicalizer.canonicalize(market1_raw)
+                market2, is_structural2 = MarketCanonicalizer.canonicalize(market2_raw)
+                
+                logger.info(f"🔀 Comparison detected: {market1} vs {market2}")
+                
+                # ✅ FIX 3: CHECK IF EITHER MARKET IS STRUCTURAL-ONLY
+                if is_structural1 or is_structural2:
+                    # One or both markets are structural-only
+                    has_data_market = market1 if not is_structural1 else market2
+                    no_data_market = market1 if is_structural1 else market2
+                    
+                    logger.info(f"🔀 STRUCTURAL COMPARISON: {has_data_market} (data) vs {no_data_market} (structural)")
+                    
+                    # Load dataset for market with data (if available)
+                    data_dataset = None
+                    if not is_structural1 and not is_structural2:
+                        # Both have potential data - load both
+                        pass
+                    elif not is_structural1:
+                        data_dataset = load_dataset(area=market1)
+                    elif not is_structural2:
+                        data_dataset = load_dataset(area=market2)
+                    
+                    # Generate structural comparison
+                    structural_response = f"""STRUCTURAL COMPARISON
+
+{market1} vs {market2}
+
+{has_data_market}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{no_data_market}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = regional scale
+- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = local/regional
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, structural_response)
+                    log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                    
+                    logger.info(f"✅ Structural comparison sent (no dataset load)")
+                    return  # TERMINAL
             
             else:
                 # ========================================
