@@ -142,9 +142,6 @@ class ConversationalGovernor:
     # Class variable to store LLM's intent_type hint
     _last_intent_type = None
     
-    # [ALL EXISTING METHODS UNCHANGED UNTIL _force_intent_from_semantic_category]
-    # [Social absorption, mandate relevance check, auto-scoping, etc.]
-    
     # ========================================
     # INTENT CLASSIFICATION (MINIMAL) - WITH FIX 5
     # ========================================
@@ -700,7 +697,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         return intent_responses.get(intent)
     
-@staticmethod
+    @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
         """
         Layer -1: Absorb pure social pleasantries without analysis
@@ -1018,7 +1015,7 @@ Guidelines:
         
         is_social, social_response = ConversationalGovernor._absorb_social_input(
             message_text,
-            client_name,  # ✅ COMMA ADDED
+            client_name,
             conversation_context
         )
         
@@ -1406,7 +1403,7 @@ Trial access provides limited intelligence sampling."""
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-# ========================================
+        # ========================================
         # INTENT PRIORITY TIER CHECK (CHATGPT FIX)
         # ========================================
         
