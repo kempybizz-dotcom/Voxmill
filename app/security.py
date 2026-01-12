@@ -195,6 +195,51 @@ class SecurityValidator:
             return True
         
         text_clean = text.strip()
+        text_lower = text_clean.lower()
+        
+        # ✅ WHITELIST: Common valid patterns that should NEVER be flagged as gibberish
+        valid_patterns = [
+            'add property',
+            'remove property',
+            'show portfolio',
+            'reset portfolio',
+            'refresh portfolio',
+            'portfolio',
+            'market overview',
+            'market',
+            'price',
+            'value',
+            'worth',
+            'compare',
+            'comparison',
+            'vs',
+            'rightmove',
+            'zoopla',
+            'property',
+            'address',
+            'postcode',
+            'street',
+            'road',
+            'avenue',
+            'lane',
+            'square',
+            'park',
+            'gardens',
+            'place',
+            'close',
+            'mews',
+            'terrace',
+            'knightsbridge',
+            'mayfair',
+            'belgravia',
+            'chelsea',
+            'kensington'
+        ]
+        
+        # If any valid pattern is present, it's NOT gibberish
+        if any(pattern in text_lower for pattern in valid_patterns):
+            logger.debug(f"✅ Whitelist match - not gibberish: '{text_clean}'")
+            return False
         
         # Pattern 1: Too short and all caps random letters (no real words)
         if text_clean.isupper() and len(text_clean) < 12:
@@ -240,21 +285,9 @@ class SecurityValidator:
                 logger.info(f"🗑️ Gibberish pre-filter: Too short '{text_clean}'")
                 return True
         
-        # Pattern 5: Only consonants in sequence (6+)
-        consonants = 'bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ'
-        consonant_seq = 0
-        max_consonant_seq = 0
-        
-        for char in text_clean:
-            if char in consonants:
-                consonant_seq += 1
-                max_consonant_seq = max(max_consonant_seq, consonant_seq)
-            else:
-                consonant_seq = 0
-        
-        if max_consonant_seq >= 6:
-            logger.info(f"🗑️ Gibberish pre-filter: Consonant sequence in '{text_clean}'")
-            return True
+        # Pattern 5: DISABLED - Consonant sequence check (was too aggressive)
+        # Previously flagged "Knightsbridge" and other valid place names
+        # Left disabled to prevent false positives on addresses
         
         # Pattern 6: Keyboard mashing detection (adjacent keys on QWERTY)
         keyboard_patterns = [
@@ -263,7 +296,6 @@ class SecurityValidator:
             'sdfg', 'dfgh', 'fghj', 'ghjk', 'jkl;', 'wertyuiop'
         ]
         
-        text_lower = text_clean.lower()
         for pattern in keyboard_patterns:
             if pattern in text_lower and len(text_clean) < 15:
                 logger.info(f"🗑️ Gibberish pre-filter: Keyboard mashing in '{text_clean}'")
