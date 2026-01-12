@@ -5,6 +5,7 @@ VOXMILL INSTITUTIONAL-GRADE DATA STACK
 
 Features:
 - Multi-industry routing (Real Estate, Automotive, Healthcare, Hospitality)
+- Canonical market resolution (London aliasing, structural-only markets)
 - Graceful API failure handling
 - GPT-4 powered sentiment analysis
 - Outlier detection & duplicate removal
@@ -47,6 +48,18 @@ except ImportError:
     INDUSTRY_ROUTING_ENABLED = False
     logger.warning("⚠️ Industry routing not available")
 
+# ============================================================
+# FIX 2: IMPORT CANONICAL MARKET RESOLVER
+# ============================================================
+
+try:
+    from app.market_canonicalizer import MarketCanonicalizer
+    CANONICAL_RESOLVER_ENABLED = True
+    logger.info("✅ Canonical market resolver enabled")
+except ImportError:
+    CANONICAL_RESOLVER_ENABLED = False
+    logger.warning("⚠️ Canonical market resolver not available")
+
 
 # ============================================================
 # MAIN DATASET LOADER - WORLD-CLASS WITH INDUSTRY ROUTING
@@ -58,6 +71,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
     
     ✅ FIXED: No default area - explicit market required
     ✅ FIXED: Industry routing for multi-vertical support
+    ✅ FIX 2: Canonical market resolution before loading
     
     Args:
         area: Geographic area (REQUIRED - no default)
@@ -75,6 +89,25 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
     if not area:
         logger.error("❌ No area provided to load_dataset")
         return _empty_dataset("Unknown", industry)
+    
+    # ========================================
+    # FIX 2: CANONICAL MARKET RESOLUTION
+    # ========================================
+    
+    original_area = area
+    is_structural_only = False
+    
+    if CANONICAL_RESOLVER_ENABLED:
+        canonical_area, is_structural_only = MarketCanonicalizer.canonicalize(area)
+        
+        if canonical_area != area:
+            logger.info(f"🔄 Market canonicalized: '{area}' → '{canonical_area}'")
+            area = canonical_area
+        
+        # ✅ FIX 2: Check if structural-only market (no dataset loading)
+        if is_structural_only:
+            logger.warning(f"📊 {area} is structural-only market (no dataset loading)")
+            return _structural_only_dataset(area, original_area, industry)
     
     # ========================================
     # INDUSTRY ROUTING
@@ -265,6 +298,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
             'metrics': metrics,
             'metadata': {
                 'area': area,
+                'original_area': original_area if original_area != area else None,
                 'industry': industry,
                 'city': 'London',
                 'property_count': len(properties),
@@ -379,6 +413,57 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         return _empty_dataset(area, industry)
 
 
+# ============================================================
+# FIX 2: STRUCTURAL-ONLY DATASET TEMPLATE
+# ============================================================
+
+def _structural_only_dataset(canonical_area: str, original_area: str, industry: str = "real_estate") -> Dict:
+    """
+    Return structural-only dataset template for canonical markets like LONDON_GENERAL
+    
+    ✅ FIX 2: Used for markets that should never load datasets
+    """
+    return {
+        'properties': [],
+        'metrics': {
+            'property_count': 0,
+            'avg_price': 0,
+            'median_price': 0,
+            'min_price': 0,
+            'max_price': 0
+        },
+        'metadata': {
+            'area': canonical_area,
+            'original_area': original_area,
+            'industry': industry,
+            'city': 'Unknown',
+            'property_count': 0,
+            'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
+            'is_fallback': False,
+            'is_structural_only': True,
+            'data_quality': 'structural_regime',
+            'validation_passed': True,
+            'data_source': 'canonical_structural',
+            'sources': []
+        },
+        'intelligence': {
+            'market_sentiment': 'neutral',
+            'sentiment_confidence': 0.0,
+            'confidence_level': 'structural',
+            'executive_summary': f'{canonical_area} is a structural-regime market (no live dataset)',
+            'top_agents': [],
+            'key_themes': ['Structural analysis', 'Regime comparison']
+        },
+        'historical_sales': [],
+        'amenities': {},
+        'liquidity_velocity': {'error': 'structural_only'},
+        'agent_profiles': [],
+        'detected_trends': [],
+        'micromarkets': {'error': 'structural_only'}
+    }
+
+
+# [REST OF FILE UNCHANGED - ALL EXISTING CLASSES AND FUNCTIONS]
 # ============================================================
 # ENTERPRISE-GRADE UTILITIES
 # ============================================================
@@ -555,7 +640,6 @@ class DataQualityValidator:
 # ============================================================
 
 circuit_breaker = CircuitBreaker(failure_threshold=3, timeout=300)  # 5 min timeout
-
 
 # ============================================================
 # 1. RIGHTMOVE - PRODUCTION READY
