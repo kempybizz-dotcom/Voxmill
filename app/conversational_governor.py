@@ -700,7 +700,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         return intent_responses.get(intent)
     
-    @staticmethod
+@staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
         """
         Layer -1: Absorb pure social pleasantries without analysis
@@ -798,6 +798,157 @@ For immediate regeneration, contact intel@voxmill.uk"""
         # ========================================
         
         return False, None
+    
+    @staticmethod
+    async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
+        """
+        LLM-based mandate relevance check
+        
+        Returns: (is_relevant, semantic_category, confidence)
+        
+        Also sets ConversationalGovernor._last_intent_type for downstream routing
+        """
+        
+        client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # Build context string
+        context_str = ""
+        if conversation_context:
+            regions = conversation_context.get('regions', [])
+            agents = conversation_context.get('agents', [])
+            topics = conversation_context.get('topics', [])
+            
+            if regions or agents or topics:
+                context_str = f"\n\nConversation context:\n"
+                if regions:
+                    context_str += f"- Recent regions: {', '.join(regions)}\n"
+                if agents:
+                    context_str += f"- Recent agents: {', '.join(agents)}\n"
+                if topics:
+                    context_str += f"- Recent topics: {', '.join(topics)}\n"
+        
+        prompt = f"""Classify this message for a market intelligence system.
+
+Message: "{message}"{context_str}
+
+Respond ONLY with valid JSON:
+{{
+    "is_mandate_relevant": true/false,
+    "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
+    "confidence": 0.0-1.0,
+    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
+}}
+
+Guidelines:
+- is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, or timing
+- semantic_category: best fit category
+- confidence: 0.0-1.0 based on clarity
+- intent_type: specific intent for routing"""
+        
+        try:
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You classify market intelligence queries. Respond only with valid JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens=150,
+                temperature=0.0,
+                timeout=5.0
+            )
+            
+            result_text = response.choices[0].message.content.strip()
+            
+            # Strip markdown fences if present
+            if result_text.startswith('```'):
+                result_text = result_text.split('```')[1]
+                if result_text.startswith('json'):
+                    result_text = result_text[4:]
+                result_text = result_text.strip()
+            
+            result = json.loads(result_text)
+            
+            is_relevant = result.get('is_mandate_relevant', False)
+            category_str = result.get('semantic_category', 'non_domain')
+            confidence = result.get('confidence', 0.5)
+            intent_type = result.get('intent_type')
+            
+            # Store intent_type for downstream routing
+            ConversationalGovernor._last_intent_type = intent_type
+            
+            # Map string to enum
+            category_map = {
+                'competitive_intelligence': SemanticCategory.COMPETITIVE_INTELLIGENCE,
+                'market_dynamics': SemanticCategory.MARKET_DYNAMICS,
+                'strategic_positioning': SemanticCategory.STRATEGIC_POSITIONING,
+                'temporal_analysis': SemanticCategory.TEMPORAL_ANALYSIS,
+                'surveillance': SemanticCategory.SURVEILLANCE,
+                'administrative': SemanticCategory.ADMINISTRATIVE,
+                'social': SemanticCategory.SOCIAL,
+                'non_domain': SemanticCategory.NON_DOMAIN
+            }
+            
+            semantic_category = category_map.get(category_str, SemanticCategory.NON_DOMAIN)
+            
+            logger.info(f"LLM mandate check: relevant={is_relevant}, category={category_str}, intent={intent_type}, confidence={confidence:.2f}")
+            
+            return is_relevant, semantic_category, confidence
+            
+        except Exception as e:
+            logger.error(f"Mandate relevance check failed: {e}")
+            # Fallback to conservative
+            return False, SemanticCategory.NON_DOMAIN, 0.5
+    
+    @staticmethod
+    def _auto_scope(message: str, client_profile: dict, conversation_context: Dict = None) -> AutoScopeResult:
+        """
+        Auto-scope market/timeframe/entities from message
+        
+        Returns: AutoScopeResult with extracted context
+        """
+        
+        # Extract market from message or use preferred
+        market = None
+        timeframe = None
+        entities = []
+        
+        # Simple extraction (you can enhance with LLM)
+        message_lower = message.lower()
+        
+        # Extract timeframe
+        if 'this week' in message_lower or 'past week' in message_lower:
+            timeframe = '7d'
+        elif 'this month' in message_lower or 'past month' in message_lower:
+            timeframe = '30d'
+        elif 'this year' in message_lower:
+            timeframe = '365d'
+        
+        # Extract market from preferred regions
+        preferred_regions = client_profile.get('preferences', {}).get('preferred_regions', [])
+        if preferred_regions:
+            market = preferred_regions[0]
+        
+        # Check conversation context
+        inferred_from = "preferences"
+        if conversation_context:
+            context_regions = conversation_context.get('regions', [])
+            if context_regions:
+                market = context_regions[-1]
+                inferred_from = "conversation_context"
+        
+        return AutoScopeResult(
+            market=market,
+            timeframe=timeframe,
+            entities=entities,
+            confidence=0.8 if market else 0.3,
+            inferred_from=inferred_from
+        )
     
     @staticmethod
     def _detect_multi_intent(message: str) -> List[str]:
