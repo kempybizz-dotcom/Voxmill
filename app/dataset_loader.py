@@ -82,21 +82,49 @@ except ImportError:
 # ============================================================
 
 def _get_with_proxy(url: str, params: dict = None, headers: dict = None, timeout: int = 30) -> requests.Response:
-    if SCRAPER_API_KEY:
-        if params:
-            from urllib.parse import urlencode
-            full_url = f"{url}?{urlencode(params)}"
+    """
+    Make HTTP request with ScraperAPI proxy if available
+    
+    Returns: requests.Response object
+    """
+    try:
+        if SCRAPER_API_KEY:
+            # Build full URL with params
+            if params:
+                from urllib.parse import urlencode
+                full_url = f"{url}?{urlencode(params)}"
+            else:
+                full_url = url
+            
+            # ScraperAPI proxy parameters
+            proxy_params = {
+                'api_key': SCRAPER_API_KEY,
+                'url': full_url,
+                'render': 'true',  # Enable JavaScript rendering
+                'country_code': 'gb',  # UK residential IPs
+                'premium': 'true',  # Premium proxies
+                'session_number': '1'  # Maintain session
+            }
+            
+            logger.debug(f"Using ScraperAPI proxy for: {url}")
+            response = requests.get(SCRAPER_API_URL, params=proxy_params, timeout=timeout)
+            return response
         else:
-            full_url = url
-        
-        proxy_params = {
-            'api_key': SCRAPER_API_KEY,
-            'url': full_url,
-            'render': 'true',  # ✅ ENABLE JAVASCRIPT RENDERING
-            'country_code': 'gb',
-            'premium': 'true',  # ✅ USE PREMIUM PROXIES
-            'session_number': '1'  # ✅ MAINTAIN SESSION
-        }
+            # Direct request (fallback)
+            logger.debug(f"Direct request (no proxy): {url}")
+            response = requests.get(url, params=params, headers=headers, timeout=timeout)
+            return response
+            
+    except Exception as e:
+        logger.error(f"_get_with_proxy error: {e}")
+        # Return a dummy response object to prevent None errors
+        class DummyResponse:
+            status_code = 500
+            text = ""
+            content = b""
+            def json(self):
+                return {}
+        return DummyResponse()
 
 
 # ============================================================
