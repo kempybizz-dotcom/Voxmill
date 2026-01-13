@@ -353,7 +353,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 f"Objectives: {', '.join(objectives)}" if objectives else None
             ]
     
-        # Filter out None values
+            # Filter out None values
             agency_context = "\n".join([part for part in agency_context_parts if part])
     
             logger.info(f"✅ Agency context built: {len(agency_context)} chars")
