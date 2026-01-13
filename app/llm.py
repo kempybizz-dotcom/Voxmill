@@ -253,7 +253,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         from datetime import datetime
         import pytz
         
-        # ============================================================
+# ============================================================
         # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
         # ============================================================
         
@@ -264,7 +264,6 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         client_tier_display = "institutional"
         preferred_region = "Mayfair"
         industry = "Real Estate"  # NEW - CRITICAL
-
         agency_name = None
         agency_type = None
         role = None
@@ -300,17 +299,21 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 
                 # Industry (NEW - CRITICAL)
                 industry = client_profile.get('industry', 'Real Estate')
-
-        # ========================================
-        # AGENCY CONTEXT (NEW - CRITICAL)
-        # ========================================
-        agency_name = client_profile.get('agency_name')
-        agency_type = client_profile.get('agency_type')
-        role = client_profile.get('role')
-        typical_price_band = client_profile.get('typical_price_band')
-        objectives = client_profile.get('objectives', [])
-        
-        logger.info(f"✅ Agency context loaded: {agency_name} ({agency_type})")
+                
+                # ========================================
+                # AGENCY CONTEXT (NEW - CRITICAL)
+                # ========================================
+                agency_name = client_profile.get('agency_name')
+                agency_type = client_profile.get('agency_type')
+                role = client_profile.get('role')
+                typical_price_band = client_profile.get('typical_price_band')
+                objectives = client_profile.get('objectives', [])
+                
+                logger.info(f"✅ Agency context loaded: {agency_name} ({agency_type})")
+                
+            except Exception as e:
+                logger.error(f"Error extracting client context: {e}")
+                # Defaults already set above
         
         # ========================================
         # GET INDUSTRY-SPECIFIC CONTEXT (NEW)
@@ -319,10 +322,27 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             industry_context = IndustryEnforcer.get_industry_context(industry)
         else:
             industry_context = "MARKET CONTEXT: General market intelligence"
-
+        
         # ========================================
         # BUILD AGENCY CONTEXT STRING
         # ========================================
+        if agency_name:
+            agency_context_parts = [
+                f"Agency: {agency_name}",
+                f"Type: {agency_type}" if agency_type else None,
+                f"Role: {role}" if role else None,
+                f"Price Band: {typical_price_band}" if typical_price_band else None,
+                f"Market Position: {preferred_region}",
+                f"Objectives: {', '.join(objectives)}" if objectives else None
+            ]
+            
+            # Filter out None values
+            agency_context = "\n".join([part for part in agency_context_parts if part])
+            
+            logger.info(f"✅ Agency context built: {len(agency_context)} chars")
+        else:
+            agency_context = "Agency: Not specified (generic market intelligence mode)"
+            logger.warning("⚠️ No agency context available")
         if agency_name:
              agency_context_parts = [
                 f"Agency: {agency_name}",
