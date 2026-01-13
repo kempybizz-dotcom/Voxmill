@@ -53,6 +53,18 @@ REGION: {preferred_region}
 TIME: {current_time_uk}, {current_date}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLIENT AGENCY CONTEXT (CRITICAL FOR COMPETITIVE INTELLIGENCE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{agency_context}
+
+When discussing competitors, market positioning, or strategic opportunities:
+- Always contextualize relative to the client's agency position
+- Identify competitors specific to this agency (not generic market players)
+- Frame insights from the perspective of this agency's objectives
+- Prioritize intelligence that serves this agency's strategic goals
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INDUSTRY VOCABULARY (PRIORITY 0.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -252,6 +264,12 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         client_tier_display = "institutional"
         preferred_region = "Mayfair"
         industry = "Real Estate"  # NEW - CRITICAL
+
+        agency_name = None
+        agency_type = None
+        role = None
+        typical_price_band = None
+        objectives = []
         
         # Override with real data if available
         if client_profile:
@@ -282,10 +300,17 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 
                 # Industry (NEW - CRITICAL)
                 industry = client_profile.get('industry', 'Real Estate')
-                
-            except Exception as e:
-                logger.error(f"Error extracting client context: {e}")
-                # Defaults already set above
+
+        # ========================================
+        # AGENCY CONTEXT (NEW - CRITICAL)
+        # ========================================
+        agency_name = client_profile.get('agency_name')
+        agency_type = client_profile.get('agency_type')
+        role = client_profile.get('role')
+        typical_price_band = client_profile.get('typical_price_band')
+        objectives = client_profile.get('objectives', [])
+        
+        logger.info(f"✅ Agency context loaded: {agency_name} ({agency_type})")
         
         # ========================================
         # GET INDUSTRY-SPECIFIC CONTEXT (NEW)
@@ -294,14 +319,35 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             industry_context = IndustryEnforcer.get_industry_context(industry)
         else:
             industry_context = "MARKET CONTEXT: General market intelligence"
+
+        # ========================================
+        # BUILD AGENCY CONTEXT STRING
+        # ========================================
+        if agency_name:
+             agency_context_parts = [
+                f"Agency: {agency_name}",
+                f"Type: {agency_type}" if agency_type else None,
+                f"Role: {role}" if role else None,
+                f"Price Band: {typical_price_band}" if typical_price_band else None,
+                f"Market Position: {preferred_region}",
+                f"Objectives: {', '.join(objectives)}" if objectives else None
+            ]
+    
+        # Filter out None values
+            agency_context = "\n".join([part for part in agency_context_parts if part])
+    
+            logger.info(f"✅ Agency context built: {len(agency_context)} chars")
+        else:
+            agency_context = "Agency: Not specified (generic market intelligence mode)"
+            logger.warning("⚠️ No agency context available")
         
-        # Get UK time for context
-        uk_tz = pytz.timezone('Europe/London')
-        uk_now = datetime.now(uk_tz)
-        current_time_uk = uk_now.strftime('%H:%M GMT')
-        current_date = uk_now.strftime('%A, %B %d, %Y')
+                # Get UK time for context
+                uk_tz = pytz.timezone('Europe/London')
+                uk_now = datetime.now(uk_tz)
+                current_time_uk = uk_now.strftime('%H:%M GMT')
+                current_date = uk_now.strftime('%A, %B %d, %Y')
         
-        # Format system prompt with client context + industry
+        # Format system prompt with client context + industry + agency
         system_prompt_personalized = SYSTEM_PROMPT.format(
             current_time_uk=current_time_uk,
             current_date=current_date,
@@ -309,8 +355,9 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             client_company=client_company if client_company else "your organization",
             client_tier=client_tier_display,
             preferred_region=preferred_region,
-            industry=industry,  # NEW
-            industry_context=industry_context  # NEW
+            industry=industry,
+            industry_context=industry_context,
+            agency_context=agency_context  # NEW - CRITICAL
         )
         
         # ============================================================
