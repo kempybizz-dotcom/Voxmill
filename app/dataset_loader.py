@@ -82,36 +82,21 @@ except ImportError:
 # ============================================================
 
 def _get_with_proxy(url: str, params: dict = None, headers: dict = None, timeout: int = 30) -> requests.Response:
-    """
-    Make HTTP request with ScraperAPI proxy if available
-    
-    Automatically handles:
-    - Residential IP rotation
-    - Cloudflare bypass
-    - Bot detection bypass
-    """
     if SCRAPER_API_KEY:
-        # Build full URL with params
         if params:
             from urllib.parse import urlencode
             full_url = f"{url}?{urlencode(params)}"
         else:
             full_url = url
         
-        # Route through ScraperAPI
         proxy_params = {
             'api_key': SCRAPER_API_KEY,
             'url': full_url,
-            'render': 'false',  # Don't need JavaScript rendering
-            'country_code': 'gb'  # Use UK residential IPs
+            'render': 'true',  # ✅ ENABLE JAVASCRIPT RENDERING
+            'country_code': 'gb',
+            'premium': 'true',  # ✅ USE PREMIUM PROXIES
+            'session_number': '1'  # ✅ MAINTAIN SESSION
         }
-        
-        logger.debug(f"Using ScraperAPI proxy for: {url}")
-        return requests.get(SCRAPER_API_URL, params=proxy_params, timeout=timeout)
-    else:
-        # Direct request (may be blocked)
-        logger.debug(f"Direct request (no proxy): {url}")
-        return requests.get(url, params=params, headers=headers, timeout=timeout)
 
 
 # ============================================================
