@@ -1,19 +1,21 @@
 """
-VOXMILL INSTITUTIONAL-GRADE DATA STACK
-======================================
-⭐⭐⭐⭐⭐ Production-ready with enterprise reliability
+VOXMILL INSTITUTIONAL-GRADE DATA STACK - WORLD-CLASS EDITION
+=============================================================
+⭐⭐⭐⭐⭐ Production-ready with enterprise reliability + MULTI-SOURCE FALLBACK
 
 Features:
+- Multi-source data acquisition (Rightmove → Zoopla → OnTheMarket)
 - Multi-industry routing (Real Estate, Automotive, Healthcare, Hospitality)
 - Canonical market resolution (London aliasing, structural-only markets)
-- Graceful API failure handling
+- Intelligent fallback chain with circuit breakers
 - GPT-4 powered sentiment analysis
 - Outlier detection & duplicate removal
 - Data freshness validation
 - Rate limit handling with exponential backoff
-- Circuit breaker pattern
+- Circuit breaker pattern for each source
 - Comprehensive logging & monitoring
 - NO hardcoded market defaults - all markets from Airtable
+- Bulletproof error handling
 """
 
 import os
@@ -29,6 +31,7 @@ import hashlib
 import json
 from functools import wraps
 from openai import OpenAI
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +52,7 @@ except ImportError:
     logger.warning("⚠️ Industry routing not available")
 
 # ============================================================
-# FIX 2: IMPORT CANONICAL MARKET RESOLVER
+# CANONICAL MARKET RESOLVER
 # ============================================================
 
 try:
@@ -62,16 +65,17 @@ except ImportError:
 
 
 # ============================================================
-# MAIN DATASET LOADER - WORLD-CLASS WITH INDUSTRY ROUTING
+# MAIN DATASET LOADER - WORLD-CLASS WITH MULTI-SOURCE FALLBACK
 # ============================================================
 
 def load_dataset(area: str, max_properties: int = 100, industry: str = "real_estate") -> Dict:
     """
-    Load institutional-grade dataset with all intelligence layers
+    Load institutional-grade dataset with intelligent multi-source fallback
     
+    ✅ WORLD-CLASS: Rightmove → Zoopla → OnTheMarket fallback chain
     ✅ FIXED: No default area - explicit market required
     ✅ FIXED: Industry routing for multi-vertical support
-    ✅ FIX 2: Canonical market resolution before loading
+    ✅ FIXED: Canonical market resolution before loading
     
     Args:
         area: Geographic area (REQUIRED - no default)
@@ -91,7 +95,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         return _empty_dataset("Unknown", industry)
     
     # ========================================
-    # FIX 2: CANONICAL MARKET RESOLUTION
+    # CANONICAL MARKET RESOLUTION
     # ========================================
     
     original_area = area
@@ -104,7 +108,6 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
             logger.info(f"🔄 Market canonicalized: '{area}' → '{canonical_area}'")
             area = canonical_area
         
-        # ✅ FIX 2: Check if structural-only market (no dataset loading)
         if is_structural_only:
             logger.warning(f"📊 {area} is structural-only market (no dataset loading)")
             return _structural_only_dataset(area, original_area, industry)
@@ -143,9 +146,14 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         start_time = time.time()
         
         # ============================================================
-        # SOURCE 1: Rightmove
+        # SOURCE 1: MULTI-SOURCE PROPERTY DATA (WORLD-CLASS FALLBACK)
         # ============================================================
         
+        properties = []
+        data_source_used = None
+        
+        # Try Rightmove first
+        logger.info(f"🔍 Attempting Rightmove for {area}...")
         properties = circuit_breaker.call(
             'rightmove',
             RightmoveLiveData.fetch,
@@ -153,9 +161,50 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
             max_properties
         )
         
+        if properties and len(properties) >= 10:
+            data_source_used = 'rightmove'
+            logger.info(f"✅ Rightmove succeeded: {len(properties)} properties")
+        else:
+            logger.warning(f"⚠️ Rightmove failed or insufficient data ({len(properties) if properties else 0} properties)")
+            
+            # Fallback to Zoopla
+            logger.info(f"🔍 Attempting Zoopla fallback for {area}...")
+            properties = circuit_breaker.call(
+                'zoopla',
+                ZooplaLiveData.fetch,
+                area,
+                max_properties
+            )
+            
+            if properties and len(properties) >= 10:
+                data_source_used = 'zoopla'
+                logger.info(f"✅ Zoopla succeeded: {len(properties)} properties")
+            else:
+                logger.warning(f"⚠️ Zoopla failed or insufficient data ({len(properties) if properties else 0} properties)")
+                
+                # Final fallback to OnTheMarket
+                logger.info(f"🔍 Attempting OnTheMarket fallback for {area}...")
+                properties = circuit_breaker.call(
+                    'onthemarket',
+                    OnTheMarketData.fetch,
+                    area,
+                    max_properties
+                )
+                
+                if properties and len(properties) >= 10:
+                    data_source_used = 'onthemarket'
+                    logger.info(f"✅ OnTheMarket succeeded: {len(properties)} properties")
+                else:
+                    logger.error(f"❌ ALL DATA SOURCES FAILED for {area}")
+                    return _empty_dataset(area, industry)
+        
         if not properties:
             logger.warning(f"No properties found for {area}")
             return _empty_dataset(area, industry)
+        
+        # ============================================================
+        # DATA QUALITY VALIDATION
+        # ============================================================
         
         properties = DataQualityValidator.remove_duplicates(properties)
         
@@ -185,11 +234,12 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
             logger.warning(f"No properties passed validation for {area}")
             return _empty_dataset(area, industry)
         
+        logger.info(f"✅ Data quality validation: {len(properties)} properties passed, {rejected_count} rejected")
+        
         # ============================================================
-        # SOURCE 2: Land Registry (London-specific)
+        # SOURCE 2: LAND REGISTRY (LONDON-SPECIFIC)
         # ============================================================
         
-        # ✅ FIXED: Only use postcode map for known London areas
         postcode_map = {
             'Mayfair': 'W1',
             'Knightsbridge': 'SW1X',
@@ -204,7 +254,6 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         postcode_prefix = postcode_map.get(area)
         
         if postcode_prefix:
-            # Only query Land Registry if we have a postcode for this area
             historical_sales = circuit_breaker.call(
                 'land_registry',
                 LandRegistryData.fetch_recent_sales,
@@ -213,12 +262,11 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
                 6
             ) or []
         else:
-            # Skip Land Registry for non-London areas
             logger.info(f"Skipping Land Registry for {area} (no postcode mapping)")
             historical_sales = []
         
         # ============================================================
-        # SOURCE 3: OpenStreetMap
+        # SOURCE 3: OPENSTREETMAP
         # ============================================================
         
         amenities = circuit_breaker.call(
@@ -228,7 +276,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         ) or {}
         
         # ============================================================
-        # SOURCE 4: GPT-4 Sentiment
+        # SOURCE 4: GPT-4 SENTIMENT
         # ============================================================
         
         news_articles = InstitutionalSentimentAnalysis.fetch_recent_news(area, days=7)
@@ -303,9 +351,9 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
                 'city': 'London',
                 'property_count': len(properties),
                 'analysis_timestamp': current_timestamp,
-                'data_source': 'multi_source_institutional',
-                'sources': ['rightmove', 'land_registry', 'openstreetmap', 'gpt4_sentiment'],
-                'is_fallback': False,
+                'data_source': data_source_used,
+                'sources': [data_source_used, 'land_registry', 'openstreetmap', 'gpt4_sentiment'],
+                'is_fallback': data_source_used != 'rightmove',
                 'data_quality': 'institutional_grade',
                 'avg_days_on_market': avg_days_on_market,
                 'load_time_seconds': round(load_time, 2),
@@ -404,7 +452,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         from app.historical_storage import store_daily_snapshot
         store_daily_snapshot(dataset, area)
         
-        logger.info(f"✅ Dataset loaded in {load_time:.2f}s")
+        logger.info(f"✅ Dataset loaded in {load_time:.2f}s from {data_source_used}")
         
         return dataset
         
@@ -414,14 +462,14 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
 
 
 # ============================================================
-# FIX 2: STRUCTURAL-ONLY DATASET TEMPLATE
+# STRUCTURAL-ONLY DATASET TEMPLATE
 # ============================================================
 
 def _structural_only_dataset(canonical_area: str, original_area: str, industry: str = "real_estate") -> Dict:
     """
     Return structural-only dataset template for canonical markets like LONDON_GENERAL
     
-    ✅ FIX 2: Used for markets that should never load datasets
+    ✅ Used for markets that should never load datasets
     """
     return {
         'properties': [],
@@ -463,7 +511,6 @@ def _structural_only_dataset(canonical_area: str, original_area: str, industry: 
     }
 
 
-# [REST OF FILE UNCHANGED - ALL EXISTING CLASSES AND FUNCTIONS]
 # ============================================================
 # ENTERPRISE-GRADE UTILITIES
 # ============================================================
@@ -641,8 +688,9 @@ class DataQualityValidator:
 
 circuit_breaker = CircuitBreaker(failure_threshold=3, timeout=300)  # 5 min timeout
 
+
 # ============================================================
-# 1. RIGHTMOVE - PRODUCTION READY
+# DATA SOURCE 1: RIGHTMOVE (PRIMARY)
 # ============================================================
 
 class RightmoveLiveData:
@@ -650,7 +698,6 @@ class RightmoveLiveData:
     
     BASE_URL = "https://www.rightmove.co.uk/api/_search"
     
-    # ✅ FIXED: This is fine - it's Rightmove's location IDs, not defaults
     LOCATIONS = {
         'Mayfair': 'REGION^87490',
         'Knightsbridge': 'REGION^87570',
@@ -670,7 +717,7 @@ class RightmoveLiveData:
             location_id = RightmoveLiveData.LOCATIONS.get(area)
             if not location_id:
                 logger.warning(f"No Rightmove location mapping for {area}")
-                return []  # ✅ Returns empty, doesn't default to anything
+                return []
             
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -737,8 +784,6 @@ class RightmoveLiveData:
                             properties.append(prop)
                     
                     page += 1
-                    
-                    # Polite rate limiting
                     time.sleep(0.5)
                     
                 except requests.exceptions.Timeout:
@@ -811,12 +856,369 @@ class RightmoveLiveData:
             }
             
         except Exception as e:
-            logger.debug(f"Failed to parse listing: {e}")
+            logger.debug(f"Failed to parse Rightmove listing: {e}")
             return None
 
 
 # ============================================================
-# 2. LAND REGISTRY - HM LAND REGISTRY
+# DATA SOURCE 2: ZOOPLA (FALLBACK #1) - WORLD-CLASS
+# ============================================================
+
+class ZooplaLiveData:
+    """Zoopla scraper - primary fallback for Rightmove"""
+    
+    BASE_URL = "https://www.zoopla.co.uk"
+    
+    LOCATION_SLUGS = {
+        'Mayfair': 'mayfair-london',
+        'Knightsbridge': 'knightsbridge-london',
+        'Chelsea': 'chelsea-london',
+        'Belgravia': 'belgravia-london',
+        'Kensington': 'kensington-london',
+        'South Kensington': 'south-kensington-london',
+        'Notting Hill': 'notting-hill-london',
+        'Marylebone': 'marylebone-london'
+    }
+    
+    @staticmethod
+    @retry_with_backoff(max_retries=3, base_delay=2.0)
+    def fetch(area: str, max_results: int = 100) -> List[Dict]:
+        """Fetch listings from Zoopla with HTML parsing"""
+        try:
+            slug = ZooplaLiveData.LOCATION_SLUGS.get(area)
+            if not slug:
+                logger.warning(f"No Zoopla mapping for {area}")
+                return []
+            
+            url = f"{ZooplaLiveData.BASE_URL}/for-sale/property/{slug}/"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-GB,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Referer': 'https://www.zoopla.co.uk/',
+                'Connection': 'keep-alive'
+            }
+            
+            properties = []
+            page = 1
+            consecutive_failures = 0
+            
+            while len(properties) < max_results and page <= 5:
+                params = {
+                    'page_size': 25,
+                    'pn': page,
+                    'view_type': 'list',
+                    'q': slug
+                }
+                
+                try:
+                    response = requests.get(url, params=params, headers=headers, timeout=15)
+                    
+                    if response.status_code == 429:
+                        logger.warning(f"Zoopla rate limited, waiting 30s")
+                        time.sleep(30)
+                        continue
+                    
+                    if response.status_code >= 500:
+                        consecutive_failures += 1
+                        if consecutive_failures >= 3:
+                            logger.error(f"Zoopla server errors, aborting at page {page}")
+                            break
+                        time.sleep(5 * consecutive_failures)
+                        continue
+                    
+                    if response.status_code != 200:
+                        logger.warning(f"Zoopla returned {response.status_code}")
+                        break
+                    
+                    # Parse HTML
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Find property listings
+                    listings = soup.find_all('div', {'data-testid': 'search-result'})
+                    
+                    if not listings:
+                        # Try alternative selector
+                        listings = soup.find_all('div', class_='listing-results-wrapper')
+                    
+                    if not listings:
+                        logger.info(f"No more Zoopla listings at page {page}")
+                        break
+                    
+                    consecutive_failures = 0
+                    
+                    for listing in listings:
+                        prop = ZooplaLiveData._parse(listing, area)
+                        if prop:
+                            properties.append(prop)
+                    
+                    page += 1
+                    time.sleep(1)  # Polite rate limiting
+                    
+                except requests.exceptions.Timeout:
+                    logger.warning(f"Zoopla timeout at page {page}")
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        break
+                    time.sleep(2)
+                    continue
+                    
+                except Exception as e:
+                    logger.error(f"Zoopla error at page {page}: {e}")
+                    break
+            
+            logger.info(f"✅ Zoopla: {len(properties)} properties for {area} ({page} pages)")
+            return properties
+            
+        except Exception as e:
+            logger.error(f"Zoopla critical error: {e}", exc_info=True)
+            return []
+    
+    @staticmethod
+    def _parse(listing, area: str) -> Optional[Dict]:
+        """Parse Zoopla listing from HTML"""
+        try:
+            # Extract price
+            price_elem = listing.find('p', {'data-testid': 'listing-price'})
+            if not price_elem:
+                price_elem = listing.find('span', class_='listing-results-price')
+            
+            if not price_elem:
+                return None
+            
+            price_text = price_elem.get_text(strip=True)
+            price_match = re.search(r'£([\d,]+)', price_text)
+            if not price_match:
+                return None
+            
+            price = int(price_match.group(1).replace(',', ''))
+            if price < 100000:
+                return None
+            
+            # Extract bedrooms
+            beds_elem = listing.find('span', string=re.compile(r'\d+\s*bed'))
+            if beds_elem:
+                beds_match = re.search(r'(\d+)', beds_elem.get_text())
+                bedrooms = int(beds_match.group(1)) if beds_match else 0
+            else:
+                bedrooms = 0
+            
+            # Extract property type
+            type_elem = listing.find('p', {'data-testid': 'listing-description'})
+            if not type_elem:
+                type_elem = listing.find('span', class_='listing-results-attr')
+            
+            property_type = type_elem.get_text(strip=True)[:50] if type_elem else 'Unknown'
+            
+            # Extract address
+            address_elem = listing.find('h2', {'data-testid': 'listing-title'})
+            if not address_elem:
+                address_elem = listing.find('a', class_='listing-results-address')
+            
+            address = address_elem.get_text(strip=True) if address_elem else 'Unknown'
+            
+            # Extract agent
+            agent_elem = listing.find('p', {'data-testid': 'agent-name'})
+            if not agent_elem:
+                agent_elem = listing.find('span', class_='listing-results-marketed')
+            
+            agent = agent_elem.get_text(strip=True) if agent_elem else 'Private'
+            
+            # Extract size (if available)
+            size = None
+            size_match = re.search(r'([\d,]+)\s*sq\s*ft', listing.get_text(), re.IGNORECASE)
+            if size_match:
+                size = int(size_match.group(1).replace(',', ''))
+            
+            price_per_sqft = round(price / size, 2) if size else None
+            
+            return {
+                'id': f"zoopla_{int(time.time())}_{hash(address)}",
+                'price': price,
+                'bedrooms': bedrooms,
+                'property_type': property_type,
+                'size_sqft': size,
+                'price_per_sqft': price_per_sqft,
+                'agent': agent,
+                'address': address,
+                'area': area,
+                'submarket': area,
+                'days_on_market': None,
+                'status': 'active',
+                'source': 'zoopla',
+                'scraped_at': datetime.now(timezone.utc).isoformat()
+            }
+            
+        except Exception as e:
+            logger.debug(f"Failed to parse Zoopla listing: {e}")
+            return None
+
+
+# ============================================================
+# DATA SOURCE 3: ONTHEMARKET (FALLBACK #2) - WORLD-CLASS
+# ============================================================
+
+class OnTheMarketData:
+    """OnTheMarket scraper - secondary fallback"""
+    
+    BASE_URL = "https://www.onthemarket.com"
+    
+    LOCATION_SLUGS = {
+        'Mayfair': 'mayfair',
+        'Knightsbridge': 'knightsbridge',
+        'Chelsea': 'chelsea',
+        'Belgravia': 'belgravia',
+        'Kensington': 'kensington',
+        'South Kensington': 'south-kensington',
+        'Notting Hill': 'notting-hill',
+        'Marylebone': 'marylebone'
+    }
+    
+    @staticmethod
+    @retry_with_backoff(max_retries=3, base_delay=2.0)
+    def fetch(area: str, max_results: int = 100) -> List[Dict]:
+        """Fetch listings from OnTheMarket"""
+        try:
+            slug = OnTheMarketData.LOCATION_SLUGS.get(area)
+            if not slug:
+                logger.warning(f"No OnTheMarket mapping for {area}")
+                return []
+            
+            url = f"{OnTheMarketData.BASE_URL}/for-sale/property/{slug}/"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+                'Accept-Language': 'en-GB,en;q=0.9',
+                'Referer': 'https://www.onthemarket.com/'
+            }
+            
+            properties = []
+            page = 1
+            consecutive_failures = 0
+            
+            while len(properties) < max_results and page <= 5:
+                params = {
+                    'page': page,
+                    'view': 'list'
+                }
+                
+                try:
+                    response = requests.get(url, params=params, headers=headers, timeout=15)
+                    
+                    if response.status_code == 429:
+                        logger.warning(f"OnTheMarket rate limited, waiting 30s")
+                        time.sleep(30)
+                        continue
+                    
+                    if response.status_code >= 500:
+                        consecutive_failures += 1
+                        if consecutive_failures >= 3:
+                            logger.error(f"OnTheMarket server errors, aborting")
+                            break
+                        time.sleep(5 * consecutive_failures)
+                        continue
+                    
+                    if response.status_code != 200:
+                        logger.warning(f"OnTheMarket returned {response.status_code}")
+                        break
+                    
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    listings = soup.find_all('li', class_='property-result')
+                    
+                    if not listings:
+                        logger.info(f"No more OnTheMarket listings at page {page}")
+                        break
+                    
+                    consecutive_failures = 0
+                    
+                    for listing in listings:
+                        prop = OnTheMarketData._parse(listing, area)
+                        if prop:
+                            properties.append(prop)
+                    
+                    page += 1
+                    time.sleep(1)
+                    
+                except requests.exceptions.Timeout:
+                    logger.warning(f"OnTheMarket timeout at page {page}")
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        break
+                    time.sleep(2)
+                    continue
+                    
+                except Exception as e:
+                    logger.error(f"OnTheMarket error: {e}")
+                    break
+            
+            logger.info(f"✅ OnTheMarket: {len(properties)} properties for {area}")
+            return properties
+            
+        except Exception as e:
+            logger.error(f"OnTheMarket critical error: {e}", exc_info=True)
+            return []
+    
+    @staticmethod
+    def _parse(listing, area: str) -> Optional[Dict]:
+        """Parse OnTheMarket listing"""
+        try:
+            # Extract price
+            price_elem = listing.find('span', class_='price')
+            if not price_elem:
+                return None
+            
+            price_text = price_elem.get_text(strip=True)
+            price_match = re.search(r'£([\d,]+)', price_text)
+            if not price_match:
+                return None
+            
+            price = int(price_match.group(1).replace(',', ''))
+            if price < 100000:
+                return None
+            
+            # Extract bedrooms
+            beds_elem = listing.find('span', string=re.compile(r'\d+\s*bed'))
+            bedrooms = 0
+            if beds_elem:
+                beds_match = re.search(r'(\d+)', beds_elem.get_text())
+                if beds_match:
+                    bedrooms = int(beds_match.group(1))
+            
+            # Extract address
+            address_elem = listing.find('h2', class_='title')
+            address = address_elem.get_text(strip=True) if address_elem else 'Unknown'
+            
+            # Extract agent
+            agent_elem = listing.find('span', class_='agent-name')
+            agent = agent_elem.get_text(strip=True) if agent_elem else 'Private'
+            
+            return {
+                'id': f"otm_{int(time.time())}_{hash(address)}",
+                'price': price,
+                'bedrooms': bedrooms,
+                'property_type': 'Unknown',
+                'size_sqft': None,
+                'price_per_sqft': None,
+                'agent': agent,
+                'address': address,
+                'area': area,
+                'submarket': area,
+                'days_on_market': None,
+                'status': 'active',
+                'source': 'onthemarket',
+                'scraped_at': datetime.now(timezone.utc).isoformat()
+            }
+            
+        except Exception as e:
+            logger.debug(f"Failed to parse OnTheMarket listing: {e}")
+            return None
+
+
+# ============================================================
+# DATA SOURCE 4: LAND REGISTRY
 # ============================================================
 
 class LandRegistryData:
@@ -832,7 +1234,6 @@ class LandRegistryData:
             end_date = datetime.now()
             start_date = end_date - timedelta(days=months * 30)
             
-            # FIXED SPARQL - Using STRSTARTS instead of string comparison
             query = f"""
             PREFIX lrppi: <http://landregistry.data.gov.uk/def/ppi/>
             PREFIX lrcommon: <http://landregistry.data.gov.uk/def/common/>
@@ -891,7 +1292,7 @@ class LandRegistryData:
 
 
 # ============================================================
-# 3. GPT-4 POWERED SENTIMENT ANALYSIS
+# DATA SOURCE 5: GPT-4 SENTIMENT
 # ============================================================
 
 class InstitutionalSentimentAnalysis:
@@ -940,11 +1341,7 @@ class InstitutionalSentimentAnalysis:
     
     @staticmethod
     def analyze_with_gpt4(articles: List[Dict]) -> Dict:
-        """
-        Institutional-grade sentiment analysis using GPT-4
-        COST: ~$0.002 per analysis
-        QUALITY: Actually institutional-grade
-        """
+        """Institutional-grade sentiment analysis using GPT-4"""
         
         if not openai_client:
             logger.warning("OpenAI not configured, falling back to basic sentiment")
@@ -960,11 +1357,7 @@ class InstitutionalSentimentAnalysis:
             }
         
         try:
-            # Prepare headlines for analysis
-            headlines = '\n'.join([
-                f"- {article['title']}" 
-                for article in articles[:15]  # Top 15 most recent
-            ])
+            headlines = '\n'.join([f"- {article['title']}" for article in articles[:15]])
             
             prompt = f"""Analyze luxury property market sentiment from these recent headlines:
 
@@ -1046,7 +1439,7 @@ Respond ONLY with valid JSON:
 
 
 # ============================================================
-# 4. OPENSTREETMAP - NETWORK READY
+# DATA SOURCE 6: OPENSTREETMAP
 # ============================================================
 
 class OpenStreetMapEnrichment:
@@ -1058,10 +1451,7 @@ class OpenStreetMapEnrichment:
     @staticmethod
     @retry_with_backoff(max_retries=2, base_delay=2.0)
     def get_area_amenities(area: str, city: str = "London") -> Dict:
-        """
-        Fetch amenities with retry logic
-        Requires: nominatim.openstreetmap.org in Render allowed domains
-        """
+        """Fetch amenities with retry logic"""
         try:
             # Geocode area
             geocode_response = requests.get(
@@ -1086,7 +1476,6 @@ class OpenStreetMapEnrichment:
             lat = float(locations[0]['lat'])
             lon = float(locations[0]['lon'])
             
-            # Query Overpass API (simplified to avoid timeout)
             overpass_query = f"""
             [out:json][timeout:15];
             (
@@ -1118,7 +1507,6 @@ class OpenStreetMapEnrichment:
                 'source': 'openstreetmap'
             }
             
-            # Walkability score
             amenities['walkability_score'] = min(100, 
                 (amenities['restaurants_cafes'] * 2) + 
                 (amenities['transport_nodes'] * 5) + 
@@ -1129,7 +1517,7 @@ class OpenStreetMapEnrichment:
             return amenities
             
         except requests.exceptions.ConnectionError:
-            logger.warning("OSM network unreachable - check Render allowed domains")
+            logger.warning("OSM network unreachable")
             return {}
         except Exception as e:
             logger.error(f"OSM error: {e}")
@@ -1137,11 +1525,11 @@ class OpenStreetMapEnrichment:
 
 
 # ============================================================
-# 5. LIQUIDITY VELOCITY CALCULATOR
+# LIQUIDITY VELOCITY CALCULATOR
 # ============================================================
 
 def calculate_liquidity_velocity(properties: List[Dict], historical_snapshots: List[List[Dict]]) -> Dict:
-    """Calculate liquidity velocity (requires historical_storage.py implementation)"""
+    """Calculate liquidity velocity"""
     try:
         from app.intelligence.liquidity_velocity import calculate_liquidity_velocity as calc_velocity
         return calc_velocity(properties, historical_snapshots)
@@ -1176,11 +1564,7 @@ def load_historical_snapshots(area: str, days: int = 30) -> List[Dict]:
 
 
 def _empty_dataset(area: str, industry: str = "real_estate") -> Dict:
-    """
-    Return empty dataset with proper structure
-    
-    ✅ FIXED: No hardcoded defaults
-    """
+    """Return empty dataset with proper structure"""
     return {
         'properties': [],
         'metrics': {
