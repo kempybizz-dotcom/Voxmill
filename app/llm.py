@@ -343,29 +343,12 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         else:
             agency_context = "Agency: Not specified (generic market intelligence mode)"
             logger.warning("⚠️ No agency context available")
-        if agency_name:
-             agency_context_parts = [
-                f"Agency: {agency_name}",
-                f"Type: {agency_type}" if agency_type else None,
-                f"Role: {role}" if role else None,
-                f"Price Band: {typical_price_band}" if typical_price_band else None,
-                f"Market Position: {preferred_region}",
-                f"Objectives: {', '.join(objectives)}" if objectives else None
-            ]
-    
-            # Filter out None values
-            agency_context = "\n".join([part for part in agency_context_parts if part])
-    
-            logger.info(f"✅ Agency context built: {len(agency_context)} chars")
-        else:
-            agency_context = "Agency: Not specified (generic market intelligence mode)"
-            logger.warning("⚠️ No agency context available")
         
-                # Get UK time for context
-                uk_tz = pytz.timezone('Europe/London')
-                uk_now = datetime.now(uk_tz)
-                current_time_uk = uk_now.strftime('%H:%M GMT')
-                current_date = uk_now.strftime('%A, %B %d, %Y')
+        # Get UK time for context
+        uk_tz = pytz.timezone('Europe/London')
+        uk_now = datetime.now(uk_tz)
+        current_time_uk = uk_now.strftime('%H:%M GMT')
+        current_date = uk_now.strftime('%A, %B %d, %Y')
         
         # Format system prompt with client context + industry + agency
         system_prompt_personalized = SYSTEM_PROMPT.format(
