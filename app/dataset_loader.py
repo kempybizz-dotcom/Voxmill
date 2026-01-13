@@ -1,10 +1,11 @@
 """
 VOXMILL INSTITUTIONAL-GRADE DATA STACK - WORLD-CLASS EDITION
 =============================================================
-⭐⭐⭐⭐⭐ Production-ready with enterprise reliability + MULTI-SOURCE FALLBACK
+⭐⭐⭐⭐⭐ Production-ready with enterprise reliability + MULTI-SOURCE FALLBACK + SCRAPERAPI
 
 Features:
 - Multi-source data acquisition (Rightmove → Zoopla → OnTheMarket)
+- ScraperAPI residential proxy integration (bypasses bot detection)
 - Multi-industry routing (Real Estate, Automotive, Healthcare, Hospitality)
 - Canonical market resolution (London aliasing, structural-only markets)
 - Intelligent fallback chain with circuit breakers
@@ -34,6 +35,18 @@ from openai import OpenAI
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
+
+# ============================================================
+# SCRAPERAPI INTEGRATION (WORLD-CLASS ANTI-BOT BYPASS)
+# ============================================================
+
+SCRAPER_API_KEY = os.getenv("SCRAPER_API_KEY")
+SCRAPER_API_URL = "http://api.scraperapi.com"
+
+if SCRAPER_API_KEY:
+    logger.info("✅ ScraperAPI enabled - residential proxy active")
+else:
+    logger.warning("⚠️ ScraperAPI not configured - direct scraping (may be blocked)")
 
 # Initialize OpenAI for sentiment analysis
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -65,6 +78,43 @@ except ImportError:
 
 
 # ============================================================
+# SCRAPERAPI HELPER FUNCTION
+# ============================================================
+
+def _get_with_proxy(url: str, params: dict = None, headers: dict = None, timeout: int = 30) -> requests.Response:
+    """
+    Make HTTP request with ScraperAPI proxy if available
+    
+    Automatically handles:
+    - Residential IP rotation
+    - Cloudflare bypass
+    - Bot detection bypass
+    """
+    if SCRAPER_API_KEY:
+        # Build full URL with params
+        if params:
+            from urllib.parse import urlencode
+            full_url = f"{url}?{urlencode(params)}"
+        else:
+            full_url = url
+        
+        # Route through ScraperAPI
+        proxy_params = {
+            'api_key': SCRAPER_API_KEY,
+            'url': full_url,
+            'render': 'false',  # Don't need JavaScript rendering
+            'country_code': 'gb'  # Use UK residential IPs
+        }
+        
+        logger.debug(f"Using ScraperAPI proxy for: {url}")
+        return requests.get(SCRAPER_API_URL, params=proxy_params, timeout=timeout)
+    else:
+        # Direct request (may be blocked)
+        logger.debug(f"Direct request (no proxy): {url}")
+        return requests.get(url, params=params, headers=headers, timeout=timeout)
+
+
+# ============================================================
 # MAIN DATASET LOADER - WORLD-CLASS WITH MULTI-SOURCE FALLBACK
 # ============================================================
 
@@ -73,6 +123,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
     Load institutional-grade dataset with intelligent multi-source fallback
     
     ✅ WORLD-CLASS: Rightmove → Zoopla → OnTheMarket fallback chain
+    ✅ SCRAPERAPI: Residential proxy bypass for bot detection
     ✅ FIXED: No default area - explicit market required
     ✅ FIXED: Industry routing for multi-vertical support
     ✅ FIXED: Canonical market resolution before loading
@@ -690,11 +741,11 @@ circuit_breaker = CircuitBreaker(failure_threshold=3, timeout=300)  # 5 min time
 
 
 # ============================================================
-# DATA SOURCE 1: RIGHTMOVE (PRIMARY)
+# DATA SOURCE 1: RIGHTMOVE (PRIMARY) + SCRAPERAPI
 # ============================================================
 
 class RightmoveLiveData:
-    """Enterprise-grade Rightmove scraper with rate limiting"""
+    """Enterprise-grade Rightmove scraper with ScraperAPI proxy"""
     
     BASE_URL = "https://www.rightmove.co.uk/api/_search"
     
@@ -712,7 +763,7 @@ class RightmoveLiveData:
     @staticmethod
     @retry_with_backoff(max_retries=3, base_delay=2.0)
     def fetch(area: str, max_results: int = 100) -> List[Dict]:
-        """Fetch live listings with retry logic"""
+        """Fetch live listings with ScraperAPI proxy"""
         try:
             location_id = RightmoveLiveData.LOCATIONS.get(area)
             if not location_id:
@@ -741,11 +792,12 @@ class RightmoveLiveData:
                 }
                 
                 try:
-                    response = requests.get(
-                        RightmoveLiveData.BASE_URL, 
-                        params=params, 
-                        headers=headers, 
-                        timeout=15
+                    # Use ScraperAPI proxy
+                    response = _get_with_proxy(
+                        RightmoveLiveData.BASE_URL,
+                        params=params,
+                        headers=headers,
+                        timeout=30
                     )
                     
                     # Rate limit handling
@@ -784,7 +836,7 @@ class RightmoveLiveData:
                             properties.append(prop)
                     
                     page += 1
-                    time.sleep(0.5)
+                    time.sleep(1)  # Slightly longer delay with proxy
                     
                 except requests.exceptions.Timeout:
                     logger.warning(f"Rightmove timeout at page {page}")
@@ -861,11 +913,11 @@ class RightmoveLiveData:
 
 
 # ============================================================
-# DATA SOURCE 2: ZOOPLA (FALLBACK #1) - WORLD-CLASS
+# DATA SOURCE 2: ZOOPLA (FALLBACK #1) + SCRAPERAPI
 # ============================================================
 
 class ZooplaLiveData:
-    """Zoopla scraper - primary fallback for Rightmove"""
+    """Zoopla scraper with ScraperAPI proxy - primary fallback"""
     
     BASE_URL = "https://www.zoopla.co.uk"
     
@@ -883,7 +935,7 @@ class ZooplaLiveData:
     @staticmethod
     @retry_with_backoff(max_retries=3, base_delay=2.0)
     def fetch(area: str, max_results: int = 100) -> List[Dict]:
-        """Fetch listings from Zoopla with HTML parsing"""
+        """Fetch listings from Zoopla with ScraperAPI proxy"""
         try:
             slug = ZooplaLiveData.LOCATION_SLUGS.get(area)
             if not slug:
@@ -893,12 +945,9 @@ class ZooplaLiveData:
             url = f"{ZooplaLiveData.BASE_URL}/for-sale/property/{slug}/"
             
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-GB,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Referer': 'https://www.zoopla.co.uk/',
-                'Connection': 'keep-alive'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+                'Accept-Language': 'en-GB,en;q=0.9'
             }
             
             properties = []
@@ -914,7 +963,8 @@ class ZooplaLiveData:
                 }
                 
                 try:
-                    response = requests.get(url, params=params, headers=headers, timeout=15)
+                    # Use ScraperAPI proxy
+                    response = _get_with_proxy(url, params=params, headers=headers, timeout=30)
                     
                     if response.status_code == 429:
                         logger.warning(f"Zoopla rate limited, waiting 30s")
@@ -924,7 +974,7 @@ class ZooplaLiveData:
                     if response.status_code >= 500:
                         consecutive_failures += 1
                         if consecutive_failures >= 3:
-                            logger.error(f"Zoopla server errors, aborting at page {page}")
+                            logger.error(f"Zoopla server errors, aborting")
                             break
                         time.sleep(5 * consecutive_failures)
                         continue
@@ -940,7 +990,6 @@ class ZooplaLiveData:
                     listings = soup.find_all('div', {'data-testid': 'search-result'})
                     
                     if not listings:
-                        # Try alternative selector
                         listings = soup.find_all('div', class_='listing-results-wrapper')
                     
                     if not listings:
@@ -955,7 +1004,7 @@ class ZooplaLiveData:
                             properties.append(prop)
                     
                     page += 1
-                    time.sleep(1)  # Polite rate limiting
+                    time.sleep(1)
                     
                 except requests.exceptions.Timeout:
                     logger.warning(f"Zoopla timeout at page {page}")
@@ -969,7 +1018,7 @@ class ZooplaLiveData:
                     logger.error(f"Zoopla error at page {page}: {e}")
                     break
             
-            logger.info(f"✅ Zoopla: {len(properties)} properties for {area} ({page} pages)")
+            logger.info(f"✅ Zoopla: {len(properties)} properties for {area}")
             return properties
             
         except Exception as e:
@@ -1026,7 +1075,7 @@ class ZooplaLiveData:
             
             agent = agent_elem.get_text(strip=True) if agent_elem else 'Private'
             
-            # Extract size (if available)
+            # Extract size
             size = None
             size_match = re.search(r'([\d,]+)\s*sq\s*ft', listing.get_text(), re.IGNORECASE)
             if size_match:
@@ -1057,11 +1106,11 @@ class ZooplaLiveData:
 
 
 # ============================================================
-# DATA SOURCE 3: ONTHEMARKET (FALLBACK #2) - WORLD-CLASS
+# DATA SOURCE 3: ONTHEMARKET (FALLBACK #2) + SCRAPERAPI
 # ============================================================
 
 class OnTheMarketData:
-    """OnTheMarket scraper - secondary fallback"""
+    """OnTheMarket scraper with ScraperAPI proxy - secondary fallback"""
     
     BASE_URL = "https://www.onthemarket.com"
     
@@ -1079,7 +1128,7 @@ class OnTheMarketData:
     @staticmethod
     @retry_with_backoff(max_retries=3, base_delay=2.0)
     def fetch(area: str, max_results: int = 100) -> List[Dict]:
-        """Fetch listings from OnTheMarket"""
+        """Fetch listings from OnTheMarket with ScraperAPI proxy"""
         try:
             slug = OnTheMarketData.LOCATION_SLUGS.get(area)
             if not slug:
@@ -1091,8 +1140,7 @@ class OnTheMarketData:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'text/html,application/xhtml+xml',
-                'Accept-Language': 'en-GB,en;q=0.9',
-                'Referer': 'https://www.onthemarket.com/'
+                'Accept-Language': 'en-GB,en;q=0.9'
             }
             
             properties = []
@@ -1106,7 +1154,8 @@ class OnTheMarketData:
                 }
                 
                 try:
-                    response = requests.get(url, params=params, headers=headers, timeout=15)
+                    # Use ScraperAPI proxy
+                    response = _get_with_proxy(url, params=params, headers=headers, timeout=30)
                     
                     if response.status_code == 429:
                         logger.warning(f"OnTheMarket rate limited, waiting 30s")
