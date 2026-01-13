@@ -35,7 +35,6 @@ from app.instant_response import InstantIntelligence, should_use_instant_respons
 from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction, calculate_tokens_estimate
-from app.whatsapp_self_service import handle_whatsapp_preference_message
 from app.conversation_manager import ConversationSession, resolve_reference, generate_contextualized_prompt
 from app.security import SecurityValidator
 from app.cache_manager import CacheManager
@@ -2774,95 +2773,98 @@ CRITICAL RULES:
             return
         
         # ====================================================================
-        # PREFERENCE SELF-SERVICE (TERMINAL OPERATION)
+        # PREFERENCE SELF-SERVICE (TERMINAL OPERATION) - DISABLED
         # ====================================================================
         
-        pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region', 'detailed', 'executive', 'brief', 'summary', 'bullet', 'memo', 'one line', 'forget', 'stop focusing', 'focus on', 'from now on']
-        looks_like_pref = any(kw in message_text.lower() for kw in pref_keywords)
+        # COMMENTED OUT - Self-service preferences causing intent confusion
+        # Preferences now admin-only via Airtable
         
-        if looks_like_pref:
-            pref_response = handle_whatsapp_preference_message(sender, message_text)
-            
-            if pref_response:
-                # ============================================================
-                # CRITICAL: PREFERENCE CHANGE IS TERMINAL
-                # ============================================================
-                # NO intelligence generation allowed after preference change
-                # User must send new query to get intelligence with new settings
-                
-                # Reload profile from Airtable (NEW CONTROL PLANE SCHEMA)
-                client_profile_airtable = get_client_from_airtable(sender)
-                
-                if client_profile_airtable:
-                    # Preserve MongoDB-only fields
-                    old_history = client_profile.get('query_history', [])
-                    old_total = client_profile.get('total_queries', 0)
-                    
-                    # ✅ REBUILD CLIENT PROFILE WITH NEW CONTROL PLANE SCHEMA
-                    client_profile = {
-                        'whatsapp_number': sender,
-                        'name': client_profile_airtable.get('name', 'Unknown'),
-                        'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
-                        'tier': client_profile_airtable.get('tier', 'tier_1'),
-                        'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
-                        'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
-                        'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
-                        'industry': client_profile_airtable.get('industry', 'real_estate'),
-                        'active_market': client_profile_airtable.get('active_market'),
-                        
-                        # ✅ PREFERENCES: Built from active_market
-                        'preferences': {
-                            'preferred_regions': [client_profile_airtable.get('active_market')] if client_profile_airtable.get('active_market') else [],
-                            'competitor_set': [],
-                            'risk_appetite': 'balanced',
-                            'budget_range': {'min': 0, 'max': 100000000},
-                            'insight_depth': 'standard',
-                            'competitor_focus': 'medium',
-                            'report_depth': 'detailed'
-                        },
-                        
-                        # ✅ CONTROL PLANE FIELDS
-                        'usage_metrics': client_profile_airtable.get('usage_metrics', {}),
-                        'trial_expired': client_profile_airtable.get('trial_expired', False),
-                        'execution_allowed': client_profile_airtable.get('execution_allowed', False),
-                        'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
-                        
-                        # ✅ MONGODB-ONLY FIELDS (preserved)
-                        'total_queries': old_total,
-                        'query_history': old_history,
-                        'created_at': client_profile.get('created_at', datetime.now(timezone.utc)),
-                        'updated_at': datetime.now(timezone.utc)
-                    }
-                    
-                    # Update MongoDB cache
-                    from pymongo import MongoClient
-                    MONGODB_URI = os.getenv('MONGODB_URI')
-                    if MONGODB_URI:
-                        mongo_client = MongoClient(MONGODB_URI)
-                        db = mongo_client['Voxmill']
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
-                    
-                    # ✅ USE NEW active_market FIELD
-                    preferred_region = client_profile.get('active_market')
-                    
-                    logger.info(f"✅ Profile reloaded: region = '{preferred_region}'")
-                    
-                    # ============================================================
-                    # INVALIDATE CACHE FOR NEW REGION
-                    # ============================================================
-                    if preferred_region:
-                        CacheManager.clear_dataset_cache(preferred_region)
-                        logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
-                
-                # Send preference confirmation and EXIT
-                await send_twilio_message(sender, pref_response)
-                update_client_history(sender, message_text, "preference_update", "Self-Service")
-                logger.info(f"✅ Preference updated (TERMINAL - no intelligence generation)")
-                return  # ← HARD STOP - NO INTELLIGENCE ALLOWED
+        # pref_keywords = ['set', 'change', 'update', 'prefer', 'switch', 'region', 'detailed', 'executive', 'brief', 'summary', 'bullet', 'memo', 'one line', 'forget', 'stop focusing', 'focus on', 'from now on']
+        # looks_like_pref = any(kw in message_text.lower() for kw in pref_keywords)
+        
+        # if looks_like_pref:
+        #     pref_response = handle_whatsapp_preference_message(sender, message_text)
+        #     
+        #     if pref_response:
+        #         # ============================================================
+        #         # CRITICAL: PREFERENCE CHANGE IS TERMINAL
+        #         # ============================================================
+        #         # NO intelligence generation allowed after preference change
+        #         # User must send new query to get intelligence with new settings
+        #         
+        #         # Reload profile from Airtable (NEW CONTROL PLANE SCHEMA)
+        #         client_profile_airtable = get_client_from_airtable(sender)
+        #         
+        #         if client_profile_airtable:
+        #             # Preserve MongoDB-only fields
+        #             old_history = client_profile.get('query_history', [])
+        #             old_total = client_profile.get('total_queries', 0)
+        #             
+        #             # ✅ REBUILD CLIENT PROFILE WITH NEW CONTROL PLANE SCHEMA
+        #             client_profile = {
+        #                 'whatsapp_number': sender,
+        #                 'name': client_profile_airtable.get('name', 'Unknown'),
+        #                 'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
+        #                 'tier': client_profile_airtable.get('tier', 'tier_1'),
+        #                 'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
+        #                 'airtable_record_id': client_profile_airtable.get('airtable_record_id'),
+        #                 'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
+        #                 'industry': client_profile_airtable.get('industry', 'real_estate'),
+        #                 'active_market': client_profile_airtable.get('active_market'),
+        #                 
+        #                 # ✅ PREFERENCES: Built from active_market
+        #                 'preferences': {
+        #                     'preferred_regions': [client_profile_airtable.get('active_market')] if client_profile_airtable.get('active_market') else [],
+        #                     'competitor_set': [],
+        #                     'risk_appetite': 'balanced',
+        #                     'budget_range': {'min': 0, 'max': 100000000},
+        #                     'insight_depth': 'standard',
+        #                     'competitor_focus': 'medium',
+        #                     'report_depth': 'detailed'
+        #                 },
+        #                 
+        #                 # ✅ CONTROL PLANE FIELDS
+        #                 'usage_metrics': client_profile_airtable.get('usage_metrics', {}),
+        #                 'trial_expired': client_profile_airtable.get('trial_expired', False),
+        #                 'execution_allowed': client_profile_airtable.get('execution_allowed', False),
+        #                 'pin_enforcement_mode': client_profile_airtable.get('pin_enforcement_mode', 'strict'),
+        #                 
+        #                 # ✅ MONGODB-ONLY FIELDS (preserved)
+        #                 'total_queries': old_total,
+        #                 'query_history': old_history,
+        #                 'created_at': client_profile.get('created_at', datetime.now(timezone.utc)),
+        #                 'updated_at': datetime.now(timezone.utc)
+        #             }
+        #             
+        #             # Update MongoDB cache
+        #             from pymongo import MongoClient
+        #             MONGODB_URI = os.getenv('MONGODB_URI')
+        #             if MONGODB_URI:
+        #                 mongo_client = MongoClient(MONGODB_URI)
+        #                 db = mongo_client['Voxmill']
+        #                 db['client_profiles'].update_one(
+        #                     {'whatsapp_number': sender},
+        #                     {'$set': client_profile},
+        #                     upsert=True
+        #                 )
+        #             
+        #             # ✅ USE NEW active_market FIELD
+        #             preferred_region = client_profile.get('active_market')
+        #             
+        #             logger.info(f"✅ Profile reloaded: region = '{preferred_region}'")
+        #             
+        #             # ============================================================
+        #             # INVALIDATE CACHE FOR NEW REGION
+        #             # ============================================================
+        #             if preferred_region:
+        #                 CacheManager.clear_dataset_cache(preferred_region)
+        #                 logger.info(f"🗑️ Cache invalidated for region: {preferred_region}")
+        #         
+        #         # Send preference confirmation and EXIT
+        #         await send_twilio_message(sender, pref_response)
+        #         update_client_history(sender, message_text, "preference_update", "Self-Service")
+        #         logger.info(f"✅ Preference updated (TERMINAL - no intelligence generation)")
+        #         return  # ← HARD STOP - NO INTELLIGENCE ALLOWED
         
         # ====================================================================
         # RESPONSE CACHE CHECK
