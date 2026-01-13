@@ -840,6 +840,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                     'airtable_table': client_profile_airtable.get('airtable_table', 'Accounts'),
                     'industry': client_profile_airtable.get('industry', 'real_estate'),
                     'active_market': client_profile_airtable.get('active_market'),  # ✅ Can be None
+                    'agency_name': client_profile_airtable.get('agency_name'),  # e.g., "Wetherell Mayfair"
+                    'agency_type': client_profile_airtable.get('agency_type'),  # e.g., "Luxury residential estate agency"
+                    'role': client_profile_airtable.get('role'),  # e.g., "Selling & advisory"
+                    'typical_price_band': client_profile_airtable.get('typical_price_band'),  # e.g., "£5m–£50m"
+                    'objectives': client_profile_airtable.get('objectives', []),  # e.g., ["Win instructions", "Price positioning"]
                     
                     'preferences': {
                         'preferred_regions': [client_profile_airtable.get('active_market')] if client_profile_airtable.get('active_market') else [],
