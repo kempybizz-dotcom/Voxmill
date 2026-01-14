@@ -436,6 +436,47 @@ Upside trigger: {upside}
 
 Downside risk: {downside}"""
 
+    @staticmethod
+    def get_blind_spot_analysis(area: str, dataset: Dict, client_profile: Dict = None) -> str:
+        """
+        BLIND SPOT ANALYSIS for meta-strategic queries
+    
+        ✅ CHATGPT FIX: NEVER returns acknowledgement-only responses
+        Format: Gap → Why → Resolution signal
+        """
+    
+        metrics = dataset.get('metrics', {})
+        intelligence = dataset.get('intelligence', {})
+    
+        # Get velocity for context
+        velocity_data = dataset.get('liquidity_velocity', {})
+        velocity_score = velocity_data.get('velocity_score', 50)
+        sentiment = intelligence.get('market_sentiment', 'neutral')
+    
+        # STRUCTURED BLIND SPOT ANALYSIS (3 parts always)
+    
+        # Part 1: The Gap (what's not visible)
+        gap = "Off-market activity not visible in live listings yet"
+    
+        # Part 2: Why it matters
+        why = "Sentiment shifts before transaction data moves—by the time pricing reflects it, positioning window has closed"
+    
+        # Part 3: Resolution signal
+        if velocity_score < 40:
+            resolution = f"Monitor velocity (currently {velocity_score}/100)—first acceleration above 50 signals hidden demand surfacing"
+        elif velocity_score > 70:
+            resolution = f"Monitor for velocity peak—currently {velocity_score}/100, watch for decline as hidden supply enters"
+        else:
+            resolution = "Watch for velocity inflection points—that's where hidden activity becomes visible"
+    
+        return f"""You're not missing data — you may be underweighting timing lags.
+
+    Two blind spots to pressure test:
+    - {gap}
+    - Competitor risk tolerance shifting before pricing moves
+
+    {resolution}"""
+
 
 def should_use_instant_response(message: str, category: str) -> bool:
     """
@@ -456,7 +497,11 @@ def should_use_instant_response(message: str, category: str) -> bool:
         'agents',
         'decision mode',
         'net position',
-        'market position'
+        'market position',
+        'what am i missing',
+        'blind spot',
+        'what\'s missing'
+        
     ]
     
     message_lower = message.lower()
