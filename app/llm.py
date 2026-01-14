@@ -1096,7 +1096,7 @@ Contact support for manual directive."""
         Confirmation: agent intent ({top_agent} positioning)
         Conviction: pricing elasticity"""
     
-           logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity}, entities_found={actual_entities}")
+            logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity}, entities_found={actual_entities}")
         
         # ========================================
         # FINAL SAFETY: RESPONSE LENGTH VALIDATOR
