@@ -515,7 +515,7 @@ class ConversationalGovernor:
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=True,
-                llm_call_allowed=True,  # Static response
+                llm_call_allowed=True,  # ✅ LLM generates blind spot analysis
                 allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
             
