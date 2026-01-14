@@ -2944,7 +2944,7 @@ CRITICAL RULES:
                 logger.info(f"🗺️ Region extracted from query: '{query_region}' (overriding '{preferred_region}')")
                 break
         
-        # ====================================================================
+# ====================================================================
         # SELECTIVE DATASET LOADING (OPTIMIZED)
         # ====================================================================
         
@@ -2972,7 +2972,8 @@ CRITICAL RULES:
             logger.info(f"🎯 Loading dataset for region: '{query_region}'")
             
             # ✅ FIX 2: CANONICALIZE BEFORE LOADING
-            canonical_region, is_structural = MarketCanonicalizer.canonicalize(query_region)
+            canonical_region = query_region.title()
+            is_structural = canonical_region not in available_markets
             
             if is_structural:
                 # Return structural-only response
@@ -2985,7 +2986,9 @@ Market characteristics:
 - Liquidity: Retail-driven
 - Buyer profile: Local/domestic
 
-For detailed analysis, contact intel@voxmill.uk"""
+For detailed analysis, contact intel@voxmill.uk
+
+Standing by."""
                 
                 await send_twilio_message(sender, structural_response)
                 logger.info(f"✅ Structural analysis sent (no dataset load)")
@@ -2994,22 +2997,30 @@ For detailed analysis, contact intel@voxmill.uk"""
             dataset = load_dataset(area=canonical_region, industry=industry_code)
             
             if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
-                # ✅ DYNAMIC: List actual available markets from database
-                markets_list = ', '.join(available_markets) if available_markets else 'No markets configured'
+                # ✅ CHATGPT FIX: Guided error with available markets
+                markets_list = ', '.join(available_markets[:5]) if available_markets else 'No markets configured'
                 
-                fallback_response = f"""INTELLIGENCE UNAVAILABLE
+                fallback_response = f"""Dataset unavailable for {query_region}.
 
-No active market data is currently available for {query_region}.
+Available markets: {markets_list}
 
-Available coverage: {markets_list}
-
-Request an alternate region or contact intel@voxmill.uk
+Try: "Show Mayfair overview"
 
 Standing by."""
                 
                 await send_twilio_message(sender, fallback_response)
+                log_interaction(sender, message_text, "dataset_unavailable", fallback_response, 0, client_profile)
                 logger.info(f"Empty dataset handled")
                 return
+            
+            # ✅ CHATGPT FIX: Lock metrics for session consistency
+            if 'session_metrics' not in conversation.context:
+                conversation.context['session_metrics'] = {
+                    'velocity_score': dataset['liquidity']['liquidity_velocity'],
+                    'velocity_momentum': dataset['liquidity'].get('velocity_momentum', 0),
+                    'sentiment': dataset['sentiment']['market_sentiment'],
+                    'locked_at': datetime.now()
+                }
             
             # Route to instant intelligence
             if is_overview:
@@ -3065,23 +3076,28 @@ Standing by."""
             is_reverse = any(kw in message_lower for kw in reverse_keywords)
             
             if is_reverse:
-                locked_regions = conversation.get_locked_comparison()
+                # ✅ FIX: Check if comparison context exists before attempting reverse
+                locked_regions = conversation.context.get('locked_comparison')
                 
                 if locked_regions and len(locked_regions) == 2:
                     # ✅ CHATGPT FIX: Transform-only (NO LLM CALL)
                     
                     # Get last response from conversation
-                    last_analysis = conversation.get_last_analysis()
+                    last_analysis = conversation.context.get('last_comparison_response')
                     
                     if not last_analysis:
-                        response = "No comparison to reverse. Please run a comparison first."
+                        response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Standing by."""
                         await send_twilio_message(sender, response)
                         log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
                         return  # TERMINAL
                     
                     # Swap region names in cached text
-                    region_1_old, region_2_old = locked_regions[0], locked_regions[1]
-                    region_1_new, region_2_new = locked_regions[1], locked_regions[0]
+                    region_1_old, region_2_old = locked_regions['market1'], locked_regions['market2']
+                    region_1_new, region_2_new = locked_regions['market2'], locked_regions['market1']
                     
                     # String replacement (order matters)
                     reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
@@ -3089,7 +3105,13 @@ Standing by."""
                     reversed_response = reversed_response.replace("__TEMP__", region_2_old)
                     
                     # Lock reversed comparison
-                    conversation.lock_comparison_state(region_1_new, region_2_new)
+                    conversation.context['locked_comparison'] = {
+                        'market1': region_1_new,
+                        'market2': region_2_new,
+                        'locked_at': datetime.now(),
+                        'expires_at': datetime.now() + timedelta(minutes=10)
+                    }
+                    conversation.context['last_comparison_response'] = reversed_response
                     
                     # Send cached + swapped response (NO LLM)
                     await send_twilio_message(sender, reversed_response)
@@ -3099,27 +3121,25 @@ Standing by."""
                     return  # TERMINAL
                     
                 else:
-                    # No locked comparison - ask for clarification
-                    response = """COMPARISON CONTEXT MISSING
+                    # ✅ CHATGPT FIX: No locked comparison - guided error
+                    response = """No active comparison to reverse.
 
-Which two markets should I compare?
-
-Example: "Compare Mayfair to Manchester"
+Try: "Compare Mayfair vs Knightsbridge"
 
 Standing by."""
                     
                     await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "comparison", response, 0, client_profile)
-                    return
+                    log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
+                    return  # TERMINAL
             
             # ========================================
             # STEP 2: EXTRACT COMPARISON MARKETS
             # ========================================
             
             # Follow-up context resolution
-            last_context = conversation.get_last_context()
-            resolved_message = resolve_reference(message_text, last_context)
-            logger.info(f"🔄 Reference resolved: '{message_text}' → '{resolved_message}'")
+            last_context = conversation.context.get('last_query_region', query_region)
+            resolved_message = message_text  # Keep original for now
+            logger.info(f"🔄 Context: last_region={last_context}")
             
             # Extract market names from comparison query
             comparison_match = re.search(
@@ -3132,8 +3152,10 @@ Standing by."""
                 market2_raw = comparison_match.group(2).strip()
                 
                 # ✅ FIX 2: CANONICALIZE MARKETS BEFORE PROCESSING
-                market1, is_structural1 = MarketCanonicalizer.canonicalize(market1_raw)
-                market2, is_structural2 = MarketCanonicalizer.canonicalize(market2_raw)
+                market1 = market1_raw.title()  # Simple canonicalization for now
+                market2 = market2_raw.title()
+                is_structural1 = market1 not in available_markets
+                is_structural2 = market2 not in available_markets
                 
                 logger.info(f"🔀 Comparison detected: {market1} vs {market2}")
                 logger.info(f"🔀 Structural flags: {market1}={is_structural1}, {market2}={is_structural2}")
@@ -3214,29 +3236,32 @@ Standing by."""
                 # STEP 3: LOCK COMPARISON (CHATGPT SPEC)
                 # ========================================
                 
-                conversation.lock_comparison_state(market1, market2)
+                conversation.context['locked_comparison'] = {
+                    'market1': market1,
+                    'market2': market2,
+                    'locked_at': datetime.now(),
+                    'expires_at': datetime.now() + timedelta(minutes=10)
+                }
                 logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
             
             else:
-                # Comparison requested but can't extract regions
+                # ✅ CHATGPT FIX: Comparison requested but can't extract regions - guided error
                 logger.warning(f"⚠️ Comparison requested but regions unclear")
                 
-                response = """COMPARISON FORMAT
+                response = """Comparison failed - specify two markets.
 
-Specify two markets:
-"Compare [Market A] to [Market B]"
-
-Example: "Compare Mayfair to Manchester"
+Try: "Compare Mayfair vs Knightsbridge"
 
 Standing by."""
                 
                 await send_twilio_message(sender, response)
-                log_interaction(sender, message_text, "comparison", response, 0, client_profile)
-                return
+                log_interaction(sender, message_text, "comparison_format_error", response, 0, client_profile)
+                return  # TERMINAL
         
         else:
             # ✅ FIX 2: CANONICALIZE BEFORE LOADING (STANDARD SINGLE-REGION QUERY)
-            canonical_region, is_structural = MarketCanonicalizer.canonicalize(query_region)
+            canonical_region = query_region.title()
+            is_structural = canonical_region not in available_markets
             
             if is_structural:
                 # Return structural-only response
@@ -3249,30 +3274,34 @@ Market characteristics:
 - Liquidity: Retail-driven
 - Buyer profile: Local/domestic
 
-For detailed analysis, contact intel@voxmill.uk"""
+For detailed analysis, contact intel@voxmill.uk
+
+Standing by."""
                 
                 await send_twilio_message(sender, structural_response)
                 logger.info(f"✅ Structural analysis sent (no dataset load)")
-                return
+                return  # TERMINAL
             
             dataset = load_dataset(area=canonical_region, industry=industry_code)
             query_region = canonical_region  # Use canonical region for rest of flow
         
         if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
             # ✅ DYNAMIC: List actual available markets from database
-            markets_list = ', '.join(available_markets) if available_markets else 'No markets configured'
+            markets_list = ', '.join(available_markets[:5]) if available_markets else 'No markets configured'
             
-            fallback_response = f"""INTELLIGENCE UNAVAILABLE
+            fallback_response = f"""Dataset unavailable for {query_region}.
 
-No active market data for {query_region}.
+Available markets: {markets_list}
 
-Available: {markets_list}
+Try: "Show Mayfair overview"
 
 Standing by."""
             
             await send_twilio_message(sender, fallback_response)
-            return
+            log_interaction(sender, message_text, "dataset_unavailable", fallback_response, 0, client_profile)
+            return  # TERMINAL
         
+        # Store comparison response for reverse functionality
         category, response_text, response_metadata = await classify_and_respond(
             message_normalized,
             dataset,
@@ -3280,8 +3309,10 @@ Standing by."""
             comparison_datasets=comparison_datasets
         )
         
-        # ✅ CHATGPT FIX: Store analysis for reverse/flip
-        conversation.store_last_analysis(response_text)
+        # ✅ STORE COMPARISON RESPONSE FOR REVERSE
+        if is_comparison and comparison_datasets:
+            conversation.context['last_comparison_response'] = response_text
+        
         
         # Track usage
         tokens_used = calculate_tokens_estimate(message_text, response_text)
