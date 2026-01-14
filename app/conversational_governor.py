@@ -1309,6 +1309,22 @@ Trial access provides limited intelligence sampling."""
         # CRITICAL FIX: SPECIAL INTENT OVERRIDE (BEFORE REFUSAL)
         # ========================================
         
+        # ✅ CHATGPT FIX: Explicit meta-strategic pattern matching (before LLM check)
+        message_lower = message_text.lower().strip()
+        explicit_meta_patterns = [
+            'what am i missing', 'what\'s missing', 'whats missing',
+            'blind spot', 'blind spots', 'what am i not seeing',
+            'what should i know', 'what don\'t i know'
+        ]
+        
+        if any(pattern in message_lower for pattern in explicit_meta_patterns):
+            logger.info(f"🎯 EXPLICIT META-STRATEGIC OVERRIDE: '{message_text}'")
+            # Force to trust_authority intent immediately
+            intent_type_hint = 'trust_authority'
+            is_mandate_relevant = True
+            semantic_category = SemanticCategory.STRATEGIC_POSITIONING
+            semantic_confidence = 0.95
+        
         # META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
         if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status', 'value_justification', 'trust_authority', 'portfolio_management', 'status_monitoring', 'delivery_request']:
             # Force to mandate-relevant (these are valid system queries)
