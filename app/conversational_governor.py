@@ -837,7 +837,13 @@ Respond ONLY with valid JSON:
 }}
 
 Guidelines:
-- is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, or timing
+- is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
+- META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
+  * "What am I missing?"
+  * "What's the blind spot?"
+  * "What should I know?"
+  * "What am I not seeing?"
+  * "What breaks this analysis?"
 - semantic_category: best fit category
 - confidence: 0.0-1.0 based on clarity
 - intent_type: specific intent for routing"""
