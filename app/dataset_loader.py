@@ -176,7 +176,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
             logger.warning(f"📊 {area} is structural-only market (no dataset loading)")
             return _structural_only_dataset(area, original_area, industry)
     
-    # ========================================
+# ========================================
     # INDUSTRY ROUTING
     # ========================================
     
@@ -216,51 +216,64 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
         properties = []
         data_source_used = None
         
-        # Try Rightmove first
-        logger.info(f"🔍 Attempting Rightmove for {area}...")
-        properties = circuit_breaker.call(
-            'rightmove',
-            RightmoveLiveData.fetch,
-            area,
-            max_properties
-        )
+        # ============================================================
+        # MOCK DATA MODE (TEMPORARY - PRODUCTION USES REAL APIs)
+        # ============================================================
         
-        if properties and len(properties) >= 10:
-            data_source_used = 'rightmove'
-            logger.info(f"✅ Rightmove succeeded: {len(properties)} properties")
+        USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "true").lower() == "true"
+        
+        if USE_MOCK_DATA:
+            logger.info(f"🎭 MOCK DATA MODE: Generating synthetic data for {area}")
+            from app.mock_data_generator import load_mock_dataset
+            properties = load_mock_dataset(area, industry, max_properties)
+            data_source_used = 'mock_data'
+            logger.info(f"✅ Mock data generated: {len(properties)} items")
         else:
-            logger.warning(f"⚠️ Rightmove failed or insufficient data ({len(properties) if properties else 0} properties)")
-            
-            # Fallback to Zoopla
-            logger.info(f"🔍 Attempting Zoopla fallback for {area}...")
+            # Try Rightmove first (REAL DATA MODE)
+            logger.info(f"🔍 Attempting Rightmove for {area}...")
             properties = circuit_breaker.call(
-                'zoopla',
-                ZooplaLiveData.fetch,
+                'rightmove',
+                RightmoveLiveData.fetch,
                 area,
                 max_properties
             )
             
             if properties and len(properties) >= 10:
-                data_source_used = 'zoopla'
-                logger.info(f"✅ Zoopla succeeded: {len(properties)} properties")
+                data_source_used = 'rightmove'
+                logger.info(f"✅ Rightmove succeeded: {len(properties)} properties")
             else:
-                logger.warning(f"⚠️ Zoopla failed or insufficient data ({len(properties) if properties else 0} properties)")
+                logger.warning(f"⚠️ Rightmove failed or insufficient data ({len(properties) if properties else 0} properties)")
                 
-                # Final fallback to OnTheMarket
-                logger.info(f"🔍 Attempting OnTheMarket fallback for {area}...")
+                # Fallback to Zoopla
+                logger.info(f"🔍 Attempting Zoopla fallback for {area}...")
                 properties = circuit_breaker.call(
-                    'onthemarket',
-                    OnTheMarketData.fetch,
+                    'zoopla',
+                    ZooplaLiveData.fetch,
                     area,
                     max_properties
                 )
                 
                 if properties and len(properties) >= 10:
-                    data_source_used = 'onthemarket'
-                    logger.info(f"✅ OnTheMarket succeeded: {len(properties)} properties")
+                    data_source_used = 'zoopla'
+                    logger.info(f"✅ Zoopla succeeded: {len(properties)} properties")
                 else:
-                    logger.error(f"❌ ALL DATA SOURCES FAILED for {area}")
-                    return _empty_dataset(area, industry)
+                    logger.warning(f"⚠️ Zoopla failed or insufficient data ({len(properties) if properties else 0} properties)")
+                    
+                    # Final fallback to OnTheMarket
+                    logger.info(f"🔍 Attempting OnTheMarket fallback for {area}...")
+                    properties = circuit_breaker.call(
+                        'onthemarket',
+                        OnTheMarketData.fetch,
+                        area,
+                        max_properties
+                    )
+                    
+                    if properties and len(properties) >= 10:
+                        data_source_used = 'onthemarket'
+                        logger.info(f"✅ OnTheMarket succeeded: {len(properties)} properties")
+                    else:
+                        logger.error(f"❌ ALL DATA SOURCES FAILED for {area}")
+                        return _empty_dataset(area, industry)
         
         if not properties:
             logger.warning(f"No properties found for {area}")
