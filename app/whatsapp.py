@@ -3187,11 +3187,11 @@ Standing by."""
 - Regime analysis only (no live numbers)
 
 Comparison framework:
-- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = regional scale
+- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
 - Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
-- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = local/domestic
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
 
-Standing by."""
+Want to pressure-test this?"""
                     
                     await send_twilio_message(sender, structural_response)
                     log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
