@@ -501,7 +501,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # META-STRATEGIC KEYWORDS (DETERMINISTIC DETECTION)
         meta_strategic_keywords = ['what\'s missing', 'whats missing', 'what am i not seeing', 
                                    'gaps', 'blind spots', 'what don\'t i know', 'what dont i know',
-                                   'what\'s the gap', 'whats the gap', 'what am i missing']
+                                   'what\'s the gap', 'whats the gap', 'what am i missing'
+                                   'what am i missing?']
         
         # DECISION MODE KEYWORDS
         decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
@@ -1032,6 +1033,7 @@ Contact support for manual directive."""
                 'price per', 'untracked', 'confidence quantification',
                 'square foot', 'property count', 'coverage', 'visibility',
                 'tracking', 'monitored', 'observed', 'captured'
+                'noted', 'noted.', 'standing by'
             ]
             
             has_forbidden_meta = any(phrase.lower() in response_text.lower() 
