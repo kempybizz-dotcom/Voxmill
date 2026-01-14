@@ -430,7 +430,7 @@ def load_dataset(area: str, max_properties: int = 100, industry: str = "real_est
                 'analysis_timestamp': current_timestamp,
                 'data_source': data_source_used,
                 'sources': [data_source_used, 'land_registry', 'openstreetmap', 'gpt4_sentiment'],
-                'is_fallback': data_source_used != 'rightmove',
+                'is_fallback': data_source_used not in ['rightmove', 'mock_data'],
                 'data_quality': 'institutional_grade',
                 'avg_days_on_market': avg_days_on_market,
                 'load_time_seconds': round(load_time, 2),
