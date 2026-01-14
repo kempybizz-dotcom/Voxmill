@@ -174,6 +174,10 @@ def get_client_from_airtable(sender: str) -> dict:
         account = records[0]
         account_id = account['id']
         fields = account['fields']
+
+        logger.info(f"🔍 DEBUG: Available Airtable fields: {list(fields.keys())}")
+        logger.info(f"🔍 DEBUG: agency_name = {fields.get('agency_name')}")
+        logger.info(f"🔍 DEBUG: agency_type = {fields.get('agency_type')}")
         
         # ========================================
         # CRITICAL: Read Industry from Airtable
