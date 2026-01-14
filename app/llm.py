@@ -1072,56 +1072,56 @@ COUNTERFACTUAL (If you don't act):
 ACTION:
 Contact support for manual directive."""
             
-        # Log Decision Mode execution
-        logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
-    
-    # ========================================
-    # RISK MODE POST-PROCESSING ENFORCEMENT
-    # ========================================
-    
-    if is_risk_mode:
-        # Validate Risk Mode structure
-        required_sections = ['RISK STATEMENT', 'MECHANISM', 'CONSEQUENCE', 'CONFIDENCE']
+            # Log Decision Mode execution
+            logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
         
-        # Check if response has all required elements (flexible matching)
-        has_risk_statement = bool(re.search(r'(early signal|verified|observed pattern|hypothesis):', response_text, re.IGNORECASE))
-        has_mechanism = 'why this matters' in response_text.lower() or 'mechanism' in response_text.lower()
-        has_consequence = 'consequence' in response_text.lower() or 'if ignored' in response_text.lower()
-        has_confidence = bool(re.search(r'confidence:\s*(verified|observed|early signal|hypothesis)', response_text, re.IGNORECASE))
+        # ========================================
+        # RISK MODE POST-PROCESSING ENFORCEMENT
+        # ========================================
         
-        # Check for forbidden opportunity language
-        opportunity_indicators = [
-            'could optimize', 'optimize returns', 'leaving money on the table',
-            'could make more', 'revenue opportunity', 'pricing upside',
-            'adjusting asking prices could', 'align more closely with market',
-            'could be leaving', 'significant revenue', 'misalignment in pricing'
-        ]
-        
-        has_opportunity_language = any(phrase.lower() in response_text.lower() for phrase in opportunity_indicators)
-        
-        is_valid_risk = has_risk_statement and has_mechanism and has_consequence and has_confidence and not has_opportunity_language
-        
-        if not is_valid_risk:
-            logger.warning(f"⚠️ Risk Mode violated structure: risk_statement={has_risk_statement}, mechanism={has_mechanism}, consequence={has_consequence}, confidence={has_confidence}, has_opportunity_language={has_opportunity_language}")
+        if is_risk_mode:
+            # Validate Risk Mode structure
+            required_sections = ['RISK STATEMENT', 'MECHANISM', 'CONSEQUENCE', 'CONFIDENCE']
             
-            # Override with proper risk structure using actual dataset context
-            top_competitor = "competitors"
-            if 'agent_profiles' in dataset and dataset['agent_profiles']:
-                top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
+            # Check if response has all required elements (flexible matching)
+            has_risk_statement = bool(re.search(r'(early signal|verified|observed pattern|hypothesis):', response_text, re.IGNORECASE))
+            has_mechanism = 'why this matters' in response_text.lower() or 'mechanism' in response_text.lower()
+            has_consequence = 'consequence' in response_text.lower() or 'if ignored' in response_text.lower()
+            has_confidence = bool(re.search(r'confidence:\s*(verified|observed|early signal|hypothesis)', response_text, re.IGNORECASE))
             
-            response_text = f"""Early signal: {top_competitor} may be securing instructions off-market before visible in public listings.
+            # Check for forbidden opportunity language
+            opportunity_indicators = [
+                'could optimize', 'optimize returns', 'leaving money on the table',
+                'could make more', 'revenue opportunity', 'pricing upside',
+                'adjusting asking prices could', 'align more closely with market',
+                'could be leaving', 'significant revenue', 'misalignment in pricing'
+            ]
+            
+            has_opportunity_language = any(phrase.lower() in response_text.lower() for phrase in opportunity_indicators)
+            
+            is_valid_risk = has_risk_statement and has_mechanism and has_consequence and has_confidence and not has_opportunity_language
+            
+            if not is_valid_risk:
+                logger.warning(f"⚠️ Risk Mode violated structure: risk_statement={has_risk_statement}, mechanism={has_mechanism}, consequence={has_consequence}, confidence={has_confidence}, has_opportunity_language={has_opportunity_language}")
+                
+                # Override with proper risk structure using actual dataset context
+                top_competitor = "competitors"
+                if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                    top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
+                
+                response_text = f"""Early signal: {top_competitor} may be securing instructions off-market before visible in public listings.
 
 Why this matters: Off-market pricing flexibility allows rivals to win deal flow upstream, invisible in current data.
 
 Consequence if ignored: Stable public inventory masks declining instruction share — leverage lost before pricing data reflects it.
 
 Confidence: Early signal (not yet verifiable in current listings)."""
+            
+            logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
         
-        logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
-    
-    # ========================================
-    # MONITORING LANGUAGE VALIDATOR
-    # ========================================
+        # ========================================
+        # MONITORING LANGUAGE VALIDATOR
+        # ========================================
         
         forbidden_monitoring_phrases = [
             'monitoring initiated',
