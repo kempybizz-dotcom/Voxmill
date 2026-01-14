@@ -824,6 +824,10 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         client_profile = get_client_profile(sender)
         
+        if client_profile:
+            logger.info(f"🔍 DEBUG: Cached profile agency_name = {client_profile.get('agency_name')}")
+            logger.info(f"🔍 DEBUG: Cached profile agency_type = {client_profile.get('agency_type')}")
+        
         # ========================================
         # STEP 2: DETERMINE IF AIRTABLE REFRESH NEEDED
         # ========================================
