@@ -3067,6 +3067,10 @@ Standing by."""
         
         if is_comparison:
             logger.info(f"🔀 Comparison query detected")
+
+            # ✅ ENSURE session_data exists
+            if not hasattr(conversation, 'session_data'):
+                conversation.session_data = {}
             
             # ========================================
             # STEP 1: CHECK FOR REVERSE/FLIP COMMANDS
@@ -3137,7 +3141,7 @@ Standing by."""
             # ========================================
             
             # Follow-up context resolution
-            last_context = conversation.context.get('last_query_region', query_region)
+            last_context = getattr(conversation, 'session_data', {}).get('last_query_region', query_region)
             resolved_message = message_text  # Keep original for now
             logger.info(f"🔄 Context: last_region={last_context}")
             
