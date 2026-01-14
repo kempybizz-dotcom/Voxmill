@@ -289,6 +289,12 @@ def get_client_from_airtable(sender: str) -> dict:
                     'trial_expired': fields.get('Is Trial Expired') == 1,
                     'airtable_record_id': account_id,
                     'airtable_table': 'Accounts',
+                    'agency_name': fields.get('Agency Name'),
+                    'agency_type': fields.get('Agency Type'),
+                    'role': fields.get('Role'),
+                    'typical_price_band': fields.get('Typical Price Band'),
+                    'objectives': fields.get('Objectives', []),
+                    
                     'preferences': {
                         'preferred_regions': [],  # ✅ Empty - no markets
                         'competitor_focus': 'medium',
