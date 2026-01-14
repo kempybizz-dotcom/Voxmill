@@ -221,6 +221,53 @@ ACTION:
 NO follow-up questions. End immediately.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RISK ASSESSMENT MODE (PRIORITY 2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Triggers: "risk", "underpricing risk", "what could go wrong", "what breaks if"
+
+CRITICAL: Risk ≠ Opportunity
+- Risk = THREAT (external, adversarial, what blindsides us)
+- Opportunity = UPSIDE (internal, optimization, what we gain)
+
+REQUIRED FORMAT (ALL 4 ELEMENTS MANDATORY):
+
+1. RISK STATEMENT (threat, not upside):
+   "Early signal: [External threat from competitor/market]"
+
+2. MECHANISM (how it manifests):
+   "Why this matters: [Specific causal chain]"
+
+3. CONSEQUENCE (what breaks / who wins instead):
+   "Consequence if ignored: [Specific failure mode + beneficiary]"
+
+4. CONFIDENCE LABEL:
+   "Confidence: [Verified / Observed pattern / Early signal / Hypothesis]"
+
+EXAMPLES:
+
+✓ CORRECT (Risk):
+"Early signal: Wetherell may be underestimating how aggressively competitors use off-market pricing flexibility to win instructions before public listing.
+
+Why this matters: If competitors secure instructions at softer guide prices off-market, Wetherell risks seeing stable public inventory while losing deal flow upstream.
+
+Consequence if ignored: Apparent market stability masks declining instruction share — by the time pricing data reflects it, leverage is already lost.
+
+Confidence: Early signal (not yet visible in listing data)."
+
+✗ INCORRECT (Opportunity disguised as risk):
+"The primary risk is undervaluing properties in Mount Street, where average prices are significantly higher. Adjusting asking prices could optimize returns."
+
+This is pricing optimization, NOT strategic risk.
+
+RISK MUST BE:
+- External (competitor action, market shift, hidden dynamics)
+- Adversarial (someone else benefits from your blindness)
+- Consequential (explains failure mode, not missed upside)
+
+NO internal optimization framed as "risk".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GEOGRAPHIC SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -534,7 +581,9 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
                              'tell me what to do', 'executive decision', 'make the call',
                              'your recommendation', 'what would you do', 'bottom line',
-                             'just tell me', 'give me the answer', 'stop hedging']
+                             'just tell me', 'give me the answer', 'stop hedging'
+                             'what am i underestimating', 'what could blindside'
+                            ]
         
         is_meta_strategic = any(keyword in message_lower for keyword in meta_strategic_keywords)
         is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
@@ -872,6 +921,8 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
         
         if is_decision_mode:
             mode = "DECISION MODE - EXECUTIVE DIRECTIVE"
+        elif is_risk_mode:
+            mode = "RISK ASSESSMENT MODE"
         elif is_meta_strategic:
             mode = "META-STRATEGIC ASSESSMENT"
         elif is_authority_mode:
@@ -911,6 +962,7 @@ User message: "{message}"
 Analysis mode: {mode}
 
 {"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol. ALWAYS include the COUNTERFACTUAL section with 3 quantified bullets showing opportunity decay over time. Frame as LOSS not missed gain." if is_decision_mode else ""}
+{"CRITICAL: This is RISK ASSESSMENT MODE. Follow the RISK ASSESSMENT MODE protocol EXACTLY. Risk = EXTERNAL THREAT, not internal opportunity. MUST include: (1) Risk statement (competitor/market threat), (2) Mechanism (causal chain), (3) Consequence (failure mode + beneficiary), (4) Confidence label. NO pricing optimization framed as risk." if is_risk_mode else ""}
 {"CRITICAL: This is META-STRATEGIC. Follow the META-STRATEGIC QUESTIONS PROTOCOL EXACTLY. Maximum 4 bullets, 6 words per bullet, NO numbers, NO datasets, NO agents." if is_meta_strategic else ""}
 
 User context:
@@ -1020,12 +1072,56 @@ COUNTERFACTUAL (If you don't act):
 ACTION:
 Contact support for manual directive."""
             
-            # Log Decision Mode execution
-            logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
+        # Log Decision Mode execution
+        logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
+    
+    # ========================================
+    # RISK MODE POST-PROCESSING ENFORCEMENT
+    # ========================================
+    
+    if is_risk_mode:
+        # Validate Risk Mode structure
+        required_sections = ['RISK STATEMENT', 'MECHANISM', 'CONSEQUENCE', 'CONFIDENCE']
         
-        # ========================================
-        # MONITORING LANGUAGE VALIDATOR
-        # ========================================
+        # Check if response has all required elements (flexible matching)
+        has_risk_statement = bool(re.search(r'(early signal|verified|observed pattern|hypothesis):', response_text, re.IGNORECASE))
+        has_mechanism = 'why this matters' in response_text.lower() or 'mechanism' in response_text.lower()
+        has_consequence = 'consequence' in response_text.lower() or 'if ignored' in response_text.lower()
+        has_confidence = bool(re.search(r'confidence:\s*(verified|observed|early signal|hypothesis)', response_text, re.IGNORECASE))
+        
+        # Check for forbidden opportunity language
+        opportunity_indicators = [
+            'could optimize', 'optimize returns', 'leaving money on the table',
+            'could make more', 'revenue opportunity', 'pricing upside',
+            'adjusting asking prices could', 'align more closely with market',
+            'could be leaving', 'significant revenue', 'misalignment in pricing'
+        ]
+        
+        has_opportunity_language = any(phrase.lower() in response_text.lower() for phrase in opportunity_indicators)
+        
+        is_valid_risk = has_risk_statement and has_mechanism and has_consequence and has_confidence and not has_opportunity_language
+        
+        if not is_valid_risk:
+            logger.warning(f"⚠️ Risk Mode violated structure: risk_statement={has_risk_statement}, mechanism={has_mechanism}, consequence={has_consequence}, confidence={has_confidence}, has_opportunity_language={has_opportunity_language}")
+            
+            # Override with proper risk structure using actual dataset context
+            top_competitor = "competitors"
+            if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
+            
+            response_text = f"""Early signal: {top_competitor} may be securing instructions off-market before visible in public listings.
+
+Why this matters: Off-market pricing flexibility allows rivals to win deal flow upstream, invisible in current data.
+
+Consequence if ignored: Stable public inventory masks declining instruction share — leverage lost before pricing data reflects it.
+
+Confidence: Early signal (not yet verifiable in current listings)."""
+        
+        logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
+    
+    # ========================================
+    # MONITORING LANGUAGE VALIDATOR
+    # ========================================
         
         forbidden_monitoring_phrases = [
             'monitoring initiated',
