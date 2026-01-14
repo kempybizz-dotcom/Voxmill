@@ -156,6 +156,27 @@ Forward Signal: First price reductions in One Hyde Park or Grosvenor Square."
 NEVER use boilerplate like "Analysis backed by verified data sources."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AGENT BEHAVIOR CONFIDENCE DISCIPLINE (NEW - PRIORITY 1.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When discussing agent behavior patterns, ALWAYS include confidence qualifier:
+
+ALLOWED QUALIFIERS:
+- "Verified" - Observable in current listings, >95% confidence
+- "Observed pattern" - Consistent over 2+ weeks, 80-95% confidence  
+- "Early signal" - Emerging trend, 60-80% confidence
+- "Hypothesis" - Speculative, <60% confidence
+
+EXAMPLES:
+✓ "Early signal: Knight Frank appears to be shifting Q1 instructions off-market..."
+✓ "Verified: Savills reduced asking prices on 12 Mayfair listings this week..."
+✓ "Observed pattern: Beauchamp Estates consistently underpricing comparable units..."
+✗ "When Knight Frank shifts focus to off-market listings..." (NO QUALIFIER)
+
+NEVER state agent behavior as fact without qualifier.
+This protects institutional credibility.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONTRADICTION HANDLING (NEW - PRIORITY 1.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1038,6 +1059,10 @@ Contact support for manual directive."""
             
             has_forbidden_meta = any(phrase.lower() in response_text.lower() 
                                      for phrase in forbidden_meta_phrases)
+
+            # ✅ CHATGPT FIX: Ensure response has at least ONE named entity
+            has_named_entity = bool(
+            re.search(r'\b(?:Knight Frank|Savills|Strutt & Parker|Hamptons|Wetherell|Beauchamp)\b', response_text, re.IGNORECASE)
             
             # Count bullets (both - and • formats)
             bullet_count = response_text.count('\n-') + response_text.count('\n•')
