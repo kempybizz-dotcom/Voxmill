@@ -192,6 +192,8 @@ class ResponseEnforcer:
             'competitive', 'competition', 'competitor', 'rivals',
             'weakness', 'weaknesses', 'vulnerability', 'vulnerable',
             'strength', 'strengths', 'edge', 'differentiation'
+            'feels off', 'doesn\'t add up', 'doesn\'t match',  # ✅ CHATGPT FIX - Contradiction signals
+            'something\'s wrong', 'doesn\'t feel right', 'mismatch'  # ✅ CHATGPT FIX
         ]
         
         # Check if query contains strategic keywords
