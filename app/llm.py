@@ -253,6 +253,11 @@ MANDATORY RULES
 ✘ NEVER say "Standing by", "AVAILABLE INTELLIGENCE", "Let me know"
 ✘ NEVER say "Analysis backed by verified data sources"
 
+# • AFTER HIGH-VALUE INTELLIGENCE, END WITH:
+# • Nothing (insight speaks for itself)
+# • Quiet prompt: "Want to pressure-test this?"
+# • Next action: "Monitor [X] for confirmation"
+
 You are world-class. Act like it.
 """
 
@@ -1053,34 +1058,45 @@ Contact support for manual directive."""
                 'quantification', 'granularity', 'agent dynamic', 'records',
                 'price per', 'untracked', 'confidence quantification',
                 'square foot', 'property count', 'coverage', 'visibility',
-                'tracking', 'monitored', 'observed', 'captured'
+                'tracking', 'monitored', 'observed', 'captured',
                 'noted', 'noted.', 'standing by'
             ]
-            
+    
             has_forbidden_meta = any(phrase.lower() in response_text.lower() 
                                      for phrase in forbidden_meta_phrases)
-
-            # ✅ CHATGPT FIX: Ensure response has at least ONE named entity
-            has_named_entity = bool(
-            re.search(r'\b(?:Knight Frank|Savills|Strutt & Parker|Hamptons|Wetherell|Beauchamp)\b', response_text, re.IGNORECASE)
-            
-            # Count bullets (both - and • formats)
+    
+            # ✅ CHATGPT FIX: Check for proper nouns (capitalized words = named entities)
+            # This works for ANY agent, location, or company name without hardcoding
+            proper_nouns = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', response_text)
+    
+            # Filter out common non-entity words
+            non_entity_words = {'The', 'This', 'These', 'That', 'Those', 'When', 'Where', 
+                                'Why', 'How', 'What', 'Which', 'Monitor', 'Watch', 'Track',
+                                'If', 'Until', 'Unless', 'Signal', 'Velocity', 'Liquidity'}
+    
+            actual_entities = [name for name in proper_nouns if name not in non_entity_words]
+            has_named_entity = len(actual_entities) > 0
+    
+            # Count bullets
             bullet_count = response_text.count('\n-') + response_text.count('\n•')
-            
-            # Check for numbers in response
-            import re
+    
+            # Check for numbers
             has_numbers = bool(re.search(r'\d+%|\d+\s*properties|\d+\s*units|\d+\s*records', response_text.lower()))
-            
-            if has_forbidden_meta or bullet_count > 4 or has_numbers:
-                logger.warning(f"⚠️ Meta-strategic violated protocol (technical_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers})")
-                
-                # Override with correct format (4 bullets, 6 words max, no numbers/datasets/agents)
-                response_text = """Signal density: off-market flow
-Time: entry window precision
-Confirmation: agent intent
-Conviction: pricing elasticity"""
-            
-            logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}")
+    
+            if has_forbidden_meta or bullet_count > 4 or has_numbers or not has_named_entity:
+                logger.warning(f"⚠️ Meta-strategic violated protocol (technical_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity})")
+        
+                # ✅ CHATGPT FIX: Get actual agent from dataset if available
+                top_agent = "primary competitor"
+                if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                    top_agent = dataset['agent_profiles'][0].get('agent', 'primary competitor')
+        
+                response_text = f"""Signal density: off-market flow
+        Time: entry window precision
+        Confirmation: agent intent ({top_agent} positioning)
+        Conviction: pricing elasticity"""
+    
+           logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity}, entities_found={actual_entities}")
         
         # ========================================
         # FINAL SAFETY: RESPONSE LENGTH VALIDATOR
