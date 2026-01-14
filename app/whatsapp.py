@@ -181,7 +181,7 @@ def get_client_from_airtable(sender: str) -> dict:
         
         industry_code = fields.get('Industry', 'real_estate')  # Read from Airtable
         
-        # ========================================
+# ========================================
         # CRITICAL: Trust execution_allowed formula
         # ========================================
         
@@ -221,10 +221,18 @@ def get_client_from_airtable(sender: str) -> dict:
                 'table': 'Accounts',
                 'tier': 'tier_1',
                 'industry': industry_code,
-                'preferences': {'preferred_regions': [default_region] if default_region else []},  # ✅ From Markets table
+                
+                # ✅ ADD AGENCY CONTEXT (EVEN FOR BLOCKED USERS)
+                'agency_name': fields.get('agency_name'),
+                'agency_type': fields.get('agency_type'),
+                'role': fields.get('role'),
+                'typical_price_band': fields.get('typical_price_band'),
+                'objectives': fields.get('objectives', []),
+                
+                'preferences': {'preferred_regions': [default_region] if default_region else []},
                 'usage_metrics': {'messages_used_this_month': 0, 'monthly_message_limit': 0},
-                'execution_allowed': False,  # ✅ FIXED: Add this field
-                'active_market': default_region  # ✅ FIXED: Add active_market
+                'execution_allowed': False,
+                'active_market': default_region
             }
         
         # ========================================
@@ -289,11 +297,13 @@ def get_client_from_airtable(sender: str) -> dict:
                     'trial_expired': fields.get('Is Trial Expired') == 1,
                     'airtable_record_id': account_id,
                     'airtable_table': 'Accounts',
-                    'agency_name': fields.get('Agency Name'),
-                    'agency_type': fields.get('Agency Type'),
-                    'role': fields.get('Role'),
-                    'typical_price_band': fields.get('Typical Price Band'),
-                    'objectives': fields.get('Objectives', []),
+                    
+                    # ✅ ADD AGENCY CONTEXT
+                    'agency_name': fields.get('agency_name'),
+                    'agency_type': fields.get('agency_type'),
+                    'role': fields.get('role'),
+                    'typical_price_band': fields.get('typical_price_band'),
+                    'objectives': fields.get('objectives', []),
                     
                     'preferences': {
                         'preferred_regions': [],  # ✅ Empty - no markets
@@ -345,6 +355,14 @@ def get_client_from_airtable(sender: str) -> dict:
             'trial_expired': fields.get('Is Trial Expired') == 1,
             'airtable_record_id': account_id,
             'airtable_table': 'Accounts',
+            
+            # ✅ ADD AGENCY CONTEXT (LOWERCASE FIELD NAMES)
+            'agency_name': fields.get('agency_name'),
+            'agency_type': fields.get('agency_type'),
+            'role': fields.get('role'),
+            'typical_price_band': fields.get('typical_price_band'),
+            'objectives': fields.get('objectives', []),
+            
             'preferences': {
                 'preferred_regions': [active_market_name] if active_market_name else [],  # ✅ From Markets table
                 'competitor_focus': 'medium',
@@ -368,7 +386,6 @@ def get_client_from_airtable(sender: str) -> dict:
     except Exception as e:
         logger.error(f"Error querying Airtable: {e}", exc_info=True)
         return None
-
 
 def get_market_name_by_id(market_id: str) -> Optional[str]:
     """
