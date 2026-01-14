@@ -584,6 +584,17 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                              'just tell me', 'give me the answer', 'stop hedging'
                              'what am i underestimating', 'what could blindside'
                             ]
+
+        # ✅ CHATGPT FIX: RISK ASSESSMENT MODE DETECTION
+        risk_keywords = [
+            'risk', 'risks', 'what could go wrong', 'what breaks',
+            'underpricing risk', 'overlooking', 'missing risk',
+            'threat', 'danger', 'exposure', 'vulnerability',
+            'what am i underestimating', 'what could blindside',
+            'single risk', 'primary risk', 'biggest risk'
+        ]
+
+is_risk_mode = any(keyword in message_lower for keyword in risk_keywords)
         
         is_meta_strategic = any(keyword in message_lower for keyword in meta_strategic_keywords)
         is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
