@@ -543,7 +543,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
         
-        # ========================================
+# ========================================
         # CONVERSATIONAL INTELLIGENCE DETECTION
         # ========================================
         
@@ -574,16 +574,14 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         # META-STRATEGIC KEYWORDS (DETERMINISTIC DETECTION)
         meta_strategic_keywords = ['what\'s missing', 'whats missing', 'what am i not seeing', 
                                    'gaps', 'blind spots', 'what don\'t i know', 'what dont i know',
-                                   'what\'s the gap', 'whats the gap', 'what am i missing'
+                                   'what\'s the gap', 'whats the gap', 'what am i missing',
                                    'what am i missing?']
         
         # DECISION MODE KEYWORDS
         decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
                              'tell me what to do', 'executive decision', 'make the call',
                              'your recommendation', 'what would you do', 'bottom line',
-                             'just tell me', 'give me the answer', 'stop hedging'
-                             'what am i underestimating', 'what could blindside'
-                            ]
+                             'just tell me', 'give me the answer', 'stop hedging']
 
         # ✅ CHATGPT FIX: RISK ASSESSMENT MODE DETECTION
         risk_keywords = [
@@ -593,9 +591,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             'what am i underestimating', 'what could blindside',
             'single risk', 'primary risk', 'biggest risk'
         ]
-
-is_risk_mode = any(keyword in message_lower for keyword in risk_keywords)
         
+        is_risk_mode = any(keyword in message_lower for keyword in risk_keywords)
         is_meta_strategic = any(keyword in message_lower for keyword in meta_strategic_keywords)
         is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
         is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
