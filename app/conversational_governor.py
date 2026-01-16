@@ -780,56 +780,56 @@ For immediate regeneration, contact intel@voxmill.uk"""
         # ========================================
         # PURE ACKNOWLEDGMENTS (no query)
         # ========================================
-    
-    pure_acks = [
-        'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-        'ok', 'okay', 'noted', 'got it', 'gotit',
-        'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-        'cheers', 'appreciate it', 'appreciated'
-    ]
-    
-    if message_clean in pure_acks:
-        # Brief acknowledgment
-        options = [
-            "Standing by.",
-            "Ready.",
-            "Standing by.",  # Weighted
+        
+        pure_acks = [
+            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
+            'ok', 'okay', 'noted', 'got it', 'gotit',
+            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
+            'cheers', 'appreciate it', 'appreciated'
         ]
         
-        return True, random.choice(options)
-    
-    # ========================================
-    # COMPOUND PATTERNS (greeting + question)
-    # ========================================
-    
-    # Example: "Hey, what's the market doing?"
-    # These should NOT be absorbed - they have actual queries
-    
-    compound_patterns = [
-        r'^(hi|hello|hey|yo|hiya)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
-        r'^(good morning|good afternoon|good evening)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
-    ]
-    
-    for pattern in compound_patterns:
-        if re.match(pattern, message_lower):
-            # Has query component - don't absorb
-            return False, None
-    
-    # ========================================
-    # LAUGHTER / AMUSEMENT (silence)
-    # ========================================
-    
-    laughter = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
-    
-    if message_clean in laughter:
-        # Silence (no response)
-        return True, None
-    
-    # ========================================
-    # NOT SOCIAL - CONTINUE TO FULL GOVERNANCE
-    # ========================================
-    
-    return False, None
+        if message_clean in pure_acks:
+            # Brief acknowledgment
+            options = [
+                "Standing by.",
+                "Ready.",
+                "Standing by.",  # Weighted
+            ]
+            
+            return True, random.choice(options)
+        
+        # ========================================
+        # COMPOUND PATTERNS (greeting + question)
+        # ========================================
+        
+        # Example: "Hey, what's the market doing?"
+        # These should NOT be absorbed - they have actual queries
+        
+        compound_patterns = [
+            r'^(hi|hello|hey|yo|hiya)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
+            r'^(good morning|good afternoon|good evening)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
+        ]
+        
+        for pattern in compound_patterns:
+            if re.match(pattern, message_lower):
+                # Has query component - don't absorb
+                return False, None
+        
+        # ========================================
+        # LAUGHTER / AMUSEMENT (silence)
+        # ========================================
+        
+        laughter = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
+        
+        if message_clean in laughter:
+            # Silence (no response)
+            return True, None
+        
+        # ========================================
+        # NOT SOCIAL - CONTINUE TO FULL GOVERNANCE
+        # ========================================
+        
+        return False, None
     
     @staticmethod
     async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
