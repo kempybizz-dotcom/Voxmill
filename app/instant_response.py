@@ -476,6 +476,26 @@ Downside risk: {downside}"""
     - Competitor risk tolerance shifting before pricing moves
 
     {resolution}"""
+        
+        @staticmethod
+        def get_plain_english_definition(term: str, dataset: Dict) -> str:
+            """
+            PLAIN ENGLISH DEFINITIONS for "explain like I'm explaining to a client"
+            ✅ CHATGPT FIX: No scores, no metrics, one sentence each
+            """
+            
+            definitions = {
+                'velocity': "Velocity just means how quickly homes are actually selling. When it's low, buyers hesitate longer and pricing power weakens.",
+                'liquidity': "Liquidity is how easy it is to sell without dropping price. High liquidity = properties move fast at asking price.",
+                'sentiment': "Sentiment is whether the market feels confident or nervous. Bearish = buyers waiting, sellers anxious.",
+            }
+            
+            term_lower = term.lower()
+            for key, definition in definitions.items():
+                if key in term_lower:
+                    return definition
+                    
+            return f"No plain English definition available for '{term}'."
 
 
 def should_use_instant_response(message: str, category: str) -> bool:
