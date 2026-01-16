@@ -861,16 +861,16 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 old_total = client_profile.get('total_queries', 0) if client_profile else 0
                 
                 # ✅ CHATGPT FIX: Filter out phone numbers from names
-                raw_name = client_profile_airtable.get('name', 'Unknown')
-                if raw_name and (raw_name.startswith('+') or raw_name.startswith('whatsapp:') or raw_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
-                    clean_name = 'there'
+                raw_first_name = client_profile_airtable.get('name', 'Unknown')
+                if raw_first_name and (raw_first_name.startswith('+') or raw_first_name.startswith('whatsapp:') or raw_first_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
+                    clean_first_name = 'there'
                 else:
-                    clean_name = raw_name
+                    clean_first_name = raw_name
                 
                 # ✅ BUILD CLIENT PROFILE FROM NEW CONTROL PLANE SCHEMA
                 client_profile = {
                     'whatsapp_number': sender,
-                    'name': clean_name,
+                    'name': clean_first_name,
                     'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
                     'tier': client_profile_airtable.get('tier', 'tier_1'),
                     'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
