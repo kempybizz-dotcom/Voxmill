@@ -1206,12 +1206,12 @@ Consequence if ignored: Stable public inventory masks declining instruction shar
 Confidence: Early signal (not yet verifiable in current listings)."""
             
             logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
-
-            # ========================================
-            # PRINCIPAL RISK ADVICE POST-PROCESSING
-            # ========================================
-            
-            if is_principal_risk:
+        
+        # ========================================
+        # PRINCIPAL RISK ADVICE POST-PROCESSING
+        # ========================================
+        
+        if is_principal_risk:
             # Validate Principal Risk format
             has_principal_header = 'PRINCIPAL RISK VIEW' in response_text
             has_risk_statement = 'my biggest concern would be' in response_text.lower()
@@ -1220,33 +1220,33 @@ Confidence: Early signal (not yet verifiable in current listings)."""
             
             # Check for forbidden self-description
             has_self_description = any(phrase in response_text.lower() for phrase in [
-            'i provide', 'i offer', 'i deliver', 'i analyze', 
-            'across industries', 'market intelligence', 'voxmill'
-        ])
-        
-        is_valid_principal = has_risk_statement and has_confirmation and has_confidence and not has_self_description
-        
-        if not is_valid_principal or has_self_description:
-            logger.warning(f"⚠️ Principal Risk violated format or included self-description")
-        
-            # Override with proper principal risk structure
-            top_competitor = "competitors"
-            if 'agent_profiles' in dataset and dataset['agent_profiles']:
-                top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
-        
-            response_text = f"""PRINCIPAL RISK VIEW
+                'i provide', 'i offer', 'i deliver', 'i analyze', 
+                'across industries', 'market intelligence', 'voxmill'
+            ])
+            
+            is_valid_principal = has_risk_statement and has_confirmation and has_confidence and not has_self_description
+            
+            if not is_valid_principal or has_self_description:
+                logger.warning(f"⚠️ Principal Risk violated format or included self-description")
+                
+                # Override with proper principal risk structure
+                top_competitor = "competitors"
+                if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                    top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
+                
+                response_text = f"""PRINCIPAL RISK VIEW
 
-    If I were sitting in your seat this week, my biggest concern would be {top_competitor} securing off-market instructions before you see pricing movement.
+If I were sitting in your seat this week, my biggest concern would be {top_competitor} securing off-market instructions before you see pricing movement.
 
-    Why it matters:
-    Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
+Why it matters:
+Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
 
-    What would confirm it:
-    Increase in {top_competitor} off-market conversations or fee flexibility.
+What would confirm it:
+Increase in {top_competitor} off-market conversations or fee flexibility.
 
-    Confidence: early signal"""
-    
-        logger.info(f"✅ Principal Risk validated: valid={is_valid_principal}, self_description={has_self_description}")
+Confidence: early signal"""
+            
+            logger.info(f"✅ Principal Risk validated: valid={is_valid_principal}, self_description={has_self_description}")
         
         # ========================================
         # MONITORING LANGUAGE VALIDATOR
