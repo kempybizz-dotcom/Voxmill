@@ -636,21 +636,21 @@ class ConversationalGovernor:
     
     @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
-    """
-    Get hardcoded response for simple intents
-    
-    ✅ VARIED ACKNOWLEDGMENTS - rotates between options
-    ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
-    ✅ NO PORTFOLIO RESPONSES - let handlers execute
-    ✅ NEVER USE PHONE NUMBERS AS NAMES
-    Intent-based responses only (no phrase matching)
-    """
-    
-    client_name = client_profile.get('name', 'there') if client_profile else 'there'
-    
-    # ✅ CHATGPT FIX: Filter out phone numbers from names
-    if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
-        client_name = 'there'
+        """
+        Get hardcoded response for simple intents
+        
+        ✅ VARIED ACKNOWLEDGMENTS - rotates between options
+        ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
+        ✅ NO PORTFOLIO RESPONSES - let handlers execute
+        ✅ NEVER USE PHONE NUMBERS AS NAMES
+        Intent-based responses only (no phrase matching)
+        """
+        
+        client_name = client_profile.get('name', 'there') if client_profile else 'there'
+        
+        # ✅ CHATGPT FIX: Filter out phone numbers from names
+        if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
+            client_name = 'there'
         
         # META_AUTHORITY responses
         if intent == Intent.META_AUTHORITY:
