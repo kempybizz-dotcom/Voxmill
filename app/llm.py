@@ -275,6 +275,50 @@ RISK MUST BE:
 NO internal optimization framed as "risk".
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRINCIPAL RISK ADVICE (PRIORITY 1.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Triggers: "if you were in my seat", "if you were me", "what would worry you", "what would concern you", "your biggest fear", "what keeps you up"
+
+This is a first-person strategic risk question. The client is asking YOU to step into THEIR role.
+
+CRITICAL: This is NOT a meta-authority question about Voxmill.
+This is a request for your professional judgment as their analyst.
+
+REQUIRED FORMAT (EXACT):
+
+PRINCIPAL RISK VIEW
+
+If I were sitting in your seat this week, my biggest concern would be [ONE SPECIFIC RISK].
+
+Why it matters:
+[1-2 sentences: mechanism + market psychology]
+
+What would confirm it:
+[ONE observable signal - be specific]
+
+Confidence: [early signal / inferred / observed]
+
+RULES:
+- ONE risk only (the most important)
+- Must mention client's agency by name
+- Must be external threat (competitor behavior, market shift)
+- Must include observable confirmation signal
+- NEVER mention Voxmill, datasets, or system capabilities
+- No hedging language ("might", "could", "possibly")
+
+Example:
+"If I were sitting in your seat this week, my biggest concern would be Knight Frank securing off-market instructions before you see pricing movement.
+
+Why it matters:
+Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
+
+What would confirm it:
+Increase in competitor off-market conversations or fee flexibility from Knight Frank.
+
+Confidence: early signal"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GEOGRAPHIC SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -626,6 +670,19 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         is_trend_query = any(keyword in message_lower for keyword in trend_keywords)
         is_timing_query = any(keyword in message_lower for keyword in timing_keywords)
         is_clustering_query = any(keyword in message_lower for keyword in clustering_keywords)
+
+        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE DETECTION
+        principal_risk_keywords = [
+            'if you were in my seat', 'if you were me', 'if you were sitting where i am',
+            'what would worry you', 'what would concern you', 'what would make you worried',
+            'your biggest fear', 'what keeps you up', 'what scares you',
+            'if i asked you what worries', 'be honest what worries'
+        ]
+
+is_principal_risk = any(keyword in message_lower for keyword in principal_risk_keywords)
+
+if is_principal_risk:
+    logger.info(f"✅ PRINCIPAL RISK ADVICE triggered: {message[:50]}")
         
         # ========================================
         # AUTHORITY MODE DETECTION (NEW - WORLD CLASS)
@@ -1149,6 +1206,47 @@ Consequence if ignored: Stable public inventory masks declining instruction shar
 Confidence: Early signal (not yet verifiable in current listings)."""
             
             logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
+
+            # ========================================
+            # PRINCIPAL RISK ADVICE POST-PROCESSING
+            # ========================================
+            
+            if is_principal_risk:
+            # Validate Principal Risk format
+            has_principal_header = 'PRINCIPAL RISK VIEW' in response_text
+            has_risk_statement = 'my biggest concern would be' in response_text.lower()
+            has_confirmation = 'what would confirm it' in response_text.lower() or 'confirm' in response_text.lower()
+            has_confidence = bool(re.search(r'confidence:\s*(early signal|inferred|observed)', response_text, re.IGNORECASE))
+            
+            # Check for forbidden self-description
+            has_self_description = any(phrase in response_text.lower() for phrase in [
+            'i provide', 'i offer', 'i deliver', 'i analyze', 
+            'across industries', 'market intelligence', 'voxmill'
+        ])
+        
+        is_valid_principal = has_risk_statement and has_confirmation and has_confidence and not has_self_description
+        
+        if not is_valid_principal or has_self_description:
+            logger.warning(f"⚠️ Principal Risk violated format or included self-description")
+        
+            # Override with proper principal risk structure
+            top_competitor = "competitors"
+            if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
+        
+            response_text = f"""PRINCIPAL RISK VIEW
+
+    If I were sitting in your seat this week, my biggest concern would be {top_competitor} securing off-market instructions before you see pricing movement.
+
+    Why it matters:
+    Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
+
+    What would confirm it:
+    Increase in {top_competitor} off-market conversations or fee flexibility.
+
+    Confidence: early signal"""
+    
+        logger.info(f"✅ Principal Risk validated: valid={is_valid_principal}, self_description={has_self_description}")
         
         # ========================================
         # MONITORING LANGUAGE VALIDATOR
