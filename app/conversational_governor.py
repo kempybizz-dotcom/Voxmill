@@ -636,16 +636,21 @@ class ConversationalGovernor:
     
     @staticmethod
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
-        """
-        Get hardcoded response for simple intents
-        
-        ✅ VARIED ACKNOWLEDGMENTS - rotates between options
-        ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
-        ✅ NO PORTFOLIO RESPONSES - let handlers execute
-        Intent-based responses only (no phrase matching)
-        """
-        
-        client_name = client_profile.get('name', 'there') if client_profile else 'there'
+    """
+    Get hardcoded response for simple intents
+    
+    ✅ VARIED ACKNOWLEDGMENTS - rotates between options
+    ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
+    ✅ NO PORTFOLIO RESPONSES - let handlers execute
+    ✅ NEVER USE PHONE NUMBERS AS NAMES
+    Intent-based responses only (no phrase matching)
+    """
+    
+    client_name = client_profile.get('name', 'there') if client_profile else 'there'
+    
+    # ✅ CHATGPT FIX: Filter out phone numbers from names
+    if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
+        client_name = 'there'
         
         # META_AUTHORITY responses
         if intent == Intent.META_AUTHORITY:
@@ -724,102 +729,107 @@ For immediate regeneration, contact intel@voxmill.uk"""
     
     @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
-        """
-        Layer -1: Absorb pure social pleasantries without analysis
-        
-        Returns: (is_social, response_text_or_none)
-        - (True, "Standing by.") = social input, send brief ack
-        - (True, None) = social input, silence
-        - (False, None) = not social, continue to full governance
-        
-        ✅ VARIED ACKNOWLEDGMENTS
-        ✅ SELECTIVE NAME USAGE (30% chance)
-        """
-        
-        message_lower = message_text.lower().strip()
-        message_clean = ' '.join(message_lower.split())
-        
-        # ========================================
-        # PURE GREETINGS (no query component)
-        # ========================================
-        
-        pure_greetings = [
-            'hi', 'hello', 'hey', 'yo', 'hiya',
-            'good morning', 'good afternoon', 'good evening',
-            'morning', 'afternoon', 'evening',
-            'whats up', 'what up', 'sup', 'wassup', 'whatsup'
-        ]
-        
-        if message_clean in pure_greetings:
-            # 30% chance: use name if available
-            if client_name != "there" and random.random() < 0.3:
-                options = [
-                    f"Standing by, {client_name}.",
-                    f"Ready, {client_name}."
-                ]
-            else:
-                # 70% chance: no name
-                options = [
-                    "Standing by.",
-                    "Ready.",
-                    "Standing by.",  # Weighted
-                ]
-            
-            return True, random.choice(options)
-        
-        # ========================================
-        # PURE ACKNOWLEDGMENTS (no query)
-        # ========================================
-        
-        pure_acks = [
-            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-            'ok', 'okay', 'noted', 'got it', 'gotit',
-            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-            'cheers', 'appreciate it', 'appreciated'
-        ]
-        
-        if message_clean in pure_acks:
-            # Brief acknowledgment
+    """
+    Layer -1: Absorb pure social pleasantries without analysis
+    
+    Returns: (is_social, response_text_or_none)
+    - (True, "Standing by.") = social input, send brief ack
+    - (True, None) = social input, silence
+    - (False, None) = not social, continue to full governance
+    
+    ✅ VARIED ACKNOWLEDGMENTS
+    ✅ SELECTIVE NAME USAGE (30% chance)
+    ✅ NEVER USE PHONE NUMBERS AS NAMES
+    """
+    
+    # ✅ CHATGPT FIX: Filter out phone numbers from names
+    if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
+        client_name = 'there'
+    
+    message_lower = message_text.lower().strip()
+    message_clean = ' '.join(message_lower.split())
+    
+    # ========================================
+    # PURE GREETINGS (no query component)
+    # ========================================
+    
+    pure_greetings = [
+        'hi', 'hello', 'hey', 'yo', 'hiya',
+        'good morning', 'good afternoon', 'good evening',
+        'morning', 'afternoon', 'evening',
+        'whats up', 'what up', 'sup', 'wassup', 'whatsup'
+    ]
+    
+    if message_clean in pure_greetings:
+        # 30% chance: use name if available
+        if client_name != "there" and random.random() < 0.3:
+            options = [
+                f"Standing by, {client_name}.",
+                f"Ready, {client_name}."
+            ]
+        else:
+            # 70% chance: no name
             options = [
                 "Standing by.",
                 "Ready.",
                 "Standing by.",  # Weighted
             ]
-            
-            return True, random.choice(options)
         
-        # ========================================
-        # COMPOUND PATTERNS (greeting + question)
-        # ========================================
-        
-        # Example: "Hey, what's the market doing?"
-        # These should NOT be absorbed - they have actual queries
-        
-        compound_patterns = [
-            r'^(hi|hello|hey|yo|hiya)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
-            r'^(good morning|good afternoon|good evening)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
+        return True, random.choice(options)
+    
+    # ========================================
+    # PURE ACKNOWLEDGMENTS (no query)
+    # ========================================
+    
+    pure_acks = [
+        'thanks', 'thank you', 'thankyou', 'thx', 'ty',
+        'ok', 'okay', 'noted', 'got it', 'gotit',
+        'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
+        'cheers', 'appreciate it', 'appreciated'
+    ]
+    
+    if message_clean in pure_acks:
+        # Brief acknowledgment
+        options = [
+            "Standing by.",
+            "Ready.",
+            "Standing by.",  # Weighted
         ]
         
-        for pattern in compound_patterns:
-            if re.match(pattern, message_lower):
-                # Has query component - don't absorb
-                return False, None
-        
-        # ========================================
-        # LAUGHTER / AMUSEMENT (silence)
-        # ========================================
-        
-        laughter = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
-        
-        if message_clean in laughter:
-            # Silence (no response)
-            return True, None
-        
-        # ========================================
-        # NOT SOCIAL - CONTINUE TO FULL GOVERNANCE
-        # ========================================
-        
-        return False, None
+        return True, random.choice(options)
+    
+    # ========================================
+    # COMPOUND PATTERNS (greeting + question)
+    # ========================================
+    
+    # Example: "Hey, what's the market doing?"
+    # These should NOT be absorbed - they have actual queries
+    
+    compound_patterns = [
+        r'^(hi|hello|hey|yo|hiya)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
+        r'^(good morning|good afternoon|good evening)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
+    ]
+    
+    for pattern in compound_patterns:
+        if re.match(pattern, message_lower):
+            # Has query component - don't absorb
+            return False, None
+    
+    # ========================================
+    # LAUGHTER / AMUSEMENT (silence)
+    # ========================================
+    
+    laughter = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
+    
+    if message_clean in laughter:
+        # Silence (no response)
+        return True, None
+    
+    # ========================================
+    # NOT SOCIAL - CONTINUE TO FULL GOVERNANCE
+    # ========================================
+    
+    return False, None
     
     @staticmethod
     async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
