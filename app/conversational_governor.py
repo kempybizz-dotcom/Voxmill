@@ -833,11 +833,13 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
+    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
 }}
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
+- identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
+- plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
 - META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
   * "What am I missing?"
   * "What's the blind spot?"
