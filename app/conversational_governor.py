@@ -729,57 +729,57 @@ For immediate regeneration, contact intel@voxmill.uk"""
     
     @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
-    """
-    Layer -1: Absorb pure social pleasantries without analysis
-    
-    Returns: (is_social, response_text_or_none)
-    - (True, "Standing by.") = social input, send brief ack
-    - (True, None) = social input, silence
-    - (False, None) = not social, continue to full governance
-    
-    ✅ VARIED ACKNOWLEDGMENTS
-    ✅ SELECTIVE NAME USAGE (30% chance)
-    ✅ NEVER USE PHONE NUMBERS AS NAMES
-    """
-    
-    # ✅ CHATGPT FIX: Filter out phone numbers from names
-    if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
-        client_name = 'there'
-    
-    message_lower = message_text.lower().strip()
-    message_clean = ' '.join(message_lower.split())
-    
-    # ========================================
-    # PURE GREETINGS (no query component)
-    # ========================================
-    
-    pure_greetings = [
-        'hi', 'hello', 'hey', 'yo', 'hiya',
-        'good morning', 'good afternoon', 'good evening',
-        'morning', 'afternoon', 'evening',
-        'whats up', 'what up', 'sup', 'wassup', 'whatsup'
-    ]
-    
-    if message_clean in pure_greetings:
-        # 30% chance: use name if available
-        if client_name != "there" and random.random() < 0.3:
-            options = [
-                f"Standing by, {client_name}.",
-                f"Ready, {client_name}."
-            ]
-        else:
-            # 70% chance: no name
-            options = [
-                "Standing by.",
-                "Ready.",
-                "Standing by.",  # Weighted
-            ]
+        """
+        Layer -1: Absorb pure social pleasantries without analysis
         
-        return True, random.choice(options)
-    
-    # ========================================
-    # PURE ACKNOWLEDGMENTS (no query)
-    # ========================================
+        Returns: (is_social, response_text_or_none)
+        - (True, "Standing by.") = social input, send brief ack
+        - (True, None) = social input, silence
+        - (False, None) = not social, continue to full governance
+        
+        ✅ VARIED ACKNOWLEDGMENTS
+        ✅ SELECTIVE NAME USAGE (30% chance)
+        ✅ NEVER USE PHONE NUMBERS AS NAMES
+        """
+        
+        # ✅ CHATGPT FIX: Filter out phone numbers from names
+        if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
+            client_name = 'there'
+        
+        message_lower = message_text.lower().strip()
+        message_clean = ' '.join(message_lower.split())
+        
+        # ========================================
+        # PURE GREETINGS (no query component)
+        # ========================================
+        
+        pure_greetings = [
+            'hi', 'hello', 'hey', 'yo', 'hiya',
+            'good morning', 'good afternoon', 'good evening',
+            'morning', 'afternoon', 'evening',
+            'whats up', 'what up', 'sup', 'wassup', 'whatsup'
+        ]
+        
+        if message_clean in pure_greetings:
+            # 30% chance: use name if available
+            if client_name != "there" and random.random() < 0.3:
+                options = [
+                    f"Standing by, {client_name}.",
+                    f"Ready, {client_name}."
+                ]
+            else:
+                # 70% chance: no name
+                options = [
+                    "Standing by.",
+                    "Ready.",
+                    "Standing by.",  # Weighted
+                ]
+            
+            return True, random.choice(options)
+        
+        # ========================================
+        # PURE ACKNOWLEDGMENTS (no query)
+        # ========================================
     
     pure_acks = [
         'thanks', 'thank you', 'thankyou', 'thx', 'ty',
