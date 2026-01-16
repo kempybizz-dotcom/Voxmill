@@ -678,11 +678,11 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             'your biggest fear', 'what keeps you up', 'what scares you',
             'if i asked you what worries', 'be honest what worries'
         ]
-
-is_principal_risk = any(keyword in message_lower for keyword in principal_risk_keywords)
-
-if is_principal_risk:
-    logger.info(f"✅ PRINCIPAL RISK ADVICE triggered: {message[:50]}")
+        
+        is_principal_risk = any(keyword in message_lower for keyword in principal_risk_keywords)
+        
+        if is_principal_risk:
+            logger.info(f"✅ PRINCIPAL RISK ADVICE triggered: {message[:50]}")
         
         # ========================================
         # AUTHORITY MODE DETECTION (NEW - WORLD CLASS)
