@@ -41,6 +41,7 @@ class Intent(Enum):
     PROFILE_STATUS = "profile_status"
     VALUE_JUSTIFICATION = "value_justification"
     TRUST_AUTHORITY = "trust_authority"
+    PRINCIPAL_RISK_ADVICE = "principal_risk_advice"
     STATUS_MONITORING = "status_monitoring"
     PORTFOLIO_MANAGEMENT = "portfolio_management"
     PORTFOLIO_STATUS = "portfolio_status"
@@ -60,6 +61,7 @@ TIER_0_NON_OVERRIDABLE = [
     Intent.SECURITY,              # PIN/auth must always work
     Intent.ADMINISTRATIVE,        # Account management critical
     Intent.TRUST_AUTHORITY,       # Confidence challenges
+    Intent.PRINCIPAL_RISK_ADVICE, # First-person risk questions
     Intent.META_AUTHORITY,        # System capability questions
     Intent.EXECUTIVE_COMPRESSION, # Transform last response
     Intent.MONITORING_DIRECTIVE,  # Setup monitoring
@@ -159,7 +161,7 @@ class ConversationalGovernor:
         # ✅ FIX 5: TIER 0 SHORT-CIRCUIT - CRITICAL
         # ========================================
         tier_0_intent_types = [
-            'trust_authority', 'meta_authority', 'executive_compression',
+            'trust_authority', 'principal_risk_advice', 'meta_authority', 'executive_compression',
             'profile_status', 'portfolio_status', 'portfolio_management',
             'value_justification', 'status_monitoring', 'delivery_request'
         ]
@@ -217,8 +219,14 @@ class ConversationalGovernor:
             return intent_map.get(intent_type, Intent.STRATEGIC)
         
         # ========================================
-        # TIER 1/2: Semantic category mapping for market queries
+        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE ROUTING
         # ========================================
+        if intent_type == 'principal_risk_advice':
+            logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Principal risk advice detected")
+            return Intent.PRINCIPAL_RISK_ADVICE
+        
+        # ========================================
+        # TIER 1/2: Semantic category mapping for market queries       
         
         # PRIORITY: Use LLM's intent_type if provided (for non-Tier-0)
         if intent_type == "meta_authority":
@@ -518,6 +526,19 @@ class ConversationalGovernor:
                 llm_call_allowed=True,  # ✅ LLM generates blind spot analysis
                 allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
+
+            Intent.PRINCIPAL_RISK_ADVICE: Envelope(  # ✅ CHATGPT FIX
+                analysis_allowed=True,
+                max_response_length=300,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,  # CRITICAL: NO REFUSAL - MUST ANSWER
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=True,
+                llm_call_allowed=True,  # ✅ LLM generates principal risk view
+                allowed_shapes=["STRUCTURED_BRIEF"]
+            ),
             
             Intent.STATUS_MONITORING: Envelope(
                 analysis_allowed=True,
@@ -657,6 +678,10 @@ Real-time data. Fortune-500 presentation quality. Surgical precision."""
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
             return None  # Handled by LLM
+        
+        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE - NEVER HARDCODED
+        if intent == Intent.PRINCIPAL_RISK_ADVICE:
+            return None  # ✅ MUST route to LLM - NEVER self-describe
         
         # ✅ CRITICAL FIX: PORTFOLIO HANDLERS MUST EXECUTE, NOT GENERATE RESPONSES HERE
         if intent == Intent.PORTFOLIO_MANAGEMENT:
@@ -833,13 +858,14 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
+    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
 }}
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
 - identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
 - plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
+- principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
 - META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
   * "What am I missing?"
   * "What's the blind spot?"
@@ -1326,6 +1352,15 @@ Trial access provides limited intelligence sampling."""
             is_mandate_relevant = True
             semantic_category = SemanticCategory.STRATEGIC_POSITIONING
             semantic_confidence = 0.95
+
+        principal_risk_patterns = [
+            'if you were in my seat', 'if you were in my position',
+            'if you were me', 'if you were sitting where i am',
+            'what would worry you', 'what would concern you',
+            'what would make you worried', 'your biggest fear',
+            'what keeps you up', 'what scares you most',
+            'be honest what worries', 'honestly what worries'
+        ]
         
         # META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
         if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status', 'value_justification', 'trust_authority', 'portfolio_management', 'status_monitoring', 'delivery_request']:
