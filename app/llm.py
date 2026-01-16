@@ -450,6 +450,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             current_time_uk=current_time_uk,
             current_date=current_date,
             client_name=first_name,
+            agency_name=agency_name if agency_name else client_company if client_company else "your organization",  
             client_company=client_company if client_company else "your organization",
             client_tier=client_tier_display,
             preferred_region=preferred_region,
