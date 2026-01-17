@@ -452,13 +452,13 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         from datetime import datetime
         import pytz
         
-# ============================================================
+        # ============================================================
         # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
         # ============================================================
         
         # Set defaults first (always defined)
         client_name = "there"
-        first_name = "there"
+        name = "there"
         client_company = ""
         client_tier_display = "institutional"
         preferred_region = "Mayfair"
@@ -476,7 +476,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 full_name = client_profile.get('name', 'there')
                 if full_name and full_name != 'there':
                     client_name = full_name
-                    first_name = full_name.split()[0]
+                    name = full_name.split()[0]
                 
                 # Company
                 client_company = client_profile.get('company', '')
@@ -553,7 +553,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         system_prompt_personalized = SYSTEM_PROMPT.format(
             current_time_uk=current_time_uk,
             current_date=current_date,
-            client_name=first_name,
+            client_name=name,
             agency_name=agency_name if agency_name else client_company if client_company else "your organization",  
             client_company=client_company if client_company else "your organization",
             client_tier=client_tier_display,
