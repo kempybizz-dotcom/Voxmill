@@ -1053,23 +1053,23 @@ Guidelines:
     
     @staticmethod
     async def govern(message_text: str, sender: str, client_profile: dict, 
-                system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
-    """
-    Main governance entry point with Layer -1 social absorption
-    
-    WORLD-CLASS ARCHITECTURE:
-    - Layer -1: Social absorption (greetings, politeness)
-    - PRIORITY 0: Human signal detection (BEFORE LLM)
-    - Layer 0: LLM intent classification (meaning)
-    - Layer 1: Airtable module enforcement (permission)
-    - Layer 2: Envelope constraints (execution)
-    
-    Returns: GovernanceResult with intent, constraints, and optional response
-    """
-    
-    # ========================================
-    # LAYER -1: SOCIAL ABSORPTION
-    # ========================================
+                    system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
+        """
+        Main governance entry point with Layer -1 social absorption
+        
+        WORLD-CLASS ARCHITECTURE:
+        - Layer -1: Social absorption (greetings, politeness)
+        - PRIORITY 0: Human signal detection (BEFORE LLM)
+        - Layer 0: LLM intent classification (meaning)
+        - Layer 1: Airtable module enforcement (permission)
+        - Layer 2: Envelope constraints (execution)
+        
+        Returns: GovernanceResult with intent, constraints, and optional response
+        """
+        
+        # ========================================
+        # LAYER -1: SOCIAL ABSORPTION
+        # ========================================
     
     client_name = client_profile.get('name', 'there')
     
