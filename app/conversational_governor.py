@@ -656,7 +656,7 @@ class ConversationalGovernor:
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
             if client_profile:
-                logger.info(f"🔍 PROFILE_STATUS DEBUG: {json.dumps(client_profile, indent=2)}")
+                logger.info(f"🔍 PROFILE_STATUS DEBUG: name={client_profile.get('name')}, agency_name={client_profile.get('agency_name')}, role={client_profile.get('role')}")
                 
                 raw_name = client_profile.get('name', 'there')
                 tier = client_profile.get('tier', 'tier_1')
