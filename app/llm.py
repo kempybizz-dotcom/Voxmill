@@ -289,32 +289,53 @@ REQUIRED FORMAT (EXACT):
 
 PRINCIPAL RISK VIEW
 
-If I were sitting in your seat this week, my biggest concern would be [ONE SPECIFIC RISK].
+If I were sitting in your seat this week, my biggest concern would be [ONE SPECIFIC RISK IN POWER DYNAMICS LANGUAGE].
 
 Why it matters:
-[1-2 sentences: mechanism + market psychology]
+[1-2 sentences: timing asymmetry + loss of control/narrative/leverage]
 
 What would confirm it:
-[ONE observable signal - be specific]
+[ONE behavioral signal - be specific, avoid raw numbers]
 
-Confidence: [early signal / inferred / observed]
+Confidence: early signal / inferred / observed
+
+ELITE LANGUAGE RULES:
+- THINK IN: loss of control, timing, narrative, power, leverage
+- AVOID: "adjusting pricing strategies", "market share capture", "positioning strategies"
+- USE: "narrative control", "re-anchoring expectations", "timing asymmetry", "instruction capture"
+- AVOID: "aggressively", "potentially", "could impact"
+- USE: "quietly", "before you see", "while you defend"
+
+CONFIRMATION SIGNALS (BEHAVIORAL, NOT MECHANICAL):
+✓ "Increase in quiet fee flexibility"
+✓ "Off-market pushes on prime stock"
+✓ "Sub-5% price trims without fanfare"
+✗ "Price reductions of 3-5%"
+✗ "Market share adjustments"
+✗ "Aggressive pricing strategies"
+
+CONFIDENCE CALIBRATION:
+- early signal: Pattern emerging, not yet confirmed (USE THIS FOR MOCK DATA)
+- inferred: Multiple weak signals pointing same direction
+- observed: Hard data, verifiable in current listings
 
 RULES:
 - ONE risk only (the most important)
-- Must mention client's agency by name
+- Frame as POWER DYNAMIC (who controls narrative/timing/leverage)
 - Must be external threat (competitor behavior, market shift)
-- Must include observable confirmation signal
+- Must include behavioral confirmation signal
 - NEVER mention Voxmill, datasets, or system capabilities
 - No hedging language ("might", "could", "possibly")
+- NEVER use "observed pattern" unless you have hard data
 
-Example:
-"If I were sitting in your seat this week, my biggest concern would be Knight Frank securing off-market instructions before you see pricing movement.
+Example (ELITE):
+"If I were sitting in your seat this week, my biggest concern would be losing narrative control on pricing before the market visibly resets.
 
 Why it matters:
-Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
+Competitors like Knight Frank and Chestertons tend to move first when sentiment turns. If they quietly re-anchor seller expectations before prices adjust publicly, they win instructions while you defend positioning.
 
 What would confirm it:
-Increase in competitor off-market conversations or fee flexibility from Knight Frank.
+An increase in quiet fee flexibility, off-market pushes, or sub-5% price trims on prime Mayfair stock.
 
 Confidence: early signal"
 
@@ -1236,13 +1257,13 @@ Confidence: Early signal (not yet verifiable in current listings)."""
                 
                 response_text = f"""PRINCIPAL RISK VIEW
 
-If I were sitting in your seat this week, my biggest concern would be {top_competitor} securing off-market instructions before you see pricing movement.
+If I were sitting in your seat this week, my biggest concern would be losing narrative control on pricing before the market visibly resets.
 
 Why it matters:
-Agents feel slowdowns before sellers do. If competitors reset seller expectations first, they'll capture instructions while you defend price points.
+Competitors like {top_competitor} tend to move first when sentiment turns. If they quietly re-anchor seller expectations before prices adjust publicly, they win instructions while you defend positioning.
 
 What would confirm it:
-Increase in {top_competitor} off-market conversations or fee flexibility.
+An increase in quiet fee flexibility, off-market pushes, or sub-5% price trims on prime Mayfair stock.
 
 Confidence: early signal"""
             
