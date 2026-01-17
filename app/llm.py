@@ -143,6 +143,45 @@ Examples of CORRECT responses:
 - "Liquidity: 72/100. Window closing. Execute within 48 hours if positioned."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HUMAN MODE (PRIORITY 0.5 - OVERRIDES EVERYTHING)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRIGGERS (any of these activate HUMAN MODE):
+- "feels off", "can't put my finger on it", "something's not right"
+- "say that again, but...", "like you're sitting next to me"
+- "don't give me numbers", "no numbers", "skip the metrics"
+- "be straight", "you sure?", "certain about that?"
+
+WHEN HUMAN MODE IS ACTIVE:
+❌ BANNED:
+- ALL numbers (no percentages, no scores, no /100, no £/sqft)
+- ALL headers (MARKET INTELLIGENCE, WEEKLY BRIEFING, etc.)
+- ALL system descriptions ("We analyze...", "I provide...")
+- ALL technical terms (liquidity velocity, timing score, momentum)
+
+✅ REQUIRED:
+- Short sentences (max 15 words each)
+- Behavioral language (hesitation, commitment, positioning)
+- Intuitive framing (before/after, upstream/downstream, quiet/loud)
+- Advisor tone (you're sitting next to them, thinking out loud)
+
+HUMAN MODE EXAMPLES:
+
+❌ WRONG (Report Mode):
+"The current liquidity velocity in Mayfair is moderate at 63.2/100, indicating active but slightly slowed transactions. Market sentiment remains neutral with a timing score of 62."
+
+✅ CORRECT (Human Mode):
+"You're picking up on hesitation. Buyers are active, but they're not committing quickly — that gap usually shows up before the market actually turns."
+
+❌ WRONG (System Description):
+"We analyze Mayfair market dynamics for Wetherell Mayfair Estate Agents. Current focus: competitive positioning, pricing trends, instruction flow."
+
+✅ CORRECT (Human Mode):
+"We're here to help you read the Mayfair market properly so you don't get caught reacting late while competitors move first."
+
+CRITICAL: Human mode is STICKY. Once activated, stay in human mode for the entire response. Do not snap back to metrics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONFIDENCE ASSESSMENT (NEW - PRIORITY 1.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1268,6 +1307,33 @@ An increase in quiet fee flexibility, off-market pushes, or sub-5% price trims o
 Confidence: early signal"""
             
             logger.info(f"✅ Principal Risk validated: valid={is_valid_principal}, self_description={has_self_description}")
+        
+        # ========================================
+        # HUMAN MODE VALIDATOR
+        # ========================================
+        
+        is_human_mode = conversation_context and conversation_context.get('human_mode_active', False)
+        
+        if is_human_mode:
+            # Validate human mode compliance
+            has_numbers = bool(re.search(r'\d+\.?\d*(/100|%|£|\$)', response_text))
+            has_headers = bool(re.search(r'^(MARKET INTELLIGENCE|WEEKLY BRIEFING|DECISION MODE)', response_text, re.MULTILINE))
+            has_system_desc = any(phrase in response_text.lower() for phrase in [
+                'we analyze', 'i provide', 'current focus:', 'analysis includes'
+            ])
+            has_technical_terms = any(term in response_text.lower() for term in [
+                'liquidity velocity', 'timing score', 'momentum', '/100'
+            ])
+            
+            is_valid_human = not (has_numbers or has_headers or has_system_desc or has_technical_terms)
+            
+            if not is_valid_human:
+                logger.warning(f"⚠️ Human Mode violated: numbers={has_numbers}, headers={has_headers}, system_desc={has_system_desc}, technical={has_technical_terms}")
+                
+                # Override with proper human mode response
+                response_text = """You're picking up on hesitation. Buyers are active, but they're not committing quickly — that gap usually shows up before the market actually turns."""
+            
+            logger.info(f"✅ Human Mode validated: valid={is_valid_human}")
         
         # ========================================
         # MONITORING LANGUAGE VALIDATOR
