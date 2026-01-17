@@ -219,7 +219,7 @@ def get_client_from_airtable(sender: str) -> dict:
                 'subscription_status': status.capitalize() if status != 'blocked' else 'Blocked',
                 'access_enabled': False,
                 'trial_expired': trial_expired,
-                'name': fields.get('first_name', 'there'),
+                'name': fields.get('name', 'there'),
                 'email': '',
                 'airtable_record_id': account_id,
                 'table': 'Accounts',
@@ -294,7 +294,7 @@ def get_client_from_airtable(sender: str) -> dict:
                 status = fields.get('Account Status', 'trial')
                 
                 return {
-                    'name': fields.get('first_name', 'there'),
+                    'name': fields.get('name', 'there'),
                     'email': '',
                     'subscription_status': status.capitalize(),
                     'tier': tier,
@@ -551,16 +551,16 @@ def get_time_appropriate_greeting(client_name: str = "there") -> str:
     uk_time = datetime.now(uk_tz)
     hour = uk_time.hour
     
-    first_name = client_name.split()[0] if client_name != "there" else ""
+    name = client_name.split()[0] if client_name != "there" else ""
     
     if 5 <= hour < 12:
-        greeting = f"Good morning{', ' + first_name if first_name else ''}."
+        greeting = f"Good morning{', ' + name if name else ''}."
     elif 12 <= hour < 17:
-        greeting = f"Good afternoon{', ' + first_name if first_name else ''}."
+        greeting = f"Good afternoon{', ' + name if name else ''}."
     elif 17 <= hour < 22:
-        greeting = f"Good evening{', ' + first_name if first_name else ''}."
+        greeting = f"Good evening{', ' + name if name else ''}."
     else:
-        greeting = f"Evening{', ' + first_name if first_name else ''}."
+        greeting = f"Evening{', ' + name if name else ''}."
     
     return greeting
 
@@ -569,8 +569,8 @@ async def send_first_time_welcome(sender: str, client_profile: dict):
     try:
         tier = client_profile.get('tier', 'tier_1')
         name = client_profile.get('name', 'there')
-        first_name = name.split()[0] if name != 'there' else 'there'
-        greeting = get_time_appropriate_greeting(first_name)
+        name = name.split()[0] if name != 'there' else 'there'
+        greeting = get_time_appropriate_greeting(name)
         
         welcome_message = f"""{greeting}
 
@@ -861,16 +861,16 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 old_total = client_profile.get('total_queries', 0) if client_profile else 0
                 
                 # ✅ CHATGPT FIX: Filter out phone numbers from names
-                raw_first_name = client_profile_airtable.get('name', 'there')
-                if raw_first_name and (raw_first_name.startswith('+') or raw_first_name.startswith('whatsapp:') or raw_first_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
-                    clean_first_name = 'there'
+                raw_name = client_profile_airtable.get('name', 'there')
+                if raw_name and (raw_name.startswith('+') or raw_name.startswith('whatsapp:') or raw_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
+                    clean_name = 'there'
                 else:
-                    clean_first_name = raw_first_name
+                    clean_name = raw_name
                 
                 # ✅ BUILD CLIENT PROFILE FROM NEW CONTROL PLANE SCHEMA
                 client_profile = {
                     'whatsapp_number': sender,
-                    'name': clean_first_name,
+                    'name': clean_name,
                     'email': client_profile_airtable.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
                     'tier': client_profile_airtable.get('tier', 'tier_1'),
                     'subscription_status': client_profile_airtable.get('subscription_status', 'unknown'),
@@ -1241,12 +1241,12 @@ Contact intel@voxmill.uk if you need assistance."""
             
             if should_send_welcome:
                 client_name = client_profile.get('name', 'there')
-                first_name = client_name.split()[0] if client_name != 'there' else 'there'
+                name = client_name.split()[0] if client_name != 'there' else 'there'
                 
                 if welcome_message_type == 'trial_start':
                     welcome_msg = f"""TRIAL PERIOD ACTIVE
 
-Welcome to Voxmill Intelligence, {first_name}.
+Welcome to Voxmill Intelligence, {name}.
 
 Your 24-hour trial access is now active.
 
@@ -1265,7 +1265,7 @@ Available 24/7.
 Voxmill Intelligence — Precision at Scale"""
                 
                 elif welcome_message_type == 'reactivation':
-                    greeting = get_time_appropriate_greeting(first_name)
+                    greeting = get_time_appropriate_greeting(name)
                     welcome_msg = f"""{greeting}
 
 WELCOME BACK
@@ -1277,7 +1277,7 @@ Your private intelligence line is now active.
 Standing by."""
                 
                 else:  # first_active
-                    greeting = get_time_appropriate_greeting(first_name)
+                    greeting = get_time_appropriate_greeting(name)
                     welcome_msg = f"""{greeting}
 
 Welcome to Voxmill Intelligence.
