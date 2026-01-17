@@ -1312,7 +1312,8 @@ Confidence: early signal"""
         # HUMAN MODE VALIDATOR
         # ========================================
         
-        is_human_mode = conversation_context and conversation_context.get('human_mode_active', False)
+        # Human mode is now handled by governor - this check is obsolete
+        is_human_mode = False
         
         if is_human_mode:
             # Validate human mode compliance
