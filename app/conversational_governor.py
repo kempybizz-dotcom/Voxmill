@@ -1054,7 +1054,7 @@ Guidelines:
     @staticmethod
     async def govern(message_text: str, sender: str, client_profile: dict, 
                 system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
-    """
+        """
     Main governance entry point with Layer -1 social absorption
     
     WORLD-CLASS ARCHITECTURE:
