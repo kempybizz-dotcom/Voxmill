@@ -1116,37 +1116,6 @@ Guidelines:
                 )
         
         # ========================================
-        # ✅ PRIORITY 0: HUMAN SIGNAL DETECTION (BEFORE LLM)
-        # ========================================
-        
-        message_lower = message_text.lower().strip()
-        
-        # Detect emotional/intuitive signals that require human mode
-        human_signal_patterns = [
-            'feels off', 'feel off', 'something feels',
-            'can\'t put my finger', 'cant put my finger',
-            'something\'s not right', 'something not right',
-            'doesn\'t feel right', 'doesnt feel right',
-            'not sitting right', 'something\'s not sitting right',
-            'doesn\'t sit right', 'doesnt sit right',
-            'sounds tidy', 'sounds neat', 'bit tidy', 'bit neat',
-            'say that again', 'rephrase that', 'like you\'re sitting',
-            'without worrying', 'without them worrying',
-            'don\'t give me numbers', 'dont give me numbers',
-            'no numbers', 'skip the numbers', 'forget the numbers',
-            'be straight', 'just be straight', 'straight with me',
-            'you sure', 'are you sure', 'certain about that'
-        ]
-        
-        is_human_signal = any(pattern in message_lower for pattern in human_signal_patterns)
-        
-        # Set flag for later use
-        human_mode_active = False
-        if is_human_signal:
-            logger.info(f"🎯 HUMAN SIGNAL DETECTED: '{message_text[:50]}'")
-            human_mode_active = True
-        
-        # ========================================
         # LAYER -0.5: TRIAL ENVELOPE (OUTER LAYER - CRITICAL)
         # ========================================
         
@@ -1368,21 +1337,6 @@ Trial access provides limited intelligence sampling."""
         # Get LLM's intent_type hint for special handling
         intent_type_hint = ConversationalGovernor._last_intent_type
         
-        # ========================================
-        # ✅ APPLY HUMAN SIGNAL OVERRIDE (IF DETECTED EARLIER)
-        # ========================================
-        
-        if human_mode_active:
-            # Force to human mode - route as strategic with special flag
-            intent_type_hint = 'human_mode_strategic'
-            is_mandate_relevant = True
-            semantic_category = SemanticCategory.STRATEGIC_POSITIONING
-            semantic_confidence = 0.95
-            
-            # Set conversation context flag for LLM
-            if conversation_context is None:
-                conversation_context = {}
-            conversation_context['human_mode_active'] = True
         
         # ========================================
         # CRITICAL: IMPLICIT REFERENCE OVERRIDE
@@ -1405,45 +1359,7 @@ Trial access provides limited intelligence sampling."""
                 semantic_category = SemanticCategory.STRATEGIC_POSITIONING
                 semantic_confidence = 0.80
                 logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
-
-        # ========================================
-        # ✅ CHATGPT FIX: IMPLICIT IDENTITY RESOLVER (PRIORITY 0)
-        # ========================================
         
-        implicit_identity_patterns = [
-            'what do we do', 'what you think we do', 'remind me what we do',
-            'what are we', 'who are we', 'what\'s our',
-            'what are you looking at', 'what do you look at',
-            'what are you actually', 'how do you know'
-        ]
-        
-        if any(pattern in message_lower for pattern in implicit_identity_patterns):
-            logger.info(f"🎯 IMPLICIT IDENTITY QUESTION: '{message_text}'")
-            
-            # Force to identity_query intent
-            intent_type_hint = 'identity_query'
-            is_mandate_relevant = True
-            semantic_category = SemanticCategory.ADMINISTRATIVE
-            semantic_confidence = 0.95
-        
-        # ========================================
-        # CRITICAL FIX: SPECIAL INTENT OVERRIDE (BEFORE REFUSAL)
-        # ========================================
-        
-        # ✅ CHATGPT FIX: Explicit meta-strategic pattern matching (before LLM check)
-        explicit_meta_patterns = [
-            'what am i missing', 'what\'s missing', 'whats missing',
-            'blind spot', 'blind spots', 'what am i not seeing',
-            'what should i know', 'what don\'t i know'
-        ]
-        
-        if any(pattern in message_lower for pattern in explicit_meta_patterns):
-            logger.info(f"🎯 EXPLICIT META-STRATEGIC OVERRIDE: '{message_text}'")
-            # Force to trust_authority intent immediately
-            intent_type_hint = 'trust_authority'
-            is_mandate_relevant = True
-            semantic_category = SemanticCategory.STRATEGIC_POSITIONING
-            semantic_confidence = 0.95
 
         principal_risk_patterns = [
             'if you were in my seat', 'if you were in my position',
