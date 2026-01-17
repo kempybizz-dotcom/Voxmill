@@ -1382,7 +1382,6 @@ Current focus: competitive positioning, pricing trends, instruction flow."""
             # Strip precise numbers in early conversation
             # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
             
-            import re
             
             # Replace /100 scores with qualitative terms
             response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
@@ -1498,7 +1497,6 @@ Current focus: competitive positioning, pricing trends, instruction flow."""
             # Strip precise numbers in early conversation
             # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
             
-            import re
             
             # Replace /100 scores with qualitative terms
             response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
@@ -1537,7 +1535,6 @@ Current focus: competitive positioning, pricing trends, instruction flow."""
             # Strip precise numbers in early conversation
             # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
             
-            import re
             
             # Replace /100 scores with qualitative terms
             response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
