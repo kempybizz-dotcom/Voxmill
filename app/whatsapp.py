@@ -219,7 +219,7 @@ def get_client_from_airtable(sender: str) -> dict:
                 'subscription_status': status.capitalize() if status != 'blocked' else 'Blocked',
                 'access_enabled': False,
                 'trial_expired': trial_expired,
-                'name': fields.get('WhatsApp Number', 'there'),
+                'name': fields.get('first_name', 'there'),
                 'email': '',
                 'airtable_record_id': account_id,
                 'table': 'Accounts',
@@ -294,7 +294,7 @@ def get_client_from_airtable(sender: str) -> dict:
                 status = fields.get('Account Status', 'trial')
                 
                 return {
-                    'name': search_number,
+                    'name': fields.get('first_name', 'there'),
                     'email': '',
                     'subscription_status': status.capitalize(),
                     'tier': tier,
@@ -861,11 +861,11 @@ async def handle_whatsapp_message(sender: str, message_text: str):
                 old_total = client_profile.get('total_queries', 0) if client_profile else 0
                 
                 # ✅ CHATGPT FIX: Filter out phone numbers from names
-                raw_first_name = client_profile_airtable.get('name', 'Unknown')
+                raw_first_name = client_profile_airtable.get('name', 'there')
                 if raw_first_name and (raw_first_name.startswith('+') or raw_first_name.startswith('whatsapp:') or raw_first_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
                     clean_first_name = 'there'
                 else:
-                    clean_first_name = raw_name
+                    clean_first_name = raw_first_name
                 
                 # ✅ BUILD CLIENT PROFILE FROM NEW CONTROL PLANE SCHEMA
                 client_profile = {
