@@ -249,7 +249,7 @@ class ResponseEnforcer:
             Intent.SECURITY: ResponseShape.STATUS_LINE,
             Intent.ADMINISTRATIVE: ResponseShape.STATUS_LINE,
             Intent.MONITORING_DIRECTIVE: ResponseShape.STATUS_LINE,
-            Intent.META_AUTHORITY: ResponseShape.STATUS_LINE,
+            Intent.META_AUTHORITY: ResponseShape.STRUCTURED_BRIEF,  # ✅ Human signals need space
             Intent.PROFILE_STATUS: ResponseShape.STATUS_LINE,
             Intent.VALUE_JUSTIFICATION: ResponseShape.STATUS_LINE,
             Intent.TRUST_AUTHORITY: ResponseShape.STATUS_LINE,
