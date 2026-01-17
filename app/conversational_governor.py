@@ -654,10 +654,20 @@ class ConversationalGovernor:
         
         # META_AUTHORITY responses
         if intent == Intent.META_AUTHORITY:
-            return """I provide real-time market intelligence across industries.
+            # ✅ CHATGPT FIX: If client is authenticated, NEVER self-describe
+            if client_profile and client_profile.get('agency_name'):
+                # Client is authenticated - respond as their analyst
+                agency_name = client_profile.get('agency_name', 'your organization')
+                active_market = client_profile.get('active_market', 'your market')
+                
+                return f"""We analyze {active_market} market dynamics for {agency_name}.
+
+Current focus: competitive positioning, pricing trends, instruction flow."""
+            else:
+                # No client context - generic capability response
+                return """I provide real-time market intelligence across industries.
 
 Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
-        
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
             if client_profile:
@@ -1342,6 +1352,27 @@ Trial access provides limited intelligence sampling."""
                 semantic_category = SemanticCategory.STRATEGIC_POSITIONING
                 semantic_confidence = 0.80
                 logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
+
+        # ========================================
+        # ✅ CHATGPT FIX: IMPLICIT IDENTITY RESOLVER (PRIORITY 0)
+        # ========================================
+        
+        # Detect implicit identity questions BEFORE intent classification
+        implicit_identity_patterns = [
+            'what do we do', 'what you think we do', 'remind me what we do',
+            'what are we', 'who are we', 'what\'s our',
+            'what are you looking at', 'what do you look at',
+            'what are you actually', 'how do you know'
+        ]
+        
+        if any(pattern in message_lower for pattern in implicit_identity_patterns):
+            logger.info(f"🎯 IMPLICIT IDENTITY QUESTION: '{message_text}'")
+            
+            # Force to identity_query intent
+            intent_type_hint = 'identity_query'
+            is_mandate_relevant = True
+            semantic_category = SemanticCategory.ADMINISTRATIVE
+            semantic_confidence = 0.95
         
         # ========================================
         # CRITICAL FIX: SPECIAL INTENT OVERRIDE (BEFORE REFUSAL)
