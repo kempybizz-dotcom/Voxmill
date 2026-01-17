@@ -638,62 +638,63 @@ class ConversationalGovernor:
     def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
-        
+    
         ✅ VARIED ACKNOWLEDGMENTS - rotates between options
         ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
         ✅ NO PORTFOLIO RESPONSES - let handlers execute
         ✅ NEVER USE PHONE NUMBERS AS NAMES
         Intent-based responses only (no phrase matching)
         """
-        
+    
         client_name = client_profile.get('name', 'there') if client_profile else 'there'
-        
+    
         # ✅ CHATGPT FIX: Filter out phone numbers from names
         if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
             client_name = 'there'
-        
+    
         # META_AUTHORITY responses
-    if intent == Intent.META_AUTHORITY:
-        # ✅ Context-aware response for authenticated clients
-        if client_profile and client_profile.get('agency_name'):
-            return None  # ✅ Let LLM handle with context - no hardcoded response
-        else:
-            # No client context - generic capability response
-            return """I provide real-time market intelligence across industries.
+        if intent == Intent.META_AUTHORITY:
+            # ✅ Context-aware response for authenticated clients
+            if client_profile and client_profile.get('agency_name'):
+                return None  # ✅ Let LLM handle with context - no hardcoded response
+            else:
+                # No client context - generic capability response
+                return """I provide real-time market intelligence across industries.
 
-Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
+    Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
+    
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
             if client_profile:
                 name = client_profile.get('name', 'there')
                 tier = client_profile.get('tier', 'tier_1')
                 tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
-                
+            
                 return f"""CLIENT PROFILE
 
-Name: {name}
-Service Tier: {tier_display}
+    Name: {name}
+    Service Tier: {tier_display}
 
-Standing by."""
+    Standing by."""
             else:
                 return "Client profile loading..."
-        
+    
         # VALUE_JUSTIFICATION responses
         if intent == Intent.VALUE_JUSTIFICATION:
             # Context-aware value response
             if client_profile and client_profile.get('agency_name'):
                 agency_name = client_profile.get('agency_name')
                 active_market = client_profile.get('active_market', 'your market')
-                
+            
                 return f"""We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.
 
-        Real-time intelligence. No lag. No surprises.
+    Real-time intelligence. No lag. No surprises.
 
-        Standing by."""
+    Standing by."""
             else:
                 return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
 
-        Real-time data. Fortune-500 presentation quality. Surgical precision."""
+    Real-time data. Fortune-500 presentation quality. Surgical precision."""
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
