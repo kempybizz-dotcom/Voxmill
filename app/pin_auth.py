@@ -446,7 +446,7 @@ class PINAuthenticator:
 def get_pin_status_message(reason: str, client_name: str = "there") -> str:
     """Generate appropriate PIN request message based on reason"""
     
-    first_name = client_name.split()[0] if client_name != "there" else "there"
+    name = client_name.split()[0] if client_name != "there" else "there"
     
     if reason == "not_set":
         return f""" VOXMILL INTELLIGENCE ACCESS
@@ -462,7 +462,7 @@ Reply with 4 digits (e.g., 1234):"""
     elif reason == "inactivity":
         return f""" ACCESS CODE REQUIRED
 
-Good evening, {first_name}.
+Good evening, {name}.
 
 Intelligence line locked after 7 days of inactivity.
 
@@ -471,7 +471,7 @@ Enter your 4-digit code:"""
     elif reason == "subscription_change":
         return f""" ACCESS CODE REQUIRED
 
-Welcome back, {first_name}.
+Welcome back, {name}.
 
 Your subscription status has changed.
 
@@ -496,7 +496,7 @@ Enter your 4-digit code:"""
 def get_pin_response_message(success: bool, message: str, client_name: str = "there") -> str:
     """Generate response message after PIN attempt"""
     
-    first_name = client_name.split()[0] if client_name != "there" else "there"
+    name = client_name.split()[0] if client_name != "there" else "there"
     
     if success:
         # Successful verification
@@ -507,13 +507,13 @@ def get_pin_response_message(success: bool, message: str, client_name: str = "th
         hour = datetime.now(uk_tz).hour
         
         if 5 <= hour < 12:
-            greeting = f"Good morning, {first_name}."
+            greeting = f"Good morning, {name}."
         elif 12 <= hour < 17:
-            greeting = f"Good afternoon, {first_name}."
+            greeting = f"Good afternoon, {name}."
         elif 17 <= hour < 22:
-            greeting = f"Good evening, {first_name}."
+            greeting = f"Good evening, {name}."
         else:
-            greeting = f"Evening, {first_name}."
+            greeting = f"Evening, {name}."
         
         if message == "PIN set successfully":
             return f""" ACCESS CODE CONFIRMED
