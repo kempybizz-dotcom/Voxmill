@@ -631,7 +631,7 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
         
-# ========================================
+        # ========================================
         # CONVERSATIONAL INTELLIGENCE DETECTION
         # ========================================
         
@@ -1293,6 +1293,122 @@ Confidence: early signal"""
                 response_text = response_text.replace(phrase.title(), 'Monitor pending confirmation')
                 response_text = response_text.replace(phrase.upper(), 'MONITOR PENDING CONFIRMATION')
         
+# ========================================
+        # META-STRATEGIC RESPONSE VALIDATOR
+        # ========================================
+        
+        if is_meta_strategic:
+            # Validate meta-strategic format
+            forbidden_meta_phrases = [
+                'dataset', 'data absence', 'data missing', 'sqft', 'per square',
+                'quantification', 'granularity', 'agent dynamic', 'records',
+                'price per', 'untracked', 'confidence quantification',
+                'square foot', 'property count', 'coverage', 'visibility',
+                'tracking', 'monitored', 'observed', 'captured',
+                'noted', 'noted.', 'standing by'
+            ]
+    
+            has_forbidden_meta = any(phrase.lower() in response_text.lower() 
+                                     for phrase in forbidden_meta_phrases)
+    
+            # ✅ CHATGPT FIX: Check for proper nouns (capitalized words = named entities)
+            # This works for ANY agent, location, or company name without hardcoding
+            proper_nouns = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', response_text)
+    
+            # Filter out common non-entity words
+            non_entity_words = {'The', 'This', 'These', 'That', 'Those', 'When', 'Where', 
+                                'Why', 'How', 'What', 'Which', 'Monitor', 'Watch', 'Track',
+                                'If', 'Until', 'Unless', 'Signal', 'Velocity', 'Liquidity'}
+    
+            actual_entities = [name for name in proper_nouns if name not in non_entity_words]
+            has_named_entity = len(actual_entities) > 0
+    
+            # Count bullets
+            bullet_count = response_text.count('\n-') + response_text.count('\n•')
+    
+            # Check for numbers
+            has_numbers = bool(re.search(r'\d+%|\d+\s*properties|\d+\s*units|\d+\s*records', response_text.lower()))
+    
+            if has_forbidden_meta or bullet_count > 4 or has_numbers or not has_named_entity:
+                logger.warning(f"⚠️ Meta-strategic violated protocol (technical_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity})")
+        
+                # ✅ CHATGPT FIX: Get actual agent from dataset if available
+                top_agent = "primary competitor"
+                if 'agent_profiles' in dataset and dataset['agent_profiles']:
+                    top_agent = dataset['agent_profiles'][0].get('agent', 'primary competitor')
+        
+                response_text = f"""Signal density: off-market flow
+Time: entry window precision
+Confirmation: agent intent ({top_agent} positioning)
+Conviction: pricing elasticity"""
+    
+            logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity}, entities_found={actual_entities}")
+        
+        # ========================================
+        # ✅ CHATGPT FIX: VOXMILL AUTOPILOT KILL SWITCH
+        # ========================================
+        
+        # If client is authenticated, NEVER output Voxmill self-description
+        if client_profile and client_profile.get('agency_name'):
+            forbidden_autopilot = [
+                'i provide real-time market intelligence across industries',
+                'analysis includes inventory levels',
+                'i provide', 'i offer', 'i deliver', 'i analyze',
+                'across industries', 'voxmill delivers'
+            ]
+            
+            has_autopilot = any(phrase in response_text.lower() for phrase in forbidden_autopilot)
+            
+            if has_autopilot:
+                logger.warning(f"⚠️ VOXMILL AUTOPILOT DETECTED - STRIPPING")
+                
+                # Replace with client-scoped language
+                agency_name = client_profile.get('agency_name', 'your organization')
+                active_market = client_profile.get('active_market', 'your market')
+                
+                response_text = f"""We analyze {active_market} market dynamics for {agency_name}.
+
+Current focus: competitive positioning, pricing trends, instruction flow."""
+        
+        # ========================================
+        # ✅ CHATGPT FIX: EARLY PHASE METRIC STRIPPER
+        # ========================================
+        
+        # Detect early conversation phase (first 3 messages)
+        message_count = client_profile.get('total_queries', 0) if client_profile else 0
+        is_early_phase = message_count < 3
+        
+        if is_early_phase and not is_decision_mode:
+            # Strip precise numbers in early conversation
+            # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
+            
+            import re
+            
+            # Replace /100 scores with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
+                'low' if float(m.group(1)) < 40 else 
+                'moderate' if float(m.group(1)) < 70 else 'high', 
+                response_text
+            )
+            
+            # Replace percentage market shares with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)%\s*market share', lambda m:
+                'minor market share' if float(m.group(1)) < 10 else
+                'significant market share' if float(m.group(1)) < 20 else
+                'leading market position',
+                response_text
+            )
+            
+            # Replace precise percentages with directional terms
+            response_text = re.sub(r'(-?\d+\.?\d*)%', lambda m:
+                'declining' if float(m.group(1)) < -10 else
+                'stable' if abs(float(m.group(1))) < 10 else
+                'improving',
+                response_text
+            )
+            
+            logger.info(f"✅ Early phase: stripped precise metrics")
+            
         # ========================================
         # META-STRATEGIC RESPONSE VALIDATOR
         # ========================================
@@ -1338,11 +1454,115 @@ Confidence: early signal"""
                     top_agent = dataset['agent_profiles'][0].get('agent', 'primary competitor')
         
                 response_text = f"""Signal density: off-market flow
-        Time: entry window precision
-        Confirmation: agent intent ({top_agent} positioning)
-        Conviction: pricing elasticity"""
+Time: entry window precision
+Confirmation: agent intent ({top_agent} positioning)
+Conviction: pricing elasticity"""
     
             logger.info(f"✅ Meta-strategic validated: forbidden_terms={has_forbidden_meta}, bullets={bullet_count}, numbers={has_numbers}, named_entity={has_named_entity}, entities_found={actual_entities}")
+        
+        # ========================================
+        # ✅ CHATGPT FIX: VOXMILL AUTOPILOT KILL SWITCH
+        # ========================================
+        
+        # If client is authenticated, NEVER output Voxmill self-description
+        if client_profile and client_profile.get('agency_name'):
+            forbidden_autopilot = [
+                'i provide real-time market intelligence across industries',
+                'analysis includes inventory levels',
+                'i provide', 'i offer', 'i deliver', 'i analyze',
+                'across industries', 'voxmill delivers'
+            ]
+            
+            has_autopilot = any(phrase in response_text.lower() for phrase in forbidden_autopilot)
+            
+            if has_autopilot:
+                logger.warning(f"⚠️ VOXMILL AUTOPILOT DETECTED - STRIPPING")
+                
+                # Replace with client-scoped language
+                agency_name = client_profile.get('agency_name', 'your organization')
+                active_market = client_profile.get('active_market', 'your market')
+                
+                response_text = f"""We analyze {active_market} market dynamics for {agency_name}.
+
+Current focus: competitive positioning, pricing trends, instruction flow."""
+        
+        # ========================================
+        # ✅ CHATGPT FIX: EARLY PHASE METRIC STRIPPER
+        # ========================================
+        
+        # Detect early conversation phase (first 3 messages)
+        message_count = client_profile.get('total_queries', 0) if client_profile else 0
+        is_early_phase = message_count < 3
+        
+        if is_early_phase and not is_decision_mode:
+            # Strip precise numbers in early conversation
+            # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
+            
+            import re
+            
+            # Replace /100 scores with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
+                'low' if float(m.group(1)) < 40 else 
+                'moderate' if float(m.group(1)) < 70 else 'high', 
+                response_text
+            )
+            
+            # Replace percentage market shares with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)%\s*market share', lambda m:
+                'minor market share' if float(m.group(1)) < 10 else
+                'significant market share' if float(m.group(1)) < 20 else
+                'leading market position',
+                response_text
+            )
+            
+            # Replace precise percentages with directional terms
+            response_text = re.sub(r'(-?\d+\.?\d*)%', lambda m:
+                'declining' if float(m.group(1)) < -10 else
+                'stable' if abs(float(m.group(1))) < 10 else
+                'improving',
+                response_text
+            )
+            
+            logger.info(f"✅ Early phase: stripped precise metrics")
+        
+        # ========================================
+        # ✅ CHATGPT FIX: EARLY PHASE METRIC STRIPPER
+        # ========================================
+        
+        # Detect early conversation phase (first 3 messages)
+        message_count = client_profile.get('total_queries', 0) if client_profile else 0
+        is_early_phase = message_count < 3
+        
+        if is_early_phase and not is_decision_mode:
+            # Strip precise numbers in early conversation
+            # Replace "63.2/100" with "moderate", "23.7%" with "leading", etc.
+            
+            import re
+            
+            # Replace /100 scores with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)/100', lambda m: 
+                'low' if float(m.group(1)) < 40 else 
+                'moderate' if float(m.group(1)) < 70 else 'high', 
+                response_text
+            )
+            
+            # Replace percentage market shares with qualitative terms
+            response_text = re.sub(r'(\d+\.?\d*)%\s*market share', lambda m:
+                'minor market share' if float(m.group(1)) < 10 else
+                'significant market share' if float(m.group(1)) < 20 else
+                'leading market position',
+                response_text
+            )
+            
+            # Replace precise percentages with directional terms
+            response_text = re.sub(r'(-?\d+\.?\d*)%', lambda m:
+                'declining' if float(m.group(1)) < -10 else
+                'stable' if abs(float(m.group(1))) < 10 else
+                'improving',
+                response_text
+            )
+            
+            logger.info(f"✅ Early phase: stripped precise metrics")            
         
         # ========================================
         # FINAL SAFETY: RESPONSE LENGTH VALIDATOR
