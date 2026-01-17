@@ -653,29 +653,27 @@ class ConversationalGovernor:
             client_name = 'there'
     
         # META_AUTHORITY responses
-        if intent == Intent.META_AUTHORITY:
-            # ✅ Context-aware response for authenticated clients
-            if client_profile and client_profile.get('agency_name'):
-                return None  # ✅ Let LLM handle with context - no hardcoded response
-            else:
-                # No client context - generic capability response
-                return """I provide real-time market intelligence across industries.
-
-    Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
-    
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
             if client_profile:
-                name = client_profile.get('name', 'there')
+                raw_name = client_profile.get('name', 'there')
                 tier = client_profile.get('tier', 'tier_1')
                 tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
-            
+        
+                # ✅ CHATGPT FIX: Filter out phone numbers from names
+                if raw_name and (raw_name.startswith('+') or 
+                                raw_name.startswith('whatsapp:') or 
+                                raw_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
+                    clean_name = 'there'
+                else:
+                    clean_name = raw_name
+    
                 return f"""CLIENT PROFILE
 
-    Name: {name}
-    Service Tier: {tier_display}
+        Name: {clean_name}
+        Service Tier: {tier_display}
 
-    Standing by."""
+        Standing by."""
             else:
                 return "Client profile loading..."
     
