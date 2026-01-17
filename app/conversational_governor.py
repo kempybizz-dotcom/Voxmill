@@ -1358,6 +1358,8 @@ Trial access provides limited intelligence sampling."""
         # ========================================
         
         # Detect implicit identity questions BEFORE intent classification
+        message_lower = message_text.lower().strip()  # ✅ Define message_lower first
+        
         implicit_identity_patterns = [
             'what do we do', 'what you think we do', 'remind me what we do',
             'what are we', 'who are we', 'what\'s our',
