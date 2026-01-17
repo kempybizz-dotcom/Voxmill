@@ -1067,57 +1067,53 @@ Guidelines:
         Returns: GovernanceResult with intent, constraints, and optional response
         """
         
-        # ========================================
-        # LAYER -1: SOCIAL ABSORPTION
-        # ========================================
-    
-    client_name = client_profile.get('name', 'there')
-    
-    is_social, social_response = ConversationalGovernor._absorb_social_input(
-        message_text,
-        client_name,
-        conversation_context
-    )
-    
-    if is_social:
-        logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
+        client_name = client_profile.get('name', 'there')
         
-        if social_response is None:
-            # Silence
-            return GovernanceResult(
-                intent=Intent.CASUAL,
-                confidence=1.0,
-                blocked=True,
-                silence_required=True,
-                response=None,
-                allowed_shapes=["SILENCE"],
-                max_words=0,
-                analysis_allowed=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                auto_scoped=False,
-                semantic_category="social"
-            )
-        else:
-            # Brief acknowledgment
-            return GovernanceResult(
-                intent=Intent.CASUAL,
-                confidence=1.0,
-                blocked=True,
-                silence_required=False,
-                response=social_response,
-                allowed_shapes=["ACKNOWLEDGMENT"],
-                max_words=10,
-                analysis_allowed=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                auto_scoped=False,
-                semantic_category="social"
-            )
-    
-    # ========================================
-    # ✅ PRIORITY 0: HUMAN SIGNAL DETECTION (BEFORE LLM)
-    # ========================================
+        is_social, social_response = ConversationalGovernor._absorb_social_input(
+            message_text,
+            client_name,
+            conversation_context
+        )
+        
+        if is_social:
+            logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
+            
+            if social_response is None:
+                # Silence
+                return GovernanceResult(
+                    intent=Intent.CASUAL,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=True,
+                    response=None,
+                    allowed_shapes=["SILENCE"],
+                    max_words=0,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="social"
+                )
+            else:
+                # Brief acknowledgment
+                return GovernanceResult(
+                    intent=Intent.CASUAL,
+                    confidence=1.0,
+                    blocked=True,
+                    silence_required=False,
+                    response=social_response,
+                    allowed_shapes=["ACKNOWLEDGMENT"],
+                    max_words=10,
+                    analysis_allowed=False,
+                    data_load_allowed=False,
+                    llm_call_allowed=False,
+                    auto_scoped=False,
+                    semantic_category="social"
+                )
+        
+        # ========================================
+        # ✅ PRIORITY 0: HUMAN SIGNAL DETECTION (BEFORE LLM)
+        # ========================================
     
     message_lower = message_text.lower().strip()
     
