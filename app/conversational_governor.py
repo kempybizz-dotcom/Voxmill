@@ -653,19 +653,13 @@ class ConversationalGovernor:
             client_name = 'there'
         
         # META_AUTHORITY responses
-        if intent == Intent.META_AUTHORITY:
-            # ✅ CHATGPT FIX: If client is authenticated, NEVER self-describe
-            if client_profile and client_profile.get('agency_name'):
-                # Client is authenticated - respond as their analyst
-                agency_name = client_profile.get('agency_name', 'your organization')
-                active_market = client_profile.get('active_market', 'your market')
-                
-                return f"""We analyze {active_market} market dynamics for {agency_name}.
-
-Current focus: competitive positioning, pricing trends, instruction flow."""
-            else:
-                # No client context - generic capability response
-                return """I provide real-time market intelligence across industries.
+    if intent == Intent.META_AUTHORITY:
+        # ✅ Context-aware response for authenticated clients
+        if client_profile and client_profile.get('agency_name'):
+            return None  # ✅ Let LLM handle with context - no hardcoded response
+        else:
+            # No client context - generic capability response
+            return """I provide real-time market intelligence across industries.
 
 Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning."""
         # PROFILE_STATUS responses
@@ -686,9 +680,20 @@ Standing by."""
         
         # VALUE_JUSTIFICATION responses
         if intent == Intent.VALUE_JUSTIFICATION:
-            return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
+            # Context-aware value response
+            if client_profile and client_profile.get('agency_name'):
+                agency_name = client_profile.get('agency_name')
+                active_market = client_profile.get('active_market', 'your market')
+                
+                return f"""We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.
 
-Real-time data. Fortune-500 presentation quality. Surgical precision."""
+        Real-time intelligence. No lag. No surprises.
+
+        Standing by."""
+            else:
+                return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
+
+        Real-time data. Fortune-500 presentation quality. Surgical precision."""
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
