@@ -656,6 +656,8 @@ class ConversationalGovernor:
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
             if client_profile:
+                logger.info(f"🔍 PROFILE_STATUS DEBUG: {json.dumps(client_profile, indent=2)}")
+                
                 raw_name = client_profile.get('name', 'there')
                 tier = client_profile.get('tier', 'tier_1')
                 tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
