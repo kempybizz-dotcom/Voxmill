@@ -886,6 +886,7 @@ Guidelines:
 - identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
 - plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
 - principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
+- value_justification: "Why are we talking?", "What's the point?", "Why do I need this?", "What do you actually do for me?" (ALWAYS relevant=true)
 - META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
   * "What am I missing?"
   * "What's the blind spot?"
@@ -1392,6 +1393,8 @@ Trial access provides limited intelligence sampling."""
             'no numbers', 'skip the numbers', 'forget the numbers',
             'be straight', 'just be straight', 'straight with me',
             'you sure', 'are you sure', 'certain about that'
+            'not sitting right', 'something\'s not sitting right',
+            'doesn\'t sit right', 'doesnt sit right',
         ]
         
         is_human_signal = any(pattern in message_lower for pattern in human_signal_patterns)
