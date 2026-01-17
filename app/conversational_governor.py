@@ -1375,6 +1375,40 @@ Trial access provides limited intelligence sampling."""
             is_mandate_relevant = True
             semantic_category = SemanticCategory.ADMINISTRATIVE
             semantic_confidence = 0.95
+
+        # ========================================
+        # ✅ CHATGPT FIX: HUMAN SIGNAL OVERRIDE (PRIORITY 0.5)
+        # ========================================
+        
+        # Detect emotional/intuitive signals that require human mode
+        human_signal_patterns = [
+            'feels off', 'feel off', 'something feels',
+            'can\'t put my finger', 'cant put my finger',
+            'something\'s not right', 'something not right',
+            'doesn\'t feel right', 'doesnt feel right',
+            'sounds tidy', 'sounds neat', 'bit tidy', 'bit neat',
+            'say that again', 'rephrase that', 'like you\'re sitting',
+            'don\'t give me numbers', 'dont give me numbers',
+            'no numbers', 'skip the numbers', 'forget the numbers',
+            'be straight', 'just be straight', 'straight with me',
+            'you sure', 'are you sure', 'certain about that'
+        ]
+        
+        is_human_signal = any(pattern in message_lower for pattern in human_signal_patterns)
+        
+        if is_human_signal:
+            logger.info(f"🎯 HUMAN SIGNAL DETECTED: '{message_text[:50]}'")
+            
+            # Force to human mode - route as strategic with special flag
+            intent_type_hint = 'human_mode_strategic'
+            is_mandate_relevant = True
+            semantic_category = SemanticCategory.STRATEGIC_POSITIONING
+            semantic_confidence = 0.95
+            
+            # Set conversation context flag for LLM
+            if conversation_context is None:
+                conversation_context = {}
+            conversation_context['human_mode_active'] = True
         
         # ========================================
         # CRITICAL FIX: SPECIAL INTENT OVERRIDE (BEFORE REFUSAL)
