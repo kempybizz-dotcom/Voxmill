@@ -191,9 +191,10 @@ class ResponseEnforcer:
             'what if', 'scenario', 'forecast', 'outlook',
             'competitive', 'competition', 'competitor', 'rivals',
             'weakness', 'weaknesses', 'vulnerability', 'vulnerable',
-            'strength', 'strengths', 'edge', 'differentiation'
+            'strength', 'strengths', 'edge', 'differentiation',
             'feels off', 'doesn\'t add up', 'doesn\'t match',  # ✅ CHATGPT FIX - Contradiction signals
-            'something\'s wrong', 'doesn\'t feel right', 'mismatch'  # ✅ CHATGPT FIX
+            'something\'s wrong', 'doesn\'t feel right', 'mismatch',  # ✅ CHATGPT FIX
+            'if you were', 'what would worry you', 'what would concern you'  # ✅ CHATGPT FIX - Principal risk triggers
         ]
         
         # Check if query contains strategic keywords
