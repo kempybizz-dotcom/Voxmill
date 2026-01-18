@@ -3318,6 +3318,7 @@ Standing by."""
             dataset,
             client_profile=client_profile,
             comparison_datasets=comparison_datasets
+            governance_result=governance_result  # ✅ NEW: Pass governance result
         )
         
         # ✅ STORE COMPARISON RESPONSE FOR REVERSE
