@@ -126,6 +126,7 @@ class GovernanceResult:
     llm_call_allowed: bool = True
     auto_scoped: bool = False
     semantic_category: Optional[str] = None
+    human_mode_active: bool = False  # ✅ NEW: Force human response mode
 
 
 @dataclass
@@ -719,21 +720,9 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         # ✅ VARIED ACKNOWLEDGMENTS
         if intent == Intent.CASUAL:
-            # 30% chance: use name if available
-            if client_name != "there" and random.random() < 0.3:
-                options = [
-                    f"Standing by, {client_name}.",
-                    f"Ready, {client_name}."
-                ]
-            else:
-                # 70% chance: no name (variety pool)
-                options = [
-                    "Standing by.",
-                    "Ready.",
-                    "Standing by.",  # Weighted for higher probability
-                ]
-            
-            return random.choice(options)
+            # ❌ NEVER return "Standing by" for human signals
+            # These should never reach here, but safety check
+            return None  # Let it pass to LLM instead
         
         # Intent-based responses (non-casual)
         intent_responses = {
@@ -1338,6 +1327,42 @@ Trial access provides limited intelligence sampling."""
         
         # Get LLM's intent_type hint for special handling
         intent_type_hint = ConversationalGovernor._last_intent_type
+
+        # ========================================
+        # ✅ CHATGPT FIX: HUMAN SIGNAL DETECTION (FROM LLM)
+        # ========================================
+        
+        # Detect human signals from message content
+        message_lower = message_text.lower().strip()
+        
+        human_signal_phrases = [
+            'feels off', 'feel off', 'something feels', "something's not",
+            'not sitting right', 'not right', "doesn't feel right",
+            'can\'t put my finger', 'cant put my finger',
+            'you sure', 'are you sure', 'certain about that',
+            'be honest', 'just tell me straight', 'straight with me',
+            'sounds tidy', 'bit tidy', 'sounds neat',
+            'why are we talking', 'why do we talk', 'what\'s the point',
+            'without worrying', 'without scaring', 'without alarming',
+            'say that again', 'rephrase that', 'like you\'re sitting',
+            'don\'t give me numbers', 'no numbers', 'skip the numbers'
+        ]
+        
+        is_human_signal = any(phrase in message_lower for phrase in human_signal_phrases)
+        
+        # Also check if LLM classified as human-mode intent
+        human_mode_intents = ['trust_authority', 'meta_authority', 'principal_risk_advice']
+        is_human_mode_intent = intent_type_hint in human_mode_intents
+        
+        human_mode_active = is_human_signal or is_human_mode_intent
+        
+        if human_mode_active:
+            logger.info(f"🎯 HUMAN MODE ACTIVE: signal={is_human_signal}, intent={is_human_mode_intent}")
+            
+            # Force to mandate-relevant
+            is_mandate_relevant = True
+            semantic_category = SemanticCategory.STRATEGIC_POSITIONING
+            semantic_confidence = 0.95
         
         
         # ========================================
@@ -1402,18 +1427,18 @@ Trial access provides limited intelligence sampling."""
                     auto_scoped=False,
                     semantic_category=semantic_category.value
                 )
-            
-            # DISALLOWED REQUEST → "Outside intelligence scope."
+                
+            # DISALLOWED REQUEST → Generic acknowledgment instead of refusal
             else:
-                logger.warning(f"🚫 REFUSAL: Not mandate-relevant, not noise - refusing")
+                logger.warning(f"🚫 REFUSAL: Not mandate-relevant, treating as out of scope")
                 
                 return GovernanceResult(
-                    intent=Intent.UNKNOWN,
+                    intent=Intent.CASUAL,
                     confidence=semantic_confidence,
                     blocked=True,
                     silence_required=False,
-                    response="Outside intelligence scope.",
-                    allowed_shapes=["REFUSAL"],
+                    response="Unable to assist with that query.",  # ✅ Less harsh than "Outside intelligence scope"
+                    allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=10,
                     analysis_allowed=False,
                     data_load_allowed=False,
@@ -1606,6 +1631,7 @@ Trial access provides limited intelligence sampling."""
                 llm_call_allowed=False,
                 auto_scoped=True,
                 semantic_category=semantic_category.value
+                human_mode_active=human_mode_active  # ✅ NEW
             )
         
         # ========================================
@@ -1626,6 +1652,7 @@ Trial access provides limited intelligence sampling."""
                 llm_call_allowed=False,
                 auto_scoped=False,
                 semantic_category=semantic_category.value
+                human_mode_active=human_mode_active  # ✅ NEW
             )
         
         # ========================================
@@ -1649,6 +1676,7 @@ Trial access provides limited intelligence sampling."""
                 llm_call_allowed=False,
                 auto_scoped=False,
                 semantic_category=semantic_category.value
+                human_mode_active=human_mode_active  # ✅ NEW
             )
         
         # ========================================
@@ -1678,4 +1706,5 @@ Trial access provides limited intelligence sampling."""
             llm_call_allowed=envelope.llm_call_allowed,
             auto_scoped=True,
             semantic_category=semantic_category.value
+            human_mode_active=human_mode_active  # ✅ NEW
         )
