@@ -837,11 +837,11 @@ For immediate regeneration, contact intel@voxmill.uk"""
         return False, None
     
     @staticmethod
-    async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float]:
+    async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float, bool]:
         """
         LLM-based mandate relevance check
         
-        Returns: (is_relevant, semantic_category, confidence)
+        Returns: (is_relevant, semantic_category, confidence, is_human_signal)
         
         Also sets ConversationalGovernor._last_intent_type for downstream routing
         """
@@ -873,7 +873,7 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
+    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity",
     "is_human_signal": true/false
 }}
 
@@ -927,6 +927,7 @@ Guidelines:
             category_str = result.get('semantic_category', 'non_domain')
             confidence = result.get('confidence', 0.5)
             intent_type = result.get('intent_type')
+            is_human_signal = result.get('is_human_signal', False)
             
             # Store intent_type for downstream routing
             ConversationalGovernor._last_intent_type = intent_type
@@ -947,12 +948,12 @@ Guidelines:
             
             logger.info(f"LLM mandate check: relevant={is_relevant}, category={category_str}, intent={intent_type}, confidence={confidence:.2f}")
             
-            return is_relevant, semantic_category, confidence
+           return is_relevant, semantic_category, confidence, is_human_signal
             
         except Exception as e:
             logger.error(f"Mandate relevance check failed: {e}")
             # Fallback to conservative
-            return False, SemanticCategory.NON_DOMAIN, 0.5
+            return False, SemanticCategory.NON_DOMAIN, 0.5, False
     
     @staticmethod
     def _auto_scope(message: str, client_profile: dict, conversation_context: Dict = None) -> AutoScopeResult:
