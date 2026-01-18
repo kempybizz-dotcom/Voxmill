@@ -3207,7 +3207,7 @@ Comparison framework:
 
 Want to pressure-test this?"""
                     
-                    await send_twilio_message(sender, structural_response)
+await send_twilio_message(sender, structural_response)
                     log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
                     
                     logger.info(f"✅ Structural comparison sent (no dataset load)")
@@ -3343,6 +3343,8 @@ Standing by."""
                         log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
                         return  # TERMINAL
                     
+                    # ✅ CRITICAL FIX: Set comparison_datasets AND query_region
+                    # dataset is already loaded above, no need to reassign
                     comparison_datasets = [dataset_2]
                     query_region = market1
                     
