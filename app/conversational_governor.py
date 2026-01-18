@@ -948,7 +948,7 @@ Guidelines:
             
             logger.info(f"LLM mandate check: relevant={is_relevant}, category={category_str}, intent={intent_type}, confidence={confidence:.2f}")
             
-           return is_relevant, semantic_category, confidence, is_human_signal
+            return is_relevant, semantic_category, confidence, is_human_signal
             
         except Exception as e:
             logger.error(f"Mandate relevance check failed: {e}")
