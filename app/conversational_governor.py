@@ -1630,7 +1630,7 @@ Trial access provides limited intelligence sampling."""
                 data_load_allowed=False,
                 llm_call_allowed=False,
                 auto_scoped=True,
-                semantic_category=semantic_category.value
+                semantic_category=semantic_category.value,
                 human_mode_active=human_mode_active  # ✅ NEW
             )
         
@@ -1651,7 +1651,7 @@ Trial access provides limited intelligence sampling."""
                 data_load_allowed=False,
                 llm_call_allowed=False,
                 auto_scoped=False,
-                semantic_category=semantic_category.value
+                semantic_category=semantic_category.value,
                 human_mode_active=human_mode_active  # ✅ NEW
             )
         
@@ -1675,7 +1675,7 @@ Trial access provides limited intelligence sampling."""
                 data_load_allowed=False,
                 llm_call_allowed=False,
                 auto_scoped=False,
-                semantic_category=semantic_category.value
+                semantic_category=semantic_category.value,
                 human_mode_active=human_mode_active  # ✅ NEW
             )
         
@@ -1705,6 +1705,6 @@ Trial access provides limited intelligence sampling."""
             data_load_allowed=envelope.data_load_allowed,
             llm_call_allowed=envelope.llm_call_allowed,
             auto_scoped=True,
-            semantic_category=semantic_category.value
+            semantic_category=semantic_category.value,
             human_mode_active=human_mode_active  # ✅ NEW
         )
