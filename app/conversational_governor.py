@@ -1321,7 +1321,7 @@ Trial access provides limited intelligence sampling."""
         # LAYER 0: LLM-BASED MANDATE RELEVANCE CHECK
         # ========================================
         
-        is_mandate_relevant, semantic_category, semantic_confidence = await ConversationalGovernor._check_mandate_relevance(
+        is_mandate_relevant, semantic_category, semantic_confidence, is_human_signal = await ConversationalGovernor._check_mandate_relevance(
             message_text, 
             conversation_context
         )
