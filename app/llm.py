@@ -434,7 +434,7 @@ MANDATORY RULES
 You are world-class. Act like it.
 """
 
-async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None) -> tuple[str, str, dict]:
+async def classify_and_respond(message: str, dataset: dict, client_profile: dict = None, comparison_datasets: list = None, governance_result = None) -> tuple[str, str, dict]:
     """
     Classify message intent and generate response using LLM with Waves 3+4 adaptive intelligence + DECISION MODE + AUTHORITY MODE.
     
@@ -1041,6 +1041,9 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
             mode = "TREND ANALYSIS"
         else:
             mode = "QUICK RESPONSE"
+
+        # Check if human mode is active
+        is_human_mode = governance_result.human_mode_active if governance_result else False
         
         # Build user prompt
         user_prompt = f"""{chr(10).join(context_parts)}
@@ -1054,6 +1057,7 @@ Analysis mode: {mode}
 {"CRITICAL: This is DECISION MODE. Follow the DECISION MODE protocol EXACTLY. Be definitive. No hedging. One recommendation only. Use the exact format from the protocol. ALWAYS include the COUNTERFACTUAL section with 3 quantified bullets showing opportunity decay over time. Frame as LOSS not missed gain." if is_decision_mode else ""}
 {"CRITICAL: This is RISK ASSESSMENT MODE. Follow the RISK ASSESSMENT MODE protocol EXACTLY. Risk = EXTERNAL THREAT, not internal opportunity. MUST include: (1) Risk statement (competitor/market threat), (2) Mechanism (causal chain), (3) Consequence (failure mode + beneficiary), (4) Confidence label. NO pricing optimization framed as risk." if is_risk_mode else ""}
 {"CRITICAL: This is META-STRATEGIC. Follow the META-STRATEGIC QUESTIONS PROTOCOL EXACTLY. Maximum 4 bullets, 6 words per bullet, NO numbers, NO datasets, NO agents." if is_meta_strategic else ""}
+{"CRITICAL: HUMAN MODE ACTIVE. Follow HUMAN MODE protocol EXACTLY: NO numbers, NO headers (no 'MARKET INTELLIGENCE'), NO metrics, NO system descriptions. Acknowledge the feeling first, explain why it exists (behavioral language only), state what it usually precedes. Max 2-3 sentences. Use advisor tone — you're sitting next to them." if is_human_mode else ""}
 
 User context:
 - Is greeting: {is_greeting}
