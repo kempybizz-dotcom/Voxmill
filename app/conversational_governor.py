@@ -1335,9 +1335,6 @@ Trial access provides limited intelligence sampling."""
         # ✅ CHATGPT FIX: HUMAN SIGNAL DETECTION (FROM LLM)
         # ========================================
         
-        # Get human signal flag from LLM classification
-        is_human_signal = result.get('is_human_signal', False)
-        
         # Also check if LLM classified as human-mode intent
         human_mode_intents = ['trust_authority', 'meta_authority', 'principal_risk_advice']
         is_human_mode_intent = intent_type_hint in human_mode_intents
