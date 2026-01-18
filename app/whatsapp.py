@@ -3022,19 +3022,19 @@ Standing by."""
             
             # ✅ CHATGPT FIX: Lock metrics for session consistency
             session = conversation.get_session()
-        if 'session_metrics' not in session:
-            session['session_metrics'] = {
-                'start_time': datetime.now(timezone.utc),
-                'message_count': 0,
-                'topics_covered': []
-            }
-    
-    # Save the updated session back
-    conversation.update_session(
-        user_message=message_text,
-        assistant_response="",  # Will be filled later
-        metadata=session
-    )
+            if 'session_metrics' not in session:
+                session['session_metrics'] = {
+                    'start_time': datetime.now(timezone.utc),
+                    'message_count': 0,
+                    'topics_covered': []
+                }
+        
+                # Save the updated session back
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response="",  # Will be filled later
+                    metadata=session
+                )
             
             # Route to instant intelligence
             if is_overview:
