@@ -3158,6 +3158,9 @@ Standing by."""
             last_context = getattr(conversation, 'session_data', {}).get('last_query_region', query_region)
             resolved_message = message_text  # Keep original for now
             logger.info(f"🔄 Context: last_region={last_context}")
+
+            dataset = load_dataset(area=query_region, industry=industry_code)
+            comparison_datasets = []
             
             # Extract market names from comparison query
             comparison_match = re.search(
