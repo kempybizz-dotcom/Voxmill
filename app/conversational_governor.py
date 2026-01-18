@@ -874,10 +874,12 @@ Respond ONLY with valid JSON:
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
     "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity"
+    "is_human_signal": true/false
 }}
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
+- is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION (examples: "feels off", "not sitting right", "you sure?", "without worrying them", "say it differently", "be honest", "just tell me straight")
 - identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
 - plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
 - principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
@@ -1332,23 +1334,8 @@ Trial access provides limited intelligence sampling."""
         # ✅ CHATGPT FIX: HUMAN SIGNAL DETECTION (FROM LLM)
         # ========================================
         
-        # Detect human signals from message content
-        message_lower = message_text.lower().strip()
-        
-        human_signal_phrases = [
-            'feels off', 'feel off', 'something feels', "something's not",
-            'not sitting right', 'not right', "doesn't feel right",
-            'can\'t put my finger', 'cant put my finger',
-            'you sure', 'are you sure', 'certain about that',
-            'be honest', 'just tell me straight', 'straight with me',
-            'sounds tidy', 'bit tidy', 'sounds neat',
-            'why are we talking', 'why do we talk', 'what\'s the point',
-            'without worrying', 'without scaring', 'without alarming',
-            'say that again', 'rephrase that', 'like you\'re sitting',
-            'don\'t give me numbers', 'no numbers', 'skip the numbers'
-        ]
-        
-        is_human_signal = any(phrase in message_lower for phrase in human_signal_phrases)
+        # Get human signal flag from LLM classification
+        is_human_signal = result.get('is_human_signal', False)
         
         # Also check if LLM classified as human-mode intent
         human_mode_intents = ['trust_authority', 'meta_authority', 'principal_risk_advice']
