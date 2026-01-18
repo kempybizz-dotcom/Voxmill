@@ -1420,67 +1420,67 @@ Voxmill Intelligence — Precision at Scale"""
         client_name = client_profile.get('name', 'there')
         
         if needs_verification:
-            if reason == "not_set":
-                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+            # ✅ FIX: Check if message IS a PIN attempt (verify or setup)
+            if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                # Try verification first (covers both setup AND unlock)
+                if reason == "not_set":
+                    # Setup flow
                     success, message = PINAuthenticator.set_pin(sender, message_text.strip())
-                    
+            
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
                         await send_twilio_message(sender, response)
-                        return
-                    
+                        return  # ✅ TERMINAL
+            
                     await sync_pin_status_to_airtable(sender, "Active")
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
-                    
+            
                     conversation = ConversationSession(sender)
                     conversation.update_session(
                         user_message=message_text,
                         assistant_response=unlock_response,
                         metadata={'category': 'pin_setup'}
                     )
-                    
+            
                     logger.info(f"✅ PIN setup complete")
-                    return
+                    return  # ✅ TERMINAL
+        
                 else:
-                    response = get_pin_status_message(reason, client_name)
-                    await send_twilio_message(sender, response)
-                    return
-            
-            elif reason == "locked":
-                response = get_pin_status_message("locked", client_name)
-                await send_twilio_message(sender, response)
-                return
-            
-            else:
-                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # Verification flow (covers locked, inactivity, subscription_change)
                     success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
-                    
+            
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
                         await send_twilio_message(sender, response)
-                        
+                
                         if message == "locked":
                             await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
-                        return
-                    
+                        return  # ✅ TERMINAL
+            
                     await sync_pin_status_to_airtable(sender, "Active")
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
-                    
+            
                     conversation = ConversationSession(sender)
                     conversation.update_session(
                         user_message=message_text,
                         assistant_response=unlock_response,
                         metadata={'category': 'pin_unlock'}
                     )
-                    
+            
                     logger.info(f"✅ PIN verified")
-                    return
-                else:
-                    response = get_pin_status_message(reason, client_name)
-                    await send_twilio_message(sender, response)
-                    return
+                    return  # ✅ TERMINAL
+    
+            # If we get here, PIN needed but user didn't send one
+            if reason == "locked":
+                response = get_pin_status_message("locked", client_name)
+                await send_twilio_message(sender, response)
+                return  # ✅ TERMINAL
+            else:
+                response = get_pin_status_message(reason, client_name)
+                await send_twilio_message(sender, response)
+                return  # ✅ TERMINAL
         
         # PIN commands (READ-ONLY - keywords only as routing hints)
         message_lower = message_text.lower().strip()
@@ -3260,61 +3260,115 @@ Want to pressure-test this?"""
                 logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
             
             else:
-                # ✅ CHATGPT FIX: Comparison requested but can't extract regions - guided error
-                logger.warning(f"⚠️ Comparison requested but regions unclear")
+                # ✅ FIX: Check if user is asking about a previous comparison
+                # Look for implicit comparison signals + conversation context
+                implicit_comparison_signals = [
+                    'one difference', 'difference', 'what changes', 'how we behave',
+                    'between them', 'comparison', 'which one', 'that changes'
+                ]
                 
-                response = """Comparison failed - specify two markets.
+                has_implicit_signal = any(signal in message_lower for signal in implicit_comparison_signals)
+                
+                # Check conversation context for recently compared regions
+                conversation_entities = conversation.get_last_mentioned_entities()
+                recent_regions = conversation_entities.get('regions', [])
+                
+                if has_implicit_signal and len(recent_regions) >= 2:
+                    # ✅ INFER comparison from context
+                    market1 = recent_regions[-2]  # Second most recent
+                    market2 = recent_regions[-1]  # Most recent
+                    
+                    logger.info(f"🔀 IMPLICIT comparison inferred from context: {market1} vs {market2}")
+                    
+                    # Validate both markets exist
+                    is_structural1 = market1 not in available_markets
+                    is_structural2 = market2 not in available_markets
+                    
+                    if is_structural1 or is_structural2:
+                        # Use structural fallback
+                        has_data_market = market2 if is_structural1 else market1
+                        no_data_market = market1 if is_structural1 else market2
+                        
+                        structural_response = f"""STRUCTURAL COMPARISON
+
+{market1} vs {market2}
+
+{has_data_market}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{no_data_market}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
+- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
+
+Want to pressure-test this?"""
+                        
+                        await send_twilio_message(sender, structural_response)
+                        log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                        return  # TERMINAL
+                    
+                    # Load datasets for comparison
+                    dataset = load_dataset(area=market1, industry=industry_code)
+                    dataset_2 = load_dataset(area=market2, industry=industry_code)
+                    
+                    if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
+                        # Structural fallback
+                        structural_response = f"""STRUCTURAL COMPARISON
+
+{market1} vs {market2}
+
+{market1}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{market2}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
+- Liquidity: {market1} = institutional, {market2} = retail-driven
+- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
+
+Standing by."""
+                        
+                        await send_twilio_message(sender, structural_response)
+                        log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                        return  # TERMINAL
+                    
+                    comparison_datasets = [dataset_2]
+                    query_region = market1
+                    
+                    # Lock comparison
+                    conversation.context['locked_comparison'] = {
+                        'market1': market1,
+                        'market2': market2,
+                        'locked_at': datetime.now(),
+                        'expires_at': datetime.now() + timedelta(minutes=10)
+                    }
+                    logger.info(f"🔒 Comparison locked from context: {market1} vs {market2}")
+                    
+                else:
+                    # ✅ GUIDED ERROR - no context available
+                    logger.warning(f"⚠️ Comparison requested but regions unclear")
+                    
+                    response = """Comparison failed - specify two markets.
 
 Try: "Compare Mayfair vs Knightsbridge"
 
 Standing by."""
-                
-                await send_twilio_message(sender, response)
-                log_interaction(sender, message_text, "comparison_format_error", response, 0, client_profile)
-                return  # TERMINAL
-        
-        else:
-            # ✅ FIX 2: CANONICALIZE BEFORE LOADING (STANDARD SINGLE-REGION QUERY)
-            canonical_region = query_region.title()
-            is_structural = canonical_region not in available_markets
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison_format_error", response, 0, client_profile)
+                    return  # TERMINAL
             
-            if is_structural:
-                # Return structural-only response
-                structural_response = f"""STRUCTURAL ANALYSIS
-
-{query_region} - Regime overview only (no live data)
-
-Market characteristics:
-- Scale: Regional/metropolitan
-- Liquidity: Retail-driven
-- Buyer profile: Local/domestic
-
-For detailed analysis, contact intel@voxmill.uk
-
-Standing by."""
-                
-                await send_twilio_message(sender, structural_response)
-                logger.info(f"✅ Structural analysis sent (no dataset load)")
-                return  # TERMINAL
-            
-            dataset = load_dataset(area=canonical_region, industry=industry_code)
-            query_region = canonical_region  # Use canonical region for rest of flow
-        
-        if dataset['metadata'].get('is_fallback') or dataset['metadata'].get('property_count', 0) == 0:
-            # ✅ DYNAMIC: List actual available markets from database
-            markets_list = ', '.join(available_markets[:5]) if available_markets else 'No markets configured'
-            
-            fallback_response = f"""Dataset unavailable for {query_region}.
-
-Available markets: {markets_list}
-
-Try: "Show Mayfair overview"
-
-Standing by."""
-            
-            await send_twilio_message(sender, fallback_response)
-            log_interaction(sender, message_text, "dataset_unavailable", fallback_response, 0, client_profile)
-            return  # TERMINAL
         
         # Store comparison response for reverse functionality
         category, response_text, response_metadata = await classify_and_respond(
