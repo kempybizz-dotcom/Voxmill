@@ -3216,25 +3216,22 @@ Want to pressure-test this?"""
                 if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
                     logger.info(f"🔀 Dataset 2 missing - using structural fallback")
                     
-                    structural_response = f"""STRUCTURAL COMPARISON
-
-{market1} vs {market2}
-
-{market1}:
-- Active market data available
-- Current pricing: verifiable
-- Velocity: measurable
-
-{market2}:
-- No current dataset
-- Regime analysis only (no live numbers)
-
-Comparison framework:
-- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
-- Liquidity: {market1} = institutional, {market2} = retail-driven
-- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
-
-Standing by."""
+                    structural_response = (
+                        f"STRUCTURAL COMPARISON\n"
+                        f"{market1} vs {market2}\n\n"
+                        f"{market1}:\n"
+                        f"- Active market data available\n"
+                        f"- Current pricing: verifiable\n"
+                        f"- Velocity: measurable\n\n"
+                        f"{market2}:\n"
+                        f"- No current dataset\n"
+                        f"- Regime analysis only (no live numbers)\n\n"
+                        f"Comparison framework:\n"
+                        f"- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale\n"
+                        f"- Liquidity: {market1} = institutional, {market2} = retail-driven\n"
+                        f"- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic\n\n"
+                        f"Standing by."
+                    )
                     
                     await send_twilio_message(sender, structural_response)
                     log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
