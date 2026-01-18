@@ -884,12 +884,18 @@ Guidelines:
 - plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
 - principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
 - value_justification: "Why are we talking?", "What's the point?", "Why do I need this?", "What do you actually do for me?" (ALWAYS relevant=true)
-- META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
+
+✅ NEW DISTINCTION - CRITICAL:
+- meta_authority: ONLY for "What can you do?", "What is Voxmill?", "Tell me about yourself", "What are your capabilities?" (system capability questions)
+- market_query: "What should we do?", "What's the best action?", "If we only do one thing", "What's the move?", "What protects us?" (strategic decision questions requesting ACTION)
+
+META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
   * "What am I missing?"
   * "What's the blind spot?"
   * "What should I know?"
   * "What am I not seeing?"
   * "What breaks this analysis?"
+  
 - semantic_category: best fit category
 - confidence: 0.0-1.0 based on clarity
 - intent_type: specific intent for routing"""
