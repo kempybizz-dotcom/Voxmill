@@ -3021,13 +3021,20 @@ Standing by."""
                 return
             
             # ✅ CHATGPT FIX: Lock metrics for session consistency
-            if 'session_metrics' not in conversation.context:
-                conversation.context['session_metrics'] = {
-                    'velocity_score': dataset['liquidity']['liquidity_velocity'],
-                    'velocity_momentum': dataset['liquidity'].get('velocity_momentum', 0),
-                    'sentiment': dataset['sentiment']['market_sentiment'],
-                    'locked_at': datetime.now()
-                }
+            session = conversation.get_session()
+        if 'session_metrics' not in session:
+            session['session_metrics'] = {
+                'start_time': datetime.now(timezone.utc),
+                'message_count': 0,
+                'topics_covered': []
+            }
+    
+    # Save the updated session back
+    conversation.update_session(
+        user_message=message_text,
+        assistant_response="",  # Will be filled later
+        metadata=session
+    )
             
             # Route to instant intelligence
             if is_overview:
