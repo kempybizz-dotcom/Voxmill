@@ -3314,7 +3314,7 @@ Standing by."""
             message_normalized,
             dataset,
             client_profile=client_profile,
-            comparison_datasets=comparison_datasets
+            comparison_datasets=comparison_datasets,
             governance_result=governance_result  # ✅ NEW: Pass governance result
         )
         
