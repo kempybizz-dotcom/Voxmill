@@ -194,13 +194,13 @@ class ConversationalGovernor:
                 is_capability_question = any(phrase in message_lower for phrase in capability_indicators)
                 
                 if is_gap_question:
-                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority → trust authority (strategic gap)")
+                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority -> trust authority (strategic gap)")
                     return Intent.TRUST_AUTHORITY
                 elif is_capability_question:
-                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority → capability question")
+                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority -> capability question")
                     return Intent.META_AUTHORITY
                 else:
-                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority → trust authority (default)")
+                    logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority -> trust authority (default)")
                     return Intent.TRUST_AUTHORITY
             
             # ✅ FIX 5: IMMEDIATE RETURN - Never reach "unknown" classification below
@@ -901,8 +901,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
         Returns list of intent segments
         
         Examples:
-        - "PDF and market overview" → ["PDF", "market overview"]
-        - "Monitor X, also show Y" → ["Monitor X", "show Y"]
+        - "PDF and market overview" -> ["PDF", "market overview"]
+        - "Monitor X, also show Y" -> ["Monitor X", "show Y"]
         """
         
         # Split on conjunctions and transition words
@@ -1317,7 +1317,7 @@ Trial access provides limited intelligence sampling."""
         
         # If NOT mandate-relevant, check if it's noise or a disallowed request
         if not is_mandate_relevant:
-            # NOISE (gibberish, profanity, anecdotes) → "Standing by."
+            # NOISE (gibberish, profanity, anecdotes) -> "Standing by."
             if intent_type_hint in ['gibberish', 'profanity']:
                 logger.info(f"🔇 NOISE detected ({intent_type_hint}) - responding 'Standing by.'")
                 
@@ -1336,7 +1336,7 @@ Trial access provides limited intelligence sampling."""
                     semantic_category=semantic_category.value
                 )
                 
-            # DISALLOWED REQUEST → Generic acknowledgment instead of refusal
+            # DISALLOWED REQUEST -> Generic acknowledgment instead of refusal
             else:
                 logger.warning(f"🚫 REFUSAL: Not mandate-relevant, treating as out of scope")
                 
