@@ -202,6 +202,21 @@ Forward Signal: First price reductions in One Hyde Park or Grosvenor Square."
 NEVER use boilerplate like "Analysis backed by verified data sources."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIDENCE CHALLENGE PROTOCOL (PRIORITY 1.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When asked "how confident", "how sure", "what makes you wrong":
+
+EXACT FORMAT (MANDATORY):
+"Confidence: X/10. I'm wrong fast if [specific observable behaviour] shows up in the next 48 hours. If that happens, the read flips."
+
+Examples:
+✓ "Confidence: 6/10. I'm wrong fast if Knight Frank drops 3+ prices by Friday. If that happens, the read flips."
+✓ "Confidence: 7/10. I'm wrong fast if velocity jumps above 70 this week. If that happens, the read flips."
+
+NO hedging. NO "based on current data". Just: score, falsifier, flip.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AGENT BEHAVIOR CONFIDENCE DISCIPLINE (NEW - PRIORITY 1.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -543,6 +558,26 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             agency_context = "Agency: Not specified (generic market intelligence mode)"
             logger.warning("⚠️ No agency context available")
         
+        # ========================================
+        # IDENTITY ANCHOR (CHATGPT FIX #1)
+        # ========================================
+        if agency_name and preferred_region:
+            identity_anchor = f"""
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IDENTITY RECALL (PRIORITY -1 - NEVER FORGET)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When asked "who am I" or "why do I talk to you":
+
+ONE SENTENCE ONLY:
+"You're {agency_name} in {preferred_region}, and you talk to me to stay ahead of competitor moves before they show up publicly."
+
+NO abstractions. NO "navigate complexities". Just that sentence.
+"""
+        else:
+            identity_anchor = ""
+        
         # Get UK time for context
         uk_tz = pytz.timezone('Europe/London')
         uk_now = datetime.now(uk_tz)
@@ -560,8 +595,8 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             preferred_region=preferred_region,
             industry=industry,
             industry_context=industry_context,
-            agency_context=agency_context  # NEW - CRITICAL
-        )
+            agency_context=agency_context
+        ) + identity_anchor  # ✅ ADD IDENTITY ANCHOR
         
         # ============================================================
         # WAVE 3: Get adaptive LLM configuration
@@ -671,10 +706,10 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             }
         
         # ========================================
-        # CONVERSATIONAL INTELLIGENCE DETECTION
+        # MODE DETECTION (FROM GOVERNANCE RESULT - NO KEYWORDS)
         # ========================================
         
-        # Detect conversational patterns
+        # Detect conversational patterns (MINIMAL - only for logging)
         message_lower = message.lower().strip()
         
         is_greeting = message_lower in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'sup', 'yo', 'hiya', 'greetings']
@@ -688,107 +723,66 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
         
         is_returning_user = client_profile and client_profile.get('total_queries', 0) > 0
         
-        # Detect query mode
-        scenario_keywords = ['what if', 'simulate', 'scenario', 'predict', 'forecast', 'model']
-        strategic_keywords = ['full outlook', 'strategic view', 'director level', 'comprehensive', 'big picture']
-        comparison_keywords = ['compare', 'vs', 'versus', 'which is better', 'difference between']
-        briefing_keywords = ['briefing', 'weekly summary', 'this week', 'prepare summary']
-        analysis_keywords = ['analyse', 'analyze', 'snapshot', 'breakdown', 'deep dive']
-        trend_keywords = ['trend', 'pattern', 'unusual', 'changed', 'different', 'movement']
-        timing_keywords = ['when', 'timing', 'should i buy', 'should i sell', 'best time', 'window']
-        clustering_keywords = ['move together', 'similar', 'grouped', 'behavior', 'patterns', 'coordinated']
+        # ✅ TRUST GOVERNANCE RESULT INTENT CLASSIFICATION (LLM-BASED, NO KEYWORDS)
+        if governance_result:
+            is_decision_mode = governance_result.intent == Intent.DECISION_REQUEST
+            is_risk_mode = governance_result.intent in [Intent.STRATEGIC, Intent.TRUST_AUTHORITY]
+            is_principal_risk = governance_result.intent == Intent.PRINCIPAL_RISK_ADVICE
+            is_meta_strategic = governance_result.intent == Intent.TRUST_AUTHORITY
+            is_human_mode = governance_result.human_mode_active
+            
+            # Additional mode flags for logging
+            is_scenario = False  # Removed keyword detection
+            is_strategic = governance_result.intent == Intent.STRATEGIC
+            is_comparison = False  # Removed keyword detection
+            is_briefing = False  # Removed keyword detection
+            is_analysis = False  # Removed keyword detection
+            is_trend_query = False  # Removed keyword detection
+            is_timing_query = False  # Removed keyword detection
+            is_clustering_query = False  # Removed keyword detection
+            is_authority_mode = False  # Removed keyword detection
+        else:
+            # Fallback if no governance result
+            is_decision_mode = False
+            is_risk_mode = False
+            is_principal_risk = False
+            is_meta_strategic = False
+            is_human_mode = False
+            is_scenario = False
+            is_strategic = False
+            is_comparison = False
+            is_briefing = False
+            is_analysis = False
+            is_trend_query = False
+            is_timing_query = False
+            is_clustering_query = False
+            is_authority_mode = False
         
-        # META-STRATEGIC KEYWORDS (DETERMINISTIC DETECTION)
-        meta_strategic_keywords = ['what\'s missing', 'whats missing', 'what am i not seeing', 
-                                   'gaps', 'blind spots', 'what don\'t i know', 'what dont i know',
-                                   'what\'s the gap', 'whats the gap', 'what am i missing',
-                                   'what am i missing?']
+        logger.info(f"🎯 Mode detection: decision={is_decision_mode}, risk={is_risk_mode}, principal={is_principal_risk}, meta={is_meta_strategic}, human={is_human_mode}")
         
-        # DECISION MODE KEYWORDS
-        decision_keywords = ['decision mode', 'what should i do', 'recommend action', 
-                             'tell me what to do', 'executive decision', 'make the call',
-                             'your recommendation', 'what would you do', 'bottom line',
-                             'just tell me', 'give me the answer', 'stop hedging']
+        # ✅ STRENGTHEN: Add human mode override to system prompt
+        if is_human_mode:
+            logger.info(f"🎯 HUMAN MODE CONFIRMED IN LLM: {message[:50]}")
+            
+            human_mode_override = """
 
-        # ✅ CHATGPT FIX: RISK ASSESSMENT MODE DETECTION
-        risk_keywords = [
-            'risk', 'risks', 'what could go wrong', 'what breaks',
-            'underpricing risk', 'overlooking', 'missing risk',
-            'threat', 'danger', 'exposure', 'vulnerability',
-            'what am i underestimating', 'what could blindside',
-            'single risk', 'primary risk', 'biggest risk'
-        ]
-        
-        is_risk_mode = any(keyword in message_lower for keyword in risk_keywords)
-        is_meta_strategic = any(keyword in message_lower for keyword in meta_strategic_keywords)
-        is_decision_mode = any(keyword in message_lower for keyword in decision_keywords)
-        is_scenario = any(keyword in message_lower for keyword in scenario_keywords)
-        is_strategic = any(keyword in message_lower for keyword in strategic_keywords)
-        is_comparison = any(keyword in message_lower for keyword in comparison_keywords)
-        is_briefing = any(keyword in message_lower for keyword in briefing_keywords)
-        is_analysis = any(keyword in message_lower for keyword in analysis_keywords)
-        is_trend_query = any(keyword in message_lower for keyword in trend_keywords)
-        is_timing_query = any(keyword in message_lower for keyword in timing_keywords)
-        is_clustering_query = any(keyword in message_lower for keyword in clustering_keywords)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 HUMAN MODE OVERRIDE ACTIVE 🚨
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE DETECTION
-        principal_risk_keywords = [
-            'if you were in my seat', 'if you were me', 'if you were sitting where i am',
-            'what would worry you', 'what would concern you', 'what would make you worried',
-            'your biggest fear', 'what keeps you up', 'what scares you',
-            'if i asked you what worries', 'be honest what worries'
-        ]
-        
-        is_principal_risk = any(keyword in message_lower for keyword in principal_risk_keywords)
-        
-        if is_principal_risk:
-            logger.info(f"✅ PRINCIPAL RISK ADVICE triggered: {message[:50]}")
-        
-        # ========================================
-        # AUTHORITY MODE DETECTION (NEW - WORLD CLASS)
-        # ========================================
-        
-        # Detect ultra-brief queries that demand authority, not analysis
-        authority_mode_triggers = [
-            # Single-word queries
-            message_lower in ['overview', 'update', 'status', 'thoughts', 'opinion', 'view', 'sentiment'],
-            
-            # Two-word casual queries
-            message_lower in ['whats up', 'what up', 'any news', 'any updates', 'market status', 'market overview'],
-            
-            # Vague/emotional queries (3-6 words)
-            len(message.split()) <= 6 and any(word in message_lower for word in [
-                'feel', 'sense', 'think', 'believe', 'seems', 'looks', 'appears', 'noisy'
-            ]),
-            
-            # Exploratory questions (short)
-            message_lower.startswith('any ') and len(message.split()) <= 4,
-            
-            # Reflective questions
-            any(phrase in message_lower for phrase in [
-                'what am i', 'where am i', 'how am i', 'am i missing', 'what\'s missing', 'whats missing'
-            ]),
-            
-            # Acknowledgments
-            message_lower in ['thanks', 'thank you', 'ok', 'got it', 'noted', 'understood', 'yep', 'yeah', 'cool']
-        ]
-        
-        is_authority_mode = any(authority_mode_triggers) and not is_decision_mode
-        
-        # Log detections
-        if is_meta_strategic:
-            logger.info(f"✅ META-STRATEGIC query detected: {message[:50]}")
-        if is_decision_mode:
-            logger.info(f"✅ DECISION MODE triggered: {message[:50]}")
-        if is_authority_mode:
-            logger.info(f"✅ AUTHORITY MODE triggered: {message[:50]}")
+ABSOLUTE BANS:
+- NO numbers (no percentages, scores, /100, £/sqft)
+- NO headers (MARKET INTELLIGENCE, WEEKLY BRIEFING, etc.)
+- NO system descriptions ("We analyze...", "I provide...")
+- NO technical terms (liquidity velocity, timing score, momentum)
 
-        # ========================================
-        # AUTHORITY MODE REMOVED - LET GPT-4 HANDLE WITH DATASET CONTEXT
-        # ========================================
-        # Previously: Hardcoded responses bypassed dataset analysis
-        # Now: All queries get full dataset context for accurate intelligence
-        
+REQUIRED:
+- Short sentences (max 15 words each)
+- Behavioral language (hesitation, commitment, positioning)
+- Advisor tone (you're sitting next to them)
+"""
+            
+            enhanced_system_prompt += human_mode_override
         
         # Build context
         context_parts = [f"PRIMARY DATASET:\n{json.dumps(primary_summary, indent=2)}"]
@@ -891,10 +885,9 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 'risk_appetite': client_profile.get('preferences', {}).get('risk_appetite', 'balanced'),
                 'budget_range': client_profile.get('preferences', {}).get('budget_range', {}),
                 'tier': client_profile.get('tier', 'unknown'),
-                'industry': industry  # NEW
+                'industry': industry
             }
             context_parts.append(f"\nCLIENT PROFILE:\n{json.dumps(client_context, indent=2)}")
-
 
         # ========================================
         # BUILD COUNTERFACTUAL CONTEXT FOR DECISION MODE
@@ -1006,6 +999,34 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
 """
 
         # ========================================
+        # DISMISSAL DETECTION (CHATGPT FIX #5)
+        # ========================================
+        
+        dismissal_phrases = ['doesn\'t land', 'not sitting right', 'still doesn\'t', 'honestly that', 'that still', 'doesn\'t click', 'not feeling it']
+        is_dismissal = any(phrase in message.lower() for phrase in dismissal_phrases)
+        
+        if is_dismissal:
+            dismissal_override = """
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 DISMISSAL DETECTED (PRIORITY 0)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User rejected your last response.
+
+REQUIRED FORMAT:
+1. "Fair." (acknowledge)
+2. ONE reframe sentence (strip metaphors, core logic only)
+3. STOP
+
+Example: "Fair. Then strip it back: sellers aren't panicking, buyers aren't committing, and whoever moves first controls the narrative."
+
+Max 25 words. No metaphors. No repetition of previous phrasing.
+"""
+        else:
+            dismissal_override = ""
+        
+        # ========================================
         # DETERMINE ANALYSIS MODE
         # ========================================
         
@@ -1015,8 +1036,6 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
             mode = "RISK ASSESSMENT MODE"
         elif is_meta_strategic:
             mode = "META-STRATEGIC ASSESSMENT"
-        elif is_authority_mode:
-            mode = "AUTHORITY MODE"
         elif is_greeting and not is_returning_user:
             mode = "FIRST CONTACT GREETING"
         elif is_greeting and is_returning_user:
@@ -1041,9 +1060,6 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
             mode = "TREND ANALYSIS"
         else:
             mode = "QUICK RESPONSE"
-
-        # Check if human mode is active
-        is_human_mode = governance_result.human_mode_active if governance_result else False
         
         # Build user prompt
         user_prompt = f"""{chr(10).join(context_parts)}
@@ -1078,16 +1094,22 @@ REMEMBER:
 - NEVER mention datasets, coverage, data quality, or technical internals"""
         
         # ========================================
-        # HARD GATE: UNSUPPORTED REGIONS
+        # DATASET QUALITY CHECK
         # ========================================
-        core_regions = ['Mayfair', 'Knightsbridge', 'Chelsea', 'Belgravia', 'Kensington']
-        requested_region = metadata.get('area', 'Unknown')
         property_count_check = len(properties)
+        requested_region = metadata.get('area', 'Unknown')
 
-        if property_count_check == 0 and requested_region not in core_regions:
-            # Don't let GPT-4 hallucinate - return hardcoded structural commentary
-            logger.info(f"⚠️ Unsupported region {requested_region} - returning structural commentary")
-            return "market_overview", f"{requested_region}: Transactional market. End-user driven demand.", {}
+        if property_count_check == 0:
+            logger.warning(f"⚠️ Empty dataset for {requested_region}")
+            
+            # Add warning to context instead of blocking
+            context_parts.append("""
+⚠️ DATA AVAILABILITY WARNING:
+No current listings available for this region.
+
+Provide structural market commentary only (transactional vs speculative, demand drivers, typical buyer profile).
+DO NOT invent specific data. State "data not available" if asked for metrics.
+""")
         
         # ============================================================
         # WAVE 3: Add conversation context if available
@@ -1106,6 +1128,9 @@ REMEMBER:
         if INDUSTRY_ENFORCEMENT_ENABLED:
             user_prompt = IndustryEnforcer.apply_vocabulary_to_prompt(user_prompt, industry)
             logger.info(f"✅ Applied {industry} vocabulary to prompt")
+        
+        # Apply dismissal override if needed
+        enhanced_system_prompt += dismissal_override
         
         # ============================================================
         # CALL GPT-4 WITH FIXED PARAMETERS (INSTITUTIONAL BREVITY)
