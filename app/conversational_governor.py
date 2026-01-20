@@ -735,6 +735,14 @@ Respond ONLY with valid JSON:
     "is_human_signal": true/false
 }}
 
+CRITICAL INTENT ROUTING (PRIORITY 0):
+- "who am I", "remind me who I am", "why am I paying attention" → intent_type: "profile_status"
+- "feels off", "misaligned", "not sitting right" → is_human_signal: true
+- "how would I explain", "what would I say", "frame this for" → is_human_signal: true
+- "if you were me", "if you were in my seat" → intent_type: "principal_risk_advice"
+
+These intents OVERRIDE all other classification logic.
+
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION (examples: "feels off", "not sitting right", "you sure?", "without worrying them", "say it differently", "be honest", "just tell me straight")
