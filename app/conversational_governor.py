@@ -745,8 +745,6 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         prompt = f"""Classify this message for a market intelligence system.
 
-prompt = f"""Classify this message for a market intelligence system.
-
 Message: "{message}"{context_str}
 
 Respond ONLY with valid JSON:
