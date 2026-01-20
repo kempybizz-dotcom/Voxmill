@@ -607,44 +607,44 @@ class ConversationalGovernor:
        
         # PROFILE_STATUS responses
         if intent == Intent.PROFILE_STATUS:
-    if client_profile:
-        agency_name = client_profile.get('agency_name')
-        preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['your market'])[0] if client_profile.get('preferences', {}).get('preferred_regions') else 'your market'
-        
-        # ✅ DETECT IF THIS IS AN IDENTITY QUESTION
-        identity_triggers = ['who am i', 'remind me who', 'why am i paying attention', 'why do i talk to you', 'what my market']
-        is_identity_question = any(trigger in message_text.lower() for trigger in identity_triggers)
-        
-        if is_identity_question and agency_name:
-            # ✅ IDENTITY RECALL (ChatGPT Fix #1)
-            logger.info(f"🎯 IDENTITY RECALL: {agency_name} in {preferred_region}")
-            return f"You're {agency_name} in {preferred_region}, and you talk to me to stay ahead of competitor moves before they show up publicly."
-        
-        else:
-            # ✅ PROFILE DATA REQUEST (generic)
-            logger.info(f"🔍 PROFILE_STATUS DEBUG: name={client_profile.get('name')}, agency_name={agency_name}, role={client_profile.get('role')}")
+            if client_profile:
+                agency_name = client_profile.get('agency_name')
+                preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['your market'])[0] if client_profile.get('preferences', {}).get('preferred_regions') else 'your market'
+                
+                # ✅ DETECT IF THIS IS AN IDENTITY QUESTION
+                identity_triggers = ['who am i', 'remind me who', 'why am i paying attention', 'why do i talk to you', 'what my market']
+                is_identity_question = any(trigger in message_text.lower() for trigger in identity_triggers)
+                
+                if is_identity_question and agency_name:
+                    # ✅ IDENTITY RECALL (ChatGPT Fix #1)
+                    logger.info(f"🎯 IDENTITY RECALL: {agency_name} in {preferred_region}")
+                    return f"You're {agency_name} in {preferred_region}, and you talk to me to stay ahead of competitor moves before they show up publicly."
+                
+                else:
+                    # ✅ PROFILE DATA REQUEST (generic)
+                    logger.info(f"🔍 PROFILE_STATUS DEBUG: name={client_profile.get('name')}, agency_name={agency_name}, role={client_profile.get('role')}")
+                    
+                    raw_name = client_profile.get('name', 'there')
+                    tier = client_profile.get('tier', 'tier_1')
+                    tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
             
-            raw_name = client_profile.get('name', 'there')
-            tier = client_profile.get('tier', 'tier_1')
-            tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
-    
-            # Filter out phone numbers from names
-            if raw_name and (raw_name.startswith('+') or 
-                            raw_name.startswith('whatsapp:') or 
-                            raw_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
-                clean_name = 'there'
-            else:
-                clean_name = raw_name
-    
-            return f"""CLIENT PROFILE
+                    # Filter out phone numbers from names
+                    if raw_name and (raw_name.startswith('+') or 
+                                    raw_name.startswith('whatsapp:') or 
+                                    raw_name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
+                        clean_name = 'there'
+                    else:
+                        clean_name = raw_name
+            
+                    return f"""CLIENT PROFILE
 
 Name: {clean_name}
 Service Tier: {tier_display}
 
 Standing by."""
-    else:
-        return "Client profile loading..."
-    
+            else:
+                return "Client profile loading..."
+        
         # VALUE_JUSTIFICATION responses
         if intent == Intent.VALUE_JUSTIFICATION:
             # Context-aware value response
@@ -654,6 +654,13 @@ Standing by."""
             
                 return f"""We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.
 
+Real-time intelligence. No lag. No surprises.
+
+Standing by."""
+            else:
+                return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
+
+Real-time data. Fortune-500 presentation quality. Surgical precision."""
     Real-time intelligence. No lag. No surprises.
 
     Standing by."""
