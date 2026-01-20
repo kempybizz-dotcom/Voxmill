@@ -1194,120 +1194,22 @@ Contact support for manual directive."""
             
             # Log Decision Mode execution
             logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
-        
-        # ========================================
-        # RISK MODE POST-PROCESSING ENFORCEMENT
-        # ========================================
-        
-        if is_risk_mode:
-            # Validate Risk Mode structure
-            required_sections = ['RISK STATEMENT', 'MECHANISM', 'CONSEQUENCE', 'CONFIDENCE']
-            
-            # Check if response has all required elements (flexible matching)
-            has_risk_statement = bool(re.search(r'(early signal|verified|observed pattern|hypothesis):', response_text, re.IGNORECASE))
-            has_mechanism = 'why this matters' in response_text.lower() or 'mechanism' in response_text.lower()
-            has_consequence = 'consequence' in response_text.lower() or 'if ignored' in response_text.lower()
-            has_confidence = bool(re.search(r'confidence:\s*(verified|observed|early signal|hypothesis)', response_text, re.IGNORECASE))
-            
-            # Check for forbidden opportunity language
-            opportunity_indicators = [
-                'could optimize', 'optimize returns', 'leaving money on the table',
-                'could make more', 'revenue opportunity', 'pricing upside',
-                'adjusting asking prices could', 'align more closely with market',
-                'could be leaving', 'significant revenue', 'misalignment in pricing'
-            ]
-            
-            has_opportunity_language = any(phrase.lower() in response_text.lower() for phrase in opportunity_indicators)
-            
-            is_valid_risk = has_risk_statement and has_mechanism and has_consequence and has_confidence and not has_opportunity_language
-            
-            if not is_valid_risk:
-                logger.warning(f"⚠️ Risk Mode violated structure: risk_statement={has_risk_statement}, mechanism={has_mechanism}, consequence={has_consequence}, confidence={has_confidence}, has_opportunity_language={has_opportunity_language}")
-                
-                # Override with proper risk structure using actual dataset context
-                top_competitor = "competitors"
-                if 'agent_profiles' in dataset and dataset['agent_profiles']:
-                    top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
-                
-                response_text = f"""Early signal: {top_competitor} may be securing instructions off-market before visible in public listings.
 
-Why this matters: Off-market pricing flexibility allows rivals to win deal flow upstream, invisible in current data.
-
-Consequence if ignored: Stable public inventory masks declining instruction share — leverage lost before pricing data reflects it.
-
-Confidence: Early signal (not yet verifiable in current listings)."""
-            
-            logger.info(f"✅ Risk Mode validated: valid={is_valid_risk}, opportunity_language={has_opportunity_language}")
-        
         # ========================================
-        # PRINCIPAL RISK ADVICE POST-PROCESSING
+        # MINIMAL POST-PROCESSING (SAFETY ONLY)
         # ========================================
         
-        if is_principal_risk:
-            # Validate Principal Risk format
-            has_principal_header = 'PRINCIPAL RISK VIEW' in response_text
-            has_risk_statement = 'my biggest concern would be' in response_text.lower()
-            has_confirmation = 'what would confirm it' in response_text.lower() or 'confirm' in response_text.lower()
-            has_confidence = bool(re.search(r'confidence:\s*(early signal|inferred|observed)', response_text, re.IGNORECASE))
-            
-            # Check for forbidden self-description
-            has_self_description = any(phrase in response_text.lower() for phrase in [
-                'i provide', 'i offer', 'i deliver', 'i analyze', 
-                'across industries', 'market intelligence', 'voxmill'
-            ])
-            
-            is_valid_principal = has_risk_statement and has_confirmation and has_confidence and not has_self_description
-            
-            if not is_valid_principal or has_self_description:
-                logger.warning(f"⚠️ Principal Risk violated format or included self-description")
-                
-                # Override with proper principal risk structure
-                top_competitor = "competitors"
-                if 'agent_profiles' in dataset and dataset['agent_profiles']:
-                    top_competitor = dataset['agent_profiles'][0].get('agent', 'competitors')
-                
-                response_text = f"""PRINCIPAL RISK VIEW
-
-If I were sitting in your seat this week, my biggest concern would be losing narrative control on pricing before the market visibly resets.
-
-Why it matters:
-Competitors like {top_competitor} tend to move first when sentiment turns. If they quietly re-anchor seller expectations before prices adjust publicly, they win instructions while you defend positioning.
-
-What would confirm it:
-An increase in quiet fee flexibility, off-market pushes, or sub-5% price trims on prime Mayfair stock.
-
-Confidence: early signal"""
-            
-            logger.info(f"✅ Principal Risk validated: valid={is_valid_principal}, self_description={has_self_description}")
+        # Only check for catastrophic failures
+        if not response_text or len(response_text) < 10:
+            logger.error("❌ Empty or too-short response from GPT-4")
+            response_text = "Unable to generate response. Please try again."
         
-        # ========================================
-        # HUMAN MODE VALIDATOR
-        # ========================================
+        # Check length
+        word_count = len(response_text.split())
+        if word_count > 250 and not is_decision_mode:
+            logger.warning(f"⚠️ Response too long ({word_count} words), but NOT truncating")
         
-        # Human mode is now handled by governor - this check is obsolete
-        is_human_mode = False
-        
-        if is_human_mode:
-            # Validate human mode compliance
-            has_numbers = bool(re.search(r'\d+\.?\d*(/100|%|£|\$)', response_text))
-            has_headers = bool(re.search(r'^(MARKET INTELLIGENCE|WEEKLY BRIEFING|DECISION MODE)', response_text, re.MULTILINE))
-            has_system_desc = any(phrase in response_text.lower() for phrase in [
-                'we analyze', 'i provide', 'current focus:', 'analysis includes'
-            ])
-            has_technical_terms = any(term in response_text.lower() for term in [
-                'liquidity velocity', 'timing score', 'momentum', '/100'
-            ])
-            
-            is_valid_human = not (has_numbers or has_headers or has_system_desc or has_technical_terms)
-            
-            if not is_valid_human:
-                logger.warning(f"⚠️ Human Mode violated: numbers={has_numbers}, headers={has_headers}, system_desc={has_system_desc}, technical={has_technical_terms}")
-                
-                # Override with proper human mode response
-                response_text = """You're picking up on hesitation. Buyers are active, but they're not committing quickly — that gap usually shows up before the market actually turns."""
-            
-            logger.info(f"✅ Human Mode validated: valid={is_valid_human}")
-        
+
         # ========================================
         # MONITORING LANGUAGE VALIDATOR
         # ========================================
@@ -1332,7 +1234,7 @@ Confidence: early signal"""
                 response_text = response_text.replace(phrase.title(), 'Monitor pending confirmation')
                 response_text = response_text.replace(phrase.upper(), 'MONITOR PENDING CONFIRMATION')
         
-# ========================================
+        # ========================================
         # META-STRATEGIC RESPONSE VALIDATOR
         # ========================================
         
