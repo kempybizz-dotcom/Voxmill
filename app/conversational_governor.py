@@ -757,11 +757,10 @@ Respond ONLY with valid JSON:
 }}
 
 CRITICAL INTENT ROUTING (PRIORITY 0):
-- "who am I", "remind me who I am", "why am I paying attention" → intent_type: "profile_status"
-- "feels off", "misaligned", "not sitting right" → is_human_signal: true
-- "how would I explain", "what would I say", "frame this for" → is_human_signal: true
-- "if you were me", "if you were in my seat" → intent_type: "principal_risk_advice"
-
+- "who am I", "remind me who I am", "why am I paying attention" -> intent_type: "profile_status"
+- "feels off", "misaligned", "not sitting right" -> is_human_signal: true
+- "how would I explain", "what would I say", "frame this for" -> is_human_signal: true
+- "if you were me", "if you were in my seat" -> intent_type: "principal_risk_advice"
 These intents OVERRIDE all other classification logic.
 
 Guidelines:
