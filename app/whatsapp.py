@@ -1415,6 +1415,10 @@ Voxmill Intelligence — Precision at Scale"""
         except Exception as e:
             logger.debug(f"PIN sync skipped: {e}")
         
+        # ========================================
+        # GATE 1: PIN AUTHENTICATION CHECK
+        # ========================================
+        
         # PIN verification
         needs_verification, reason = PINAuthenticator.check_needs_verification(sender, client_profile)
         client_name = client_profile.get('name', 'there')
@@ -1426,52 +1430,60 @@ Voxmill Intelligence — Precision at Scale"""
                 if reason == "not_set":
                     # Setup flow
                     success, message = PINAuthenticator.set_pin(sender, message_text.strip())
-            
+                    
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
                         await send_twilio_message(sender, response)
                         return  # ✅ TERMINAL
-            
+                    
                     await sync_pin_status_to_airtable(sender, "Active")
+                    
+                    # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
+                    client_profile = await get_client_profile_from_mongodb(sender)
+                    
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
-            
+                    
                     conversation = ConversationSession(sender)
                     conversation.update_session(
                         user_message=message_text,
                         assistant_response=unlock_response,
                         metadata={'category': 'pin_setup'}
                     )
-            
+                    
                     logger.info(f"✅ PIN setup complete")
                     return  # ✅ TERMINAL
-        
+                
                 else:
                     # Verification flow (covers locked, inactivity, subscription_change)
                     success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
-            
+                    
                     if not success:
                         response = get_pin_response_message(success, message, client_name)
                         await send_twilio_message(sender, response)
-                
+                        
                         if message == "locked":
                             await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
                         return  # ✅ TERMINAL
-            
+                    
                     await sync_pin_status_to_airtable(sender, "Active")
+                    
+                    # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
+                    client_profile = await get_client_profile_from_mongodb(sender)
+                    
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
-            
+                    
                     conversation = ConversationSession(sender)
                     conversation.update_session(
                         user_message=message_text,
                         assistant_response=unlock_response,
                         metadata={'category': 'pin_unlock'}
                     )
-            
+                    
                     logger.info(f"✅ PIN verified")
                     return  # ✅ TERMINAL
-    
+            
             # If we get here, PIN needed but user didn't send one
             if reason == "locked":
                 response = get_pin_status_message("locked", client_name)
