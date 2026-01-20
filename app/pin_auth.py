@@ -209,19 +209,19 @@ class PINAuthenticator:
             logger.error(f"Verify PIN error: {e}", exc_info=True)
             return False, "System error"
     
+     # Line 215 - MODIFY check_needs_verification
     @staticmethod
-    def check_needs_verification(whatsapp_number: str, client_profile: dict = None) -> Tuple[bool, str]:
+    def check_needs_verification(whatsapp_number: str, client_profile: dict = None, conversation_active: bool = False) -> Tuple[bool, str]:
         """
         Check if user needs PIN verification
-        
-        CRITICAL FIX: Always read fresh PIN state from MongoDB, not stale Airtable cache
-        
-        Returns: (needs_verification, reason)
-        Reasons: 'not_set', 'inactivity', 'subscription_change', 'locked', 'none'
+    
+        NEW: conversation_active flag defers PIN during active threads
         """
-        try:
-            if db is None:
-                return False, "none"
+    
+        # ✅ DEFER PIN IF MID-CONVERSATION
+        if conversation_active:
+            logger.info(f"✅ Conversation active - deferring PIN check for {whatsapp_number}")
+            return False, "none"
             
             # ========================================
             # CRITICAL: ALWAYS READ FROM MONGODB (FRESH DATA)
