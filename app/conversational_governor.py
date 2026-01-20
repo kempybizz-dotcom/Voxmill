@@ -300,63 +300,14 @@ class ConversationalGovernor:
         return intent in TIER_0_NON_OVERRIDABLE
     
     @staticmethod
-    def _classify_intent(message: str) -> tuple[Intent, float]:
-        """
-        SIMPLIFIED intent classification - only handles security/provocation/casual
-        
-        All other intents determined by LLM in _check_mandate_relevance()
-        
-        Returns: (intent, confidence_score)
-        """
-        
-        message_lower = message.lower().strip()
-        message_clean = ' '.join(message_lower.split())
-        
-        # ========================================
-        # SECURITY (95% threshold)
-        # ========================================
-        
-        security_keywords = ['pin', 'code', 'lock', 'unlock', 'access', 'verify', 'reset pin']
-        if any(kw in message_clean for kw in security_keywords):
-            return Intent.SECURITY, 0.95
-        
-        # ========================================
-        # PROVOCATION (85% threshold)
-        # ========================================
-        
-        provocation_exact = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
-        if message_clean in provocation_exact:
-            return Intent.PROVOCATION, 0.98
-        
-        # ========================================
-        # CASUAL - HIGH CONFIDENCE (90% threshold)
-        # ========================================
-        
-        # Exact matches
-        casual_exact = [
-            'whats up', 'what up', 'sup', 'wassup', 'whatsup',
-            'hi', 'hello', 'hey', 'yo', 'hiya',
-            'good morning', 'good afternoon', 'good evening'
-        ]
-        
-        if message_clean in casual_exact:
-            return Intent.CASUAL, 0.95
-        
-        # Acknowledgments
-        acknowledgments = [
-            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-            'ok', 'okay', 'noted', 'got it', 'gotit',
-            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-            'cheers'
-        ]
-        
-        if message_clean in acknowledgments:
-            return Intent.CASUAL, 0.95
-        
-        # ========================================
-        # UNKNOWN (let LLM handle everything else)
-        # ========================================
-        
+    async def _classify_intent(message: str) -> tuple[Intent, float]:
+        """LLM-ONLY intent classification - zero keyword dependency"""
+    
+        # Only check for 4-digit PIN codes (security bypass)
+        if message.strip().isdigit() and len(message.strip()) == 4:
+            return Intent.SECURITY, 1.0
+    
+        # Everything else determined by LLM
         return Intent.UNKNOWN, 0.50
     
     # ========================================
@@ -735,105 +686,12 @@ For immediate regeneration, contact intel@voxmill.uk"""
     @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
         """
-        Layer -1: Absorb pure social pleasantries without analysis
-        
-        Returns: (is_social, response_text_or_none)
-        - (True, "Standing by.") = social input, send brief ack
-        - (True, None) = social input, silence
-        - (False, None) = not social, continue to full governance
-        
-        ✅ VARIED ACKNOWLEDGMENTS
-        ✅ SELECTIVE NAME USAGE (30% chance)
-        ✅ NEVER USE PHONE NUMBERS AS NAMES
+        Layer -1: Absorb pure social pleasantries
+    
+        ❌ DELETED: All keyword lists
+        ✅ NEW: LLM determines if social
         """
-        
-        # ✅ CHATGPT FIX: Filter out phone numbers from names
-        if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
-            client_name = 'there'
-        
-        message_lower = message_text.lower().strip()
-        message_clean = ' '.join(message_lower.split())
-        
-        # ========================================
-        # PURE GREETINGS (no query component)
-        # ========================================
-        
-        pure_greetings = [
-            'hi', 'hello', 'hey', 'yo', 'hiya',
-            'good morning', 'good afternoon', 'good evening',
-            'morning', 'afternoon', 'evening',
-            'whats up', 'what up', 'sup', 'wassup', 'whatsup'
-        ]
-        
-        if message_clean in pure_greetings:
-            # 30% chance: use name if available
-            if client_name != "there" and random.random() < 0.3:
-                options = [
-                    f"Standing by, {client_name}.",
-                    f"Ready, {client_name}."
-                ]
-            else:
-                # 70% chance: no name
-                options = [
-                    "Standing by.",
-                    "Ready.",
-                    "Standing by.",  # Weighted
-                ]
-            
-            return True, random.choice(options)
-        
-        # ========================================
-        # PURE ACKNOWLEDGMENTS (no query)
-        # ========================================
-        
-        pure_acks = [
-            'thanks', 'thank you', 'thankyou', 'thx', 'ty',
-            'ok', 'okay', 'noted', 'got it', 'gotit',
-            'yep', 'yeah', 'yup', 'sure', 'cool', 'right',
-            'cheers', 'appreciate it', 'appreciated'
-        ]
-        
-        if message_clean in pure_acks:
-            # Brief acknowledgment
-            options = [
-                "Standing by.",
-                "Ready.",
-                "Standing by.",  # Weighted
-            ]
-            
-            return True, random.choice(options)
-        
-        # ========================================
-        # COMPOUND PATTERNS (greeting + question)
-        # ========================================
-        
-        # Example: "Hey, what's the market doing?"
-        # These should NOT be absorbed - they have actual queries
-        
-        compound_patterns = [
-            r'^(hi|hello|hey|yo|hiya)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
-            r'^(good morning|good afternoon|good evening)[,\s]+(what|how|when|where|who|why|can|could|would|show|tell|give)',
-        ]
-        
-        for pattern in compound_patterns:
-            if re.match(pattern, message_lower):
-                # Has query component - don't absorb
-                return False, None
-        
-        # ========================================
-        # LAUGHTER / AMUSEMENT (silence)
-        # ========================================
-        
-        laughter = ['lol', 'haha', 'lmao', 'hehe', 'lmfao', 'rofl']
-        
-        if message_clean in laughter:
-            # Silence (no response)
-            return True, None
-        
-        # ========================================
-        # NOT SOCIAL - CONTINUE TO FULL GOVERNANCE
-        # ========================================
-        
+        # Just return False - let LLM handle everything
         return False, None
     
     @staticmethod
@@ -1336,9 +1194,39 @@ Trial access provides limited intelligence sampling."""
         
         # Get LLM's intent_type hint for special handling
         intent_type_hint = ConversationalGovernor._last_intent_type
-
+        
         # ========================================
-        # ✅ CHATGPT FIX: HUMAN SIGNAL DETECTION (FROM LLM)
+        # ✅ TIER 0 SHORT-CIRCUIT - IMMEDIATE ROUTING
+        # ========================================
+        
+        tier_0_intents = {
+            'trust_authority': Intent.TRUST_AUTHORITY,
+            'principal_risk_advice': Intent.PRINCIPAL_RISK_ADVICE,
+            'meta_authority': Intent.META_AUTHORITY,
+            'executive_compression': Intent.EXECUTIVE_COMPRESSION,
+            'profile_status': Intent.PROFILE_STATUS,
+            'portfolio_status': Intent.PORTFOLIO_STATUS,
+            'portfolio_management': Intent.PORTFOLIO_MANAGEMENT,
+            'value_justification': Intent.VALUE_JUSTIFICATION,
+            'status_monitoring': Intent.STATUS_MONITORING,
+            'delivery_request': Intent.DELIVERY_REQUEST,
+        }
+        
+        if intent_type_hint in tier_0_intents:
+            logger.info(f"🎯 TIER 0 IMMEDIATE ROUTE: {intent_type_hint}")
+            intent = tier_0_intents[intent_type_hint]
+            confidence = 0.95
+            
+            # Force mandate relevance for Tier 0 intents
+            is_mandate_relevant = True
+            
+            # SKIP _classify_intent entirely for Tier 0
+            tier_0_routed = True
+        else:
+            tier_0_routed = False
+        
+        # ========================================
+        # ✅ HUMAN SIGNAL DETECTION (FROM LLM)
         # ========================================
         
         # Also check if LLM classified as human-mode intent
