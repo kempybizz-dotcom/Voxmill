@@ -3069,6 +3069,10 @@ Standing by."""
         # ====================================================================
         
         logger.info(f"🤖 Complex query - loading dataset and using GPT-4 for region: '{query_region}'")
+
+        # ✅ INITIALIZE DATASET VARIABLE (CRITICAL - ALWAYS NEEDED)
+        dataset = None
+        comparison_datasets = []
         
         # ====================================================================
         # COMPARISON QUERY DETECTION (✅ PHASE 1 FIXES INTEGRATED)
@@ -3367,13 +3371,17 @@ Standing by."""
                     response = """Comparison failed - specify two markets.
 
 Try: "Compare Mayfair vs Knightsbridge"
-
 Standing by."""
                     
                     await send_twilio_message(sender, response)
                     log_interaction(sender, message_text, "comparison_format_error", response, 0, client_profile)
                     return  # TERMINAL
             
+        
+        # ✅ SAFETY CHECK: Ensure dataset is loaded before classification
+        if dataset is None:
+            logger.info(f"📊 Loading dataset for {query_region} before classification")
+            dataset = load_dataset(area=query_region, industry=industry_code)
         
         # Store comparison response for reverse functionality
         category, response_text, response_metadata = await classify_and_respond(
