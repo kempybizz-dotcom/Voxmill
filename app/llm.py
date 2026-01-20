@@ -6,6 +6,7 @@ from openai import OpenAI
 from datetime import datetime
 from app.adaptive_llm import get_adaptive_llm_config, AdaptiveLLMController
 from app.conversation_manager import generate_contextualized_prompt, ConversationSession
+from app.conversational_governor import Intent 
 
 logger = logging.getLogger(__name__)
 
