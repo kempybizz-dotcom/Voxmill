@@ -709,8 +709,8 @@ For immediate regeneration, contact intel@voxmill.uk"""
         """
         Layer -1: Absorb pure social pleasantries
     
-        ❌ DELETED: All keyword lists
-        ✅ NEW: LLM determines if social
+        DELETED: All keyword lists
+        NEW: LLM determines if social
         """
         # Just return False - let LLM handle everything
         return False, None
