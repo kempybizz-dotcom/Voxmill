@@ -300,7 +300,7 @@ class ConversationalGovernor:
         return intent in TIER_0_NON_OVERRIDABLE
     
     @staticmethod
-    async def _classify_intent(message: str) -> tuple[Intent, float]:
+    def _classify_intent(message: str) -> tuple[Intent, float]:
         """LLM-ONLY intent classification - zero keyword dependency"""
     
         # Only check for 4-digit PIN codes (security bypass)
