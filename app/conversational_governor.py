@@ -745,6 +745,8 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         prompt = f"""Classify this message for a market intelligence system.
 
+prompt = f"""Classify this message for a market intelligence system.
+
 Message: "{message}"{context_str}
 
 Respond ONLY with valid JSON:
@@ -761,6 +763,7 @@ CRITICAL INTENT ROUTING (PRIORITY 0):
 - "feels off", "misaligned", "not sitting right" -> is_human_signal: true
 - "how would I explain", "what would I say", "frame this for" -> is_human_signal: true
 - "if you were me", "if you were in my seat" -> intent_type: "principal_risk_advice"
+
 These intents OVERRIDE all other classification logic.
 
 Guidelines:
@@ -771,7 +774,7 @@ Guidelines:
 - principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
 - value_justification: "Why are we talking?", "What's the point?", "Why do I need this?", "What do you actually do for me?" (ALWAYS relevant=true)
 
-✅ NEW DISTINCTION - CRITICAL:
+NEW DISTINCTION - CRITICAL:
 - meta_authority: ONLY for "What can you do?", "What is Voxmill?", "Tell me about yourself", "What are your capabilities?" (system capability questions)
 - market_query: "What should we do?", "What's the best action?", "If we only do one thing", "What's the move?", "What protects us?" (strategic decision questions requesting ACTION)
 
