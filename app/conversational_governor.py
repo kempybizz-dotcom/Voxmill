@@ -1139,6 +1139,8 @@ Contact intel@voxmill.uk to upgrade."""
                         silence_required=False,
                         response="""TRIAL SAMPLE COMPLETE
 
+"""TRIAL SAMPLE COMPLETE
+
 You've received your trial intelligence sample.
 
 To continue receiving market intelligence, contact:
