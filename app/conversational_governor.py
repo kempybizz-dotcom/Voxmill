@@ -1049,7 +1049,7 @@ Thank you for trying our service.""",
                 
                 # Get hardcoded response
                 if intent_type_hint == 'meta_authority':
-                    response = """I provide real-time market intelligence for luxury property markets.
+                    response = """My job is to tell you what's about to matter before it shows up publicly.
 
 Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
 
