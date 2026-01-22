@@ -745,10 +745,26 @@ Respond ONLY with valid JSON:
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
     "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity",
-    "is_human_signal": true/false
+    "is_human_signal": true/false,
+    "is_dismissal": false
 }}
 
-CRITICAL INTENT ROUTING (PRIORITY 0):
+CRITICAL DISMISSAL DETECTION (PRIORITY 0):
+If the user's message contains ANY of these signals, set "is_dismissal": true:
+- "just tell me"
+- "just give me the number"
+- "just give me"
+- "skip the explanation"
+- "I don't need context"
+- "straight answer"
+- "cut to the chase"
+- "bottom line"
+- "no fluff"
+- "without the story"
+- "spare me the"
+- Direct pushback after receiving context (e.g., "just the data", "enough context")
+
+CRITICAL INTENT ROUTING (PRIORITY 1):
 - "who am I", "remind me who I am", "why am I paying attention" -> intent_type: "profile_status"
 - "feels off", "misaligned", "not sitting right" -> is_human_signal: true
 - "how would I explain", "what would I say", "frame this for" -> is_human_signal: true
@@ -759,6 +775,7 @@ These intents OVERRIDE all other classification logic.
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION (examples: "feels off", "not sitting right", "you sure?", "without worrying them", "say it differently", "be honest", "just tell me straight")
+- is_dismissal: true if user is explicitly requesting direct data without context/analogies/stories
 - identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
 - plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
 - principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
@@ -813,9 +830,11 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             confidence = result.get('confidence', 0.5)
             intent_type = result.get('intent_type')
             is_human_signal = result.get('is_human_signal', False)
+            is_dismissal = result.get('is_dismissal', False)
             
-            # Store intent_type for downstream routing
+            # Store intent_type AND dismissal flag for downstream routing
             ConversationalGovernor._last_intent_type = intent_type
+            ConversationalGovernor._is_dismissal = is_dismissal
             
             # Map string to enum
             category_map = {
@@ -831,7 +850,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             
             semantic_category = category_map.get(category_str, SemanticCategory.NON_DOMAIN)
             
-            logger.info(f"LLM mandate check: relevant={is_relevant}, category={category_str}, intent={intent_type}, confidence={confidence:.2f}")
+            logger.info(f"LLM mandate check: relevant={is_relevant}, category={category_str}, intent={intent_type}, dismissal={is_dismissal}, confidence={confidence:.2f}")
             
             return is_relevant, semantic_category, confidence, is_human_signal
             
