@@ -587,7 +587,7 @@ class ConversationalGovernor:
         return envelopes.get(intent, envelopes[Intent.UNKNOWN])
     
     @staticmethod
-    def _get_hardcoded_response(intent: Intent, message: str, client_profile: dict = None) -> Optional[str]:
+    def _get_hardcoded_response(intent: Intent, message_text: str, client_profile: dict = None) -> Optional[str]:
         """
         Get hardcoded response for simple intents
     
