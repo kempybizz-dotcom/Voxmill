@@ -638,7 +638,7 @@ class ConversationalGovernor:
             
                     return f"""CLIENT PROFILE
 
-Name: {clean_name}
+Name: {name}
 Service Tier: {tier_display}
 
 Standing by."""
@@ -653,10 +653,9 @@ Standing by."""
                 active_market = client_profile.get('active_market', 'your market')
             
                 return f"""We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.
+                
+"My job is to tell you what will matter before it's obvious."
 
-Real-time intelligence. No lag. No surprises.
-
-Standing by."""
             else:
                 return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
 
