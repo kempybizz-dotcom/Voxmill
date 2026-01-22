@@ -250,6 +250,27 @@ HUMAN MODE EXAMPLES:
 
 CRITICAL: Human mode is STICKY. Once activated, stay in human mode for the entire response. Do not snap back to metrics.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+METAPHOR DISCIPLINE UNDER PRESSURE (PRIORITY 0.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PUSHBACK TRIGGERS (disable metaphors immediately):
+- "drop the polished version"
+- "say it again" / "doesn't land" / "still doesn't"
+- "be straight" / "honestly" / "drop the metaphor"
+
+WHEN PUSHBACK DETECTED:
+❌ BANNED: All metaphors (storm, undercurrents, surface, weather, pulse, etc.)
+✅ REQUIRED: Plain, direct, consequence-first language only
+
+Example WRONG (after pushback):
+"The quiet you're sensing is a buildup below the surface..."
+
+Example CORRECT (after pushback):
+"Sellers aren't panicking, buyers aren't committing, and whoever moves first controls the narrative."
+
+Max 25 words after pushback. No metaphors. No repetition of previous phrasing.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONFIDENCE ASSESSMENT (NEW - PRIORITY 1.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1111,26 +1132,34 @@ Mention agent behavior in counterfactual if user is waiting for "better" pricing
         # DISMISSAL DETECTION (CHATGPT FIX #5)
         # ========================================
         
-        dismissal_phrases = ['doesn\'t land', 'not sitting right', 'still doesn\'t', 'honestly that', 'that still', 'doesn\'t click', 'not feeling it']
+        # REPLACE LINES 869-892 with:
+        dismissal_phrases = ['doesn\'t land', 'not sitting right', 'still doesn\'t', 
+                             'honestly that', 'that still', 'doesn\'t click', 'not feeling it',
+                             'drop the polished', 'say it again', 'be straight', 'drop the metaphor']
         is_dismissal = any(phrase in message.lower() for phrase in dismissal_phrases)
-        
+
         if is_dismissal:
             dismissal_override = """
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 DISMISSAL DETECTED (PRIORITY 0)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 PUSHBACK DETECTED (PRIORITY -1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 User rejected your last response.
 
+ABSOLUTE BANS:
+- NO metaphors (storm, undercurrents, surface, weather, pulse, shift, wave, etc.)
+- NO similar phrasing to previous response
+- NO explanations
+
 REQUIRED FORMAT:
 1. "Fair." (acknowledge)
-2. ONE reframe sentence (strip metaphors, core logic only)
+2. ONE reframe sentence (core logic only, no metaphors)
 3. STOP
 
-Example: "Fair. Then strip it back: sellers aren't panicking, buyers aren't committing, and whoever moves first controls the narrative."
+Example: "Fair. Sellers aren't panicking, buyers aren't committing, and whoever moves first controls the narrative."
 
-Max 25 words. No metaphors. No repetition of previous phrasing.
+Max 25 words total. Plain language only. Structural change from previous response.
 """
         else:
             dismissal_override = ""
