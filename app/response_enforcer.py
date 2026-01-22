@@ -164,54 +164,29 @@ class ResponseEnforcer:
         """
         Detect if query requires strategic analysis regardless of intent
         
-        Strategic signals: risk, opportunity, positioning, timing, should I, advise
+        REMOVED: All keyword detection (weak, brittle)
+        NEW: Pure heuristic - questions >6 words = strategic depth required
         
-        CRITICAL: This prevents truncation of queries like:
-        - "Where is risk hiding right now"
-        - "What opportunities am I missing"
-        - "Should I act on this"
+        LLM determines actual intent. This only prevents premature truncation.
         """
         
         if not message:
             return False
         
-        message_lower = message.lower()
+        message_lower = message.lower().strip()
         
-        # Strategic keywords that require full analysis
-        strategic_keywords = [
-            'risk', 'risks', 'risky', 'danger', 'threat', 'exposure',
-            'opportunity', 'opportunities', 'upside', 'potential',
-            'should i', 'should we', 'advise', 'recommend', 'guidance',
-            'strategic', 'strategy', 'positioning', 'advantage',
-            'timing', 'when should', 'best time', 'right time',
-            'hiding', 'hidden', 'overlooked', 'missing',
-            'implications', 'consequences', 'impact', 'effect',
-            'compare', 'versus', 'vs', 'difference between',
-            'trend', 'trajectory', 'direction', 'momentum',
-            'what if', 'scenario', 'forecast', 'outlook',
-            'competitive', 'competition', 'competitor', 'rivals',
-            'weakness', 'weaknesses', 'vulnerability', 'vulnerable',
-            'strength', 'strengths', 'edge', 'differentiation',
-            'feels off', 'doesn\'t add up', 'doesn\'t match',  # ✅ CHATGPT FIX - Contradiction signals
-            'something\'s wrong', 'doesn\'t feel right', 'mismatch',  # ✅ CHATGPT FIX
-            'if you were', 'what would worry you', 'what would concern you'  # ✅ CHATGPT FIX - Principal risk triggers
-        ]
-        
-        # Check if query contains strategic keywords
-        has_strategic_keyword = any(kw in message_lower for kw in strategic_keywords)
-        
-        # Check if query is a question (questions need more space)
+        # Heuristic: Questions with >6 words likely need analysis depth
         is_question = message.strip().endswith('?') or any(
             message_lower.startswith(q) for q in ['what', 'where', 'why', 'how', 'when', 'which', 'who']
         )
         
-        # Strategic if: has keyword OR (is question AND >6 words)
         word_count = len(message.split())
         
-        is_strategic = has_strategic_keyword or (is_question and word_count >= 6)
+        # Strategic = question AND substantial (>6 words)
+        is_strategic = is_question and word_count >= 6
         
         if is_strategic:
-            logger.info(f"🎯 Strategic query detected: '{message[:50]}...'")
+            logger.info(f"🎯 Strategic depth required: question with {word_count} words")
         
         return is_strategic
     
@@ -225,14 +200,13 @@ class ResponseEnforcer:
         CRITICAL: Now considers message content to detect strategic queries
         
         UPGRADE LOGIC:
-        - Strategic keywords (risk, opportunity, timing) → STRUCTURED_BRIEF
         - Complex questions (>6 words) → STRUCTURED_BRIEF
         - Otherwise → Intent-based shape
         """
         
         from app.conversational_governor import Intent
         
-        # ✅ STRATEGIC QUERY OVERRIDE: Detect strategic language
+        # ✅ STRATEGIC QUERY OVERRIDE: Detect strategic depth requirement
         if message and ResponseEnforcer._detect_strategic_query(message):
             logger.info(f"🎯 Strategic query detected, upgrading to STRUCTURED_BRIEF")
             return ResponseShape.STRUCTURED_BRIEF
