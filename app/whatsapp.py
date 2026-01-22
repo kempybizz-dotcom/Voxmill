@@ -1123,6 +1123,47 @@ Contact intel@voxmill.uk if you need assistance."""
         logger.info(f"🔐 GATE 2.6: Checking silence mode...")
         
         conversation = ConversationSession(sender)
+
+        # ====================================================================
+        # GATE 2.65: REPEAT QUERY DETECTION (CACHE-LEVEL)
+        # ====================================================================
+        
+        logger.info(f"🔐 GATE 2.65: Checking for repeat queries...")
+        
+        # Get session data for last message comparison
+        session_data = conversation.get_session()
+        
+        # Normalize current message for comparison
+        current_message_clean = message_text.strip().lower()
+        
+        # Get last user message from session
+        last_user_message = session_data.get('last_user_message_raw', '')
+        
+        # Check if exact repeat
+        if current_message_clean == last_user_message and last_user_message != '':
+            # Get cached response
+            last_bot_response = session_data.get('last_bot_response_raw', '')
+            
+            if last_bot_response:
+                logger.info(f"🔁 REPEAT DETECTED: Returning abbreviated cached response")
+                
+                # Return shortened version
+                abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+                
+                await send_twilio_message(sender, abbreviated_response)
+                
+                # Update abuse score
+                try:
+                    RateLimiter.update_abuse_score(sender, 'repeat_query', 2)
+                except Exception:
+                    pass
+                
+                return  # TERMINAL
+        
+        # Store current message for next comparison
+        session_data['last_user_message_raw'] = current_message_clean
+        
+        logger.info(f"✅ GATE 2.65 PASSED: Not a repeat")
         
         if conversation.is_silenced():
             silence_expiry = conversation.get_silence_expiry()
@@ -3069,7 +3110,21 @@ Standing by."""
                 category = "net_position"
             
             await send_twilio_message(sender, formatted_response)
-            conversation.update_session(user_message=message_text, assistant_response=formatted_response, metadata={'category': category, 'response_type': 'instant'})
+            
+            # Cache response for repeat detection
+            session_data = conversation.get_session()
+            session_data['last_bot_response_raw'] = formatted_response
+            
+            conversation.update_session(
+                user_message=message_text, 
+                assistant_response=formatted_response, 
+                metadata={
+                    'category': category, 
+                    'response_type': 'instant',
+                    'last_bot_response_raw': formatted_response
+                }
+            )
+            
             log_interaction(sender, message_text, category, formatted_response, 0, client_profile)
             update_client_history(sender, message_text, category, canonical_region)
             
@@ -3490,6 +3545,10 @@ Standing by."""
         # Send response
         await send_twilio_message(sender, formatted_response)
         
+        # Cache response for repeat detection
+        session_data = conversation.get_session()
+        session_data['last_bot_response_raw'] = formatted_response
+        
         # Update session
         conversation.update_session(
             user_message=message_text,
@@ -3498,7 +3557,8 @@ Standing by."""
                 'category': category,
                 'region': query_region,
                 'confidence': confidence_score,
-                'cached': False
+                'cached': False,
+                'last_bot_response_raw': formatted_response
             }
         )
         
