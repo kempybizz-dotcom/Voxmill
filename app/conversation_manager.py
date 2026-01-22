@@ -384,6 +384,32 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error getting silence expiry: {e}")
             return None
+
+    
+    def get_banned_phrases(self, lookback: int = 3) -> set:
+        """Get phrases that should be blocked due to recent usage"""
+        if not self.messages:
+            return set()
+        
+        # Get last N messages
+        recent = self.messages[-lookback:]
+        
+        banned = set()
+        
+        for msg in recent:
+            response = msg.get('assistant_response', '').lower()
+            
+            # Detect phrase roots
+            if 'hesitat' in response:
+                banned.add('hesitation')
+            if 'you\'re picking up on' in response:
+                banned.add('picking_up')
+            if 'pause' in response:
+                banned.add('pause')
+            if 'quiet' in response:
+                banned.add('quiet')
+        
+        return banned
     
     def get_conversation_context(self) -> str:
         """
