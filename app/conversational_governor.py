@@ -611,17 +611,17 @@ class ConversationalGovernor:
                 agency_name = client_profile.get('agency_name')
                 preferred_region = client_profile.get('preferences', {}).get('preferred_regions', ['your market'])[0] if client_profile.get('preferences', {}).get('preferred_regions') else 'your market'
                 
-                # ✅ DETECT IF THIS IS AN IDENTITY QUESTION
+                # Detect if this is an identity question
                 identity_triggers = ['who am i', 'remind me who', 'why am i paying attention', 'why do i talk to you', 'what my market']
                 is_identity_question = any(trigger in message_text.lower() for trigger in identity_triggers)
                 
                 if is_identity_question and agency_name:
-                    # ✅ IDENTITY RECALL (ChatGPT Fix #1)
+                    # Identity recall
                     logger.info(f"🎯 IDENTITY RECALL: {agency_name} in {preferred_region}")
                     return f"You're {agency_name} in {preferred_region}, and you talk to me to stay ahead of competitor moves before they show up publicly."
                 
                 else:
-                    # ✅ PROFILE DATA REQUEST (generic)
+                    # Profile data request
                     logger.info(f"🔍 PROFILE_STATUS DEBUG: name={client_profile.get('name')}, agency_name={agency_name}, role={client_profile.get('role')}")
                     
                     raw_name = client_profile.get('name', 'there')
@@ -661,13 +661,6 @@ Standing by."""
                 return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
 
 Real-time data. Fortune-500 presentation quality. Surgical precision."""
-    Real-time intelligence. No lag. No surprises.
-
-    Standing by."""
-            else:
-                return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
-
-    Real-time data. Fortune-500 presentation quality. Surgical precision."""
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
