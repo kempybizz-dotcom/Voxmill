@@ -1439,7 +1439,7 @@ Voxmill Intelligence — Precision at Scale"""
                     await sync_pin_status_to_airtable(sender, "Active")
                     
                     # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                    client_profile = await get_client_profile_from_mongodb(sender)
+                    client_profile = get_client_profile(sender)
                     
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
@@ -1469,7 +1469,7 @@ Voxmill Intelligence — Precision at Scale"""
                     await sync_pin_status_to_airtable(sender, "Active")
                     
                     # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                    client_profile = await get_client_profile_from_mongodb(sender)
+                    client_profile = get_client_profile(sender)
                     
                     unlock_response = "Access verified. Standing by."
                     await send_twilio_message(sender, unlock_response)
