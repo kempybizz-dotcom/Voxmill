@@ -611,12 +611,12 @@ class ConversationalGovernor:
                 
                 else:
                     # Profile data request
-                    logger.info(f"🔍 PROFILE_STATUS DEBUG: name={client_profile.get('name')}, agency_name={agency_name}, role={client_profile.get('role')}")
-                    
                     raw_name = client_profile.get('name', 'there')
-                    tier = client_profile.get('tier', 'tier_1')
-                    tier_display = {'tier_1': 'Basic', 'tier_2': 'Premium', 'tier_3': 'Enterprise'}.get(tier, 'institutional')
-            
+                    agency_name = client_profile.get('agency_name', 'Unknown Agency')
+                    role = client_profile.get('role', 'Unknown Role')
+                    
+                    logger.info(f"🔍 PROFILE_STATUS DEBUG: name={raw_name}, agency={agency_name}, role={role}")
+                    
                     # Filter out phone numbers from names
                     if raw_name and (raw_name.startswith('+') or 
                                     raw_name.startswith('whatsapp:') or 
@@ -628,7 +628,8 @@ class ConversationalGovernor:
                     return (
                         "CLIENT PROFILE\n\n"
                         f"Name: {clean_name}\n"
-                        f"Service Tier: {tier_display}\n\n"
+                        f"Agency: {agency_name}\n"
+                        f"Role: {role}\n\n"
                         "Standing by."
                     )
             else:
@@ -686,6 +687,7 @@ class ConversationalGovernor:
         }
         
         return intent_responses.get(intent)
+
     
     @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
