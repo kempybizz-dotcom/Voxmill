@@ -1983,11 +1983,66 @@ For detailed analysis, contact intel@voxmill.uk"""
                 if MONGODB_URI:
                     mongo_client = MongoClient(MONGODB_URI)
                     db = mongo_client['Voxmill']
-                    db['client_profiles'].delete_one({'whatsapp_number': sender})
                     
+                    # ✅ STEP 1: Delete old cache
+                    db['client_profiles'].delete_one({'whatsapp_number': sender})
                     logger.info(f"✅ Profile cache cleared for {sender}")
                     
-                    response = """PROFILE REFRESHED
+                    # ✅ STEP 2: Immediately reload from Airtable
+                    client_profile_fresh = get_client_from_airtable(sender)
+                    
+                    if not client_profile_fresh:
+                        response = "Profile refresh failed - account not found in Airtable.\n\nContact intel@voxmill.uk"
+                    else:
+                        # ✅ STEP 3: Rebuild and save to MongoDB
+                        client_profile = {
+                            'whatsapp_number': sender,
+                            'name': client_profile_fresh.get('name', sender),
+                            'email': client_profile_fresh.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
+                            'tier': client_profile_fresh.get('tier', 'tier_1'),
+                            'subscription_status': client_profile_fresh.get('subscription_status', 'unknown'),
+                            'airtable_record_id': client_profile_fresh.get('airtable_record_id'),
+                            'airtable_table': client_profile_fresh.get('airtable_table', 'Accounts'),
+                            'industry': client_profile_fresh.get('industry', 'real_estate'),
+                            'active_market': client_profile_fresh.get('active_market'),
+                            'agency_name': client_profile_fresh.get('agency_name'),
+                            'agency_type': client_profile_fresh.get('agency_type'),
+                            'role': client_profile_fresh.get('role'),
+                            'typical_price_band': client_profile_fresh.get('typical_price_band'),
+                            'objectives': client_profile_fresh.get('objectives', []),
+                            
+                            'preferences': {
+                                'preferred_regions': [client_profile_fresh.get('active_market')] if client_profile_fresh.get('active_market') else [],
+                                'competitor_set': [],
+                                'risk_appetite': 'balanced',
+                                'budget_range': {'min': 0, 'max': 100000000},
+                                'insight_depth': 'standard',
+                                'competitor_focus': 'medium',
+                                'report_depth': 'detailed'
+                            },
+                            
+                            'usage_metrics': client_profile_fresh.get('usage_metrics', {}),
+                            'trial_expired': client_profile_fresh.get('trial_expired', False),
+                            'execution_allowed': client_profile_fresh.get('execution_allowed', False),
+                            'pin_enforcement_mode': client_profile_fresh.get('pin_enforcement_mode', 'strict'),
+                            'no_markets_configured': client_profile_fresh.get('no_markets_configured', False),
+                            
+                            'total_queries': 0,
+                            'query_history': [],
+                            'created_at': datetime.now(timezone.utc),
+                            'updated_at': datetime.now(timezone.utc)
+                        }
+                        
+                        # ✅ STEP 4: Save to MongoDB
+                        db['client_profiles'].update_one(
+                            {'whatsapp_number': sender},
+                            {'$set': client_profile},
+                            upsert=True
+                        )
+                        
+                        logger.info(f"✅ Profile reloaded from Airtable: name={client_profile.get('name')}, market={client_profile.get('active_market')}")
+                        
+                        response = """PROFILE REFRESHED
 
 Your account data has been reloaded from Airtable.
 
@@ -1998,7 +2053,7 @@ Standing by."""
                     response = "Unable to refresh profile. Please try again."
             
             except Exception as e:
-                logger.error(f"Profile refresh failed: {e}")
+                logger.error(f"Profile refresh failed: {e}", exc_info=True)
                 response = "Profile refresh failed. Please contact intel@voxmill.uk"
             
             await send_twilio_message(sender, response)
