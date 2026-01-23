@@ -1029,14 +1029,13 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 confidence=1.0,
                 blocked=True,
                 silence_required=False,
-                response="""TRIAL PERIOD EXPIRED
-
-Your 24-hour trial access has concluded.
-
-To continue using Voxmill Intelligence, contact:
-intel@voxmill.uk
-
-Thank you for trying our service.""",
+                response=(
+                    "TRIAL PERIOD EXPIRED\n\n"
+                    "Your 24-hour trial access has concluded.\n\n"
+                    "To continue using Voxmill Intelligence, contact:\n"
+                    "intel@voxmill.uk\n\n"
+                    "Thank you for trying our service."
+                ),
                 allowed_shapes=["STATUS_LINE"],
                 max_words=50,
                 analysis_allowed=False,
