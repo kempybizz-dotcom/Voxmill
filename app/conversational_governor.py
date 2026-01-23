@@ -737,7 +737,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         prompt = f"""Classify this message for a market intelligence system.
 
-Message: "{message}"{context_str}
+Message: {message}{context_str}
 
 Respond ONLY with valid JSON:
 {{
@@ -755,42 +755,42 @@ If the user message contains ANY of these signals, set is_dismissal to true:
 - just give me the number
 - just give me
 - skip the explanation
-- I don't need context
+- I do not need context
 - straight answer
 - cut to the chase
 - bottom line
 - no fluff
 - without the story
 - spare me the
-- Direct pushback after receiving context (examples: just the data, enough context)
+- Direct pushback after receiving context such as just the data or enough context
 
 CRITICAL INTENT ROUTING (PRIORITY 1):
-- "who am I", "remind me who I am", "why am I paying attention" -> intent_type: "profile_status"
-- "feels off", "misaligned", "not sitting right" -> is_human_signal: true
-- "how would I explain", "what would I say", "frame this for" -> is_human_signal: true
-- "if you were me", "if you were in my seat" -> intent_type: "principal_risk_advice"
+- who am I or remind me who I am or why am I paying attention -> intent_type: profile_status
+- feels off or misaligned or not sitting right -> is_human_signal: true
+- how would I explain or what would I say or frame this for -> is_human_signal: true
+- if you were me or if you were in my seat -> intent_type: principal_risk_advice
 
 These intents OVERRIDE all other classification logic.
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
-- is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION (examples: "feels off", "not sitting right", "you sure?", "without worrying them", "say it differently", "be honest", "just tell me straight")
-- is_dismissal: true if user is explicitly requesting direct data without context/analogies/stories
-- identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
-- plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
-- principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
-- value_justification: "Why are we talking?", "What's the point?", "Why do I need this?", "What do you actually do for me?" (ALWAYS relevant=true)
+- is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
+- is_dismissal: true if user is explicitly requesting direct data without context or analogies or stories
+- identity_query: Who am I? What market do I operate in? Tell me about my agency
+- plain_english_definition: explain like I am explaining to a client, define it simply, in plain English
+- principal_risk_advice: If you were in my seat or position, what would worry you, what would concern you, if you were me, your biggest fear (ALWAYS relevant=true)
+- value_justification: Why are we talking? What is the point? Why do I need this? What do you actually do for me? (ALWAYS relevant=true)
 
 NEW DISTINCTION - CRITICAL:
-- meta_authority: ONLY for "What can you do?", "What is Voxmill?", "Tell me about yourself", "What are your capabilities?" (system capability questions)
-- market_query: "What should we do?", "What's the best action?", "If we only do one thing", "What's the move?", "What protects us?" (strategic decision questions requesting ACTION)
+- meta_authority: ONLY for What can you do? What is Voxmill? Tell me about yourself, What are your capabilities? (system capability questions)
+- market_query: What should we do? What is the best action? If we only do one thing, What is the move? What protects us? (strategic decision questions requesting ACTION)
 
-META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
-  * "What am I missing?"
-  * "What's the blind spot?"
-  * "What should I know?"
-  * "What am I not seeing?"
-  * "What breaks this analysis?"
+META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
+  * What am I missing?
+  * What is the blind spot?
+  * What should I know?
+  * What am I not seeing?
+  * What breaks this analysis?
   
 - semantic_category: best fit category
 - confidence: 0.0-1.0 based on clarity
