@@ -1067,53 +1067,51 @@ Thank you for trying our service.""",
                 
                 # Get hardcoded response
                 if intent_type_hint == 'meta_authority':
-if intent_type_hint == 'meta_authority':
-                    response = """My job is to tell you what is about to matter before it shows up publicly.
-
-Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
-
-What market intelligence can I provide?"""
+                    response = (
+                        "My job is to tell you what is about to matter before it shows up publicly.\n\n"
+                        "Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.\n\n"
+                        "What market intelligence can I provide?"
+                    )
                 
                 elif intent_type_hint == 'value_justification':
-                    response = """Voxmill delivers institutional-grade market intelligence via WhatsApp.
-
-Real-time data. Fortune-500 presentation quality. Surgical precision.
-
-What market intelligence can I provide?"""
+                    response = (
+                        "Voxmill delivers institutional-grade market intelligence via WhatsApp.\n\n"
+                        "Real-time data. Fortune-500 presentation quality. Surgical precision.\n\n"
+                        "What market intelligence can I provide?"
+                    )
                 
                 elif intent_type_hint == 'trust_authority':
-                    response = """Every insight is sourced from verified APIs and cross-referenced datasets.
-
-Confidence levels disclosed. No hallucinations.
-
-What market intelligence can I provide?"""
+                    response = (
+                        "Every insight is sourced from verified APIs and cross-referenced datasets.\n\n"
+                        "Confidence levels disclosed. No hallucinations.\n\n"
+                        "What market intelligence can I provide?"
+                    )
                 
                 elif intent_type_hint == 'profile_status':
                     name = client_profile.get('name', 'there')
                     tier = 'Trial'
-                    response = f"""CLIENT PROFILE
-
-Name: {name}
-Service Tier: {tier}
-
-Trial period: 24 hours from activation
-Sample intelligence: 1 query available
-
-What market intelligence can I provide?"""
+                    response = (
+                        "CLIENT PROFILE\n\n"
+                        f"Name: {name}\n"
+                        f"Service Tier: {tier}\n\n"
+                        "Trial period: 24 hours from activation\n"
+                        "Sample intelligence: 1 query available\n\n"
+                        "What market intelligence can I provide?"
+                    )
                 
                 elif intent_type_hint == 'portfolio_management':
-                    response = """Portfolio tracking is available on paid plans.
-
-Your trial provides limited intelligence sampling.
-
-Contact intel@voxmill.uk to upgrade."""
+                    response = (
+                        "Portfolio tracking is available on paid plans.\n\n"
+                        "Your trial provides limited intelligence sampling.\n\n"
+                        "Contact intel@voxmill.uk to upgrade."
+                    )
                 
                 elif intent_type_hint == 'delivery_request':
-                    response = """PDF reports are available on paid plans.
-
-Your trial provides limited intelligence sampling.
-
-Contact intel@voxmill.uk to upgrade."""
+                    response = (
+                        "PDF reports are available on paid plans.\n\n"
+                        "Your trial provides limited intelligence sampling.\n\n"
+                        "Contact intel@voxmill.uk to upgrade."
+                    )
                 
                 else:
                     response = "Standing by."
@@ -1149,14 +1147,13 @@ Contact intel@voxmill.uk to upgrade."""
                         confidence=1.0,
                         blocked=True,
                         silence_required=False,
-                        response="""TRIAL SAMPLE COMPLETE
-
-You have received your trial intelligence sample.
-
-To continue receiving market intelligence, contact:
-intel@voxmill.uk
-
-Trial period: 24 hours from activation""",
+                        response=(
+                            "TRIAL SAMPLE COMPLETE\n\n"
+                            "You have received your trial intelligence sample.\n\n"
+                            "To continue receiving market intelligence, contact:\n"
+                            "intel@voxmill.uk\n\n"
+                            "Trial period: 24 hours from activation"
+                        ),
                         allowed_shapes=["STATUS_LINE"],
                         max_words=50,
                         analysis_allowed=False,
