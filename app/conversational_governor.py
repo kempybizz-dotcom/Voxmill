@@ -750,19 +750,19 @@ Respond ONLY with valid JSON:
 }}
 
 CRITICAL DISMISSAL DETECTION (PRIORITY 0):
-If the user's message contains ANY of these signals, set "is_dismissal": true:
-- "just tell me"
-- "just give me the number"
-- "just give me"
-- "skip the explanation"
-- "I don't need context"
-- "straight answer"
-- "cut to the chase"
-- "bottom line"
-- "no fluff"
-- "without the story"
-- "spare me the"
-- Direct pushback after receiving context (e.g., "just the data", "enough context")
+If the user message contains ANY of these signals, set is_dismissal to true:
+- just tell me
+- just give me the number
+- just give me
+- skip the explanation
+- I don't need context
+- straight answer
+- cut to the chase
+- bottom line
+- no fluff
+- without the story
+- spare me the
+- Direct pushback after receiving context (examples: just the data, enough context)
 
 CRITICAL INTENT ROUTING (PRIORITY 1):
 - "who am I", "remind me who I am", "why am I paying attention" -> intent_type: "profile_status"
