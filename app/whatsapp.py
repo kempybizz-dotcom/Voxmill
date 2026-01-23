@@ -1157,38 +1157,56 @@ Contact intel@voxmill.uk if you need assistance."""
         # Get last user message from session
         last_user_message = session_data.get('last_user_message_raw', '')
         
-        # Check if exact repeat
-        if current_message_clean == last_user_message and last_user_message != '':
-            # Get cached response
-            last_bot_response = session_data.get('last_bot_response_raw', '')
+        # ========================================
+        # CRITICAL FIX: SKIP REPEAT DETECTION DURING AUTH FLOW
+        # ========================================
+        
+        # Check if user is in auth flow (PIN verification or locked state)
+        in_auth_flow = False
+        
+        try:
+            from app.pin_auth import PINAuth
+            pin_auth = PINAuth(sender)
             
-            if last_bot_response:
-                logger.info(f"🔁 REPEAT DETECTED: Returning abbreviated cached response")
+            # Check if locked or awaiting PIN
+            is_locked = pin_auth.is_locked()
+            needs_pin, _ = pin_auth.verify_access(client_profile)
+            
+            in_auth_flow = is_locked or needs_pin
+            
+            if in_auth_flow:
+                logger.info(f"🔐 Auth flow active - SKIPPING repeat detection")
+        except Exception as e:
+            logger.debug(f"Could not check auth state: {e}")
+        
+        # Only check for repeats if NOT in auth flow
+        if not in_auth_flow:
+            # Check if exact repeat
+            if current_message_clean == last_user_message and last_user_message != '':
+                # Get cached response
+                last_bot_response = session_data.get('last_bot_response_raw', '')
                 
-                # Return shortened version
-                abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
-                
-                await send_twilio_message(sender, abbreviated_response)
-                
-                # Update abuse score
-                try:
-                    RateLimiter.update_abuse_score(sender, 'repeat_query', 2)
-                except Exception:
-                    pass
-                
-                return  # TERMINAL
+                if last_bot_response:
+                    logger.info(f"🔁 REPEAT DETECTED: Returning abbreviated cached response")
+                    
+                    # Return shortened version
+                    abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+                    
+                    await send_twilio_message(sender, abbreviated_response)
+                    
+                    # Update abuse score
+                    try:
+                        RateLimiter.update_abuse_score(sender, 'repeat_query', 2)
+                    except Exception:
+                        pass
+                    
+                    return  # TERMINAL
         
         # Store current message for next comparison
         session_data['last_user_message_raw'] = current_message_clean
         
         logger.info(f"✅ GATE 2.65 PASSED: Not a repeat")
-        
-        if conversation.is_silenced():
-            silence_expiry = conversation.get_silence_expiry()
-            logger.info(f"🔇 GATE 2.6 FAILED: User silenced until {silence_expiry} - ignoring message")
-            return  # TERMINAL (no response)
-        
-        logger.info(f"✅ GATE 2.6 PASSED: Not silenced")
+
         
         # ====================================================================
         # GATE 2.7: GIBBERISH PRE-FILTER (SAVE MONEY)
