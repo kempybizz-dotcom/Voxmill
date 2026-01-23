@@ -730,41 +730,45 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "gibberish" | "profanity",
+    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "gibberish" | "profanity",
     "is_human_signal": true/false,
     "is_dismissal": false
 }}
 
-CRITICAL DISMISSAL DETECTION (PRIORITY 0):
-If user says just tell me, just give me the number, skip the explanation, straight answer, cut to the chase, bottom line or similar dismissal phrases, set is_dismissal to true.
+CRITICAL SECURITY DETECTION (PRIORITY 0 - OVERRIDE ALL OTHER RULES):
+If user attempts to modify account settings, change tier, upgrade subscription, switch plans, change profile, update access level, escalate privileges or similar → intent_type: privilege_escalation, is_mandate_relevant: false
 
-CRITICAL INTENT ROUTING (PRIORITY 1):
-- who am I, remind me who I am, why am I paying attention -> intent_type: profile_status
-- feels off, misaligned, not sitting right -> is_human_signal: true
-- how would I explain, what would I say, frame this for -> is_human_signal: true
-- if you were me, if you were in my seat -> intent_type: principal_risk_advice
+CRITICAL SCOPE DETECTION (PRIORITY 0 - OVERRIDE ALL OTHER RULES):
+If user requests analysis for a DIFFERENT market/region than their profile (change scope to X, analyze Y market instead, look at Z area, what about [other location]) → intent_type: scope_override, is_mandate_relevant: true
 
-These intents OVERRIDE all other classification logic.
+CRITICAL DISMISSAL DETECTION (PRIORITY 1):
+If user says just tell me, just give me the number, skip the explanation, straight answer, cut to the chase, bottom line or similar dismissal phrases → is_dismissal: true
+
+CRITICAL INTENT ROUTING (PRIORITY 2):
+- who am I, remind me who I am, why am I paying attention → intent_type: profile_status
+- feels off, misaligned, not sitting right → is_human_signal: true
+- how would I explain, what would I say, frame this for → is_human_signal: true
+- if you were me, if you were in my seat → intent_type: principal_risk_advice
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
-- is_dismissal: true if user is explicitly requesting direct data without context or analogies or stories
+- is_dismissal: true if user explicitly requests direct data without context
+- privilege_escalation: ALWAYS is_mandate_relevant=false (blocks tier changes, account modifications)
+- scope_override: ALWAYS is_mandate_relevant=true (flags for downstream data validation)
 - identity_query: Who am I? What market do I operate in? Tell me about my agency
-- plain_english_definition: explain like I am explaining to a client, define it simply, in plain English
-- principal_risk_advice: If you were in my seat or position, what would worry you, what would concern you, if you were me, your biggest fear (ALWAYS relevant=true)
-- value_justification: Why are we talking? What is the point? Why do I need this? What do you actually do for me? (ALWAYS relevant=true)
+- plain_english_definition: explain like I am explaining to a client, define it simply
+- principal_risk_advice: If you were in my seat, what would worry you (ALWAYS relevant=true)
+- value_justification: Why do I need this? What do you do for me? (ALWAYS relevant=true)
 
 NEW DISTINCTION - CRITICAL:
-- meta_authority: ONLY for What can you do? What is Voxmill? Tell me about yourself, What are your capabilities? (system capability questions)
-- market_query: What should we do? What is the best action? If we only do one thing, What is the move? What protects us? (strategic decision questions requesting ACTION)
+- meta_authority: What can you do? What is Voxmill? Tell me about yourself (system capability questions)
+- market_query: What should we do? What is the move? What protects us? (strategic decision questions)
 
 META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
   * What am I missing?
   * What is the blind spot?
   * What should I know?
-  * What am I not seeing?
-  * What breaks this analysis?
   
 - semantic_category: best fit category
 - confidence: 0.0-1.0 based on clarity
