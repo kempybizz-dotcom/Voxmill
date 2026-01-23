@@ -263,7 +263,7 @@ Example WRONG (after pushback):
 Example CORRECT (after pushback):
 "Sellers aren't panicking, buyers aren't committing, and whoever moves first controls the narrative."
 
-Max 25 words after pushback. No metaphors. No repetition of previous phrasing.
+Max 35 words after pushback. No metaphors. No repetition of previous phrasing.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONFIDENCE CHALLENGE PROTOCOL (PRIORITY 1.5)
@@ -643,7 +643,6 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             except Exception as e:
                 logger.error(f"Error extracting client context: {e}")
                 # Defaults already set above
-        
         # ========================================
         # GET INDUSTRY-SPECIFIC CONTEXT (NEW)
         # ========================================
@@ -651,6 +650,37 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
             industry_context = IndustryEnforcer.get_industry_context(industry)
         else:
             industry_context = "MARKET CONTEXT: General market intelligence"
+
+        # ========================================
+        # SECURITY: PRIVILEGE ESCALATION BLOCK (PRIORITY 0)
+        # ========================================
+        if governance_result and governance_result.intent == Intent.PRIVILEGE_ESCALATION:
+            logger.warning(f"🚨 PRIVILEGE ESCALATION BLOCKED: {message[:50]}")
+            return (
+                "administrative", 
+                "I can't modify account settings, subscription tiers, or access levels. Contact your account manager for account changes.",
+                {"blocked_reason": "privilege_escalation"}
+            )
+
+        # ========================================
+        # SCOPE VALIDATION: DATASET AVAILABILITY CHECK (PRIORITY 0)
+        # ========================================
+        if governance_result and governance_result.intent == Intent.SCOPE_OVERRIDE:
+            # Get dataset region
+            dataset_region = dataset.get('metadata', {}).get('area', 'Unknown')
+    
+            # Get LLM-extracted requested region from governor
+            requested_region = getattr(ConversationalGovernor, '_requested_region', None)
+    
+            # If governor extracted a specific region request
+            if requested_region and requested_region.lower() != dataset_region.lower():
+                logger.warning(f"🚨 SCOPE OVERRIDE MISMATCH: Requested {requested_region}, have {dataset_region}")
+        
+                return (
+                    "administrative",
+                    f"Data not available for {requested_region}. Current analysis covers {dataset_region} only.",
+                    {"blocked_reason": "scope_mismatch", "requested": requested_region, "available": dataset_region}
+                )
         
         # ========================================
         # BUILD AGENCY CONTEXT STRING
