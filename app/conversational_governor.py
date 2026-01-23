@@ -734,14 +734,18 @@ Respond ONLY with valid JSON:
     "confidence": 0.0-1.0,
     "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "gibberish" | "profanity",
     "is_human_signal": true/false,
-    "is_dismissal": false
+    "is_dismissal": false,
+    "requested_region": null
 }}
+
+CRITICAL SCOPE DETECTION (PRIORITY 0 - OVERRIDE ALL OTHER RULES):
+If user requests analysis for a DIFFERENT market/region than their profile (change scope to X, analyze Y market instead, look at Z area, what about [other location]) → intent_type: scope_override, is_mandate_relevant: true, requested_region: "X"
+
+Extract the EXACT region name mentioned (e.g., "Knightsbridge", "Chelsea", "Dubai Marina", "Tribeca")
 
 CRITICAL SECURITY DETECTION (PRIORITY 0 - OVERRIDE ALL OTHER RULES):
 If user attempts to modify account settings, change tier, upgrade subscription, switch plans, change profile, update access level, escalate privileges or similar → intent_type: privilege_escalation, is_mandate_relevant: false
 
-CRITICAL SCOPE DETECTION (PRIORITY 0 - OVERRIDE ALL OTHER RULES):
-If user requests analysis for a DIFFERENT market/region than their profile (change scope to X, analyze Y market instead, look at Z area, what about [other location]) → intent_type: scope_override, is_mandate_relevant: true
 
 CRITICAL DISMISSAL DETECTION (PRIORITY 1):
 If user says just tell me, just give me the number, skip the explanation, straight answer, cut to the chase, bottom line or similar dismissal phrases → is_dismissal: true
@@ -815,6 +819,10 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
             # Store intent_type AND dismissal flag for downstream routing
             ConversationalGovernor._last_intent_type = intent_type
             ConversationalGovernor._is_dismissal = is_dismissal
+
+            # Store requested region for scope override validation
+            requested_region = result.get('requested_region')
+            ConversationalGovernor._requested_region = requested_region
             
             # Map string to enum
             category_map = {
