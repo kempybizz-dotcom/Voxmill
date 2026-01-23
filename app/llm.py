@@ -1366,27 +1366,16 @@ DO NOT invent specific data. State "data not available" if asked for metrics.
             if not has_structure or has_forbidden:
                 logger.warning(f"⚠️ Decision Mode violated structure or used forbidden language")
                 
-                # Strip everything except core Decision Mode sections
-                # This is a safety fallback - LLM should never hit this
-                response_text = f"""DECISION MODE
-
-RECOMMENDATION:
-[Structure violation detected - response sanitized]
-
-PRIMARY RISK:
-Execution uncertainty
-
-COUNTERFACTUAL (If you don't act):
-- Day 7: Opportunity decay begins
-- Day 14: Window narrows significantly  
-- Day 30: Optimal entry lost
-
-ACTION:
-Contact support for manual directive."""
+                # SURGICAL FIX: Return clean refusal instead of debug message
+                return (
+                    "decision_mode",
+                    "Unable to generate directive. Key data insufficient for definitive recommendation.",
+                    {"blocked_reason": "decision_mode_violation", "structure_valid": has_structure, "forbidden_detected": has_forbidden}
+                )
             
             # Log Decision Mode execution
             logger.info(f"✅ Decision Mode executed: structure_valid={has_structure}, forbidden_phrases={has_forbidden}")
-
+        
         # ========================================
         # MINIMAL POST-PROCESSING (SAFETY ONLY)
         # ========================================
@@ -1401,7 +1390,51 @@ Contact support for manual directive."""
         if word_count > 250 and not is_decision_mode:
             logger.warning(f"⚠️ Response too long ({word_count} words), but NOT truncating")
         
-
+        # ========================================
+        # HALLUCINATION DETECTOR: FABRICATED NUMBERS (PRIORITY 1.5)
+        # ========================================
+        
+        # Detect fabricated financial figures (£X, $X, €X with precision)
+        fabricated_money_pattern = r'[£$€]\s*\d+[,\d]*k?\s+per\s+(instruction|property|unit|deal|transaction)'
+        
+        if re.search(fabricated_money_pattern, response_text, re.IGNORECASE):
+            logger.warning(f"⚠️ HALLUCINATION DETECTED: Fabricated financial figure in response")
+            
+            # Check if we have actual commission/fee data in client profile
+            has_fee_data = False
+            if client_profile:
+                avg_commission = client_profile.get('avg_commission_per_instruction')
+                typical_fee = client_profile.get('typical_fee')
+                has_fee_data = avg_commission is not None or typical_fee is not None
+            
+            # If NO fee data exists, strip the fabricated number
+            if not has_fee_data:
+                logger.warning(f"🚨 STRIPPING FABRICATED NUMBER: No fee data in profile")
+                
+                # Replace fabricated numbers with generic impact language
+                response_text = re.sub(
+                    r'costs?\s+[£$€]\s*\d+[,\d]*k?\s+per\s+(instruction|property|unit|deal|transaction)',
+                    r'costs significant revenue per \1',
+                    response_text,
+                    flags=re.IGNORECASE
+                )
+                
+                response_text = re.sub(
+                    r'loses?\s+[£$€]\s*\d+[,\d]*k?\s+per\s+(instruction|property|unit|deal|transaction)',
+                    r'loses revenue per \1',
+                    response_text,
+                    flags=re.IGNORECASE
+                )
+                
+                response_text = re.sub(
+                    r'misses?\s+[£$€]\s*\d+[,\d]*k?\s+per\s+(instruction|property|unit|deal|transaction)',
+                    r'misses opportunity per \1',
+                    response_text,
+                    flags=re.IGNORECASE
+                )
+                
+                logger.info(f"✅ Fabricated numbers stripped from response")
+        
         # ========================================
         # MONITORING LANGUAGE VALIDATOR
         # ========================================
