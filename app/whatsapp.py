@@ -1475,14 +1475,20 @@ Voxmill Intelligence — Precision at Scale"""
             logger.debug(f"PIN sync skipped: {e}")
         
         # ========================================
-        # GATE 1: PIN AUTHENTICATION CHECK
+        # GATE 4.5: PIN AUTHENTICATION CHECK
         # ========================================
         
-        # PIN verification
-        needs_verification, reason = PINAuthenticator.check_needs_verification(sender, client_profile)
+        # PIN verification (now returns 3 values: needs_verification, reason, is_terminal)
+        needs_verification, reason, is_terminal = PINAuthenticator.check_needs_verification(sender, client_profile)
         client_name = client_profile.get('name', 'there')
-        
-        if needs_verification:
+
+        # ========================================
+        # CRITICAL: TERMINAL STATE = HALT ALL EXECUTION
+        # When is_terminal=True, system is in auth flow
+        # NO LLM calls, NO intelligence generation, ONLY auth responses
+        # ========================================
+
+        if is_terminal:
             # ✅ FIX: Check if message IS a PIN attempt (verify or setup)
             if len(message_text.strip()) == 4 and message_text.strip().isdigit():
                 # Try verification first (covers both setup AND unlock)
