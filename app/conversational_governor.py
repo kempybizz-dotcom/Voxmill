@@ -49,6 +49,8 @@ class Intent(Enum):
     DELIVERY_REQUEST = "delivery_request"
     EXECUTIVE_COMPRESSION = "executive_compression"
     UNKNOWN = "unknown"
+    PRIVILEGE_ESCALATION = "privilege_escalation"
+    SCOPE_OVERRIDE = "scope_override"
 
 # ============================================================
 # INTENT PRIORITY TIERS - CHATGPT FIX
