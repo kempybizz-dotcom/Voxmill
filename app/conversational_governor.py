@@ -144,6 +144,7 @@ class ConversationalGovernor:
     
     # Class variable to store LLM's intent_type hint
     _last_intent_type = None
+    _is_dismissal = False
     
     # ========================================
     # INTENT CLASSIFICATION (MINIMAL) - WITH FIX 5
@@ -151,15 +152,12 @@ class ConversationalGovernor:
     
     @staticmethod
     def _force_intent_from_semantic_category(semantic_category: SemanticCategory, message: str, intent_type: str = None) -> Intent:
-        """
-        Map semantic category + intent_type to best-fit intent
-        Preserves nuance while blocking non-answers
-        
-        ✅ FIX 5: SHORT-CIRCUIT - Tier 0 intents return immediately, never run secondary classifiers
-        """
+        # Map semantic category + intent_type to best-fit intent
+        # Preserves nuance while blocking non-answers
+        # FIX 5: SHORT-CIRCUIT - Tier 0 intents return immediately, never run secondary classifiers
         
         # ========================================
-        # ✅ FIX 5: TIER 0 SHORT-CIRCUIT - CRITICAL
+        # FIX 5: TIER 0 SHORT-CIRCUIT - CRITICAL
         # ========================================
         tier_0_intent_types = [
             'trust_authority', 'principal_risk_advice', 'meta_authority', 'executive_compression',
@@ -170,7 +168,7 @@ class ConversationalGovernor:
         if intent_type in tier_0_intent_types:
             logger.info(f"🎯 TIER 0 intent detected: {intent_type} - SHORT-CIRCUITING (no secondary classification)")
             
-            # ✅ Route meta_authority to trust_authority for pressure tests
+            # Route meta_authority to trust_authority for pressure tests
             if intent_type == 'meta_authority':
                 message_lower = message.lower()
                 
@@ -203,7 +201,7 @@ class ConversationalGovernor:
                     logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Meta authority -> trust authority (default)")
                     return Intent.TRUST_AUTHORITY
             
-            # ✅ FIX 5: IMMEDIATE RETURN - Never reach "unknown" classification below
+            # FIX 5: IMMEDIATE RETURN - Never reach "unknown" classification below
             intent_map = {
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
@@ -216,11 +214,11 @@ class ConversationalGovernor:
                 'delivery_request': Intent.DELIVERY_REQUEST,
             }
             
-            # ✅ TERMINAL RETURN - No further processing
+            # TERMINAL RETURN - No further processing
             return intent_map.get(intent_type, Intent.STRATEGIC)
         
         # ========================================
-        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE ROUTING
+        # CHATGPT FIX: PRINCIPAL RISK ADVICE ROUTING
         # ========================================
         if intent_type == 'principal_risk_advice':
             logger.info(f"🎯 TIER 0 SHORT-CIRCUIT: Principal risk advice detected")
@@ -292,16 +290,13 @@ class ConversationalGovernor:
     
     @staticmethod
     def _is_protected_intent(intent: Intent) -> bool:
-        """
-        Check if intent is Tier 0 (non-overridable)
-        
-        These intents NEVER get downgraded to ACK/SILENCE
-        """
+        # Check if intent is Tier 0 (non-overridable)
+        # These intents NEVER get downgraded to ACK/SILENCE
         return intent in TIER_0_NON_OVERRIDABLE
     
     @staticmethod
     def _classify_intent(message: str) -> tuple[Intent, float]:
-        """LLM-ONLY intent classification - zero keyword dependency"""
+        # LLM-ONLY intent classification - zero keyword dependency
     
         # Only check for 4-digit PIN codes (security bypass)
         if message.strip().isdigit() and len(message.strip()) == 4:
@@ -316,11 +311,8 @@ class ConversationalGovernor:
     
     @staticmethod
     def _get_envelope(intent: Intent) -> Envelope:
-        """
-        Get authority envelope for intent
-        
-        Defines what operations are allowed
-        """
+        # Get authority envelope for intent
+        # Defines what operations are allowed
         
         envelopes = {
             Intent.PROVOCATION: Envelope(
@@ -406,11 +398,11 @@ class ConversationalGovernor:
                 max_response_length=150,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
             
@@ -419,11 +411,11 @@ class ConversationalGovernor:
                 max_response_length=100,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
             
@@ -432,7 +424,7 @@ class ConversationalGovernor:
                 max_response_length=200,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=True,
@@ -445,11 +437,11 @@ class ConversationalGovernor:
                 max_response_length=100,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
             
@@ -458,11 +450,11 @@ class ConversationalGovernor:
                 max_response_length=100,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
             
@@ -471,24 +463,24 @@ class ConversationalGovernor:
                 max_response_length=200,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=True,
-                llm_call_allowed=True,  # ✅ LLM generates blind spot analysis
+                llm_call_allowed=True,
                 allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
 
-            Intent.PRINCIPAL_RISK_ADVICE: Envelope(  # ✅ CHATGPT FIX
+            Intent.PRINCIPAL_RISK_ADVICE: Envelope(
                 analysis_allowed=True,
                 max_response_length=300,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL - MUST ANSWER
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=True,
-                llm_call_allowed=True,  # ✅ LLM generates principal risk view
+                llm_call_allowed=True,
                 allowed_shapes=["STRUCTURED_BRIEF"]
             ),
             
@@ -497,11 +489,11 @@ class ConversationalGovernor:
                 max_response_length=150,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=True,
-                llm_call_allowed=False,  # Read from monitoring module
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
             
@@ -510,11 +502,11 @@ class ConversationalGovernor:
                 max_response_length=150,
                 silence_allowed=False,
                 silence_required=False,
-                refusal_allowed=False,  # CRITICAL: NO REFUSAL
+                refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=False,  # Static response
+                llm_call_allowed=False,
                 allowed_shapes=["STATUS_LINE"]
             ),
 
@@ -527,7 +519,7 @@ class ConversationalGovernor:
                 refusal_required=False,
                 decision_mode_eligible=False,
                 data_load_allowed=False,
-                llm_call_allowed=True,  # ✅ LLM transforms last response
+                llm_call_allowed=True,
                 allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
             
@@ -588,19 +580,16 @@ class ConversationalGovernor:
     
     @staticmethod
     def _get_hardcoded_response(intent: Intent, message_text: str, client_profile: dict = None) -> Optional[str]:
-        """
-        Get hardcoded response for simple intents
-    
-        ✅ VARIED ACKNOWLEDGMENTS - rotates between options
-        ✅ NO MENU LANGUAGE - ends with insight or "Standing by."
-        ✅ NO PORTFOLIO RESPONSES - let handlers execute
-        ✅ NEVER USE PHONE NUMBERS AS NAMES
-        Intent-based responses only (no phrase matching)
-        """
+        # Get hardcoded response for simple intents
+        # VARIED ACKNOWLEDGMENTS - rotates between options
+        # NO MENU LANGUAGE - ends with insight or "Standing by."
+        # NO PORTFOLIO RESPONSES - let handlers execute
+        # NEVER USE PHONE NUMBERS AS NAMES
+        # Intent-based responses only (no phrase matching)
     
         client_name = client_profile.get('name', 'there') if client_profile else 'there'
     
-        # ✅ CHATGPT FIX: Filter out phone numbers from names
+        # CHATGPT FIX: Filter out phone numbers from names
         if client_name and (client_name.startswith('+') or client_name.startswith('whatsapp:') or client_name.isdigit()):
             client_name = 'there'
     
@@ -636,12 +625,12 @@ class ConversationalGovernor:
                     else:
                         clean_name = raw_name
             
-                    return f"""CLIENT PROFILE
-
-Name: {name}
-Service Tier: {tier_display}
-
-Standing by."""
+                    return (
+                        "CLIENT PROFILE\n\n"
+                        f"Name: {clean_name}\n"
+                        f"Service Tier: {tier_display}\n\n"
+                        "Standing by."
+                    )
             else:
                 return "Client profile loading..."
         
@@ -652,39 +641,41 @@ Standing by."""
                 agency_name = client_profile.get('agency_name')
                 active_market = client_profile.get('active_market', 'your market')
             
-                return f"""We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.
-                
-"My job is to tell you what will matter before it's obvious."
-
+                return (
+                    f"We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.\n\n"
+                    "My job is to tell you what will matter before it's obvious."
+                )
             else:
-                return """Voxmill delivers institutional-grade market intelligence via WhatsApp.
-
-Real-time data. Fortune-500 presentation quality. Surgical precision."""
+                return (
+                    "Voxmill delivers institutional-grade market intelligence via WhatsApp.\n\n"
+                    "Real-time data. Fortune-500 presentation quality. Surgical precision."
+                )
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
             return None  # Handled by LLM
         
-        # ✅ CHATGPT FIX: PRINCIPAL RISK ADVICE - NEVER HARDCODED
+        # CHATGPT FIX: PRINCIPAL RISK ADVICE - NEVER HARDCODED
         if intent == Intent.PRINCIPAL_RISK_ADVICE:
-            return None  # ✅ MUST route to LLM - NEVER self-describe
+            return None  # MUST route to LLM - NEVER self-describe
         
-        # ✅ CRITICAL FIX: PORTFOLIO HANDLERS MUST EXECUTE, NOT GENERATE RESPONSES HERE
+        # CRITICAL FIX: PORTFOLIO HANDLERS MUST EXECUTE, NOT GENERATE RESPONSES HERE
         if intent == Intent.PORTFOLIO_MANAGEMENT:
-            return None  # ✅ Let whatsapp.py handler execute
+            return None  # Let whatsapp.py handler execute
         
         if intent == Intent.PORTFOLIO_STATUS:
-            return None  # ✅ Let whatsapp.py handler execute
+            return None  # Let whatsapp.py handler execute
         
         # DELIVERY_REQUEST responses
         if intent == Intent.DELIVERY_REQUEST:
-            return """PDF reports generate Sunday at 6:00 AM UTC.
-
-For immediate regeneration, contact intel@voxmill.uk"""
+            return (
+                "PDF reports generate Sunday at 6:00 AM UTC.\n\n"
+                "For immediate regeneration, contact intel@voxmill.uk"
+            )
         
-        # ✅ VARIED ACKNOWLEDGMENTS
+        # VARIED ACKNOWLEDGMENTS
         if intent == Intent.CASUAL:
-            # ❌ NEVER return "Standing by" for human signals
+            # NEVER return "Standing by" for human signals
             # These should never reach here, but safety check
             return None  # Let it pass to LLM instead
         
@@ -698,24 +689,17 @@ For immediate regeneration, contact intel@voxmill.uk"""
     
     @staticmethod
     def _absorb_social_input(message_text: str, client_name: str, conversation_context: Dict = None) -> Tuple[bool, Optional[str]]:
-        """
-        Layer -1: Absorb pure social pleasantries
-    
-        DELETED: All keyword lists
-        NEW: LLM determines if social
-        """
+        # Layer -1: Absorb pure social pleasantries
+        # DELETED: All keyword lists
+        # NEW: LLM determines if social
         # Just return False - let LLM handle everything
         return False, None
     
     @staticmethod
     async def _check_mandate_relevance(message: str, conversation_context: Dict = None) -> Tuple[bool, SemanticCategory, float, bool]:
-        """
-        LLM-based mandate relevance check
-        
-        Returns: (is_relevant, semantic_category, confidence, is_human_signal)
-        
-        Also sets ConversationalGovernor._last_intent_type for downstream routing
-        """
+        # LLM-based mandate relevance check
+        # Returns: (is_relevant, semantic_category, confidence, is_human_signal)
+        # Also sets ConversationalGovernor._last_intent_type for downstream routing
         
         client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
@@ -727,7 +711,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
             topics = conversation_context.get('topics', [])
             
             if regions or agents or topics:
-                context_str = f"\n\nConversation context:\n"
+                context_str = "\n\nConversation context:\n"
                 if regions:
                     context_str += f"- Recent regions: {', '.join(regions)}\n"
                 if agents:
@@ -737,7 +721,7 @@ For immediate regeneration, contact intel@voxmill.uk"""
         
         prompt = f"""Classify this message for a market intelligence system.
 
-Message: "{message}"{context_str}
+Message: {message}{context_str}
 
 Respond ONLY with valid JSON:
 {{
@@ -750,35 +734,35 @@ Respond ONLY with valid JSON:
 }}
 
 CRITICAL DISMISSAL DETECTION (PRIORITY 0):
-If user says "just tell me", "just give me the number", "skip the explanation", "straight answer", "cut to the chase", "bottom line" or similar dismissal phrases, set "is_dismissal": true.
+If user says just tell me, just give me the number, skip the explanation, straight answer, cut to the chase, bottom line or similar dismissal phrases, set is_dismissal to true.
 
 CRITICAL INTENT ROUTING (PRIORITY 1):
-- "who am I", "remind me who I am", "why am I paying attention" -> intent_type: "profile_status"
-- "feels off", "misaligned", "not sitting right" -> is_human_signal: true
-- "how would I explain", "what would I say", "frame this for" -> is_human_signal: true
-- "if you were me", "if you were in my seat" -> intent_type: "principal_risk_advice"
+- who am I, remind me who I am, why am I paying attention -> intent_type: profile_status
+- feels off, misaligned, not sitting right -> is_human_signal: true
+- how would I explain, what would I say, frame this for -> is_human_signal: true
+- if you were me, if you were in my seat -> intent_type: principal_risk_advice
 
 These intents OVERRIDE all other classification logic.
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
-- is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION (examples: "feels off", "not sitting right", "you sure?", "without worrying them", "say it differently", "be honest", "just tell me straight")
-- is_dismissal: true if user is explicitly requesting direct data without context/analogies/stories
-- identity_query: "Who am I?", "What market do I operate in?", "Tell me about my agency"
-- plain_english_definition: "explain like I'm explaining to a client", "define it simply", "in plain English"
-- principal_risk_advice: "If you were in my seat/position", "what would worry you", "what would concern you", "if you were me", "your biggest fear" (ALWAYS relevant=true)
-- value_justification: "Why are we talking?", "What's the point?", "Why do I need this?", "What do you actually do for me?" (ALWAYS relevant=true)
+- is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
+- is_dismissal: true if user is explicitly requesting direct data without context or analogies or stories
+- identity_query: Who am I? What market do I operate in? Tell me about my agency
+- plain_english_definition: explain like I am explaining to a client, define it simply, in plain English
+- principal_risk_advice: If you were in my seat or position, what would worry you, what would concern you, if you were me, your biggest fear (ALWAYS relevant=true)
+- value_justification: Why are we talking? What is the point? Why do I need this? What do you actually do for me? (ALWAYS relevant=true)
 
 NEW DISTINCTION - CRITICAL:
-- meta_authority: ONLY for "What can you do?", "What is Voxmill?", "Tell me about yourself", "What are your capabilities?" (system capability questions)
-- market_query: "What should we do?", "What's the best action?", "If we only do one thing", "What's the move?", "What protects us?" (strategic decision questions requesting ACTION)
+- meta_authority: ONLY for What can you do? What is Voxmill? Tell me about yourself, What are your capabilities? (system capability questions)
+- market_query: What should we do? What is the best action? If we only do one thing, What is the move? What protects us? (strategic decision questions requesting ACTION)
 
-META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
-  * "What am I missing?"
-  * "What's the blind spot?"
-  * "What should I know?"
-  * "What am I not seeing?"
-  * "What breaks this analysis?"
+META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
+  * What am I missing?
+  * What is the blind spot?
+  * What should I know?
+  * What am I not seeing?
+  * What breaks this analysis?
   
 - semantic_category: best fit category
 - confidence: 0.0-1.0 based on clarity
@@ -849,11 +833,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
     
     @staticmethod
     def _auto_scope(message: str, client_profile: dict, conversation_context: Dict = None) -> AutoScopeResult:
-        """
-        Auto-scope market/timeframe/entities from message
-        
-        Returns: AutoScopeResult with extracted context
-        """
+        # Auto-scope market/timeframe/entities from message
+        # Returns: AutoScopeResult with extracted context
         
         # Extract market from message or use preferred
         market = None
@@ -894,15 +875,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
     
     @staticmethod
     def _detect_multi_intent(message: str) -> List[str]:
-        """
-        Detect multiple intents in a single message
-        
-        Returns list of intent segments
-        
-        Examples:
-        - "PDF and market overview" -> ["PDF", "market overview"]
-        - "Monitor X, also show Y" -> ["Monitor X", "show Y"]
-        """
+        # Detect multiple intents in a single message
+        # Returns list of intent segments
         
         # Split on conjunctions and transition words
         separators = [
@@ -941,17 +915,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
     async def govern(message_text: str, sender: str, client_profile: dict, 
                     system_state: dict, conversation_context: Dict = None) -> GovernanceResult:
         # Main governance entry point with Layer -1 social absorption
-        # WORLD-CLASS ARCHITECTURE:
-        # - Layer -1: Social absorption (greetings, politeness)
-        # - PRIORITY 0: Human signal detection (BEFORE LLM)
-        # - Layer 0: LLM intent classification (meaning)
-        # - Layer 1: Airtable module enforcement (permission)
-        # - Layer 2: Envelope constraints (execution)
-        # Returns: GovernanceResult with intent, constraints, and optional response
-        
-        # ========================================
-        # LAYER -1: SOCIAL ABSORPTION
-        # ========================================
         
         client_name = client_profile.get('name', 'there')
         
@@ -965,7 +928,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             logger.info(f"🤝 Social input absorbed: returning '{social_response or 'SILENCE'}'")
             
             if social_response is None:
-                # Silence
                 return GovernanceResult(
                     intent=Intent.CASUAL,
                     confidence=1.0,
@@ -981,7 +943,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     semantic_category="social"
                 )
             else:
-                # Brief acknowledgment
                 return GovernanceResult(
                     intent=Intent.CASUAL,
                     confidence=1.0,
@@ -997,14 +958,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     semantic_category="social"
                 )
         
-        # ========================================
-        # LAYER -0.5: TRIAL ENVELOPE (OUTER LAYER - CRITICAL)
-        # ========================================
-        
         subscription_status = client_profile.get('subscription_status')
         trial_expired = client_profile.get('trial_expired', False)
         
-        # TRIAL EXPIRED - HARD STOP
         if trial_expired:
             logger.warning(f"🚫 TRIAL EXPIRED: {sender}")
             
@@ -1029,11 +985,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 semantic_category="administrative"
             )
         
-        # TRIAL ACTIVE - LIMITED ENVELOPE
         if subscription_status == 'Trial':
             logger.info(f"🔐 TRIAL ENVELOPE ACTIVE for {sender}")
             
-            # Quick LLM check to determine intent type (we need this to know if it's meta/admin)
             is_mandate_relevant_trial, semantic_category_trial, semantic_confidence_trial = await ConversationalGovernor._check_mandate_relevance(
                 message_text, 
                 conversation_context
@@ -1043,12 +997,10 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             
             logger.info(f"Trial intent hint: {intent_type_hint}")
             
-            # ALWAYS ALLOW: Meta, Trust, Value, Profile questions
             if intent_type_hint in ['meta_authority', 'profile_status', 'value_justification', 
                                     'trust_authority', 'portfolio_management', 'delivery_request']:
                 logger.info(f"✅ TRIAL: Meta/Admin question allowed - {intent_type_hint}")
                 
-                # Get hardcoded response
                 if intent_type_hint == 'meta_authority':
                     response = (
                         "My job is to tell you what is about to matter before it shows up publicly.\n\n"
@@ -1114,12 +1066,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     semantic_category="administrative"
                 )
             
-            # INTELLIGENCE QUERY - CHECK TRIAL SAMPLE LIMIT
             if intent_type_hint in ['market_query', 'follow_up'] or is_mandate_relevant_trial:
                 logger.info(f"🔍 TRIAL: Intelligence query detected - checking sample limit")
                 
-                # Check if trial sample already used (via MongoDB flag from whatsapp.py)
-                # This flag is set in whatsapp.py GATE 2, we just read it here
                 trial_sample_used = system_state.get('trial_sample_used', False)
                 
                 if trial_sample_used:
@@ -1146,15 +1095,11 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                         semantic_category="administrative"
                     )
                 
-                # ALLOW FIRST INTELLIGENCE SAMPLE
-                # Continue to full governance flow below (don't return yet)
                 logger.info(f"✅ TRIAL: First sample allowed - continuing to full governance")
             
-            # PREFERENCE CHANGE - ALWAYS ALLOW (but with trial caveat)
             if intent_type_hint == 'preference_change' or 'switch to' in message_text.lower():
                 logger.info(f"✅ TRIAL: Preference change allowed")
                 
-                # Extract region from message (simple pattern matching)
                 message_lower_check = message_text.lower()
                 new_region = None
                 
@@ -1200,10 +1145,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
         
         logger.info(f"✅ Trial envelope passed (not trial or sample allowed)")
         
-        # ========================================
-        # LAYER 0: LLM-BASED MANDATE RELEVANCE CHECK
-        # ========================================
-        
         is_mandate_relevant, semantic_category, semantic_confidence, is_human_signal = await ConversationalGovernor._check_mandate_relevance(
             message_text, 
             conversation_context
@@ -1211,12 +1152,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
         
         logger.info(f"Mandate check: relevant={is_mandate_relevant}, category={semantic_category.value}, confidence={semantic_confidence:.2f}")
         
-        # Get LLM's intent_type hint for special handling
         intent_type_hint = ConversationalGovernor._last_intent_type
-        
-        # ========================================
-        # ✅ TIER 0 SHORT-CIRCUIT - IMMEDIATE ROUTING
-        # ========================================
         
         tier_0_intents = {
             'trust_authority': Intent.TRUST_AUTHORITY,
@@ -1235,20 +1171,11 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             logger.info(f"🎯 TIER 0 IMMEDIATE ROUTE: {intent_type_hint}")
             intent = tier_0_intents[intent_type_hint]
             confidence = 0.95
-            
-            # Force mandate relevance for Tier 0 intents
             is_mandate_relevant = True
-            
-            # SKIP _classify_intent entirely for Tier 0
             tier_0_routed = True
         else:
             tier_0_routed = False
         
-        # ========================================
-        # ✅ HUMAN SIGNAL DETECTION (FROM LLM)
-        # ========================================
-        
-        # Also check if LLM classified as human-mode intent
         human_mode_intents = ['trust_authority', 'meta_authority', 'principal_risk_advice']
         is_human_mode_intent = intent_type_hint in human_mode_intents
         
@@ -1256,58 +1183,30 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
         
         if human_mode_active:
             logger.info(f"🎯 HUMAN MODE ACTIVE: signal={is_human_signal}, intent={is_human_mode_intent}")
-            
-            # Force to mandate-relevant
             is_mandate_relevant = True
             semantic_category = SemanticCategory.STRATEGIC_POSITIONING
             semantic_confidence = 0.95
         
-        
-        # ========================================
-        # CRITICAL: IMPLICIT REFERENCE OVERRIDE
-        # ========================================
-        
         if not is_mandate_relevant and conversation_context:
-            # Check for implicit reference words
             implicit_refs = ['that', 'it', 'this', 'these', 'those', 'them']
             query_words = message_text.lower().split()
             
-            # If query has implicit reference and context exists
             has_implicit_ref = any(ref in query_words[:3] for ref in implicit_refs)
             has_context = bool(conversation_context.get('regions') or 
                                conversation_context.get('agents') or 
                                conversation_context.get('topics'))
             
             if has_context and has_implicit_ref:
-                # Force to mandate-relevant ONLY if explicit reference word exists
                 is_mandate_relevant = True
                 semantic_category = SemanticCategory.STRATEGIC_POSITIONING
                 semantic_confidence = 0.80
                 logger.info(f"✅ Implicit reference override: query has context, forcing mandate relevance")
         
-
-        principal_risk_patterns = [
-            'if you were in my seat', 'if you were in my position',
-            'if you were me', 'if you were sitting where i am',
-            'what would worry you', 'what would concern you',
-            'what would make you worried', 'your biggest fear',
-            'what keeps you up', 'what scares you most',
-            'be honest what worries', 'honestly what worries'
-        ]
-        
-        # META_AUTHORITY, PROFILE_STATUS, PORTFOLIO_STATUS never refused
         if intent_type_hint in ['meta_authority', 'profile_status', 'portfolio_status', 'value_justification', 'trust_authority', 'portfolio_management', 'status_monitoring', 'delivery_request']:
-            # Force to mandate-relevant (these are valid system queries)
             is_mandate_relevant = True
             logger.info(f"✅ Special intent {intent_type_hint} - forcing mandate relevance")
         
-        # ========================================
-        # CRITICAL FIX: REFUSAL CHECK (NOISE vs DISALLOWED)
-        # ========================================
-        
-        # If NOT mandate-relevant, check if it's noise or a disallowed request
         if not is_mandate_relevant:
-            # NOISE (gibberish, profanity, anecdotes) -> "Standing by."
             if intent_type_hint in ['gibberish', 'profanity']:
                 logger.info(f"🔇 NOISE detected ({intent_type_hint}) - responding 'Standing by.'")
                 
@@ -1325,8 +1224,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     auto_scoped=False,
                     semantic_category=semantic_category.value
                 )
-                
-            # DISALLOWED REQUEST -> Generic acknowledgment instead of refusal
             else:
                 logger.warning(f"🚫 REFUSAL: Not mandate-relevant, treating as out of scope")
                 
@@ -1335,7 +1232,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     confidence=semantic_confidence,
                     blocked=True,
                     silence_required=False,
-                    response="Unable to assist with that query.",  # ✅ Less harsh than "Outside intelligence scope"
+                    response="Unable to assist with that query.",
                     allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=10,
                     analysis_allowed=False,
@@ -1344,10 +1241,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                     auto_scoped=False,
                     semantic_category=semantic_category.value
                 )
-        
-        # ========================================
-        # AUTO-SCOPING (for mandate-relevant queries)
-        # ========================================
         
         auto_scope_result = ConversationalGovernor._auto_scope(
             message_text,
@@ -1360,17 +1253,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                    f"entities={auto_scope_result.entities}, "
                    f"source={auto_scope_result.inferred_from}")
         
-        # ========================================
-        # INTENT CLASSIFICATION
-        # ========================================
-        
         intent, confidence = ConversationalGovernor._classify_intent(message_text)
         
         logger.info(f"Intent classified: {intent.value} (confidence: {confidence:.2f})")
-        
-        # ========================================
-        # CONFIDENCE THRESHOLD ENFORCEMENT
-        # ========================================
         
         CONFIDENCE_THRESHOLDS = {
             Intent.SECURITY: 0.95,
@@ -1395,14 +1280,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-        # ========================================
-        # INTENT PRIORITY TIER CHECK (CHATGPT FIX)
-        # ========================================
-        
-        # Step 1: Check if LLM detected a Tier 0 intent via intent_type_hint
         tier_0_detected = False
         if intent_type_hint:
-            # Map intent_type_hint to Intent enum
             intent_type_map = {
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
@@ -1423,13 +1302,11 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 confidence = 0.95
                 tier_0_detected = True
         
-        # Step 2: Only force intent if NOT a Tier 0 intent
         if not tier_0_detected and is_mandate_relevant and intent == Intent.UNKNOWN:
-            # Force to best-fit intent based on semantic category + LLM hint
             forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
                 semantic_category,
                 message_text,
-                intent_type=intent_type_hint  # Pass LLM's intent_type
+                intent_type=intent_type_hint
             )
             
             logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
@@ -1437,16 +1314,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             intent = forced_intent
             confidence = 0.75
         
-        # ========================================
-        # LAYER 1: MODULE ACCESS CHECK (TRIAL-ONLY RESTRICTION)
-        # ========================================
-        
         subscription_status = client_profile.get('subscription_status', '').lower()
         
         if subscription_status == 'trial':
-            # ✅ TRIAL USERS: Module restrictions apply
-            
-            # Map Intent to required modules (Airtable field names)
             INTENT_TO_MODULES = {
                 Intent.STRATEGIC: ['Market Overview'],
                 Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
@@ -1459,18 +1329,14 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],
             }
             
-            # Get required modules for this intent
             required_modules = INTENT_TO_MODULES.get(intent, [])
             
             if required_modules:
-                # Get client's allowed modules from Airtable (via client_profile)
                 allowed_modules = client_profile.get('allowed_intelligence_modules', [])
                 
-                # Normalize module names (handle case differences)
                 allowed_modules_normalized = [m.lower().strip() for m in allowed_modules] if allowed_modules else []
                 required_modules_normalized = [m.lower().strip() for m in required_modules]
                 
-                # Check if client has permission for ALL required modules
                 missing_modules = [
                     m for m in required_modules 
                     if m.lower().strip() not in allowed_modules_normalized
@@ -1499,19 +1365,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 else:
                     logger.info(f"✅ TRIAL: Module access granted: {required_modules}")
         else:
-            # ✅ PAID USERS (ACTIVE/PREMIUM/SIGMA): FULL UNRESTRICTED ACCESS
             logger.info(f"✅ FULL ACCESS GRANTED: {subscription_status.upper()} user - all world-class capabilities enabled")
-            # No module restrictions - paid users get everything
-        
-        # ========================================
-        # LAYER 2: GET ENVELOPE FOR INTENT
-        # ========================================
         
         envelope = ConversationalGovernor._get_envelope(intent)
-        
-        # ========================================
-        # CHECK FOR HARDCODED RESPONSE
-        # ========================================
         
         hardcoded_response = ConversationalGovernor._get_hardcoded_response(intent, message_text, client_profile)
         
@@ -1529,12 +1385,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 llm_call_allowed=False,
                 auto_scoped=True,
                 semantic_category=semantic_category.value,
-                human_mode_active=human_mode_active  # ✅ NEW
+                human_mode_active=human_mode_active
             )
-        
-        # ========================================
-        # CHECK IF SILENCE REQUIRED
-        # ========================================
         
         if envelope.silence_required:
             return GovernanceResult(
@@ -1550,14 +1402,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 llm_call_allowed=False,
                 auto_scoped=False,
                 semantic_category=semantic_category.value,
-                human_mode_active=human_mode_active  # ✅ NEW
+                human_mode_active=human_mode_active
             )
         
-        # ========================================
-        # CHECK IF REFUSAL REQUIRED (SHOULD NEVER REACH HERE)
-        # ========================================
-        
-        # This is a safety check - should have been caught earlier
         if envelope.refusal_required and not is_mandate_relevant:
             logger.error(f"❌ LATE REFUSAL: This should have been caught earlier")
             
@@ -1566,7 +1413,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 confidence=confidence,
                 blocked=True,
                 silence_required=False,
-                response="Standing by.",  # ← Changed from "Outside intelligence scope."
+                response="Standing by.",
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=20,
                 analysis_allowed=False,
@@ -1574,29 +1421,20 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
                 llm_call_allowed=False,
                 auto_scoped=False,
                 semantic_category=semantic_category.value,
-                human_mode_active=human_mode_active  # ✅ NEW
+                human_mode_active=human_mode_active
             )
-        
-        # ========================================
-        # CRITICAL: BLOCK ACK FOR NON-CASUAL INTENTS
-        # ========================================
         
         if intent not in [Intent.CASUAL, Intent.PROVOCATION] and hardcoded_response:
             if hardcoded_response in ["Standing by.", "Noted.", "Monitoring."]:
-                # Force proper handler execution instead
                 logger.warning(f"⚠️ Blocked ACK fallback for {intent.value} - forcing handler execution")
                 hardcoded_response = None
-        
-        # ========================================
-        # GOVERNANCE PASSED - RETURN CONSTRAINTS
-        # ========================================
         
         return GovernanceResult(
             intent=intent,
             confidence=confidence,
             blocked=False,
             silence_required=False,
-            response=hardcoded_response,  # May be None or static response
+            response=hardcoded_response,
             allowed_shapes=envelope.allowed_shapes,
             max_words=envelope.max_response_length // 5,
             analysis_allowed=envelope.analysis_allowed,
@@ -1604,5 +1442,5 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type="trust_authority"):
             llm_call_allowed=envelope.llm_call_allowed,
             auto_scoped=True,
             semantic_category=semantic_category.value,
-            human_mode_active=human_mode_active  # ✅ NEW
+            human_mode_active=human_mode_active
         )
