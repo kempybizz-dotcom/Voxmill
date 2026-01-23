@@ -352,7 +352,7 @@ def get_client_from_airtable(sender: str) -> dict:
         logger.info(f"✅ Client found: {search_number} (industry={industry}, status={status}, tier={tier}, market={active_market_name})")
         
         return {
-            'name': search_number,
+            'name': fields.get('name', search_number),
             'email': '',
             'subscription_status': status.capitalize(),
             'tier': tier,
