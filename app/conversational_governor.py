@@ -1067,7 +1067,8 @@ Thank you for trying our service.""",
                 
                 # Get hardcoded response
                 if intent_type_hint == 'meta_authority':
-                    response = """My job is to tell you what's about to matter before it shows up publicly.
+if intent_type_hint == 'meta_authority':
+                    response = """My job is to tell you what is about to matter before it shows up publicly.
 
 Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.
 
