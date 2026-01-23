@@ -1149,15 +1149,14 @@ Contact intel@voxmill.uk to upgrade."""
                         confidence=1.0,
                         blocked=True,
                         silence_required=False,
-                        response = """TRIAL SAMPLE COMPLETE
+                        response="""TRIAL SAMPLE COMPLETE
 
 You have received your trial intelligence sample.
 
 To continue receiving market intelligence, contact:
 intel@voxmill.uk
 
-Trial period: 24 hours from activation"""
-
+Trial period: 24 hours from activation""",
                         allowed_shapes=["STATUS_LINE"],
                         max_words=50,
                         analysis_allowed=False,
@@ -1200,7 +1199,7 @@ intel@voxmill.uk"""
                 else:
                     response = """PREFERENCE UPDATE
 
-Specify region format: "Switch to [City]"
+Specify region format: Switch to [City]
 
 Example: Switch to Manchester
 
