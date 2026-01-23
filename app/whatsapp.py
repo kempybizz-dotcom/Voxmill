@@ -159,25 +159,43 @@ def get_client_from_airtable(sender: str) -> dict:
     try:
         accounts_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Accounts"
         params = {'filterByFormula': f"{{WhatsApp Number}}='{search_number}'"}
+        
+        # ✅ DEBUG LOGGING
+        logger.info(f"🔍 AIRTABLE DEBUG:")
+        logger.info(f"   Base ID: {AIRTABLE_BASE_ID}")
+        logger.info(f"   Table: Accounts")
+        logger.info(f"   Search number: {search_number}")
+        logger.info(f"   Filter: {params['filterByFormula']}")
+        
         response = requests.get(accounts_url, headers=headers, params=params, timeout=5)
+        
+        # ✅ DEBUG RESPONSE
+        logger.info(f"   Status: {response.status_code}")
         
         if response.status_code != 200:
             logger.error(f"Airtable query failed: {response.status_code}")
+            logger.error(f"   Error response: {response.text[:500]}")
             return None
         
-        records = response.json().get('records', [])
+        response_data = response.json()
+        records = response_data.get('records', [])
+        
+        logger.info(f"   Records found: {len(records)}")
         
         if not records:
             logger.warning(f"No account found for {sender}")
+            logger.warning(f"   Response body: {response.text[:500]}")
             return None
         
         account = records[0]
         account_id = account['id']
         fields = account['fields']
-
-        logger.info(f"🔍 DEBUG: Available Airtable fields: {list(fields.keys())}")
+        
+        logger.info(f"   First record ID: {account_id}")
+        logger.info(f"   Available fields: {list(fields.keys())}")
         logger.info(f"🔍 DEBUG: agency_name = {fields.get('agency_name')}")
         logger.info(f"🔍 DEBUG: agency_type = {fields.get('agency_type')}")
+        logger.info(f"🔍 DEBUG: name = {fields.get('name')}")
         
         # ========================================
         # CRITICAL: Read Industry from Airtable
