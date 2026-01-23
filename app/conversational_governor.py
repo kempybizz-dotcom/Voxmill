@@ -1188,22 +1188,20 @@ Trial period: 24 hours from activation""",
                     new_region = 'Liverpool'
                 
                 if new_region:
-                    response = f"""PREFERENCE UPDATED
-
-Primary region set to: {new_region}
-
-Note: Trial access provides limited intelligence sampling.
-
-For full regional coverage, contact:
-intel@voxmill.uk"""
+                    response = (
+                        "PREFERENCE UPDATED\n\n"
+                        f"Primary region set to: {new_region}\n\n"
+                        "Note: Trial access provides limited intelligence sampling.\n\n"
+                        "For full regional coverage, contact:\n"
+                        "intel@voxmill.uk"
+                    )
                 else:
-                    response = """PREFERENCE UPDATE
-
-Specify region format: Switch to [City]
-
-Example: Switch to Manchester
-
-Trial access provides limited intelligence sampling."""
+                    response = (
+                        "PREFERENCE UPDATE\n\n"
+                        "Specify region format: Switch to [City]\n\n"
+                        "Example: Switch to Manchester\n\n"
+                        "Trial access provides limited intelligence sampling."
+                    )
                 
                 return GovernanceResult(
                     intent=Intent.ADMINISTRATIVE,
