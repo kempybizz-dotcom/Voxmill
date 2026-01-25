@@ -1165,8 +1165,8 @@ Contact intel@voxmill.uk if you need assistance."""
         in_auth_flow = False
         
         try:
-            from app.pin_auth import PINAuth
-            pin_auth = PINAuth(sender)
+            # REMOVED - use PINAuthenticator instead
+            pin_auth = PINAuthenticator(sender)
             
             # Check if locked or awaiting PIN
             is_locked = pin_auth.is_locked()
@@ -1187,23 +1187,42 @@ Contact intel@voxmill.uk if you need assistance."""
                 last_bot_response = session_data.get('last_bot_response_raw', '')
                 
                 if last_bot_response:
-                    logger.info(f"🔁 REPEAT DETECTED: Returning abbreviated cached response")
+                    # ✅ CRITICAL: Track consecutive repeats
+                    repeat_count = session_data.get('consecutive_repeats', 0) + 1
+                    session_data['consecutive_repeats'] = repeat_count
                     
-                    # Return shortened version
-                    abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+                    logger.info(f"🔁 REPEAT DETECTED: {repeat_count}/3")
                     
-                    await send_twilio_message(sender, abbreviated_response)
-                    
-                    # Update abuse score
-                    try:
-                        RateLimiter.update_abuse_score(sender, 'repeat_query', 2)
-                    except Exception:
-                        pass
-                    
-                    return  # TERMINAL
+                    # ✅ SILENCE after 3 consecutive repeats
+                    if repeat_count >= 3:
+                        conversation.set_silence_mode(duration=300)  # 5 minutes
+                        
+                        
+                        try:
+                           RateLimiter.update_abuse_score(sender, 'repeat_spam', 15)
+                        except Exception:
+                            pass
         
-        # Store current message for next comparison
-        session_data['last_user_message_raw'] = current_message_clean
+                        response = "Repeat spam detected. Silenced for 5 minutes."
+                        await send_twilio_message(sender, response)
+                        logger.warning(f"🔇 SILENCED for repeat spam: {sender}")
+                        return  # TERMINAL
+    
+                   # Return shortened version (strikes 1-2)
+                   abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+    
+                   await send_twilio_message(sender, abbreviated_response)
+    
+                   # Update abuse score
+                   try:
+                       RateLimiter.update_abuse_score(sender, 'repeat_query', 3)
+                   except Exception:
+                       pass
+    
+                   return  # TERMINAL
+               else:
+                   # ✅ RESET repeat counter if message is different
+                   session_data['consecutive_repeats'] = 0
         
         logger.info(f"✅ GATE 2.65 PASSED: Not a repeat")
 
