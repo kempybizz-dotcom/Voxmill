@@ -278,39 +278,39 @@ class ConversationSession:
             logger.error(f"Error updating session: {e}", exc_info=True)
 
     def get_consecutive_gibberish_count(self) -> int:
-        """Get count of consecutive gibberish messages"""
+        """Get gibberish counter from MongoDB"""
         try:
-            session = self.get_session()
-            return session.get('consecutive_gibberish', 0)
+            from pymongo import MongoClient
+            MONGODB_URI = os.getenv('MONGODB_URI')
+        
+            if MONGODB_URI:
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
+            
+                session = db['conversation_sessions'].find_one({'phone_number': self.phone_number})
+                return session.get('consecutive_gibberish_count', 0) if session else 0
         except Exception as e:
-            logger.error(f"Error getting gibberish count: {e}")
+            logger.error(f"Failed to get gibberish count: {e}")
             return 0
 
     def set_consecutive_gibberish_count(self, count: int):
-        """Set consecutive gibberish count"""
+        """Persist gibberish counter to MongoDB"""
         try:
-            session = self.get_session()
-            session['consecutive_gibberish'] = count
+            from pymongo import MongoClient
+            MONGODB_URI = os.getenv('MONGODB_URI')
+        
+            if MONGODB_URI:
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
             
-            # Save to Redis
-            if redis_available and redis_client:
-                try:
-                    redis_client.setex(
-                        self.session_key,
-                        self.SESSION_TTL,
-                        json.dumps(session)
-                    )
-                except Exception as e:
-                    logger.warning(f"Redis gibberish count save failed: {e}")
-            
-            # Save to memory
-            with _memory_sessions_lock:
-                _memory_sessions[self.client_id] = session
-            
-            logger.debug(f"✅ Gibberish count set to {count} for {self.client_id}")
-            
+                db['conversation_sessions'].update_one(
+                    {'phone_number': self.phone_number},
+                    {'$set': {'consecutive_gibberish_count': count}},
+                    upsert=True
+                )
+                logger.debug(f"✅ Gibberish count persisted: {count}")
         except Exception as e:
-            logger.error(f"Error setting gibberish count: {e}")
+            logger.error(f"Failed to persist gibberish count: {e}")
 
     def set_silence_mode(self, duration: int):
         """
