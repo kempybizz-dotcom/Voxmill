@@ -162,8 +162,8 @@ class RateLimiter:
     }
     
     # Burst limits
-    BURST_WINDOW = 3      # seconds
-    BURST_LIMIT = 5       # messages
+    BURST_WINDOW = 2      # seconds
+    BURST_LIMIT = 4       # messages
     
     # Abuse scoring
     ABUSE_SCORE_WINDOW = 600  # 10 minutes
