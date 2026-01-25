@@ -1113,20 +1113,16 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 
                 logger.info(f"✅ TRIAL: First sample allowed - continuing to full governance")
             
-            if intent_type_hint == 'preference_change' or 'switch to' in message_text.lower():
-                logger.info(f"✅ TRIAL: Preference change allowed")
-                
-                message_lower_check = message_text.lower()
-                new_region = None
-                
-                if 'manchester' in message_lower_check:
-                    new_region = 'Manchester'
-                elif 'birmingham' in message_lower_check:
-                    new_region = 'Birmingham'
-                elif 'leeds' in message_lower_check:
-                    new_region = 'Leeds'
-                elif 'liverpool' in message_lower_check:
-                    new_region = 'Liverpool'
+            # ❌ REMOVE hardcoded city checks
+            # ✅ Use LLM to extract region
+            if intent_type_hint == 'preference_change':
+                # Let LLM extract the region via scope_override or new field
+                requested_region = ConversationalGovernor._requested_region
+    
+                if requested_region:
+                    response = f"PREFERENCE UPDATED\n\nPrimary region set to: {requested_region}\n\n..."
+                else:
+                    response = "PREFERENCE UPDATE\n\nSpecify region format: Switch to [City]..."
                 
                 if new_region:
                     response = (
