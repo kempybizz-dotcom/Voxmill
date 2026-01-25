@@ -1185,46 +1185,58 @@ Contact intel@voxmill.uk if you need assistance."""
             if current_message_clean == last_user_message and last_user_message != '':
                 # Get cached response
                 last_bot_response = session_data.get('last_bot_response_raw', '')
-                
+    
                 if last_bot_response:
-                    # ✅ CRITICAL: Track consecutive repeats
-                    repeat_count = session_data.get('consecutive_repeats', 0) + 1
-                    session_data['consecutive_repeats'] = repeat_count
-                    
-                    logger.info(f"🔁 REPEAT DETECTED: {repeat_count}/3")
-                    
-                    # ✅ SILENCE after 3 consecutive repeats
+                    # ✅ NEW: Increment repeat counter
+                    repeat_count = session_data.get('repeat_count', 0) + 1
+                    session_data['repeat_count'] = repeat_count
+        
+                    logger.info(f"🔁 REPEAT DETECTED: Count {repeat_count}/3")
+        
+                    # ✅ NEW: Silence after 3 repeats
                     if repeat_count >= 3:
                         conversation.set_silence_mode(duration=300)  # 5 minutes
-                        
-                        
+            
                         try:
-                           RateLimiter.update_abuse_score(sender, 'repeat_spam', 15)
+                            RateLimiter.update_abuse_score(sender, 'repeat_spam', 10)
                         except Exception:
                             pass
-        
+            
                         response = "Repeat spam detected. Silenced for 5 minutes."
                         await send_twilio_message(sender, response)
-                        logger.warning(f"🔇 SILENCED for repeat spam: {sender}")
+                        logger.warning(f"🔇 User silenced for repeat spam: {sender}")
                         return  # TERMINAL
-    
-                   # Return shortened version (strikes 1-2)
-                   abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
-    
-                   await send_twilio_message(sender, abbreviated_response)
-    
-                   # Update abuse score
-                   try:
-                       RateLimiter.update_abuse_score(sender, 'repeat_query', 3)
-                   except Exception:
-                       pass
-    
-                   return  # TERMINAL
-               else:
-                   # ✅ RESET repeat counter if message is different
-                   session_data['consecutive_repeats'] = 0
         
-        logger.info(f"✅ GATE 2.65 PASSED: Not a repeat")
+                    # Return shortened version
+                    abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+        
+                    await send_twilio_message(sender, abbreviated_response)
+        
+                    # Update abuse score
+                    try:
+                        RateLimiter.update_abuse_score(sender, 'repeat_query', 2)
+                    except Exception:
+                        pass
+        
+                    return  # TERMINAL
+    
+                               # Return shortened version (strikes 1-2)
+                               abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+    
+                               await send_twilio_message(sender, abbreviated_response)
+    
+                               # Update abuse score
+                               try:
+                                   RateLimiter.update_abuse_score(sender, 'repeat_query', 3)
+                               except Exception:
+                                   pass
+    
+                               return  # TERMINAL
+            else:
+            # ✅ RESET repeat counter if message is different
+            session_data['consecutive_repeats'] = 0
+        
+                    logger.info(f"✅ GATE 2.65 PASSED: Not a repeat")
 
         
         # ====================================================================
