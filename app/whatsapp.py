@@ -1207,8 +1207,12 @@ Contact intel@voxmill.uk if you need assistance."""
                         logger.warning(f"🔇 SILENCED for repeat spam: {sender}")
                         return  # TERMINAL
             
-                    # Return shortened version (strikes 1-2)
-                    abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+                   # Only add "..." if response was actually truncated
+                    if len(last_bot_response) > 200:
+                        abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
+
+                    else:abbreviated_response = f"You just asked that.\n\n{last_bot_response}"
+                        
             
                     await send_twilio_message(sender, abbreviated_response)
             
