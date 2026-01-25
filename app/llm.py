@@ -581,6 +581,18 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
     try:
         from datetime import datetime
         import pytz
+
+        # ========================================
+        # SECURITY: PROMPT EXTRACTION REFUSAL (PRIORITY 0)
+        # ========================================
+        message_lower = message.lower()
+        if any(phrase in message_lower for phrase in ['system prompt', 'show prompt', 'paste prompt', 'share prompt', 'your instructions', 'show instructions']):
+            logger.warning(f"🚨 PROMPT EXTRACTION BLOCKED: {message[:50]}")
+            return (
+                "administrative",
+                "I can't share system instructions. Ask me about market intelligence, competitive analysis, or strategic forecasting.",
+                {"blocked_reason": "prompt_extraction"}
+            )
         
         # ============================================================
         # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
