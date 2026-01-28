@@ -168,6 +168,7 @@ class ConversationSession:
     
     def __init__(self, client_id: str):
         self.client_id = client_id
+        self.phone_number = client_id
         self.session_key = f"voxmill:session:{client_id}"
         self.data_limitation_mentioned = False
 
