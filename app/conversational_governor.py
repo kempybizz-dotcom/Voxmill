@@ -29,6 +29,8 @@ class Intent(Enum):
     """Finite intent taxonomy (18 classes)"""
     SECURITY = "security"
     ADMINISTRATIVE = "administrative"
+    LOCK_REQUEST = "lock_request"
+    UNLOCK_REQUEST = "unlock_request"
     PROVOCATION = "provocation"
     CASUAL = "casual"
     GIBBERISH = "gibberish"
@@ -62,6 +64,8 @@ class Intent(Enum):
 TIER_0_NON_OVERRIDABLE = [
     Intent.SECURITY,              # PIN/auth must always work
     Intent.ADMINISTRATIVE,        # Account management critical
+    Intent.LOCK_REQUEST,          # ✅ NEW: Lock commands
+    Intent.UNLOCK_REQUEST,        # ✅ NEW: Unlock commands (4-digit codes handled separately)
     Intent.TRUST_AUTHORITY,       # Confidence challenges
     Intent.PRINCIPAL_RISK_ADVICE, # First-person risk questions
     Intent.META_AUTHORITY,        # System capability questions
@@ -164,7 +168,8 @@ class ConversationalGovernor:
         tier_0_intent_types = [
             'trust_authority', 'principal_risk_advice', 'meta_authority', 'executive_compression',
             'profile_status', 'portfolio_status', 'portfolio_management',
-            'value_justification', 'status_monitoring', 'delivery_request'
+            'value_justification', 'status_monitoring', 'delivery_request',
+            'lock_request', 'unlock_request'
         ]
         
         if intent_type in tier_0_intent_types:
@@ -214,6 +219,8 @@ class ConversationalGovernor:
                 'value_justification': Intent.VALUE_JUSTIFICATION,
                 'status_monitoring': Intent.STATUS_MONITORING,
                 'delivery_request': Intent.DELIVERY_REQUEST,
+                'lock_request': Intent.LOCK_REQUEST,  # ✅ NEW
+                'unlock_request': Intent.UNLOCK_REQUEST,  # ✅ NEW
             }
             
             # TERMINAL RETURN - No further processing
@@ -512,6 +519,32 @@ class ConversationalGovernor:
                 allowed_shapes=["STATUS_LINE"]
             ),
 
+            Intent.LOCK_REQUEST: Envelope(
+                analysis_allowed=False,
+                max_response_length=100,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                allowed_shapes=["STATUS_LINE"]
+            ),
+            
+            Intent.UNLOCK_REQUEST: Envelope(
+                analysis_allowed=False,
+                max_response_length=100,
+                silence_allowed=False,
+                silence_required=False,
+                refusal_allowed=False,
+                refusal_required=False,
+                decision_mode_eligible=False,
+                data_load_allowed=False,
+                llm_call_allowed=False,
+                allowed_shapes=["STATUS_LINE"]
+            ),
+
             Intent.EXECUTIVE_COMPRESSION: Envelope(
                 analysis_allowed=True,
                 max_response_length=300,
@@ -732,7 +765,7 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type": "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "gibberish" | "profanity",
+    "intent_type: "market_query" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "lock_request" | "unlock_request" | "gibberish" | "profanity",
     "is_human_signal": true/false,
     "is_dismissal": false,
     "requested_region": null
@@ -755,6 +788,8 @@ CRITICAL INTENT ROUTING (PRIORITY 2):
 - feels off, misaligned, not sitting right → is_human_signal: true
 - how would I explain, what would I say, frame this for → is_human_signal: true
 - if you were me, if you were in my seat → intent_type: principal_risk_advice
+- lock, lock it, lock access, lock the line, lock chat, secure access → intent_type: lock_request
+- unlock, unlock it, unlock access, open access → intent_type: unlock_request (but 4-digit codes handled by SECURITY intent)
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
