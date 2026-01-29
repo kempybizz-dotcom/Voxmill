@@ -1350,16 +1350,23 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 tier_0_detected = True
         
         if not tier_0_detected and is_mandate_relevant and intent == Intent.UNKNOWN:
+        # ✅ CRITICAL: Never override human mode with forced intent
+        if not human_mode_active:
             forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
                 semantic_category,
                 message_text,
                 intent_type=intent_type_hint
             )
-            
+        
             logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
-            
+        
             intent = forced_intent
             confidence = 0.75
+        else:
+            # Keep as STRATEGIC for human mode (not DECISION_REQUEST)
+            intent = Intent.STRATEGIC
+            confidence = 0.85
+            logger.info(f"✅ Human mode active - using STRATEGIC intent (not forcing DECISION_REQUEST)")
         
         subscription_status = client_profile.get('subscription_status', '').lower()
         
