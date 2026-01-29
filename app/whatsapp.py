@@ -1872,11 +1872,12 @@ Standing by."""
             return
 
         logger.info(f"✅ Region = '{preferred_region}'")
+        
         # ====================================================================
         # GOVERNANCE LAYER - AFTER GATE 7
         # ====================================================================
         
-        from app.conversational_governor import ConversationalGovernor
+        from app.conversational_governor import ConversationalGovernor, Intent
         
         # ====================================================================
         # MULTI-INTENT DETECTION (ATOMIC INTENT GUARDS)
@@ -2035,6 +2036,129 @@ For detailed analysis, contact intel@voxmill.uk"""
                 
                 logger.info(f"✅ Multi-intent processed: {len(responses)} responses")
                 return
+        
+        # ====================================================================
+        # LOCK_REQUEST ROUTING (LLM-BASED - NO KEYWORDS)
+        # ====================================================================
+        
+        conversation = ConversationSession(sender)
+        conversation_entities = conversation.get_last_mentioned_entities()
+        
+        conversation_context = {
+            'regions': conversation_entities.get('regions', []),
+            'agents': conversation_entities.get('agents', []),
+            'topics': conversation_entities.get('topics', [])
+        }
+        
+        # ====================================================================
+        # CHECK TRIAL SAMPLE STATUS (FOR GOVERNOR) - QUERY ONCE
+        # ====================================================================
+        
+        trial_sample_used = False
+        
+        # ✅ FIXED: Case-insensitive comparison
+        if client_profile.get('subscription_status', '').lower() == 'trial':
+            try:
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
+                    
+                    trial_usage = db['client_profiles'].find_one({'whatsapp_number': sender})
+                    
+                    if trial_usage:
+                        trial_sample_used = trial_usage.get('trial_sample_used', False)
+                        logger.debug(f"Trial sample status: used={trial_sample_used}")
+            except Exception as e:
+                logger.debug(f"Trial sample check failed: {e}")
+        
+        # ====================================================================
+        # CALL GOVERNOR WITH TRIAL STATE
+        # ====================================================================
+        
+        governance_result = await ConversationalGovernor.govern(
+            message_text=message_text,
+            sender=sender,
+            client_profile=client_profile,
+            system_state={
+                'subscription_active': client_profile.get('subscription_status', '').lower() == 'active',
+                'pin_unlocked': True,
+                'quota_remaining': 100,
+                'monitoring_active': len(client_profile.get('active_monitors', [])) > 0,
+                'trial_sample_used': trial_sample_used
+            },
+            conversation_context=conversation_context
+        )
+        
+        # ====================================================================
+        # LOCK_REQUEST HANDLER (AFTER GOVERNANCE)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.LOCK_REQUEST:
+            try:
+                from app.pin_auth import PINAuthenticator
+                from app.airtable_auto_sync import sync_pin_status_to_airtable
+                
+                logger.info(f"🔒 Lock request detected via LLM")
+                
+                # Execute lock
+                success, message_response = PINAuthenticator.manual_lock(sender)
+                
+                if success:
+                    response = """INTELLIGENCE LINE LOCKED
+
+Your access has been secured.
+
+Enter your 4-digit code to unlock."""
+                    
+                    await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
+                else:
+                    response = "Unable to lock. Please try again."
+                
+                await send_twilio_message(sender, response)
+                
+                # Update session
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response,
+                    metadata={'category': 'lock_request', 'intent': 'lock_request'}
+                )
+                
+                # Log interaction
+                log_interaction(sender, message_text, "lock_request", response, 0, client_profile)
+                
+                logger.info(f"✅ Lock request handled via LLM routing")
+                return  # TERMINAL
+                
+            except Exception as e:
+                logger.error(f"❌ Lock request error: {e}", exc_info=True)
+                response = "Lock failed. Please try again."
+                await send_twilio_message(sender, response)
+                return
+        
+        # ====================================================================
+        # UNLOCK_REQUEST ROUTING (INFORMATIONAL ONLY)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.UNLOCK_REQUEST:
+            response = """UNLOCK REQUIRED
+
+Enter your 4-digit access code to unlock."""
+            
+            await send_twilio_message(sender, response)
+            
+            conversation.update_session(
+                user_message=message_text,
+                assistant_response=response,
+                metadata={'category': 'unlock_request', 'intent': 'unlock_request'}
+            )
+            
+            log_interaction(sender, message_text, "unlock_request", response, 0, client_profile)
+            
+            logger.info(f"✅ Unlock request reminder sent")
+            return  # TERMINAL
         
         # ====================================================================
         # MANUAL PROFILE REFRESH (READ-ONLY - SOFT ROUTING HINT)
