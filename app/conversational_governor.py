@@ -1348,42 +1348,43 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 intent = detected_intent
                 confidence = 0.95
                 tier_0_detected = True
-        
-        if not tier_0_detected and is_mandate_relevant and intent == Intent.UNKNOWN:
-        # ✅ CRITICAL: Never override human mode with forced intent
-        if not human_mode_active:
-            forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
-                semantic_category,
-                message_text,
-                intent_type=intent_type_hint
-            )
-        
-            logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
+                
+                
+            if not tier_0_detected and is_mandate_relevant and intent == Intent.UNKNOWN:
+            # ✅ CRITICAL: Never override human mode with forced intent
+            if not human_mode_active:
+                forced_intent = ConversationalGovernor._force_intent_from_semantic_category(
+                    semantic_category,
+                    message_text,
+                    intent_type=intent_type_hint
+                )
+                
+                logger.warning(f"🔄 UNKNOWN blocked for mandate-relevant query, forced to {forced_intent.value}")
         
             intent = forced_intent
             confidence = 0.75
-        else:
-            # Keep as STRATEGIC for human mode (not DECISION_REQUEST)
-            intent = Intent.STRATEGIC
-            confidence = 0.85
-            logger.info(f"✅ Human mode active - using STRATEGIC intent (not forcing DECISION_REQUEST)")
+            else:
+                # Keep as STRATEGIC for human mode (not DECISION_REQUEST)
+                intent = Intent.STRATEGIC
+                confidence = 0.85
+                logger.info(f"✅ Human mode active - using STRATEGIC intent (not forcing DECISION_REQUEST)")
         
-        subscription_status = client_profile.get('subscription_status', '').lower()
+            subscription_status = client_profile.get('subscription_status', '').lower()
         
-        if subscription_status == 'trial':
-            INTENT_TO_MODULES = {
-                Intent.STRATEGIC: ['Market Overview'],
-                Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
-                Intent.STATUS_CHECK: [],
-                Intent.META_STRATEGIC: ['Risk Analysis'],
-                Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
-                Intent.ADMINISTRATIVE: [],
-                Intent.META_AUTHORITY: [],
-                Intent.PROFILE_STATUS: [],
-                Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],
-            }
+            if subscription_status == 'trial':
+                INTENT_TO_MODULES = {
+                    Intent.STRATEGIC: ['Market Overview'],
+                    Intent.DECISION_REQUEST: ['Predictive Intelligence', 'Risk Analysis'],
+                    Intent.STATUS_CHECK: [],
+                    Intent.META_STRATEGIC: ['Risk Analysis'],
+                    Intent.MONITORING_DIRECTIVE: ['Portfolio Tracking'],
+                    Intent.ADMINISTRATIVE: [],
+                    Intent.META_AUTHORITY: [],
+                    Intent.PROFILE_STATUS: [],
+                    Intent.PORTFOLIO_STATUS: ['Portfolio Tracking'],
+                }
             
-            required_modules = INTENT_TO_MODULES.get(intent, [])
+                required_modules = INTENT_TO_MODULES.get(intent, [])
             
             if required_modules:
                 allowed_modules = client_profile.get('allowed_intelligence_modules', [])
