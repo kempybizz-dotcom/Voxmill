@@ -1719,6 +1719,17 @@ Standing by."""
         logger.info(f"✅ GATE 4 PASSED: PIN verified")
         
         # ====================================================================
+        # IMPORT PIN AUTHENTICATOR (NEEDED FOR VERIFICATION CHECK)
+        # ====================================================================
+        
+        from app.pin_auth import PINAuthenticator
+        from app.airtable_auto_sync import sync_pin_status_to_airtable
+        
+        # ====================================================================
+        # GATE 4.5: PIN AUTHENTICATION CHECK
+        # ====================================================================
+        
+        # ====================================================================
         # GATE 5: FSM STATE CHECK (INSTITUTIONAL CONTROL - FIRST LOGIC GATE)
         # ====================================================================
         
@@ -2098,9 +2109,6 @@ For detailed analysis, contact intel@voxmill.uk"""
         
         if governance_result.intent == Intent.LOCK_REQUEST:
             try:
-                from app.pin_auth import PINAuthenticator
-                from app.airtable_auto_sync import sync_pin_status_to_airtable
-                
                 logger.info(f"🔒 Lock request detected via LLM")
                 
                 # Execute lock
