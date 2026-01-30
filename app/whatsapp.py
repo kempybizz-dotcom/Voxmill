@@ -1718,12 +1718,6 @@ Standing by."""
         
         logger.info(f"✅ GATE 4 PASSED: PIN verified")
         
-        # ====================================================================
-        # IMPORT PIN AUTHENTICATOR (NEEDED FOR VERIFICATION CHECK)
-        # ====================================================================
-        
-        from app.pin_auth import PINAuthenticator
-        from app.airtable_auto_sync import sync_pin_status_to_airtable
         
         # ====================================================================
         # GATE 4.5: PIN AUTHENTICATION CHECK
