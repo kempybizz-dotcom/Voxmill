@@ -186,7 +186,14 @@ class SecurityValidator:
         """
         Detect gibberish without expensive LLM call
         
-        CHATGPT SPEC: Pre-filter to save money on spam
+        EXPANDED RULES (2026-01-30):
+        1. Single character repeated (A, AA, AAA, AAAA)
+        2. No vowels (CDSCD, FSFSF, ds, cd)
+        3. High consonant ratio >80% (keyboard mashing)
+        4. Excessive character repetition >70%
+        5. Adjacent keyboard keys (asdf, qwer)
+        
+        NO HARDCODED REAL ESTATE TERMS - purely linguistic patterns
         
         Returns: True if obvious gibberish (no LLM needed)
         """
@@ -197,63 +204,49 @@ class SecurityValidator:
         text_clean = text.strip()
         text_lower = text_clean.lower()
         
-        # ✅ WHITELIST: Common valid patterns that should NEVER be flagged as gibberish
-        valid_patterns = [
-            'add property',
-            'remove property',
-            'show portfolio',
-            'reset portfolio',
-            'refresh portfolio',
-            'portfolio',
-            'market overview',
-            'market',
-            'price',
-            'value',
-            'worth',
-            'compare',
-            'comparison',
-            'vs',
-            'rightmove',
-            'zoopla',
-            'property',
-            'address',
-            'postcode',
-            'street',
-            'road',
-            'avenue',
-            'lane',
-            'square',
-            'park',
-            'gardens',
-            'place',
-            'close',
-            'mews',
-            'terrace',
-            'knightsbridge',
-            'mayfair',
-            'belgravia',
-            'chelsea',
-            'kensington'
-        ]
+        # ✅ RULE 1: Single character repeated (A, AA, AAA, s, ss, sss, etc.)
+        if len(set(text_clean.lower())) == 1 and len(text_clean) >= 1:
+            # Exception: Allow question marks and exclamation points
+            if text_clean[0] not in ['?', '!']:
+                logger.info(f"🗑️ Gibberish pre-filter: Single character repeated '{text_clean}'")
+                return True
         
-        # If any valid pattern is present, it's NOT gibberish
-        if any(pattern in text_lower for pattern in valid_patterns):
-            logger.debug(f"✅ Whitelist match - not gibberish: '{text_clean}'")
-            return False
+        # ✅ RULE 2: No vowels at all (must have 3+ letters)
+        vowels = set('aeiouAEIOU')
+        alpha_chars = [c for c in text_clean if c.isalpha()]
         
-        # Pattern 1: Too short and all caps random letters (no real words)
-        if text_clean.isupper() and len(text_clean) < 12:
-            # Check if it's a known command or real word
-            known_patterns = ['HELP', 'STOP', 'START', 'RESET', 'CONFIRM', 'CANCEL', 
-                            'STATUS', 'VERIFY', 'PORTFOLIO', 'MARKET', 'PRICE']
-            if not any(pattern in text_clean for pattern in known_patterns):
-                # Check for vowels (real words have vowels)
-                vowels = set('AEIOU')
-                if not any(c in vowels for c in text_clean):
+        if len(alpha_chars) >= 3:
+            if not any(c in vowels for c in alpha_chars):
+                # Exception: Allow common abbreviations (PIN, ADD, VS, GPS, SQL, etc.)
+                common_abbrevs = ['PIN', 'GPS', 'SQL', 'ADD', 'VS', 'DVD', 'PDF', 'CSV']
+                if text_clean.upper() not in common_abbrevs:
                     logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
                     return True
         
-        # Pattern 2: Repeated characters (more than 70% same char)
+        # ✅ RULE 3: Very short + mostly consonants (2-3 chars)
+        if len(text_clean) <= 3 and len(alpha_chars) >= 2:
+            consonants = sum(1 for c in alpha_chars if c not in vowels)
+            if consonants >= 2:
+                # Exception: Common 2-3 letter words/abbreviations
+                allowed_short = [
+                    'OK', 'YES', 'NO', 'WHY', 'HOW', 'WHO', 'PIN', 'ADD', 'VS', 
+                    'OR', 'AND', 'THE', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL',
+                    'CAN', 'HAD', 'HER', 'WAS', 'ONE', 'OUR', 'OUT', 'DAY', 'GET',
+                    'HAS', 'HIM', 'HIS', 'MAY', 'NEW', 'NOW', 'OLD', 'SEE', 'TWO',
+                    'WAY', 'USE', 'ITS', 'SAY', 'SHE', 'TOO', 'ANY'
+                ]
+                if text_clean.upper() not in allowed_short:
+                    logger.info(f"🗑️ Gibberish pre-filter: Too short '{text_clean}'")
+                    return True
+        
+        # ✅ RULE 4: High consonant ratio (keyboard mashing)
+        if len(alpha_chars) >= 4:
+            consonant_ratio = sum(1 for c in alpha_chars if c not in vowels) / len(alpha_chars)
+            if consonant_ratio > 0.8:  # >80% consonants
+                logger.info(f"🗑️ Gibberish pre-filter: Keyboard mashing '{text_clean}'")
+                return True
+        
+        # ✅ RULE 5: Excessive repetition (>70% same char)
         if len(text_clean) > 3:
             char_freq = {}
             for char in text_clean.lower():
@@ -268,28 +261,7 @@ class SecurityValidator:
                     logger.info(f"🗑️ Gibberish pre-filter: Excessive repetition in '{text_clean}'")
                     return True
         
-        # Pattern 3: No vowels at all (and not a command)
-        vowels = set('aeiouAEIOU')
-        alpha_chars = [c for c in text_clean if c.isalpha()]
-        
-        if len(alpha_chars) >= 4:  # At least 4 letters
-            if not any(c in vowels for c in alpha_chars):
-                logger.info(f"🗑️ Gibberish pre-filter: No vowels in '{text_clean}'")
-                return True
-        
-        # Pattern 4: Very short nonsense (1-3 chars that aren't numbers or known abbreviations)
-        if len(text_clean) <= 3 and text_clean.isalpha():
-            # Allow common abbreviations
-            allowed_short = ['OK', 'YES', 'NO', 'WHY', 'HOW', 'WHO', 'PIN', 'ADD', 'VS']
-            if text_clean.upper() not in allowed_short:
-                logger.info(f"🗑️ Gibberish pre-filter: Too short '{text_clean}'")
-                return True
-        
-        # Pattern 5: DISABLED - Consonant sequence check (was too aggressive)
-        # Previously flagged "Knightsbridge" and other valid place names
-        # Left disabled to prevent false positives on addresses
-        
-        # Pattern 6: Keyboard mashing detection (adjacent keys on QWERTY)
+        # ✅ RULE 6: Keyboard mashing detection (adjacent keys on QWERTY)
         keyboard_patterns = [
             'asdf', 'qwer', 'zxcv', 'hjkl', 'uiop', 'bnm',
             'fdsa', 'rewq', 'vcxz', 'lkjh', 'poiu', 'mnb',
@@ -368,7 +340,6 @@ class ResponseValidator:
                 logger.info("Profanity detected in response (acceptable for institutional tone)")
         
         return True, "safe"
-
 
 def log_security_event(event_type: str, details: dict):
     """Log security events for monitoring"""
