@@ -389,28 +389,40 @@ class ConversationSession:
     
     def get_banned_phrases(self, lookback: int = 3) -> set:
         """Get phrases that should be blocked due to recent usage"""
-        if not self.messages:
-            return set()
-        
-        # Get last N messages
-        recent = self.messages[-lookback:]
-        
-        banned = set()
-        
-        for msg in recent:
-            response = msg.get('assistant_response', '').lower()
+        try:
+            session = self.get_session()
             
-            # Detect phrase roots
-            if 'hesitat' in response:
-                banned.add('hesitation')
-            if 'you\'re picking up on' in response:
-                banned.add('picking_up')
-            if 'pause' in response:
-                banned.add('pause')
-            if 'quiet' in response:
-                banned.add('quiet')
-        
-        return banned
+            if not session or not session.get('messages'):
+                return set()
+            
+            messages = session['messages']
+            
+            # Get last N messages
+            recent = messages[-lookback:] if len(messages) >= lookback else messages
+            
+            banned = set()
+            
+            for msg in recent:
+                response = msg.get('assistant', '').lower()
+                
+                # Detect phrase roots
+                if 'hesitat' in response:
+                    banned.add('hesitation')
+                if 'you\'re picking up on' in response or 'you\'re sensing' in response:
+                    banned.add('picking_up')
+                if 'pause' in response or 'slowdown' in response:
+                    banned.add('pause')
+                if 'quiet' in response or 'subtle' in response or 'off-market' in response:
+                    banned.add('quiet')
+            
+            if banned:
+                logger.debug(f"🚫 Banned phrases for {self.client_id}: {banned}")
+            
+            return banned
+            
+        except Exception as e:
+            logger.warning(f"Could not extract banned phrases: {e}")
+            return set()
     
     def get_conversation_context(self) -> str:
         """
