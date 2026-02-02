@@ -902,6 +902,49 @@ BANNED for this response. Use alternatives:
                 agent: round((count / total_listings) * 100, 1)
                 for agent, count in sorted(agent_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             }
+
+        # ========================================
+        # VALUE JUSTIFICATION MODE (NEW - CONTEXT-GENERATED)
+        # ========================================
+        if governance_result and governance_result.intent == Intent.VALUE_JUSTIFICATION:
+            logger.info(f"🎯 VALUE JUSTIFICATION MODE ACTIVE")
+            
+            # Build context-aware value proposition
+            value_prompt = f"""User asked: "{message}"
+
+Your response must explain Voxmill's value specifically for {agency_name if agency_name else 'this client'}.
+
+Context to use:
+- Agency: {agency_name if agency_name else 'the client'}
+- Market: {active_market if preferred_region else 'their market'}
+- Industry: {industry}
+- What they do: {role if role else 'market operator'}
+
+Respond naturally (2-3 sentences max) explaining:
+1. What you do FOR THEM specifically (not generic Voxmill description)
+2. Why talking to you beats reading public sites (Rightmove/Zoopla/etc)
+3. What edge you provide
+
+NO marketing speak. Conversational. Specific to their context."""
+
+            # Call LLM with minimal tokens
+            value_response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",  # Cheaper model, simple task
+                messages=[
+                    {"role": "system", "content": "You explain Voxmill's value proposition naturally and specifically."},
+                    {"role": "user", "content": value_prompt}
+                ],
+                max_tokens=120,
+                temperature=0.3,
+                timeout=10.0
+            )
+            
+            response_text = value_response.choices[0].message.content.strip()
+            
+            logger.info(f"✅ VALUE JUSTIFICATION generated: {len(response_text)} chars")
+            
+            return "administrative", response_text, {"intent": "value_justification"}
+
         
         # ========================================
         # MODE DETECTION (FROM GOVERNANCE RESULT - NO KEYWORDS)
