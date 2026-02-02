@@ -1842,6 +1842,32 @@ No other actions permitted."""
             return  # TERMINAL
         
         logger.info(f"✅ GATE 6 PASSED: No command matched, continuing to LLM")
+
+
+        # ============================================================
+        # GATE 6.5: SECURITY PATTERN CHECK (BEFORE LLM)
+        # ============================================================
+        logger.info("🔐 GATE 6.5: Security pattern check...")
+
+        is_safe, sanitized_message, threats = SecurityValidator.validate_input(user_message)
+
+        if not is_safe:
+            logger.warning(f"Security violation: {threats}")
+    
+            # Send security response (NOT "Standing by")
+            send_message(
+                from_number,
+                "Your message contains suspicious content and cannot be processed."
+            )
+    
+            # Log security event
+            log_security_event("security_block", {
+                "phone_number": from_number,
+                "message": user_message[:100],
+                "threats": threats
+            })
+    
+            return  # Block processing
         
         # ====================================================================
         # GATE 7: REGION EXTRACTION
