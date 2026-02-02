@@ -49,6 +49,17 @@ class SecurityValidator:
         r'password',
         r'token',
     ]
+
+    # Privilege escalation attempts
+    PRIVILEGE_ESCALATION_PATTERNS = [
+        r'upgrade\s+(my|the)\s+(tier|subscription|account|plan)',
+        r'change\s+(my|the)\s+(tier|subscription|account|plan)',
+        r'switch\s+(to|my)\s+(tier|subscription|account|plan)',
+        r'escalate\s+(privileges|access)',
+        r'give\s+me\s+(admin|full|premium|paid)\s+access',
+        r'make\s+me\s+(admin|premium|paid)',
+        r'i\'?m\s+the\s+(developer|admin|owner)',
+    ]
     
     # Suspicious character sequences
     SUSPICIOUS_CHARS = [
@@ -95,11 +106,33 @@ class SecurityValidator:
         
         # Check 3: Prompt injection patterns
         input_lower = user_input.lower()
+        # Check 3a: Specific security patterns (more precise)
+        SECURITY_SPECIFIC = [
+            r'system\s+prompt',
+            r'paste.*prompt',
+            r'show.*prompt',
+            r'reveal.*(prompt|instructions)',
+            r'what.*your.*(prompt|instructions)',
+        ]
+        
+        for pattern in SECURITY_SPECIFIC:
+            if re.search(pattern, input_lower, re.IGNORECASE):
+                threats_detected.append("system_prompt_extraction_attempt")
+                logger.warning(f"System prompt extraction attempt: {pattern}")
+                return False, "", threats_detected
+        
+        # Check 3b: General injection patterns
         for pattern in cls.INJECTION_PATTERNS:
             if re.search(pattern, input_lower, re.IGNORECASE):
                 threats_detected.append("prompt_injection_attempt")
                 logger.warning(f"Prompt injection pattern detected: {pattern}")
-                # This is a hard block - reject the input
+                return False, "", threats_detected
+
+        # Check 3.5: Privilege escalation attempts
+        for pattern in cls.PRIVILEGE_ESCALATION_PATTERNS:
+            if re.search(pattern, input_lower, re.IGNORECASE):
+                threats_detected.append("privilege_escalation_attempt")
+                logger.warning(f"Privilege escalation pattern detected: {pattern}")
                 return False, "", threats_detected
         
         # Check 4: Excessive repetition (flooding attack)
@@ -274,6 +307,23 @@ class SecurityValidator:
                 return True
         
         return False
+        
+        # ✅ RULE 7: Detect "system prompt" variations that aren't caught by injection
+        # These are gibberish-adjacent security attempts
+        security_adjacent = [
+            'paste prompt', 'show prompt', 'reveal prompt',
+            'system message', 'your instructions', 'what are you'
+        ]
+        
+        for phrase in security_adjacent:
+            if phrase in text_lower and len(text_clean) < 30:
+                logger.info(f"🗑️ Gibberish pre-filter: Security-adjacent phrase '{text_clean}'")
+                # Don't return True - let security validator handle it
+                # Just flag for awareness
+                pass
+        
+        return False
+
 
 
 class ResponseValidator:
