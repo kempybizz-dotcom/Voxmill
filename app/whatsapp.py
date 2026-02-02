@@ -36,7 +36,7 @@ from app.dataset_loader import load_dataset
 from app.llm import classify_and_respond
 from app.utils import format_analyst_response, log_interaction, calculate_tokens_estimate
 from app.conversation_manager import ConversationSession, resolve_reference, generate_contextualized_prompt
-from app.security import SecurityValidator
+from app.security import SecurityValidator, log_security_event
 from app.cache_manager import CacheManager
 from app.client_manager import get_client_profile, update_client_history
 from app.pin_auth import (
@@ -1849,25 +1849,30 @@ No other actions permitted."""
         # ============================================================
         logger.info("🔐 GATE 6.5: Security pattern check...")
 
-        is_safe, sanitized_message, threats = SecurityValidator.validate_input(user_message)
+        is_safe, sanitized_message, threats = SecurityValidator.validate_input(message_text)
 
         if not is_safe:
-            logger.warning(f"Security violation: {threats}")
+            logger.warning(f"🚨 Security violation detected: {threats}")
     
             # Send security response (NOT "Standing by")
-            send_message(
-                from_number,
+            await send_twilio_message(
+                sender,
                 "Your message contains suspicious content and cannot be processed."
             )
     
             # Log security event
             log_security_event("security_block", {
-                "phone_number": from_number,
-                "message": user_message[:100],
+                "phone_number": sender,
+                "message": message_text[:100],
                 "threats": threats
             })
+            
+            log_interaction(sender, message_text, "security_block", 
+                          "Security violation", 0, client_profile)
     
             return  # Block processing
+        
+        logger.info("✅ GATE 6.5 PASSED: No security threats detected")
         
         # ====================================================================
         # GATE 7: REGION EXTRACTION
