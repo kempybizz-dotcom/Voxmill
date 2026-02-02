@@ -665,27 +665,13 @@ class ConversationalGovernor:
                         f"Name: {clean_name}\n"
                         f"Agency: {agency_name}\n"
                         f"Role: {role}\n\n"
-                        "Standing by."
                     )
             else:
                 return "Client profile loading..."
         
-        # VALUE_JUSTIFICATION responses
+        # VALUE_JUSTIFICATION responses - LLM GENERATED
         if intent == Intent.VALUE_JUSTIFICATION:
-            # Context-aware value response
-            if client_profile and client_profile.get('agency_name'):
-                agency_name = client_profile.get('agency_name')
-                active_market = client_profile.get('active_market', 'your market')
-            
-                return (
-                    f"We track {active_market} market dynamics for {agency_name} so you stay ahead of competitor moves.\n\n"
-                    "My job is to tell you what will matter before it's obvious."
-                )
-            else:
-                return (
-                    "Voxmill delivers institutional-grade market intelligence via WhatsApp.\n\n"
-                    "Real-time data. Fortune-500 presentation quality. Surgical precision."
-                )
+            return None  # Force LLM generation with context
         
         # TRUST_AUTHORITY responses
         if intent == Intent.TRUST_AUTHORITY:
@@ -1052,55 +1038,56 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                                     'trust_authority', 'portfolio_management', 'delivery_request']:
                 logger.info(f"✅ TRIAL: Meta/Admin question allowed - {intent_type_hint}")
                 
-                if intent_type_hint == 'meta_authority':
-                    response = (
-                        "My job is to tell you what is about to matter before it shows up publicly.\n\n"
-                        "Analysis includes inventory levels, pricing trends, competitive dynamics, and strategic positioning.\n\n"
-                        "What market intelligence can I provide?"
-                    )
+                # Route to standard handlers (they already have trial restrictions)
+            # Just add trial notice suffix
+            trial_suffix = "\n\nTrial: Limited sampling (24h from activation)"
+            
+            if intent_type_hint == 'meta_authority':
+                response = (
+                    "I track market dynamics and tell you what will matter before it shows publicly.\n\n"
+                    f"For {client_profile.get('industry', 'your industry').title()}: inventory levels, pricing trends, competitive moves, strategic positioning."
+                    + trial_suffix
+                )
+            
+            elif intent_type_hint == 'value_justification':
+                # Let LLM handle this (will be context-generated after Fix 1)
+                # But for trial, add restriction notice
+                response = (
+                    "Institutional-grade market intelligence via WhatsApp.\n\n"
+                    "Real-time competitor tracking. Fortune-500 presentation quality."
+                    + trial_suffix
+                )
+            
+            elif intent_type_hint == 'trust_authority':
+                response = (
+                    "Every insight: verified APIs, cross-referenced datasets.\n\n"
+                    "Confidence levels disclosed. Zero hallucinations."
+                    + trial_suffix
+                )
+            
+            elif intent_type_hint == 'profile_status':
+                name = client_profile.get('name', 'there')
+                # Filter phone numbers
+                if name and (name.startswith('+') or name.startswith('whatsapp:') or name.replace('+', '').replace('-', '').replace(' ', '').isdigit()):
+                    name = 'there'
                 
-                elif intent_type_hint == 'value_justification':
-                    response = (
-                        "Voxmill delivers institutional-grade market intelligence via WhatsApp.\n\n"
-                        "Real-time data. Fortune-500 presentation quality. Surgical precision.\n\n"
-                        "What market intelligence can I provide?"
-                    )
-                
-                elif intent_type_hint == 'trust_authority':
-                    response = (
-                        "Every insight is sourced from verified APIs and cross-referenced datasets.\n\n"
-                        "Confidence levels disclosed. No hallucinations.\n\n"
-                        "What market intelligence can I provide?"
-                    )
-                
-                elif intent_type_hint == 'profile_status':
-                    name = client_profile.get('name', 'there')
-                    tier = 'Trial'
-                    response = (
-                        "CLIENT PROFILE\n\n"
-                        f"Name: {name}\n"
-                        f"Service Tier: {tier}\n\n"
-                        "Trial period: 24 hours from activation\n"
-                        "Sample intelligence: 1 query available\n\n"
-                        "What market intelligence can I provide?"
-                    )
-                
-                elif intent_type_hint == 'portfolio_management':
-                    response = (
-                        "Portfolio tracking is available on paid plans.\n\n"
-                        "Your trial provides limited intelligence sampling.\n\n"
-                        "Contact intel@voxmill.uk to upgrade."
-                    )
-                
-                elif intent_type_hint == 'delivery_request':
-                    response = (
-                        "PDF reports are available on paid plans.\n\n"
-                        "Your trial provides limited intelligence sampling.\n\n"
-                        "Contact intel@voxmill.uk to upgrade."
-                    )
-                
-                else:
-                    response = "Standing by."
+                response = (
+                    f"CLIENT PROFILE\n\n"
+                    f"Name: {name}\n"
+                    f"Service Tier: Trial\n"
+                    f"Sample intelligence: 1 query available\n"
+                    f"Trial period: 24 hours from activation"
+                )
+            
+            elif intent_type_hint in ['portfolio_management', 'delivery_request']:
+                response = (
+                    "This feature is available on paid plans.\n\n"
+                    "Trial provides limited intelligence sampling.\n\n"
+                    "Contact: intel@voxmill.uk"
+                )
+            
+            else:
+                response = "Trial access active. What market intelligence can I provide?"
                 
                 return GovernanceResult(
                     intent=Intent.META_AUTHORITY if intent_type_hint == 'meta_authority' else Intent.ADMINISTRATIVE,
@@ -1262,7 +1249,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                     confidence=semantic_confidence,
                     blocked=True,
                     silence_required=False,
-                    response="Standing by.",
+                    response=None,  # ✅ CHANGED: Silent acknowledgment for gibberish
                     allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=5,
                     analysis_allowed=False,
@@ -1279,7 +1266,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                     confidence=semantic_confidence,
                     blocked=True,
                     silence_required=False,
-                    response="Unable to assist with that query.",
+                    response="Outside intelligence scope.",
                     allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=10,
                     analysis_allowed=False,
@@ -1450,7 +1437,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 confidence=confidence,
                 blocked=True,
                 silence_required=True,
-                response=None,
+                response="Outside intelligence scope.",  # ✅ CHANGED: Consistent refusal
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=0,
                 analysis_allowed=False,
@@ -1469,7 +1456,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 confidence=confidence,
                 blocked=True,
                 silence_required=False,
-                response="Standing by.",
+                response=None,  # ✅ CHANGED: Silent acknowledgment for gibberish
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=20,
                 analysis_allowed=False,
