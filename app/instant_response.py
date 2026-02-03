@@ -51,9 +51,7 @@ class InstantIntelligence:
         # ========================================
         # SECTION 1: CORE STATE (Always shown)
         # ========================================
-        sections.append(f"""{area.upper()} — CURRENT STATE
-
-- Inventory: {inventory} units  
+        sections.append(f"""- Inventory: {inventory} units  
 - Avg pricing: £{avg_price_m:.2f}m  
 - Sentiment: {sentiment}""")
         
@@ -235,9 +233,7 @@ class InstantIntelligence:
             action = "Continue monitoring, set velocity alert at 60+"
         
         # Build response
-        response = f"""DECISION MODE
-
-RECOMMENDATION:
+        response = f"""RECOMMENDATION:
 {recommendation}
 
 PRIMARY RISK:
@@ -258,9 +254,7 @@ ACTION:
         """
         
         if 'detected_trends' not in dataset or not dataset['detected_trends']:
-            return f"""{area.upper()} TRENDS
-
-No significant trends detected in last 14 days.
+            return """No significant trends detected in last 14 days.
 Market activity: Stable, minimal movement."""
         
         trends = dataset['detected_trends']
@@ -282,9 +276,7 @@ Market activity: Stable, minimal movement."""
             
             trend_bullets.append(f"• {insight} ({indicator}, {confidence*100:.0f}% confidence)")
         
-        response = f"""{area.upper()} TREND ANALYSIS (14d)
-
-{chr(10).join(trend_bullets)}"""
+        response = f"""{chr(10).join(trend_bullets)}"""
         
         return response
     
@@ -295,17 +287,13 @@ Market activity: Stable, minimal movement."""
         """
         
         if 'liquidity_windows' not in dataset or not dataset['liquidity_windows']:
-            return f"""{area.upper()} TIMING ANALYSIS
-
-Liquidity window data unavailable.
+            return """Liquidity window data unavailable.
 Requires 30+ days historical tracking."""
         
         windows = dataset['liquidity_windows']
         
         if windows.get('error'):
-            return f"""{area.upper()} TIMING ANALYSIS
-
-{windows['error']}"""
+            return f"""{windows['error']}"""
         
         # Extract data
         timing_score = windows.get('timing_score', 0)
@@ -317,9 +305,7 @@ Requires 30+ days historical tracking."""
         predicted_windows = windows.get('predicted_windows', [])
         
         # Build response
-        sections = [f"""{area.upper()} TIMING ANALYSIS
-
-Current velocity: {current_velocity}/100
+        sections = [f"""Current velocity: {current_velocity}/100
 Momentum: {'↑' if velocity_momentum > 0 else '↓'}{abs(velocity_momentum):.1f}%
 Timing score: {timing_score}/100 ({timing_rec})"""]
         
@@ -347,15 +333,13 @@ Timing score: {timing_score}/100 ({timing_rec})"""]
         """
         
         if 'agent_profiles' not in dataset or not dataset['agent_profiles']:
-            return f"""{area.upper()} AGENT ANALYSIS
-
-No agent behavioral data available.
+            return """No agent behavioral data available.
 Requires 30+ days of tracking."""
         
         agent_profiles = dataset['agent_profiles']
         
         # Build response
-        sections = [f"""{area.upper()} AGENT BEHAVIORAL ANALYSIS"""]
+        sections = []
         
         for agent in agent_profiles[:5]:
             agent_name = agent.get('agent', 'Unknown')
