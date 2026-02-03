@@ -3115,39 +3115,80 @@ CRITICAL RULES:
         
         if governance_result.intent == Intent.VALUE_JUSTIFICATION:
             try:
+                from openai import AsyncOpenAI
+                
                 logger.info(f"💎 Value justification query detected")
                 
-                # Route directly to llm.py handler
-                industry = client_profile.get('industry', 'real_estate')
-                dataset = load_dataset(area=preferred_region, industry=industry)
+                # Get last response for context
+                conversation = ConversationSession(sender)
+                last_messages = conversation.get_last_n_messages(2)
                 
-                category, response_text, response_metadata = await classify_and_respond(
-                    message_text,
-                    dataset,
-                    client_profile=client_profile,
-                    comparison_datasets=None,
-                    governance_result=governance_result
+                last_response = ""
+                if last_messages and len(last_messages) >= 1:
+                    last_response = last_messages[-1].get('assistant', '')
+                
+                industry = client_profile.get('industry', 'real_estate')
+                agency_name = client_profile.get('agency_name', '')
+                active_market = client_profile.get('active_market', preferred_region)
+                
+                client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                
+                prompt = f"""You are a senior market intelligence analyst at Voxmill. The client is questioning the value of this service.
+
+Client context:
+- Agency: {agency_name if agency_name else 'Not specified'}
+- Market: {active_market}
+- Industry: {industry}
+- Recent analysis provided: {last_response[:300] if last_response else 'No prior analysis this session'}
+
+User's message: "{message_text}"
+
+Respond with WHY this matters to them specifically. Be concrete.
+
+CRITICAL RULES:
+- Reference THEIR market and industry (not generic examples)
+- If prior analysis exists, tie back to it ("The Mayfair velocity shift I flagged last week...")
+- State what they would MISS without this service
+- Maximum 120 words
+- No menu language, no "standing by", no bullet points
+- Tone: direct, institutional, not salesy"""
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "You justify market intelligence value with specificity, not generics. Every sentence earns its place."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=200,
+                    temperature=0.2,
+                    timeout=10.0
                 )
                 
-                await send_twilio_message(sender, response_text)
+                vj_response = response.choices[0].message.content.strip()
                 
-                conversation.store_last_analysis(response_text)
+                # Clean ending
+                from app.response_enforcer import ResponseEnforcer, ResponseShape
+                enforcer = ResponseEnforcer()
+                vj_response = enforcer.clean_response_ending(vj_response, ResponseShape.STATUS_LINE)
+                
+                await send_twilio_message(sender, vj_response)
+                
+                conversation.store_last_analysis(vj_response)
                 conversation.update_session(
                     user_message=message_text,
-                    assistant_response=response_text,
+                    assistant_response=vj_response,
                     metadata={'category': 'value_justification', 'intent': 'value_justification'}
                 )
                 
-                log_interaction(sender, message_text, "value_justification", response_text, 0, client_profile)
+                log_interaction(sender, message_text, "value_justification", vj_response, 0, client_profile)
                 update_client_history(sender, message_text, "value_justification", preferred_region)
                 
-                logger.info(f"✅ Value justification response sent: {len(response_text)} chars")
+                logger.info(f"✅ Value justification response sent: {len(vj_response)} chars")
                 return
                 
             except Exception as e:
                 logger.error(f"❌ Value justification error: {e}", exc_info=True)
-                response = "Unable to process. Please try again."
-                await send_twilio_message(sender, response)
+                await send_twilio_message(sender, "Unable to process. Please try again.")
                 return
         
         # ====================================================================
