@@ -767,7 +767,7 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     from app.cache_manager import CacheManager
     from app.conversation_manager import ConversationSession
     from app.portfolio import parse_portfolio_command, execute_portfolio_command
-    from app.response_enforcer sponseEnforcer
+    from app.response_enforcer import ResponseEnforcer 
     from app.validation import HallucinationDetector
     from app.security sponseValidator
     from app.airtable_auto_sync import sync_usage_metrics
