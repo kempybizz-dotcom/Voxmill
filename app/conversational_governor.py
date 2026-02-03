@@ -455,16 +455,16 @@ class ConversationalGovernor:
             ),
             
             Intent.VALUE_JUSTIFICATION: Envelope(
-                analysis_allowed=False,
-                max_response_length=100,
+                analysis_allowed=True,
+                max_response_length=200,
                 silence_allowed=False,
                 silence_required=False,
                 refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                allowed_shapes=["STATUS_LINE"]
+                data_load_allowed=True,
+                llm_call_allowed=True,
+                allowed_shapes=["STRUCTURED_BRIEF", "STATUS_LINE"]
             ),
             
             Intent.TRUST_AUTHORITY: Envelope(
