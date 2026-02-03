@@ -3108,6 +3108,47 @@ CRITICAL RULES:
             
             logger.info(f"✅ Message processed: category=status_monitoring")
             return
+
+        # ====================================================================
+        # VALUE_JUSTIFICATION ROUTING (LLM-POWERED)
+        # ====================================================================
+        
+        if governance_result.intent == Intent.VALUE_JUSTIFICATION:
+            try:
+                logger.info(f"💎 Value justification query detected")
+                
+                # Route directly to llm.py handler
+                industry = client_profile.get('industry', 'real_estate')
+                dataset = load_dataset(area=preferred_region, industry=industry)
+                
+                category, response_text, response_metadata = await classify_and_respond(
+                    message_text,
+                    dataset,
+                    client_profile=client_profile,
+                    comparison_datasets=None,
+                    governance_result=governance_result
+                )
+                
+                await send_twilio_message(sender, response_text)
+                
+                conversation.store_last_analysis(response_text)
+                conversation.update_session(
+                    user_message=message_text,
+                    assistant_response=response_text,
+                    metadata={'category': 'value_justification', 'intent': 'value_justification'}
+                )
+                
+                log_interaction(sender, message_text, "value_justification", response_text, 0, client_profile)
+                update_client_history(sender, message_text, "value_justification", preferred_region)
+                
+                logger.info(f"✅ Value justification response sent: {len(response_text)} chars")
+                return
+                
+            except Exception as e:
+                logger.error(f"❌ Value justification error: {e}", exc_info=True)
+                response = "Unable to process. Please try again."
+                await send_twilio_message(sender, response)
+                return
         
         # ====================================================================
         # DATA LOAD / ANALYSIS GATES
