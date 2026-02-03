@@ -2989,7 +2989,7 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
                 if 'bullet' in message_lower or 'bullets' in message_lower:
                     compression_format = "bullet points"
                     system_instruction = "Convert this analysis into concise bullet points. Each bullet should be 1-2 sentences maximum. Preserve key numbers and insights."
-                elif 'one line' in message_lower or 'tldr' in message_lower:
+                elif 'one line' in message_lower or 'one sentence' in message_lower or 'tldr' in message_lower:
                     compression_format = "one line"
                     system_instruction = "Compress this entire analysis into ONE sentence (maximum 25 words). State only the most critical insight."
                 elif 'risk memo' in message_lower:
@@ -3037,6 +3037,17 @@ CRITICAL RULES:
                 )
                 
                 compressed_response = response.choices[0].message.content.strip()
+                
+                # Hard enforce single-sentence constraint - LLM compliance not guaranteed
+                if compression_format == "one line":
+                    # Find first sentence boundary
+                    for i, ch in enumerate(compressed_response):
+                        if ch in '.!?' and i > 10:
+                            # Check it's not an abbreviation (e.g. "£5m.")
+                            next_ch = compressed_response[i+1] if i+1 < len(compressed_response) else ' '
+                            if next_ch in (' ', '\n', '') or i+1 >= len(compressed_response):
+                                compressed_response = compressed_response[:i+1]
+                                break
                 
                 # Clean any remaining menu language
                 enforcer = ResponseEnforcer()
