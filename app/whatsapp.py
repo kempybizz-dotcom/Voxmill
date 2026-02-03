@@ -45,7 +45,7 @@ from app.pin_auth import (
     get_pin_response_message,
     sync_pin_status_to_airtable
 )
-from app.response_enforcer sponseEnforcer, ResponseShape
+from app.response_enforcer import ResponseEnforcer, ResponseShape
 from app.market_canonicalizer import MarketCanonicalizer  # ✅ FIX 2
 
 # Configure logging
