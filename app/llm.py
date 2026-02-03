@@ -378,8 +378,6 @@ DECISION MODE (PRIORITY 2)
 LLM detects complex decision request (not compression query).
 
 Format (EXACT):
-DECISION MODE
-
 RECOMMENDATION:
 [One directive. 30 words max. Definitive.]
 
