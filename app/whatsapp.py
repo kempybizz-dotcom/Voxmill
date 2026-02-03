@@ -2221,10 +2221,10 @@ Standing by."""
                 message_segments = re.split(r'[;\n]\s*', message_text)
                 message_segments = [s.strip() for s in message_segments if s.strip()]
                 logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments (split on ; or \\n)")
-            else:
-                # No semicolon/newline - treat as single intent
-                message_segments = [message_text]
-                logger.info(f"✅ Single intent - no splitting")
+        else:
+            # No semicolon/newline - treat as single intent
+            message_segments = [message_text]
+            logger.info(f"✅ Single intent - no splitting")
         
         if len(message_segments) > 1:
             logger.info(f"🔀 Processing {len(message_segments)} segments")
