@@ -45,7 +45,7 @@ from app.pin_auth import (
     get_pin_response_message,
     sync_pin_status_to_airtable
 )
-from app.response_enforcer import ResponseEnforcer, ResponseShape
+from app.response_enforcer sponseEnforcer, ResponseShape
 from app.market_canonicalizer import MarketCanonicalizer  # ✅ FIX 2
 
 # Configure logging
@@ -767,9 +767,9 @@ async def handle_whatsapp_message(sender: str, message_text: str):
     from app.cache_manager import CacheManager
     from app.conversation_manager import ConversationSession
     from app.portfolio import parse_portfolio_command, execute_portfolio_command
-    from app.response_enforcer import ResponseEnforcer
+    from app.response_enforcer sponseEnforcer
     from app.validation import HallucinationDetector
-    from app.security import ResponseValidator
+    from app.security sponseValidator
     from app.airtable_auto_sync import sync_usage_metrics
     from app.conversational_governor import ConversationalGovernor, Intent
     from app.pending_actions import action_manager, ActionType
@@ -2039,7 +2039,7 @@ Standing by."""
             
             # Strategy 1: "compare X vs Y" or "X versus Y"
             vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
-            import re
+            
             match = re.search(vs_pattern, message_text, re.IGNORECASE)
             
             if match:
