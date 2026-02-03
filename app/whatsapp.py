@@ -1962,8 +1962,8 @@ Active market: {market}"""
                 await send_twilio_message(sender, response)
                 return
         
-        # ========================================
-        # COMMAND 2: COMPARISON
+# ========================================
+        # COMMAND 2: COMPARISON (PARSE ONLY - DON'T EXECUTE)
         # ========================================
         
         comparison_triggers = ['compare', 'vs', 'versus', 'difference between', 'how do they compare']
@@ -1971,7 +1971,64 @@ Active market: {market}"""
         if any(trigger in message_lower for trigger in comparison_triggers):
             logger.info(f"⚖️ COMPARISON command detected")
             
-            # STEP 1: Extract entities
+            # Check for REVERSE/FLIP first (special case - executes immediately)
+            reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
+            is_reverse = any(kw in message_lower for kw in reverse_keywords)
+            
+            if is_reverse:
+                # ✅ REVERSE: Transform-only (NO LLM CALL)
+                locked_regions = conversation.context.get('locked_comparison')
+                
+                if locked_regions and len(locked_regions) == 2:
+                    last_analysis = conversation.context.get('last_comparison_response')
+                    
+                    if not last_analysis:
+                        response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Standing by."""
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
+                        return  # TERMINAL
+                    
+                    # Swap region names in cached text
+                    region_1_old, region_2_old = locked_regions['market1'], locked_regions['market2']
+                    region_1_new, region_2_new = locked_regions['market2'], locked_regions['market1']
+                    
+                    # String replacement (order matters)
+                    reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
+                    reversed_response = reversed_response.replace(region_2_old, region_1_old)
+                    reversed_response = reversed_response.replace("__TEMP__", region_2_old)
+                    
+                    # Lock reversed comparison
+                    conversation.context['locked_comparison'] = {
+                        'market1': region_1_new,
+                        'market2': region_2_new,
+                        'locked_at': datetime.now(),
+                        'expires_at': datetime.now() + timedelta(minutes=10)
+                    }
+                    conversation.context['last_comparison_response'] = reversed_response
+                    
+                    # Send cached + swapped response (NO LLM)
+                    await send_twilio_message(sender, reversed_response)
+                    log_interaction(sender, message_text, "comparison_reversed", reversed_response, 0, client_profile)
+                    
+                    logger.info(f"✅ Reverse transform-only: {region_1_old} ↔ {region_2_old} (no LLM call)")
+                    return  # TERMINAL
+                    
+                else:
+                    response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
+                    return  # TERMINAL
+            
+            # NOT a reverse — parse entities for new comparison
             from app.market_canonicalizer import MarketCanonicalizer
             
             industry_code = client_profile.get('industry', 'real_estate')
@@ -1999,8 +2056,8 @@ Active market: {market}"""
             # GATE 1: Need exactly 2 entities
             if len(entities) < 2:
                 # Check conversation context for missing entity
-                conversation = ConversationSession(sender)
-                recent_regions = conversation.get_last_mentioned_entities().get('regions', [])
+                conversation_entities = conversation.get_last_mentioned_entities()
+                recent_regions = conversation_entities.get('regions', [])
                 
                 if len(entities) == 1 and recent_regions:
                     # Implicit comparison: "compare to Chelsea" with previous context
@@ -2017,84 +2074,100 @@ Available: {', '.join(available_markets[:5])}"""
                     return  # TERMINAL
             
             if len(entities) > 2:
-                # Take first two
                 entities = entities[:2]
             
             # GATE 2: Validate entities against available markets
-            invalid_entities = [e for e in entities if e not in available_markets]
+            market1, market2 = entities[0], entities[1]
+            is_structural1 = market1 not in available_markets
+            is_structural2 = market2 not in available_markets
             
-            if invalid_entities:
-                response = f"""Cannot compare {invalid_entities[0]} — not in your market coverage.
+            logger.info(f"✅ Comparison validated: {market1} vs {market2}")
+            logger.info(f"   Structural flags: {market1}={is_structural1}, {market2}={is_structural2}")
+            
+            # GATE 3: Structural fallback (if one or both markets have no data)
+            if is_structural1 or is_structural2:
+                has_data_market = market2 if is_structural1 else market1
+                no_data_market = market1 if is_structural1 else market2
+                
+                logger.info(f"🔀 STRUCTURAL COMPARISON: {has_data_market} (data) vs {no_data_market} (structural)")
+                
+                structural_response = f"""STRUCTURAL COMPARISON
 
-Your markets: {', '.join(available_markets[:5])}"""
-                await send_twilio_message(sender, response)
-                log_interaction(sender, message_text, "comparison_invalid_market", response, 0, client_profile)
-                logger.warning(f"❌ Invalid comparison entity: {invalid_entities[0]}")
+{market1} vs {market2}
+
+{has_data_market}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{no_data_market}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
+- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
+
+Want to pressure-test this?"""
+                
+                await send_twilio_message(sender, structural_response)
+                log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                
+                logger.info(f"✅ Structural comparison sent (no dataset load)")
                 return  # TERMINAL
             
-            # GATE 3: Execute comparison
-            logger.info(f"✅ Comparison validated: {entities[0]} vs {entities[1]}")
+            # GATE 4: Both markets have data — load datasets and SET VARIABLES for GPT comparison
+            logger.info(f"✅ Both markets validated — loading datasets for GPT comparison")
             
-            # Load datasets for both markets
             from app.dataset_loader import load_dataset
             
-            try:
-                dataset_1 = load_dataset(area=entities[0], industry=industry_code)
-                dataset_2 = load_dataset(area=entities[1], industry=industry_code)
+            dataset = load_dataset(area=market1, industry=industry_code)
+            dataset_2 = load_dataset(area=market2, industry=industry_code)
+            
+            # Check if dataset_2 actually loaded
+            if dataset_2.get('metadata', {}).get('is_fallback') or dataset_2.get('metadata', {}).get('property_count', 0) == 0:
+                # Structural fallback
+                structural_response = f"""STRUCTURAL COMPARISON
+
+{market1} vs {market2}
+
+{market1}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{market2}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
+- Liquidity: {market1} = institutional, {market2} = retail-driven
+- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
+
+Standing by."""
                 
-                if not dataset_1 or not dataset_2:
-                    response = f"Could not load data for one or both markets. Try again."
-                    await send_twilio_message(sender, response)
-                    return
-                
-                # Build comparison response
-                metrics_1 = dataset_1.get('metrics', {})
-                metrics_2 = dataset_2.get('metrics', {})
-                
-                response_lines = [f"{entities[0]} vs {entities[1]}\n"]
-                
-                # Inventory
-                inv_1 = metrics_1.get('property_count', 0)
-                inv_2 = metrics_2.get('property_count', 0)
-                response_lines.append(f"Inventory: {inv_1} vs {inv_2}")
-                
-                # Avg price
-                price_1 = metrics_1.get('avg_price', 0) / 1_000_000
-                price_2 = metrics_2.get('avg_price', 0) / 1_000_000
-                response_lines.append(f"Avg price: £{price_1:.2f}m vs £{price_2:.2f}m")
-                
-                # Velocity (if available)
-                vel_1 = dataset_1.get('liquidity_velocity', {}).get('velocity_score')
-                vel_2 = dataset_2.get('liquidity_velocity', {}).get('velocity_score')
-                
-                if vel_1 and vel_2:
-                    response_lines.append(f"Velocity: {vel_1}/100 vs {vel_2}/100")
-                
-                # Key takeaway
-                if price_1 > price_2 * 1.2:
-                    response_lines.append(f"\n{entities[0]} trades at premium (+{((price_1/price_2 - 1) * 100):.0f}%)")
-                elif price_2 > price_1 * 1.2:
-                    response_lines.append(f"\n{entities[1]} trades at premium (+{((price_2/price_1 - 1) * 100):.0f}%)")
-                else:
-                    response_lines.append(f"\nPricing is comparable (within 20%)")
-                
-                response = "\n".join(response_lines)
-                
-                await send_twilio_message(sender, response)
-                
-                # Lock comparison for follow-ups
-                conversation = ConversationSession(sender)
-                conversation.lock_comparison(entities)
-                
-                log_interaction(sender, message_text, "comparison", response, 0, client_profile)
-                logger.info(f"✅ Comparison executed: {entities[0]} vs {entities[1]}")
+                await send_twilio_message(sender, structural_response)
+                log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
                 return  # TERMINAL
-                
-            except Exception as e:
-                logger.error(f"Comparison execution failed: {e}", exc_info=True)
-                response = "Comparison failed. Try again or contact intel@voxmill.uk"
-                await send_twilio_message(sender, response)
-                return
+            
+            # ✅ SET VARIABLES (don't execute here — let it fall through to GPT handler below)
+            comparison_datasets = [dataset_2]
+            query_region = market1
+            is_comparison = True  # Flag for downstream logic
+            
+            # Lock comparison for follow-ups
+            conversation.context['locked_comparison'] = {
+                'market1': market1,
+                'market2': market2,
+                'locked_at': datetime.now(),
+                'expires_at': datetime.now() + timedelta(minutes=10)
+            }
+            
+            logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
+            logger.info(f"✅ Comparison variables set — continuing to GPT handler")
+            # DO NOT RETURN — let execution continue to classify_and_respond below
         
         logger.info("✅ GATE 6.6 PASSED: No commands detected")
         
