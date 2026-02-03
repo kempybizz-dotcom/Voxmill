@@ -1919,43 +1919,8 @@ Standing by."""
         # MULTI-INTENT DETECTION (ATOMIC INTENT GUARDS)
         # ====================================================================
         
-        # ✅ FIX 4: ATOMIC INTENT GUARDS - Never split critical intents
-        ATOMIC_INTENT_PATTERNS = [
-            # Decision phrases
-            r'\bif you were me\b',
-            r'\bone move\b',
-            r'\bwhat would you do\b',
-            r'\bshould i\b',
-            r'\bwould you\b',
-            r'\brecommend\b.*\baction\b',
-            r'\bmake the call\b',
-            
-            # Contradiction phrases  
-            r'\bfeels off\b',
-            r'\bdoesn\'t add up\b',
-            r'\bdoesn\'t make sense\b',
-            r'\bcontradiction\b',
-            r'\bbut\b.*\b(agents?|velocity|market|pricing|demand|supply)\b',
-            r'\bhowever\b.*\b(agents?|velocity|market|pricing|demand|supply)\b',
-            
-            # Comparison phrases
-            r'\bcompare\b',
-            r'\b vs\.? \b',
-            r'\bversus\b',
-            r'\bhow do they compare\b',
-        ]
-        
-        # Check if message contains atomic intent (never split)
-        message_lower = message_text.lower()
-        is_atomic = any(re.search(pattern, message_lower, re.IGNORECASE) for pattern in ATOMIC_INTENT_PATTERNS)
-        
-        if is_atomic:
-            logger.info(f"✅ ATOMIC INTENT detected - no splitting (decision/contradiction/comparison)")
-            message_segments = [message_text]  # Keep as single segment
-        else:
-            # Let the LLM handle splitting intelligently (but only on semicolons/newlines)
-            # ✅ FIX 4: Only split on semicolon or newline (NOT periods)
-            if "; " in message_text or "\n" in message_text:
+        # Governor classifies intent. Split only on explicit delimiters.
+        if "; " in message_text or "\n" in message_text:
                 message_segments = re.split(r'[;\n]\s*', message_text)
                 message_segments = [s.strip() for s in message_segments if s.strip()]
                 logger.info(f"🔀 Multi-intent detected: {len(message_segments)} segments (split on ; or \\n)")
@@ -2023,9 +1988,7 @@ Standing by."""
                     
                     if is_structural:
                         # Return structural-only response
-                        structural_response = f"""STRUCTURAL ANALYSIS
-
-{preferred_region} - Regime overview only (no live data)
+                        structural_response = f"""{preferred_region} — Regime overview only (no live data)
 
 Market characteristics:
 - Scale: Regional/metropolitan
@@ -3376,7 +3339,7 @@ CRITICAL RULES:
                 logger.info(f"🗺️ Region extracted from query: '{query_region}' (overriding '{preferred_region}')")
                 break
         
-# ====================================================================
+        # ====================================================================
         # SELECTIVE DATASET LOADING (OPTIMIZED)
         # ====================================================================
         
@@ -3384,23 +3347,10 @@ CRITICAL RULES:
         if not query_region or len(query_region) < 3:
             query_region = client_profile.get('active_market', available_markets[0] if available_markets else None)
         
-        # Detect query patterns
-        overview_patterns = ['market overview', 'what\'s up', 'what\'s the market', 'market status', 'how\'s the market', 'market update', 'what\'s happening', 'give me an update']
-        decision_patterns = ['decision mode', 'what should i do', 'recommend action', 'tell me what to do', 'make the call', 'your recommendation']
-        trend_patterns = ['what\'s changed', 'what\'s different', 'trends', 'what\'s new', 'movements', 'shifts']
-        timing_patterns = ['timing', 'when should i', 'optimal time', 'entry window', 'exit window', 'liquidity window']
-        agent_patterns = ['agent', 'agents', 'who\'s moving', 'agent behavior', 'knight frank', 'savills', 'hamptons']
+        # Route via governor intent — zero keyword detection
+        _instant_eligible = governance_result.intent == Intent.STATUS_CHECK
         
-        is_overview = any(p in message_lower for p in overview_patterns)
-        is_decision = any(p in message_lower for p in decision_patterns)
-        is_trend = any(p in message_lower for p in trend_patterns)
-        is_timing = any(p in message_lower for p in timing_patterns)
-        is_agent = any(p in message_lower for p in agent_patterns)
-
-        net_position_patterns = ['net position', 'net positioning', 'what\'s the position', 'position?', 'market position']
-        is_net_position = any(p in message_lower for p in net_position_patterns)
-        
-        if is_overview or is_decision or is_trend or is_timing or is_agent or is_net_position:
+        if _instant_eligible:
             logger.info(f"🎯 Loading dataset for region: '{query_region}'")
             
             # ✅ FIX 2: CANONICALIZE BEFORE LOADING
@@ -3409,18 +3359,14 @@ CRITICAL RULES:
             
             if is_structural:
                 # Return structural-only response
-                structural_response = f"""STRUCTURAL ANALYSIS
-
-{query_region} - Regime overview only (no live data)
+                structural_response = f"""{query_region} — Regime overview only (no live data)
 
 Market characteristics:
 - Scale: Regional/metropolitan
 - Liquidity: Retail-driven
 - Buyer profile: Local/domestic
 
-For detailed analysis, contact intel@voxmill.uk
-
-Standing by."""
+For detailed analysis, contact intel@voxmill.uk"""
                 
                 await send_twilio_message(sender, structural_response)
                 logger.info(f"✅ Structural analysis sent (no dataset load)")
@@ -3461,25 +3407,9 @@ Standing by."""
                     metadata=session
                 )
             
-            # Route to instant intelligence
-            if is_overview:
-                formatted_response = InstantIntelligence.get_full_market_snapshot(canonical_region, dataset, client_profile)
-                category = "market_overview"
-            elif is_decision:
-                formatted_response = InstantIntelligence.get_instant_decision(canonical_region, dataset, client_profile)
-                category = "decision_mode"
-            elif is_trend:
-                formatted_response = InstantIntelligence.get_trend_analysis(canonical_region, dataset)
-                category = "trend_analysis"
-            elif is_timing:
-                formatted_response = InstantIntelligence.get_timing_analysis(canonical_region, dataset)
-                category = "timing_analysis"
-            elif is_agent:
-                formatted_response = InstantIntelligence.get_agent_analysis(canonical_region, dataset)
-                category = "agent_analysis"
-            elif is_net_position:
-                formatted_response = InstantIntelligence.get_net_position(canonical_region, dataset)
-                category = "net_position"
+            # STATUS_CHECK → instant snapshot (sub-1s, no GPT call)
+            formatted_response = InstantIntelligence.get_full_market_snapshot(canonical_region, dataset, client_profile)
+            category = "market_overview"
             
             await send_twilio_message(sender, formatted_response)
             
