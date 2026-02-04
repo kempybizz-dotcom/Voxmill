@@ -1875,6 +1875,302 @@ No other actions permitted."""
         logger.info("✅ GATE 6.5 PASSED: No security threats detected")
         
         # ====================================================================
+        # GATE 6.6: COMMAND DETECTION (DETERMINISTIC - PARSED, NOT CLASSIFIED)
+        # ====================================================================
+        logger.info("🔐 GATE 6.6: Command detection...")
+        
+        message_lower = message_text.lower().strip()
+        
+        # ========================================
+        # COMMAND 1: PROFILE REFRESH
+        # ========================================
+        
+        refresh_triggers = ['refresh', 'refresh profile', 'reload', 'reload profile', 'update profile', 'sync profile']
+        
+        if any(trigger == message_lower or message_lower.startswith(trigger + ' ') for trigger in refresh_triggers):
+            logger.info(f"🔄 PROFILE REFRESH command detected")
+            
+            # GATE 1: Rate limit (prevent spam)
+            conversation = ConversationSession(sender)
+            session_data = conversation.get_session()
+            last_refresh_time = session_data.get('last_profile_refresh_time', 0)
+            
+            import time
+            cooldown_seconds = 60
+            time_since_last = time.time() - last_refresh_time
+            
+            if time_since_last < cooldown_seconds:
+                remaining = int(cooldown_seconds - time_since_last)
+                response = f"Profile was just refreshed. Wait {remaining}s."
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "refresh_cooldown", response, 0, client_profile)
+                logger.info(f"⏱️ Refresh rate-limited: {remaining}s remaining")
+                return  # TERMINAL
+            
+            # GATE 2: Execute refresh
+            try:
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
+                
+                if not MONGODB_URI:
+                    response = "Profile refresh unavailable (database not configured)."
+                    await send_twilio_message(sender, response)
+                    return
+                
+                mongo_client = MongoClient(MONGODB_URI)
+                db = mongo_client['Voxmill']
+                
+                # Delete cached profile
+                db['client_profiles'].delete_one({'whatsapp_number': sender})
+                logger.info(f"✅ Profile cache cleared for {sender}")
+                
+                # Reload from Airtable
+                from app.client_manager import get_client_from_airtable
+                fresh_profile = get_client_from_airtable(sender)
+                
+                if not fresh_profile:
+                    response = "Profile refresh failed — account not found in Airtable."
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "refresh_failed", response, 0, client_profile)
+                    return
+                
+                # Cache refreshed profile
+                db['client_profiles'].insert_one(fresh_profile)
+                
+                # Update session timestamp
+                session_data['last_profile_refresh_time'] = time.time()
+                conversation.update_session(user_message=message_text, assistant_response="Profile refreshed.", metadata={'last_profile_refresh_time': time.time()})
+                
+                # Confirm
+                name = fresh_profile.get('name', 'Unknown')
+                tier = fresh_profile.get('tier', 'unknown')
+                market = fresh_profile.get('active_market', 'No market')
+                
+                response = f"""Profile refreshed.
+
+{name} ({tier})
+Active market: {market}"""
+                
+                await send_twilio_message(sender, response)
+                log_interaction(sender, message_text, "profile_refresh", response, 0, fresh_profile)
+                logger.info(f"✅ Profile refreshed successfully for {sender}")
+                return  # TERMINAL
+                
+            except Exception as e:
+                logger.error(f"Profile refresh failed: {e}", exc_info=True)
+                response = "Profile refresh failed. Contact intel@voxmill.uk"
+                await send_twilio_message(sender, response)
+                return
+        
+        # ========================================
+        # COMMAND 2: COMPARISON (PARSE ONLY - DON'T EXECUTE)
+        # ========================================
+        
+        comparison_triggers = ['compare', 'vs', 'versus', 'difference between', 'how do they compare']
+        
+        if any(trigger in message_lower for trigger in comparison_triggers):
+            logger.info(f"⚖️ COMPARISON command detected")
+            
+            # Check for REVERSE/FLIP first (special case - executes immediately)
+            reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
+            is_reverse = any(kw in message_lower for kw in reverse_keywords)
+            
+            if is_reverse:
+                # ✅ REVERSE: Transform-only (NO LLM CALL)
+                locked_regions = conversation.context.get('locked_comparison')
+                
+                if locked_regions and len(locked_regions) >= 2:
+                    last_analysis = conversation.context.get('last_comparison_response')
+                    
+                    if not last_analysis:
+                        response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Standing by."""
+                        await send_twilio_message(sender, response)
+                        log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
+                        return  # TERMINAL
+                    
+                    # Swap region names in cached text
+                    region_1_old = locked_regions.get('market1', '')
+                    region_2_old = locked_regions.get('market2', '')
+                    region_1_new = locked_regions.get('market2', '')
+                    region_2_new = locked_regions.get('market1', '')
+                    
+                    # String replacement (order matters)
+                    reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
+                    reversed_response = reversed_response.replace(region_2_old, region_1_old)
+                    reversed_response = reversed_response.replace("__TEMP__", region_2_old)
+                    
+                    # Lock reversed comparison
+                    conversation.context['locked_comparison'] = {
+                        'market1': region_1_new,
+                        'market2': region_2_new,
+                        'locked_at': datetime.now(),
+                        'expires_at': datetime.now() + timedelta(minutes=10)
+                    }
+                    conversation.context['last_comparison_response'] = reversed_response
+                    
+                    # Send cached + swapped response (NO LLM)
+                    await send_twilio_message(sender, reversed_response)
+                    log_interaction(sender, message_text, "comparison_reversed", reversed_response, 0, client_profile)
+                    
+                    logger.info(f"✅ Reverse transform-only: {region_1_old} ↔ {region_2_old} (no LLM call)")
+                    return  # TERMINAL
+                    
+                else:
+                    response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Standing by."""
+                    
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
+                    return  # TERMINAL
+            
+            # NOT a reverse — parse entities for new comparison
+            from app.market_canonicalizer import MarketCanonicalizer
+            
+            industry_code = client_profile.get('industry', 'real_estate')
+            available_markets = get_available_markets_from_db(industry_code)
+            
+            # Parse comparison entities
+            entities = []
+            
+            # Strategy 1: "compare X vs Y" or "X versus Y"
+            vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
+            import re
+            match = re.search(vs_pattern, message_text, re.IGNORECASE)
+            
+            if match:
+                entities = [match.group(1).strip().title(), match.group(2).strip().title()]
+            else:
+                # Strategy 2: Extract any mentioned market names
+                for market in available_markets:
+                    if market.lower() in message_lower:
+                        entities.append(market)
+            
+            # Remove duplicates, preserve order
+            entities = list(dict.fromkeys(entities))
+            
+            # GATE 1: Need exactly 2 entities
+            if len(entities) < 2:
+                # Check conversation context for missing entity
+                conversation_entities = conversation.get_last_mentioned_entities()
+                recent_regions = conversation_entities.get('regions', [])
+                
+                if len(entities) == 1 and recent_regions:
+                    # Implicit comparison: "compare to Chelsea" with previous context
+                    entities.insert(0, recent_regions[-1])
+                    logger.info(f"✅ Resolved comparison using context: {entities}")
+                else:
+                    response = f"""Need two markets to compare.
+
+Try: "Compare Mayfair vs Knightsbridge"
+
+Available: {', '.join(available_markets[:5])}"""
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison_incomplete", response, 0, client_profile)
+                    return  # TERMINAL
+            
+            if len(entities) > 2:
+                entities = entities[:2]
+            
+            # GATE 2: Validate entities against available markets
+            market1, market2 = entities[0], entities[1]
+            is_structural1 = market1 not in available_markets
+            is_structural2 = market2 not in available_markets
+            
+            logger.info(f"✅ Comparison validated: {market1} vs {market2}")
+            logger.info(f"   Structural flags: {market1}={is_structural1}, {market2}={is_structural2}")
+            
+            # GATE 3: Structural fallback (if one or both markets have no data)
+            if is_structural1 or is_structural2:
+                has_data_market = market2 if is_structural1 else market1
+                no_data_market = market1 if is_structural1 else market2
+                
+                logger.info(f"🔀 STRUCTURAL COMPARISON: {has_data_market} (data) vs {no_data_market} (structural)")
+                
+                structural_response = f"""{market1} vs {market2}
+
+{has_data_market}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{no_data_market}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
+- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
+- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
+
+Want to pressure-test this?"""
+                
+                await send_twilio_message(sender, structural_response)
+                log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                
+                logger.info(f"✅ Structural comparison sent (no dataset load)")
+                return  # TERMINAL
+            
+            # GATE 4: Both markets have data — load datasets and SET VARIABLES for GPT comparison
+            logger.info(f"✅ Both markets validated — loading datasets for GPT comparison")
+            
+            from app.dataset_loader import load_dataset
+            
+            dataset = load_dataset(area=market1, industry=industry_code)
+            dataset_2 = load_dataset(area=market2, industry=industry_code)
+            
+            # Check if dataset_2 actually loaded
+            if dataset_2.get('metadata', {}).get('is_fallback') or dataset_2.get('metadata', {}).get('property_count', 0) == 0:
+                # Structural fallback
+                structural_response = f"""{market1} vs {market2}
+
+{market1}:
+- Active market data available
+- Current pricing: verifiable
+- Velocity: measurable
+
+{market2}:
+- No current dataset
+- Regime analysis only (no live numbers)
+
+Comparison framework:
+- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
+- Liquidity: {market1} = institutional, {market2} = retail-driven
+- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
+
+Standing by."""
+                
+                await send_twilio_message(sender, structural_response)
+                log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
+                return  # TERMINAL
+            
+            # ✅ SET VARIABLES (don't execute here — let it fall through to GPT handler below)
+            comparison_datasets = [dataset_2]
+            query_region = market1
+            is_comparison = True  # Flag for downstream logic
+            
+            # Lock comparison for follow-ups
+            conversation.context['locked_comparison'] = {
+                'market1': market1,
+                'market2': market2,
+                'locked_at': datetime.now(),
+                'expires_at': datetime.now() + timedelta(minutes=10)
+            }
+            
+            logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
+            logger.info(f"✅ Comparison variables set — continuing to GPT handler")
+            # DO NOT RETURN — let execution continue to classify_and_respond below
+        
+        logger.info("✅ GATE 6.6 PASSED: No commands detected")
+
+        
+        # ====================================================================
         # GATE 7: REGION EXTRACTION
         # ====================================================================
         
@@ -3444,309 +3740,6 @@ Standing by."""
         comparison_datasets = []
         
         # ====================================================================
-        # COMPARISON QUERY DETECTION (✅ PHASE 1 FIXES INTEGRATED)
-        # ====================================================================
-        
-        comparison_keywords = ['compare', 'vs', 'versus', 'difference', 'compare them', 'how do they compare']
-        is_comparison = any(kw in message_lower for kw in comparison_keywords)
-        
-        comparison_datasets = None
-        
-        if is_comparison:
-            logger.info(f"🔀 Comparison query detected")
-
-            # ✅ ENSURE session_data exists
-            if not hasattr(conversation, 'session_data'):
-                conversation.session_data = {}
-            
-            # ========================================
-            # STEP 1: CHECK FOR REVERSE/FLIP COMMANDS
-            # ========================================
-            
-            reverse_keywords = ['reverse', 'flip', 'swap', 'other way', 'opposite']
-            is_reverse = any(kw in message_lower for kw in reverse_keywords)
-            
-            if is_reverse:
-                # ✅ FIX: Check if comparison context exists before attempting reverse
-                locked_regions = conversation.context.get('locked_comparison')
-                
-                if locked_regions and len(locked_regions) == 2:
-                    # ✅ CHATGPT FIX: Transform-only (NO LLM CALL)
-                    
-                    # Get last response from conversation
-                    last_analysis = conversation.context.get('last_comparison_response')
-                    
-                    if not last_analysis:
-                        response = """No active comparison to reverse.
-
-Try: "Compare Mayfair vs Knightsbridge"
-
-Standing by."""
-                        await send_twilio_message(sender, response)
-                        log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
-                        return  # TERMINAL
-                    
-                    # Swap region names in cached text
-                    region_1_old, region_2_old = locked_regions['market1'], locked_regions['market2']
-                    region_1_new, region_2_new = locked_regions['market2'], locked_regions['market1']
-                    
-                    # String replacement (order matters)
-                    reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
-                    reversed_response = reversed_response.replace(region_2_old, region_1_old)
-                    reversed_response = reversed_response.replace("__TEMP__", region_2_old)
-                    
-                    # Lock reversed comparison
-                    conversation.context['locked_comparison'] = {
-                        'market1': region_1_new,
-                        'market2': region_2_new,
-                        'locked_at': datetime.now(),
-                        'expires_at': datetime.now() + timedelta(minutes=10)
-                    }
-                    conversation.context['last_comparison_response'] = reversed_response
-                    
-                    # Send cached + swapped response (NO LLM)
-                    await send_twilio_message(sender, reversed_response)
-                    log_interaction(sender, message_text, "comparison_reversed", reversed_response, 0, client_profile)
-                    
-                    logger.info(f"✅ Reverse transform-only: {region_1_old} ↔ {region_2_old} (no LLM call)")
-                    return  # TERMINAL
-                    
-                else:
-                    # ✅ CHATGPT FIX: No locked comparison - guided error
-                    response = """No active comparison to reverse.
-
-Try: "Compare Mayfair vs Knightsbridge"
-
-Standing by."""
-                    
-                    await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
-                    return  # TERMINAL
-            
-            # ========================================
-            # STEP 2: EXTRACT COMPARISON MARKETS
-            # ========================================
-            
-            # Follow-up context resolution
-            last_context = getattr(conversation, 'session_data', {}).get('last_query_region', query_region)
-            resolved_message = message_text  # Keep original for now
-            logger.info(f"🔄 Context: last_region={last_context}")
-
-            dataset = load_dataset(area=query_region, industry=industry_code)
-            comparison_datasets = []
-            
-            # Extract market names from comparison query
-            comparison_match = re.search(
-                r'(?:compare|vs\.?|versus)\s+([^,]+?)\s+(?:to|vs\.?|versus|and|with)\s+([^,.]+)', 
-                resolved_message.lower()
-            )
-            
-            if comparison_match:
-                market1_raw = comparison_match.group(1).strip()
-                market2_raw = comparison_match.group(2).strip()
-                
-                # ✅ FIX 2: CANONICALIZE MARKETS BEFORE PROCESSING
-                market1 = market1_raw.title()  # Simple canonicalization for now
-                market2 = market2_raw.title()
-                is_structural1 = market1 not in available_markets
-                is_structural2 = market2 not in available_markets
-                
-                logger.info(f"🔀 Comparison detected: {market1} vs {market2}")
-                logger.info(f"🔀 Structural flags: {market1}={is_structural1}, {market2}={is_structural2}")
-                
-                # ✅ FIX 3: STRUCTURAL COMPARISON FALLBACK
-                if is_structural1 or is_structural2:
-                    # One or both markets are structural-only
-                    has_data_market = market2 if is_structural1 else market1
-                    no_data_market = market1 if is_structural1 else market2
-                    
-                    logger.info(f"🔀 STRUCTURAL COMPARISON: {has_data_market} (data) vs {no_data_market} (structural)")
-                    
-                    # Generate structural comparison
-                    structural_response = f"""STRUCTURAL COMPARISON
-
-{market1} vs {market2}
-
-{has_data_market}:
-- Active market data available
-- Current pricing: verifiable
-- Velocity: measurable
-
-{no_data_market}:
-- No current dataset
-- Regime analysis only (no live numbers)
-
-Comparison framework:
-- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
-- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
-- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
-
-Want to pressure-test this?"""
-                    
-                    await send_twilio_message(sender, structural_response)
-                    log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
-                    
-                    logger.info(f"✅ Structural comparison sent (no dataset load)")
-                    return  # TERMINAL
-                
-                # Both markets have data - load datasets
-                logger.info(f"🔀 Both markets have data - loading datasets")
-                
-                dataset = load_dataset(area=market1, industry=industry_code)
-                dataset_2 = load_dataset(area=market2, industry=industry_code)
-                
-                # ✅ FIX 3: STRUCTURAL FALLBACK IF DATASET MISSING
-                if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
-                    logger.info(f"🔀 Dataset 2 missing - using structural fallback")
-                    
-                    structural_response = (
-                        f"STRUCTURAL COMPARISON\n"
-                        f"{market1} vs {market2}\n\n"
-                        f"{market1}:\n"
-                        f"- Active market data available\n"
-                        f"- Current pricing: verifiable\n"
-                        f"- Velocity: measurable\n\n"
-                        f"{market2}:\n"
-                        f"- No current dataset\n"
-                        f"- Regime analysis only (no live numbers)\n\n"
-                        f"Comparison framework:\n"
-                        f"- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale\n"
-                        f"- Liquidity: {market1} = institutional, {market2} = retail-driven\n"
-                        f"- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic\n\n"
-                        f"Standing by."
-                    )
-                    
-                    await send_twilio_message(sender, structural_response)
-                    log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
-                    return  # TERMINAL
-                
-                comparison_datasets = [dataset_2]
-                query_region = market1
-                
-                # ========================================
-                # STEP 3: LOCK COMPARISON (CHATGPT SPEC)
-                # ========================================
-                
-                conversation.context['locked_comparison'] = {
-                    'market1': market1,
-                    'market2': market2,
-                    'locked_at': datetime.now(),
-                    'expires_at': datetime.now() + timedelta(minutes=10)
-                }
-                logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
-            
-            else:
-                # ✅ FIX: Check if user is asking about a previous comparison
-                # Look for implicit comparison signals + conversation context
-                implicit_comparison_signals = [
-                    'one difference', 'difference', 'what changes', 'how we behave',
-                    'between them', 'comparison', 'which one', 'that changes'
-                ]
-                
-                has_implicit_signal = any(signal in message_lower for signal in implicit_comparison_signals)
-                
-                # Check conversation context for recently compared regions
-                conversation_entities = conversation.get_last_mentioned_entities()
-                recent_regions = conversation_entities.get('regions', [])
-                
-                if has_implicit_signal and len(recent_regions) >= 2:
-                    # ✅ INFER comparison from context
-                    market1 = recent_regions[-2]  # Second most recent
-                    market2 = recent_regions[-1]  # Most recent
-                    
-                    logger.info(f"🔀 IMPLICIT comparison inferred from context: {market1} vs {market2}")
-                    
-                    # Validate both markets exist
-                    is_structural1 = market1 not in available_markets
-                    is_structural2 = market2 not in available_markets
-                    
-                    if is_structural1 or is_structural2:
-                        # Use structural fallback
-                        has_data_market = market2 if is_structural1 else market1
-                        no_data_market = market1 if is_structural1 else market2
-                        
-                        structural_response = f"""STRUCTURAL COMPARISON
-
-{market1} vs {market2}
-
-{has_data_market}:
-- Active market data available
-- Current pricing: verifiable
-- Velocity: measurable
-
-{no_data_market}:
-- No current dataset
-- Regime analysis only (no live numbers)
-
-Comparison framework:
-- Ticket size: {has_data_market} = ultra-prime (£10m+), {no_data_market} = instruction-volume sensitive
-- Liquidity: {has_data_market} = institutional, {no_data_market} = retail-driven
-- Buyer profile: {has_data_market} = UHNW/sovereign, {no_data_market} = end-user driven
-
-Want to pressure-test this?"""
-                        
-                        await send_twilio_message(sender, structural_response)
-                        log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
-                        return  # TERMINAL
-                    
-                    # Load datasets for comparison
-                    dataset = load_dataset(area=market1, industry=industry_code)
-                    dataset_2 = load_dataset(area=market2, industry=industry_code)
-                    
-                    if dataset_2['metadata'].get('is_fallback') or dataset_2['metadata'].get('property_count', 0) == 0:
-                        # Structural fallback
-                        structural_response = f"""STRUCTURAL COMPARISON
-
-{market1} vs {market2}
-
-{market1}:
-- Active market data available
-- Current pricing: verifiable
-- Velocity: measurable
-
-{market2}:
-- No current dataset
-- Regime analysis only (no live numbers)
-
-Comparison framework:
-- Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
-- Liquidity: {market1} = institutional, {market2} = retail-driven
-- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
-
-Standing by."""
-                        
-                        await send_twilio_message(sender, structural_response)
-                        log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
-                        return  # TERMINAL
-                    
-                    # ✅ CRITICAL FIX: Set comparison_datasets AND query_region
-                    # dataset is already loaded above, no need to reassign
-                    comparison_datasets = [dataset_2]
-                    query_region = market1
-                    
-                    # Lock comparison
-                    conversation.context['locked_comparison'] = {
-                        'market1': market1,
-                        'market2': market2,
-                        'locked_at': datetime.now(),
-                        'expires_at': datetime.now() + timedelta(minutes=10)
-                    }
-                    logger.info(f"🔒 Comparison locked from context: {market1} vs {market2}")
-                    
-                else:
-                    # ✅ GUIDED ERROR - no context available
-                    logger.warning(f"⚠️ Comparison requested but regions unclear")
-                    
-                    response = """Comparison failed - specify two markets.
-
-Try: "Compare Mayfair vs Knightsbridge"
-Standing by."""
-                    
-                    await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "comparison_format_error", response, 0, client_profile)
-                    return  # TERMINAL
-            
-        
         # ✅ SAFETY CHECK: Ensure dataset is loaded before classification
         if dataset is None:
             logger.info(f"📊 Loading dataset for {query_region} before classification")
