@@ -1925,7 +1925,6 @@ No other actions permitted."""
                 logger.info(f"✅ Profile cache cleared for {sender}")
                 
                 # Reload from Airtable
-                from app.client_manager import get_client_from_airtable
                 fresh_profile = get_client_from_airtable(sender)
                 
                 if not fresh_profile:
@@ -2041,7 +2040,7 @@ Standing by."""
             
             # Strategy 1: "compare X vs Y" or "X versus Y"
             vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
-            
+            import re
             match = re.search(vs_pattern, message_text, re.IGNORECASE)
             
             if match:
