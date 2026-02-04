@@ -2041,7 +2041,7 @@ Standing by."""
             
             # Strategy 1: "compare X vs Y" or "X versus Y"
             vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
-            import re
+            
             match = re.search(vs_pattern, message_text, re.IGNORECASE)
             
             if match:
