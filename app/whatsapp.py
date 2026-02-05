@@ -479,18 +479,14 @@ def check_market_availability(industry: str, market_name: str) -> dict:
                             'available': False,
                             'message': f"""No markets configured for {industry_code}.
 
-Contact intel@voxmill.uk
-
-Standing by."""
+Contact intel@voxmill.uk"""
                         }
                     
                     return {
                         'available': False,
                         'message': f"""No active coverage for {market_name}.
 
-Active markets: {', '.join(available_markets)}
-
-Standing by."""
+Active markets: {', '.join(available_markets)}"""
                     }
             else:
                 available_markets = get_available_markets_from_db(industry_code)
@@ -500,18 +496,14 @@ Standing by."""
                         'available': False,
                         'message': f"""No markets configured for {industry_code}.
 
-Contact intel@voxmill.uk
-
-Standing by."""
+Contact intel@voxmill.uk"""
                     }
                 
                 return {
                     'available': False,
                     'message': f"""Coverage for {market_name} is not yet available.
 
-Active markets: {', '.join(available_markets)}
-
-Standing by."""
+Active markets: {', '.join(available_markets)}"""
                 }
         
         return {'available': True, 'message': None}
@@ -968,9 +960,7 @@ Your account is set up for {industry_display} intelligence.
 
 No {industry_display.lower()} markets are currently active in your coverage.
 
-Contact intel@voxmill.uk to activate market coverage.
-
-Standing by."""
+Contact intel@voxmill.uk to activate market coverage."""
             )
             logger.warning(f"🚫 GATE 1 FAILED: No markets configured for {sender} (industry={industry})")
             return  # TERMINAL
@@ -1082,7 +1072,7 @@ Contact intel@voxmill.uk if this is an error."""
                         RateLimiter.clear_challenge(sender)
                         RateLimiter.update_abuse_score(sender, 'successful_pin', -10)
                         
-                        await send_twilio_message(sender, "✅ Verification successful. Access restored.\n\nStanding by.")
+                        await send_twilio_message(sender, "✅ Verification successful. Access restored.\n\n")
                         logger.info(f"✅ Challenge passed: {sender}")
                         return
                     else:
@@ -1271,7 +1261,7 @@ Contact intel@voxmill.uk if you need assistance."""
                 return  # TERMINAL
             
             # Send "Standing by" for first 2 gibberish messages
-            await send_twilio_message(sender, "Standing by.")
+            await send_twilio_message(sender, "")
             return  # TERMINAL
         
         logger.info(f"✅ GATE 2.7 PASSED: Not obvious gibberish")
@@ -1374,9 +1364,7 @@ WELCOME BACK
 
 Your Voxmill Intelligence access has been reactivated.
 
-Your private intelligence line is now active.
-
-Standing by."""
+Your private intelligence line is now active."""
                 
                 else:  # first_active
                     greeting = get_time_appropriate_greeting(name)
@@ -1549,7 +1537,7 @@ Voxmill Intelligence — Precision at Scale"""
                     # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
                     client_profile = get_client_profile(sender)
                     
-                    unlock_response = "Access verified. Standing by."
+                    unlock_response = "Access verified."
                     await send_twilio_message(sender, unlock_response)
                     
                     conversation = ConversationSession(sender)
@@ -1579,7 +1567,7 @@ Voxmill Intelligence — Precision at Scale"""
                     # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
                     client_profile = get_client_profile(sender)
                     
-                    unlock_response = "Access verified. Standing by."
+                    unlock_response = "Access verified."
                     await send_twilio_message(sender, unlock_response)
                     
                     conversation = ConversationSession(sender)
@@ -1669,9 +1657,7 @@ Example: 1234 5678"""
                 if success:
                     response = """PIN RESET SUCCESSFUL
 
-Your new access code is active.
-
-Standing by."""
+Your new access code is active."""
                     await sync_pin_status_to_airtable(sender, "Active")
                 else:
                     response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
@@ -1706,9 +1692,7 @@ Example: 1234 5678"""
                 if success:
                     response = """PIN RESET SUCCESSFUL
 
-Your new access code is active.
-
-Standing by."""
+Your new access code is active."""
                     await sync_pin_status_to_airtable(sender, "Active")
                 else:
                     response = f"{message}"
@@ -1749,9 +1733,7 @@ Standing by."""
                     if success:
                         response = """PORTFOLIO CLEARED
 
-All properties removed.
-
-Standing by."""
+All properties removed."""
                         
                         action_manager.complete_action(
                             pending_action.action_id,
@@ -1793,9 +1775,7 @@ Standing by."""
                 
                 response = f"""ACTION CANCELLED
 
-{pending_action.action_type.value.replace('_', ' ').title()} cancelled.
-
-Standing by."""
+{pending_action.action_type.value.replace('_', ' ').title()} cancelled."""
                 
                 await send_twilio_message(sender, response)
                 log_interaction(sender, message_text, "action_cancelled", response, 0, client_profile)
@@ -1984,9 +1964,7 @@ Active market: {market}"""
                     if not last_analysis:
                         response = """No active comparison to reverse.
 
-Try: "Compare Mayfair vs Knightsbridge"
-
-Standing by."""
+Try: "Compare Mayfair vs Knightsbridge"""
                         await send_twilio_message(sender, response)
                         log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
                         return  # TERMINAL
@@ -2021,9 +1999,7 @@ Standing by."""
                 else:
                     response = """No active comparison to reverse.
 
-Try: "Compare Mayfair vs Knightsbridge"
-
-Standing by."""
+Try: "Compare Mayfair vs Knightsbridge"""
                     
                     await send_twilio_message(sender, response)
                     log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
@@ -2140,9 +2116,7 @@ Want to pressure-test this?"""
 Comparison framework:
 - Ticket size: {market1} = ultra-prime (£10m+), {market2} = regional scale
 - Liquidity: {market1} = institutional, {market2} = retail-driven
-- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic
-
-Standing by."""
+- Buyer profile: {market1} = UHNW/sovereign, {market2} = local/domestic"""
                 
                 await send_twilio_message(sender, structural_response)
                 log_interaction(sender, message_text, "structural_comparison", structural_response, 0, client_profile)
@@ -2194,9 +2168,7 @@ Your account is set up for {industry_display} intelligence.
 
 No {industry_display.lower()} markets are currently active in your coverage.
 
-Contact intel@voxmill.uk to activate market coverage.
-
-Standing by."""
+Contact intel@voxmill.uk to activate market coverage."""
             )
             logger.warning(f"🚫 NO MARKET: {sender} has industry={industry} but no active_market configured")
             return
@@ -2449,106 +2421,6 @@ Enter your 4-digit access code to unlock."""
             
             logger.info(f"✅ Unlock request reminder sent")
             return  # TERMINAL
-        
-        # ====================================================================
-        # MANUAL PROFILE REFRESH (READ-ONLY - SOFT ROUTING HINT)
-        # ====================================================================
-        
-        refresh_keywords = ['refresh profile', 'refresh my profile', 'reload profile', 'update profile', 'sync profile']
-        
-        if any(kw in message_lower for kw in refresh_keywords):
-            try:
-                from pymongo import MongoClient
-                MONGODB_URI = os.getenv('MONGODB_URI')
-                
-                if MONGODB_URI:
-                    mongo_client = MongoClient(MONGODB_URI)
-                    db = mongo_client['Voxmill']
-                    
-                    # ✅ STEP 1: Delete old cache
-                    db['client_profiles'].delete_one({'whatsapp_number': sender})
-                    logger.info(f"✅ Profile cache cleared for {sender}")
-                    
-                    # ✅ STEP 2: Immediately reload from Airtable
-                    client_profile_fresh = get_client_from_airtable(sender)
-                    
-                    if not client_profile_fresh:
-                        response = "Profile refresh failed - account not found in Airtable.\n\nContact intel@voxmill.uk"
-                    else:
-                        # ✅ STEP 3: Rebuild and save to MongoDB
-                        client_profile = {
-                            'whatsapp_number': sender,
-                            'name': client_profile_fresh.get('name', sender),
-                            'email': client_profile_fresh.get('email', f"user_{sender.replace('+', '')}@temp.voxmill.uk"),
-                            'tier': client_profile_fresh.get('tier', 'tier_1'),
-                            'subscription_status': client_profile_fresh.get('subscription_status', 'unknown'),
-                            'airtable_record_id': client_profile_fresh.get('airtable_record_id'),
-                            'airtable_table': client_profile_fresh.get('airtable_table', 'Accounts'),
-                            'industry': client_profile_fresh.get('industry', 'real_estate'),
-                            'active_market': client_profile_fresh.get('active_market'),
-                            'agency_name': client_profile_fresh.get('agency_name'),
-                            'agency_type': client_profile_fresh.get('agency_type'),
-                            'role': client_profile_fresh.get('role'),
-                            'typical_price_band': client_profile_fresh.get('typical_price_band'),
-                            'objectives': client_profile_fresh.get('objectives', []),
-                            
-                            'preferences': {
-                                'preferred_regions': [client_profile_fresh.get('active_market')] if client_profile_fresh.get('active_market') else [],
-                                'competitor_set': [],
-                                'risk_appetite': 'balanced',
-                                'budget_range': {'min': 0, 'max': 100000000},
-                                'insight_depth': 'standard',
-                                'competitor_focus': 'medium',
-                                'report_depth': 'detailed'
-                            },
-                            
-                            'usage_metrics': client_profile_fresh.get('usage_metrics', {}),
-                            'trial_expired': client_profile_fresh.get('trial_expired', False),
-                            'execution_allowed': client_profile_fresh.get('execution_allowed', False),
-                            'pin_enforcement_mode': client_profile_fresh.get('pin_enforcement_mode', 'strict'),
-                            'no_markets_configured': client_profile_fresh.get('no_markets_configured', False),
-                            
-                            'total_queries': 0,
-                            'query_history': [],
-                            'created_at': datetime.now(timezone.utc),
-                            'updated_at': datetime.now(timezone.utc)
-                        }
-                        
-                        # ✅ STEP 4: Save to MongoDB
-                        db['client_profiles'].update_one(
-                            {'whatsapp_number': sender},
-                            {'$set': client_profile},
-                            upsert=True
-                        )
-                        
-                        logger.info(f"✅ Profile reloaded from Airtable: name={client_profile.get('name')}, market={client_profile.get('active_market')}")
-                        
-                        response = """PROFILE REFRESHED
-
-Your account data has been reloaded from Airtable.
-
-All settings are now current.
-
-Standing by."""
-                else:
-                    response = "Unable to refresh profile. Please try again."
-            
-            except Exception as e:
-                logger.error(f"Profile refresh failed: {e}", exc_info=True)
-                response = "Profile refresh failed. Please contact intel@voxmill.uk"
-            
-            await send_twilio_message(sender, response)
-            
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=response,
-                metadata={'category': 'profile_refresh'}
-            )
-            
-            logger.info(f"✅ Profile refresh handled")
-            return
-        
         # ====================================================================
         # GOVERNANCE LAYER (MAIN)
         # ====================================================================
@@ -2767,9 +2639,7 @@ Expires: {pending.expires_at.strftime('%H:%M UTC')}"""
                             if success:
                                 response = """PORTFOLIO CLEARED
 
-All properties removed.
-
-Standing by."""
+All properties removed."""
                                 
                                 # Complete action with audit
                                 action_manager.complete_action(
@@ -2880,9 +2750,7 @@ Reply: CONFIRM RESET {pending.action_id} within 5 minutes."""
 Specify property:
 "remove property: [address]"
 
-Example: "remove property: One Hyde Park"
-
-Standing by."""
+Example: "remove property: One Hyde Park"""
                         
                         await send_twilio_message(sender, response)
                         log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
@@ -2937,9 +2805,7 @@ Reply: CONFIRM REMOVE {pending.action_id} within 5 minutes."""
 Format:
 "add property: [address]"
 
-Example: "add property: One Hyde Park, Knightsbridge, SW1X"
-
-Standing by."""
+Example: "add property: One Hyde Park, Knightsbridge, SW1X"""
                         
                         await send_twilio_message(sender, response)
                         log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
@@ -2960,9 +2826,7 @@ Standing by."""
 View: "show portfolio"
 Add: "add property: [address]"
 Remove: "remove property: [address]"
-Reset: "reset portfolio"
-
-Standing by."""
+Reset: "reset portfolio"""
                 
                 await send_twilio_message(sender, response)
                 log_interaction(sender, message_text, "portfolio_management", response, 0, client_profile)
@@ -3216,7 +3080,7 @@ NEVER use generic statements like "analysis backed by verified data sources"."""
             except Exception as e:
                 logger.error(f"❌ Trust authority error: {e}", exc_info=True)
                 # Fallback to simple acknowledgment (last resort)
-                response = "Analysis backed by verified data sources. Standing by for specific questions."
+                response = "Analysis backed by verified data sources. Ready for specific questions."
                 await send_twilio_message(sender, response)
                 return
         
@@ -3464,7 +3328,7 @@ CRITICAL RULES:
         # ====================================================================
         
         if not data_load_allowed:
-            await send_twilio_message(sender, "Standing by.")
+            await send_twilio_message(sender, "")
             return
         
         if not analysis_allowed:
@@ -3676,9 +3540,7 @@ For detailed analysis, contact intel@voxmill.uk"""
 
 Available markets: {markets_list}
 
-Try: "Show Mayfair overview"
-
-Standing by."""
+Try: "Show Mayfair overview"""
                 
                 await send_twilio_message(sender, fallback_response)
                 log_interaction(sender, message_text, "dataset_unavailable", fallback_response, 0, client_profile)
