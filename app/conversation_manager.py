@@ -130,6 +130,22 @@ CLEANUP_INTERVAL = 600  # Clean stale sessions every 10 minutes
 SESSION_TTL = 3600  # 1 hour
 
 
+
+# ============================================================================
+# SACRED LOOP - CHATGPT FIX #1: Typed Clarifiers
+# ============================================================================
+
+from enum import Enum
+
+class QuestionType(str, Enum):
+    """Types of clarifying questions the system can ask"""
+    NEEDS_MARKET = "needs_market"
+    NEEDS_TIMEFRAME = "needs_timeframe"
+    NEEDS_GOAL = "needs_goal"
+    NEEDS_COMPARISON_PAIR = "needs_comparison_pair"
+    NEEDS_CONFIRMATION = "needs_confirmation"
+
+
 def _cleanup_stale_sessions():
     """Remove expired sessions from memory"""
     global _last_cleanup
@@ -946,6 +962,167 @@ class ConversationSession:
                 del _memory_sessions[self.client_id]
                 logger.info(f"🗑️ Memory session cleared for {self.client_id}")
     
+
+    # ========================================================================
+    # SACRED LOOP METHODS - CHATGPT FIX #1: Conversation Continuity
+    # ========================================================================
+    
+    def ask_question(
+        self, 
+        question_type, 
+        origin_intent: str, 
+        context_snapshot: Dict,
+        expected_fields: List[str] = None
+    ) -> None:
+        """
+        Mark that the bot asked a clarifying question
+        
+        CHATGPT FIX #1: SACRED LOOP - System must remember it asked a question
+        
+        Args:
+            question_type: Type of question (NEEDS_MARKET, NEEDS_TIMEFRAME, etc.)
+            origin_intent: Original intent that triggered the question
+            context_snapshot: Conversation context at time of question
+            expected_fields: Fields expected in user's answer
+        """
+        try:
+            session = self.get_session()
+            
+            # Handle both QuestionType enum and string
+            if hasattr(question_type, 'value'):
+                q_type = question_type.value
+            else:
+                q_type = str(question_type)
+            
+            pending_question = {
+                'type': q_type,
+                'asked_at': datetime.now(timezone.utc).isoformat(),
+                'ttl': 300,  # 5 minutes
+                'origin_intent': origin_intent,
+                'context_snapshot': context_snapshot,
+                'expected_fields': expected_fields or []
+            }
+            
+            session['pending_question'] = pending_question
+            
+            # Save to Redis
+            if redis_available and redis_client:
+                try:
+                    redis_client.setex(
+                        self.session_key,
+                        self.SESSION_TTL,
+                        json.dumps(session)
+                    )
+                    logger.debug(f"💾 REDIS: Pending question saved for {self.client_id}")
+                except Exception as e:
+                    logger.warning(f"Redis pending question save failed: {e}")
+            
+            # Save to memory
+            with _memory_sessions_lock:
+                _memory_sessions[self.client_id] = session
+            
+            logger.info(f"✅ SACRED LOOP: Question marked for {self.client_id} (type={q_type}, intent={origin_intent})")
+        
+        except Exception as e:
+            logger.error(f"Error marking pending question: {e}", exc_info=True)
+    
+    def is_answering_question(self) -> bool:
+        """
+        Check if user is answering a pending question
+        
+        CHATGPT FIX #1: SACRED LOOP - Check TTL, return False if expired
+        
+        Returns:
+            True if pending question exists and not expired
+        """
+        try:
+            session = self.get_session()
+            
+            if not session or not session.get('pending_question'):
+                return False
+            
+            pending = session['pending_question']
+            
+            # Check TTL
+            asked_at = datetime.fromisoformat(pending['asked_at'])
+            ttl = pending.get('ttl', 300)
+            
+            if (datetime.now(timezone.utc) - asked_at).total_seconds() > ttl:
+                # Expired - clear it
+                logger.info(f"⏰ SACRED LOOP: Pending question expired for {self.client_id}")
+                self.clear_pending_question()
+                return False
+            
+            logger.info(f"✅ SACRED LOOP: User is answering pending question (type={pending['type']})")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error checking pending question: {e}")
+            return False
+    
+    def get_pending_intent(self) -> Optional[str]:
+        """
+        Get the original intent that triggered the clarifying question
+        
+        Returns:
+            Original intent string, or None if no pending question
+        """
+        if not self.is_answering_question():
+            return None
+        
+        try:
+            session = self.get_session()
+            pending = session.get('pending_question')
+            return pending.get('origin_intent') if pending else None
+        except Exception as e:
+            logger.error(f"Error getting pending intent: {e}")
+            return None
+    
+    def get_pending_question_data(self) -> Optional[Dict]:
+        """
+        Get full pending question data
+        
+        Returns:
+            Pending question dict, or None if no pending question
+        """
+        if not self.is_answering_question():
+            return None
+        
+        try:
+            session = self.get_session()
+            return session.get('pending_question')
+        except Exception as e:
+            logger.error(f"Error getting pending question data: {e}")
+            return None
+    
+    def clear_pending_question(self) -> None:
+        """Clear pending question after resolution or expiration"""
+        try:
+            session = self.get_session()
+            
+            if 'pending_question' in session:
+                del session['pending_question']
+                
+                # Save to Redis
+                if redis_available and redis_client:
+                    try:
+                        redis_client.setex(
+                            self.session_key,
+                            self.SESSION_TTL,
+                            json.dumps(session)
+                        )
+                    except Exception as e:
+                        logger.warning(f"Redis clear pending question failed: {e}")
+                
+                # Save to memory
+                with _memory_sessions_lock:
+                    _memory_sessions[self.client_id] = session
+                
+                logger.info(f"✅ SACRED LOOP: Pending question cleared for {self.client_id}")
+        
+        except Exception as e:
+            logger.error(f"Error clearing pending question: {e}")
+
     def _empty_session(self) -> Dict:
         """Create empty session structure"""
         
