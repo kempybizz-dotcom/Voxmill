@@ -47,6 +47,14 @@ from app.pin_auth import (
 )
 from app.response_enforcer import ResponseEnforcer, ResponseShape
 from app.market_canonicalizer import MarketCanonicalizer  # ✅ FIX 2
+from app.config import (
+    ENABLE_PIN_GATE,
+    ENABLE_SILENCE_MODE,
+    ENABLE_REPEAT_DETECTION,
+    ENABLE_ABUSE_SCORING_BLOCKS,
+    ENABLE_SECURITY_BLOCKS,
+    LOG_DISABLED_GATES
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -1037,7 +1045,7 @@ Contact intel@voxmill.uk if you need assistance."""
                 )
                 return
             
-            elif action == 'hard_block':
+            elif ENABLE_ABUSE_SCORING_BLOCKS and action == 'hard_block':
                 logger.warning(f"🚫 GATE 2.3 FAILED: HARD BLOCK: {sender} (score: {abuse_score})")
                 
                 await send_twilio_message(
@@ -1450,273 +1458,281 @@ Voxmill Intelligence — Precision at Scale"""
         
         # ====================================================================
         # GATE 4: PIN AUTHENTICATION
-        # ====================================================================
+        if ENABLE_PIN_GATE:
+            logger.info(f"🔐 GATE 4: Checking PIN...")
+        else:
+            if LOG_DISABLED_GATES:
+                logger.info(f"🔓 GATE 4: SKIPPED (ENABLE_PIN_GATE=False)")
         
-        logger.info(f"🔐 GATE 4: Checking PIN...")
+        if ENABLE_PIN_GATE:
+            # ====================================================================
         
-        # PIN sync (lazy, only if >24h stale)
-        try:
-            from pymongo import MongoClient
-            MONGODB_URI = os.getenv('MONGODB_URI')
+        
+            # PIN sync (lazy, only if >24h stale)
+            try:
+                from pymongo import MongoClient
+                MONGODB_URI = os.getenv('MONGODB_URI')
             
-            if MONGODB_URI:
-                mongo_client = MongoClient(MONGODB_URI)
-                db = mongo_client['Voxmill']
+                if MONGODB_URI:
+                    mongo_client = MongoClient(MONGODB_URI)
+                    db = mongo_client['Voxmill']
                 
-                pin_record = db['pin_auth'].find_one({'phone_number': sender})
-                needs_sync = False
+                    pin_record = db['pin_auth'].find_one({'phone_number': sender})
+                    needs_sync = False
                 
-                if not pin_record:
-                    needs_sync = True
-                else:
-                    last_synced = pin_record.get('updated_at')
-                    if last_synced:
-                        if last_synced.tzinfo is None:
-                            last_synced = last_synced.replace(tzinfo=timezone.utc)
-                        
-                        hours_since_sync = (datetime.now(timezone.utc) - last_synced).total_seconds() / 3600
-                        
-                        if hours_since_sync > 24:
-                            needs_sync = True
-                    else:
+                    if not pin_record:
                         needs_sync = True
+                    else:
+                        last_synced = pin_record.get('updated_at')
+                        if last_synced:
+                            if last_synced.tzinfo is None:
+                                last_synced = last_synced.replace(tzinfo=timezone.utc)
+                        
+                            hours_since_sync = (datetime.now(timezone.utc) - last_synced).total_seconds() / 3600
+                        
+                            if hours_since_sync > 24:
+                                needs_sync = True
+                        else:
+                            needs_sync = True
                 
-                if needs_sync:
-                    AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-                    AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-                    airtable_table = client_profile.get('airtable_table', 'Accounts')
+                    if needs_sync:
+                        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
+                        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
+                        airtable_table = client_profile.get('airtable_table', 'Accounts')
                     
-                    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                        url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
-                        headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
+                        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
+                            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
+                            headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
                         
-                        response = requests.get(url, headers=headers, timeout=5)
+                            response = requests.get(url, headers=headers, timeout=5)
                         
-                        if response.status_code == 200:
-                            fields = response.json().get('fields', {})
-                            airtable_last_pin = fields.get('PIN Last Verified')
+                            if response.status_code == 200:
+                                fields = response.json().get('fields', {})
+                                airtable_last_pin = fields.get('PIN Last Verified')
                             
-                            if airtable_last_pin:
-                                last_verified_dt = dateutil_parser.parse(airtable_last_pin)
-                                if last_verified_dt.tzinfo is None:
-                                    last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
+                                if airtable_last_pin:
+                                    last_verified_dt = dateutil_parser.parse(airtable_last_pin)
+                                    if last_verified_dt.tzinfo is None:
+                                        last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
                                 
-                                db['pin_auth'].update_one(
-                                    {'phone_number': sender},
-                                    {'$set': {
-                                        'last_verified_at': last_verified_dt,
-                                        'synced_from_airtable': True,
-                                        'updated_at': datetime.now(timezone.utc)
-                                    }},
-                                    upsert=True
-                                )
-                                logger.info(f"✅ PIN synced from Airtable")
-        except Exception as e:
-            logger.debug(f"PIN sync skipped: {e}")
+                                    db['pin_auth'].update_one(
+                                        {'phone_number': sender},
+                                        {'$set': {
+                                            'last_verified_at': last_verified_dt,
+                                            'synced_from_airtable': True,
+                                            'updated_at': datetime.now(timezone.utc)
+                                        }},
+                                        upsert=True
+                                    )
+                                    logger.info(f"✅ PIN synced from Airtable")
+            except Exception as e:
+                logger.debug(f"PIN sync skipped: {e}")
         
-        # ========================================
-        # GATE 4.5: PIN AUTHENTICATION CHECK
-        # ========================================
+            # ========================================
+            # GATE 4.5: PIN AUTHENTICATION CHECK
+            # ========================================
         
-        # PIN verification (now returns 3 values: needs_verification, reason, is_terminal)
-        needs_verification, reason, is_terminal = PINAuthenticator.check_needs_verification(sender, client_profile)
-        client_name = client_profile.get('name', 'there')
+            # PIN verification (now returns 3 values: needs_verification, reason, is_terminal)
+            needs_verification, reason, is_terminal = PINAuthenticator.check_needs_verification(sender, client_profile)
+            client_name = client_profile.get('name', 'there')
 
-        # ========================================
-        # CRITICAL: TERMINAL STATE = HALT ALL EXECUTION
-        # When is_terminal=True, system is in auth flow
-        # NO LLM calls, NO intelligence generation, ONLY auth responses
-        # ========================================
+            # ========================================
+            # CRITICAL: TERMINAL STATE = HALT ALL EXECUTION
+            # When is_terminal=True, system is in auth flow
+            # NO LLM calls, NO intelligence generation, ONLY auth responses
+            # ========================================
 
-        if is_terminal:
-            # ✅ FIX: Check if message IS a PIN attempt (verify or setup)
-            if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                # Try verification first (covers both setup AND unlock)
-                if reason == "not_set":
-                    # Setup flow
-                    success, message = PINAuthenticator.set_pin(sender, message_text.strip())
+            if is_terminal:
+                # ✅ FIX: Check if message IS a PIN attempt (verify or setup)
+                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
+                    # Try verification first (covers both setup AND unlock)
+                    if reason == "not_set":
+                        # Setup flow
+                        success, message = PINAuthenticator.set_pin(sender, message_text.strip())
                     
-                    if not success:
-                        response = get_pin_response_message(success, message, client_name)
-                        await send_twilio_message(sender, response)
+                        if not success:
+                            response = get_pin_response_message(success, message, client_name)
+                            await send_twilio_message(sender, response)
+                            return  # ✅ TERMINAL
+                    
+                        await sync_pin_status_to_airtable(sender, "Active")
+                    
+                        # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
+                        client_profile = get_client_profile(sender)
+                    
+                        unlock_response = "Access verified."
+                        await send_twilio_message(sender, unlock_response)
+                    
+                        conversation = ConversationSession(sender)
+                        conversation.update_session(
+                            user_message=message_text,
+                            assistant_response=unlock_response,
+                            metadata={'category': 'pin_setup'}
+                        )
+                    
+                        logger.info(f"✅ PIN setup complete")
                         return  # ✅ TERMINAL
-                    
-                    await sync_pin_status_to_airtable(sender, "Active")
-                    
-                    # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                    client_profile = get_client_profile(sender)
-                    
-                    unlock_response = "Access verified."
-                    await send_twilio_message(sender, unlock_response)
-                    
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response=unlock_response,
-                        metadata={'category': 'pin_setup'}
-                    )
-                    
-                    logger.info(f"✅ PIN setup complete")
-                    return  # ✅ TERMINAL
                 
-                else:
-                    # Verification flow (covers locked, inactivity, subscription_change)
-                    success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
+                    else:
+                        # Verification flow (covers locked, inactivity, subscription_change)
+                        success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
                     
-                    if not success:
-                        response = get_pin_response_message(success, message, client_name)
-                        await send_twilio_message(sender, response)
+                        if not success:
+                            response = get_pin_response_message(success, message, client_name)
+                            await send_twilio_message(sender, response)
                         
-                        if message == "locked":
-                            await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
+                            if message == "locked":
+                                await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
+                            return  # ✅ TERMINAL
+                    
+                        await sync_pin_status_to_airtable(sender, "Active")
+                    
+                        # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
+                        client_profile = get_client_profile(sender)
+                    
+                        unlock_response = "Access verified."
+                        await send_twilio_message(sender, unlock_response)
+                    
+                        conversation = ConversationSession(sender)
+                        conversation.update_session(
+                            user_message=message_text,
+                            assistant_response=unlock_response,
+                            metadata={'category': 'pin_unlock'}
+                        )
+                    
+                        logger.info(f"✅ PIN verified")
                         return  # ✅ TERMINAL
-                    
-                    await sync_pin_status_to_airtable(sender, "Active")
-                    
-                    # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                    client_profile = get_client_profile(sender)
-                    
-                    unlock_response = "Access verified."
-                    await send_twilio_message(sender, unlock_response)
-                    
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response=unlock_response,
-                        metadata={'category': 'pin_unlock'}
-                    )
-                    
-                    logger.info(f"✅ PIN verified")
+            
+                # If we get here, PIN needed but user didn't send one
+                if reason == "locked":
+                    response = get_pin_status_message("locked", client_name)
+                    await send_twilio_message(sender, response)
                     return  # ✅ TERMINAL
-            
-            # If we get here, PIN needed but user didn't send one
-            if reason == "locked":
-                response = get_pin_status_message("locked", client_name)
-                await send_twilio_message(sender, response)
-                return  # ✅ TERMINAL
-            else:
-                response = get_pin_status_message(reason, client_name)
-                await send_twilio_message(sender, response)
-                return  # ✅ TERMINAL
-        
-        # PIN commands (READ-ONLY - keywords only as routing hints)
-        message_lower = message_text.lower().strip()
-        
-        if message_lower == 'lock' or 'lock intelligence' in message_lower or 'lock access' in message_lower:
-            success, message = PINAuthenticator.manual_lock(sender)
-            
-            if success:
-                response = """INTELLIGENCE LINE LOCKED
-
-Your access has been secured.
-
-Enter your 4-digit code to unlock."""
-                await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
-            else:
-                response = "Unable to lock. Please try again."
-            
-            await send_twilio_message(sender, response)
-            return
-        
-        if 'verify pin' in message_lower or 'verify my pin' in message_lower:
-            response = """PIN VERIFICATION
-
-Enter your 4-digit access code to verify your account."""
-            await send_twilio_message(sender, response)
-            return
-        
-        if 'reset pin' in message_lower or 'change pin' in message_lower:
-            conversation = ConversationSession(sender)
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response="PIN_RESET_INITIATED",
-                metadata={'pin_flow_state': 'awaiting_reset'}
-            )
-            
-            response = """PIN RESET
-
-To reset your access code, reply with:
-
-OLD_PIN NEW_PIN
-
-Example: 1234 5678"""
-            
-            await send_twilio_message(sender, response)
-            return
-        
-        # Check PIN reset flow
-        conversation = ConversationSession(sender)
-        last_metadata = conversation.get_last_metadata()
-        
-        if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
-            digits_only = ''.join(c for c in message_text if c.isdigit())
-            
-            if len(digits_only) == 8:
-                old_pin = digits_only[:4]
-                new_pin = digits_only[4:]
-                
-                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                    metadata={'pin_flow_state': None}
-                )
-                
-                if success:
-                    response = """PIN RESET SUCCESSFUL
-
-Your new access code is active."""
-                    await sync_pin_status_to_airtable(sender, "Active")
                 else:
-                    response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
-                
-                await send_twilio_message(sender, response)
-                return
+                    response = get_pin_status_message(reason, client_name)
+                    await send_twilio_message(sender, response)
+                    return  # ✅ TERMINAL
+        
+            # PIN commands (READ-ONLY - keywords only as routing hints)
+            message_lower = message_text.lower().strip()
+        
+            if message_lower == 'lock' or 'lock intelligence' in message_lower or 'lock access' in message_lower:
+                success, message = PINAuthenticator.manual_lock(sender)
             
-            elif len(digits_only) == 4:
-                response = """PIN RESET
+                if success:
+                    response = """INTELLIGENCE LINE LOCKED
 
-Please send both OLD and NEW PIN:
+    Your access has been secured.
 
-OLD_PIN NEW_PIN
-
-Example: 1234 5678"""
+    Enter your 4-digit code to unlock."""
+                    await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
+                else:
+                    response = "Unable to lock. Please try again."
+            
                 await send_twilio_message(sender, response)
                 return
         
-        if len(message_text.strip()) == 9 and ' ' in message_text:
-            parts = message_text.strip().split()
-            if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
-                old_pin, new_pin = parts
-                success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
+            if 'verify pin' in message_lower or 'verify my pin' in message_lower:
+                response = """PIN VERIFICATION
+
+    Enter your 4-digit access code to verify your account."""
+                await send_twilio_message(sender, response)
+                return
+        
+            if 'reset pin' in message_lower or 'change pin' in message_lower:
                 conversation = ConversationSession(sender)
                 conversation.update_session(
                     user_message=message_text,
-                    assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                    metadata={'pin_flow_state': None}
+                    assistant_response="PIN_RESET_INITIATED",
+                    metadata={'pin_flow_state': 'awaiting_reset'}
                 )
-                
-                if success:
-                    response = """PIN RESET SUCCESSFUL
+            
+                response = """PIN RESET
 
-Your new access code is active."""
-                    await sync_pin_status_to_airtable(sender, "Active")
-                else:
-                    response = f"{message}"
-                
+    To reset your access code, reply with:
+
+    OLD_PIN NEW_PIN
+
+    Example: 1234 5678"""
+            
                 await send_twilio_message(sender, response)
                 return
         
-        logger.info(f"✅ GATE 4 PASSED: PIN verified")
+            # Check PIN reset flow
+            conversation = ConversationSession(sender)
+            last_metadata = conversation.get_last_metadata()
+        
+            if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
+                digits_only = ''.join(c for c in message_text if c.isdigit())
+            
+                if len(digits_only) == 8:
+                    old_pin = digits_only[:4]
+                    new_pin = digits_only[4:]
+                
+                    success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                        metadata={'pin_flow_state': None}
+                    )
+                
+                    if success:
+                        response = """PIN RESET SUCCESSFUL
+
+    Your new access code is active."""
+                        await sync_pin_status_to_airtable(sender, "Active")
+                    else:
+                        response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
+                
+                    await send_twilio_message(sender, response)
+                    return
+            
+                elif len(digits_only) == 4:
+                    response = """PIN RESET
+
+    Please send both OLD and NEW PIN:
+
+    OLD_PIN NEW_PIN
+
+    Example: 1234 5678"""
+                    await send_twilio_message(sender, response)
+                    return
+        
+            if len(message_text.strip()) == 9 and ' ' in message_text:
+                parts = message_text.strip().split()
+                if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
+                    old_pin, new_pin = parts
+                    success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
+                
+                    conversation = ConversationSession(sender)
+                    conversation.update_session(
+                        user_message=message_text,
+                        assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
+                        metadata={'pin_flow_state': None}
+                    )
+                
+                    if success:
+                        response = """PIN RESET SUCCESSFUL
+
+    Your new access code is active."""
+                        await sync_pin_status_to_airtable(sender, "Active")
+                    else:
+                        response = f"{message}"
+                
+                    await send_twilio_message(sender, response)
+                    return
+        
+            logger.info(f"✅ GATE 4 PASSED: PIN verified")
+        # End of ENABLE_PIN_GATE block
         
         
-        # ====================================================================
-        # GATE 4.5: PIN AUTHENTICATION CHECK
-        # ====================================================================
         
-        # ====================================================================
+            # ====================================================================
+            # GATE 4.5: PIN AUTHENTICATION CHECK
+            # ====================================================================
+        
+            # ====================================================================
         # GATE 5: FSM STATE CHECK (INSTITUTIONAL CONTROL - FIRST LOGIC GATE)
         # ====================================================================
         
@@ -2020,6 +2036,22 @@ Try: "Compare Mayfair vs Knightsbridge"""
             industry_code = client_profile.get('industry', 'real_estate')
             available_markets = get_available_markets_from_db(industry_code)
             
+            # ✅ FIX: PRE-FILTER TIMEFRAMES BEFORE PARSING
+            # Strip common timeframe phrases that break entity extraction
+            # e.g., "Chelsea for the last 3 months" → "Chelsea"
+            timeframe_patterns = [
+                r'\s+for\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
+                r'\s+in\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
+                r'\s+over\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
+                r'\s+since\s+last\s+(week|month|quarter|year)',
+            ]
+            
+            message_text_clean = message_text
+            for pattern in timeframe_patterns:
+                message_text_clean = re.sub(pattern, '', message_text_clean, flags=re.IGNORECASE)
+            
+            logger.info(f"✅ Timeframe pre-filter: '{message_text}' → '{message_text_clean}'")
+            
             # Parse comparison entities
             entities = []
             
@@ -2234,6 +2266,22 @@ Contact intel@voxmill.uk to activate market coverage."""
                                 trial_sample_used = trial_usage.get('trial_sample_used', False)
                     except Exception as e:
                         logger.debug(f"Trial sample check failed: {e}")
+                
+                
+                # ====================================================================
+                # SACRED LOOP: PRE-GOVERNOR CONTINUITY CHECK
+                # ====================================================================
+                # Check if user is answering a pending question BEFORE routing to governor
+                
+                if conversation.is_answering_question():
+                    pending_intent = conversation.get_pending_intent()
+                    logger.info(f"🔄 SACRED LOOP: User responding to pending question (intent: {pending_intent})")
+                    
+                    # User answered - now continue with their original intent
+                    conversation.clear_pending_question()
+                    
+                    # Let this flow through to the governor with full context
+                    # The governor will route based on pending_intent + new message
                 
                 governance_result = await ConversationalGovernor.govern(
                     message_text=segment,
@@ -3615,13 +3663,25 @@ Try: "Show Mayfair overview"""
             dataset = load_dataset(area=query_region, industry=industry_code)
         
         # Store comparison response for reverse functionality
-        category, response_text, response_metadata = await classify_and_respond(
-            message_normalized,
-            dataset,
-            client_profile=client_profile,
-            comparison_datasets=comparison_datasets,
-            governance_result=governance_result  # ✅ NEW: Pass governance result
-        )
+        try:
+            category, response_text, response_metadata = await classify_and_respond(
+                message_normalized,
+                dataset,
+                client_profile=client_profile,
+                comparison_datasets=comparison_datasets,
+                governance_result=governance_result  # ✅ NEW: Pass governance result
+            )
+        except Exception as e:
+            logger.error(f"❌ LLM call failed: {e}", exc_info=True)
+            
+            # Graceful fallback response
+            response_text = "Unable to process query right now. Please try again in a moment."
+            category = "error"
+            response_metadata = {}
+            
+            await send_twilio_message(sender, response_text)
+            log_interaction(sender, message_text, "llm_error", response_text, 0, client_profile)
+            return  # TERMINAL
         
         # ✅ STORE COMPARISON RESPONSE FOR REVERSE
         if is_comparison and comparison_datasets:
