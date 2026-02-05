@@ -780,6 +780,12 @@ NO abstractions. NO "navigate complexities". Just that sentence.
         )
         
         # ========================================
+        # ANTI-REPETITION STRATEGY (TWO-LAYER)
+        # ========================================
+        # Layer 1: Semantic deduplication (bans recently used phrases)
+        # Layer 2: Temperature 0.25 (adds lexical variation)
+        # Combined = maximum variation while maintaining institutional tone
+        #
         # SEMANTIC DEDUPLICATION (CHATGPT FIX #3)
         # ========================================
         
@@ -1383,7 +1389,8 @@ DO NOT invent specific data. State "data not available" if asked for metrics.
         # CALL GPT-4 WITH FIXED PARAMETERS (INSTITUTIONAL BREVITY)
         # ============================================================
         
-        temperature = 0.2  # Fixed institutional temperature - always brief
+        # Use temperature from adaptive config (now 0.25 for anti-repetition)
+        temperature = adaptive_config['temperature']  # 0.25 - balances brevity with variation
         
         if openai_client:
             response = openai_client.chat.completions.create(
