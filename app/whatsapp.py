@@ -797,6 +797,15 @@ async def handle_whatsapp_message(sender: str, message_text: str):
         
         from app.rate_limiter import RateLimiter
         
+        
+        # ====================================================================
+        # VARIABLE INITIALIZATION (SCOPE FIX)
+        # ====================================================================
+        
+        # Initialize comparison-related variables that may be set in Gate 6.6
+        is_comparison = False
+        comparison_datasets = None
+        
         # ====================================================================
         # GATE 1.5: IDEMPOTENCY (LAYER 0 - DUPLICATE DETECTION) - ⚠️ DISABLED
         # ====================================================================
