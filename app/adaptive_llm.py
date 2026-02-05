@@ -3,7 +3,8 @@ VOXMILL ADAPTIVE LLM CONTROLLER
 ================================
 Dynamic temperature selection and confidence-based tone modulation
 
-FIXED: Always returns temperature=0.2 and max_tokens=350 for institutional brevity
+ANTI-REPETITION: Returns temperature=0.25 (up from 0.2) to reduce exact phrase repetition
+while maintaining institutional brevity. Combined with semantic deduplication for variation.
 """
 
 import logging
@@ -20,7 +21,8 @@ class AdaptiveLLMController:
         """
         Determine optimal temperature based on query characteristics
         
-        FIXED: Always return 0.2 for institutional brevity
+        ANTI-REPETITION FIX: Returns 0.25 (increased from 0.2)
+        Reduces exact phrase repetition while maintaining institutional brevity
         Previous adaptive logic (0.3-0.8) was causing verbose responses
         
         Args:
@@ -35,9 +37,11 @@ class AdaptiveLLMController:
         Returns: Temperature value (always 0.2 for institutional brevity)
         """
         
-        # INSTITUTIONAL STANDARD: Fixed low temperature for sharp, concise responses
-        # This matches Goldman Sachs / Bridgewater analyst communication style
-        final_temp = 0.2
+        # ANTI-REPETITION BALANCE: Increased from 0.2 to 0.25
+        # Rationale: 0.2 was causing exact phrase repetition (e.g., "Strutt & Parker" loops)
+        # 0.25 adds slight variation while preserving institutional brevity
+        # Combined with semantic deduplication in llm.py for maximum variation
+        final_temp = 0.25
         
         query_lower = query.lower()
         category = query_metadata.get('category', 'market_overview')
@@ -45,7 +49,7 @@ class AdaptiveLLMController:
         data_quality = query_metadata.get('data_quality', 1.0)
         
         # Log for debugging (but don't actually use adaptive logic)
-        logger.info(f"Temperature selection: {final_temp:.2f} (base: 0.20, complexity: {complexity}, quality: {data_quality:.2f})")
+        logger.info(f"Temperature selection: {final_temp:.2f} (base: 0.25 for variation, complexity: {complexity}, quality: {data_quality:.2f})")
         
         return final_temp
     
@@ -299,8 +303,9 @@ def get_adaptive_llm_config(query: str, dataset: Dict, is_followup: bool = False
     else:
         confidence_level = 'low'
     
-    # FIXED: Always institutional brevity
-    temperature = 0.2
+    # ANTI-REPETITION: Increased to 0.25 for variation (was 0.2)
+    # Still maintains institutional brevity while reducing exact repetition
+    temperature = 0.25
     max_tokens = 350
     
     logger.info(f"LLM Config: temp={temperature}, tokens={max_tokens}, complexity={complexity}, quality={data_quality:.2f}")
