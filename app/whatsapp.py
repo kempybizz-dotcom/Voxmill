@@ -2057,14 +2057,14 @@ Try: "Compare Mayfair vs Knightsbridge"""
             
             # Strategy 1: "compare X vs Y" or "X versus Y"
             vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
-            match = re.search(vs_pattern, message_text, re.IGNORECASE)
+            match = re.search(vs_pattern, message_text_clean, re.IGNORECASE)
             
             if match:
                 entities = [match.group(1).strip().title(), match.group(2).strip().title()]
             else:
                 # Strategy 2: Extract any mentioned market names
                 for market in available_markets:
-                    if market.lower() in message_lower:
+                    if market.lower() in message_text_clean.lower():
                         entities.append(market)
             
             # Remove duplicates, preserve order
