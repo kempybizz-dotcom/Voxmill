@@ -778,8 +778,8 @@ CRITICAL INTENT ROUTING (PRIORITY 2):
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
-- TEMPORAL QUERIES WITHOUT MARKET NAMES: "What's happening?", "What's going on?", "Any updates?", "What's new?" → intent_type: market_query, is_mandate_relevant: true (user has preferred region, will be auto-scoped)
-- GIBBERISH: Only truly nonsensical input (random characters, profanity, spam) → intent_type: gibberish. DO NOT classify vague but valid questions as gibberish.
+- TEMPORAL QUERIES: "What's happening?", "What's going on?", "Any updates?", "What's new?", "What's the latest?" → intent_type: market_query, is_mandate_relevant: true (auto-scoped to preferred region)
+- GIBBERISH: Only random characters, spam, profanity (e.g. "asdfkjh", "!!!!!"). DO NOT classify vague but valid questions as gibberish.
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
 - is_dismissal: true if user explicitly requests direct data without context
 - privilege_escalation: ALWAYS is_mandate_relevant=false (blocks tier changes, account modifications)
