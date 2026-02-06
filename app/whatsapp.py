@@ -3075,8 +3075,8 @@ CRITICAL RULES:
         if not is_safe:
             logger.warning(f"Security violation: {threats}")
             await send_twilio_message(sender, "Your message contains suspicious content and cannot be processed.")
-                session_data['last_response_type'] = 'security_block'
-                conversation.save_session()
+            session_data['last_response_type'] = 'security_block'
+            conversation.save_session()
             return
         
         if threats:
