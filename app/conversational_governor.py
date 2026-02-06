@@ -617,7 +617,7 @@ class ConversationalGovernor:
     def _get_hardcoded_response(intent: Intent, message_text: str, client_profile: dict = None) -> Optional[str]:
         # Get hardcoded response for simple intents
         # VARIED ACKNOWLEDGMENTS - rotates between options
-        # NO MENU LANGUAGE - ends with insight or "Standing by."
+        # NO MENU LANGUAGE - ends with insight or natural close
         # NO PORTFOLIO RESPONSES - let handlers execute
         # NEVER USE PHONE NUMBERS AS NAMES
         # Intent-based responses only (no phrase matching)
@@ -697,13 +697,12 @@ class ConversationalGovernor:
         
         # VARIED ACKNOWLEDGMENTS
         if intent == Intent.CASUAL:
-            # NEVER return "Standing by" for human signals
-            # These should never reach here, but safety check
-            return None  # Let it pass to LLM instead
+            # Let casual signals pass to LLM for natural handling
+            return None
         
         # Intent-based responses (non-casual)
         intent_responses = {
-            Intent.UNKNOWN: "Outside intelligence scope.",
+            Intent.UNKNOWN: None,  # No canned response - let handler decide
             Intent.SECURITY: "Enter your 4-digit code.",
         }
         
@@ -1242,14 +1241,14 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
         
         if not is_mandate_relevant:
             if intent_type_hint in ['gibberish', 'profanity']:
-                logger.info(f"🔇 NOISE detected ({intent_type_hint}) - responding 'Standing by.'")
+                logger.info(f"🔇 NOISE detected ({intent_type_hint}) - silent acknowledgment")
                 
                 return GovernanceResult(
                     intent=Intent.CASUAL,
                     confidence=semantic_confidence,
                     blocked=True,
-                    silence_required=False,
-                    response=None,  # ✅ CHANGED: Silent acknowledgment for gibberish
+                    silence_required=True,  # Silence instead of canned response
+                    response=None,  # No response for gibberish
                     allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=5,
                     analysis_allowed=False,
@@ -1265,8 +1264,8 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                     intent=Intent.CASUAL,
                     confidence=semantic_confidence,
                     blocked=True,
-                    silence_required=False,
-                    response="Outside intelligence scope.",
+                    silence_required=True,  # Silence instead of refusal
+                    response=None,  # No "Outside scope" message
                     allowed_shapes=["ACKNOWLEDGMENT"],
                     max_words=10,
                     analysis_allowed=False,
@@ -1468,8 +1467,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
             )
         
         if intent not in [Intent.CASUAL, Intent.PROVOCATION] and hardcoded_response:
-            if hardcoded_response in ["Standing by.", "Noted.", "Monitoring."]:
-                logger.warning(f"⚠️ Blocked ACK fallback for {intent.value} - forcing handler execution")
+            # No hardcoded acknowledgments - let LLM generate natural responses
+            if hardcoded_response in ["Noted.", "Monitoring."]:
+                logger.warning(f"⚠️ Blocked generic ACK for {intent.value} - forcing handler execution")
                 hardcoded_response = None
         
         return GovernanceResult(
