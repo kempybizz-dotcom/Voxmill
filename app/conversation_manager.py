@@ -869,6 +869,61 @@ class ConversationSession:
         except Exception as e:
             logger.error(f"Error clearing comparison lock: {e}", exc_info=True)
     
+    def set_last_comparison_response(self, response_text: str):
+        """
+        Store last comparison response for reverse functionality
+        
+        PR6: Proper session persistence (not ephemeral context dict)
+        """
+        try:
+            session = self.get_session()
+            
+            session['last_comparison_response'] = {
+                'text': response_text,
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Save to Redis
+            if redis_available and redis_client:
+                try:
+                    redis_client.setex(
+                        self.session_key,
+                        self.SESSION_TTL,
+                        json.dumps(session)
+                    )
+                except Exception as e:
+                    logger.warning(f"Redis save comparison response failed: {e}")
+            
+            # Save to memory
+            with _memory_sessions_lock:
+                _memory_sessions[self.client_id] = session
+            
+            logger.debug(f"💾 Saved comparison response for {self.client_id}")
+        
+        except Exception as e:
+            logger.error(f"Error saving comparison response: {e}", exc_info=True)
+    
+    def get_last_comparison_response(self) -> Optional[str]:
+        """
+        Get last comparison response for reverse functionality
+        
+        Returns: response text or None if not available
+        """
+        try:
+            session = self.get_session()
+            
+            last_response = session.get('last_comparison_response')
+            
+            if not last_response:
+                return None
+            
+            # Return just the text
+            return last_response.get('text')
+        
+        except Exception as e:
+            logger.error(f"Error getting comparison response: {e}", exc_info=True)
+            return None
+    
     def _extract_context_entities(self, session: Dict, message: str, metadata: Dict = None):
         """
         Extract and track entities mentioned in conversation
