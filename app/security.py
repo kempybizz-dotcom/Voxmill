@@ -81,22 +81,27 @@ class SecurityValidator:
         
         Returns:
             (is_safe, sanitized_input, threat_types)
+            
+        ChatGPT PR4: Split detection into hard_block vs log_only
+        - Hard-block ONLY: system prompt extraction + instruction override attempts
+        - Log-only: repetition, suspicious chars, buffer overflow (sanitize but allow)
         """
         
         if not user_input:
             return True, "", []
         
         threats_detected = []
+        hard_threats = []  # PR4: Track separately
         original_input = user_input
         
-        # Check 1: Length validation
+        # Check 1: Length validation (LOG ONLY)
         if len(user_input) > cls.MAX_QUERY_LENGTH:
             threats_detected.append("excessive_length")
             logger.warning(f"Input exceeds max length: {len(user_input)} chars")
             # Truncate but don't reject
             user_input = user_input[:cls.MAX_QUERY_LENGTH]
         
-        # Check 2: Suspicious characters
+        # Check 2: Suspicious characters (LOG ONLY)
         for char in cls.SUSPICIOUS_CHARS:
             if char in user_input:
                 threats_detected.append("suspicious_characters")
@@ -106,7 +111,8 @@ class SecurityValidator:
         
         # Check 3: Prompt injection patterns
         input_lower = user_input.lower()
-        # Check 3a: Specific security patterns (more precise)
+        
+        # Check 3a: HARD BLOCK - System prompt extraction
         SECURITY_SPECIFIC = [
             r'system\s+prompt',
             r'paste.*prompt',
@@ -117,25 +123,31 @@ class SecurityValidator:
         
         for pattern in SECURITY_SPECIFIC:
             if re.search(pattern, input_lower, re.IGNORECASE):
-                threats_detected.append("system_prompt_extraction_attempt")
-                logger.warning(f"System prompt extraction attempt: {pattern}")
+                threat = "system_prompt_extraction_attempt"
+                threats_detected.append(threat)
+                hard_threats.append(threat)  # PR4: Hard block
+                logger.warning(f"🚨 HARD BLOCK: System prompt extraction attempt: {pattern}")
                 return False, "", threats_detected
         
-        # Check 3b: General injection patterns
+        # Check 3b: HARD BLOCK - Instruction override attempts
         for pattern in cls.INJECTION_PATTERNS:
             if re.search(pattern, input_lower, re.IGNORECASE):
-                threats_detected.append("prompt_injection_attempt")
-                logger.warning(f"Prompt injection pattern detected: {pattern}")
+                threat = "prompt_injection_attempt"
+                threats_detected.append(threat)
+                hard_threats.append(threat)  # PR4: Hard block
+                logger.warning(f"🚨 HARD BLOCK: Prompt injection pattern: {pattern}")
                 return False, "", threats_detected
 
-        # Check 3.5: Privilege escalation attempts
+        # Check 3.5: HARD BLOCK - Privilege escalation
         for pattern in cls.PRIVILEGE_ESCALATION_PATTERNS:
             if re.search(pattern, input_lower, re.IGNORECASE):
-                threats_detected.append("privilege_escalation_attempt")
-                logger.warning(f"Privilege escalation pattern detected: {pattern}")
+                threat = "privilege_escalation_attempt"
+                threats_detected.append(threat)
+                hard_threats.append(threat)  # PR4: Hard block
+                logger.warning(f"🚨 HARD BLOCK: Privilege escalation pattern: {pattern}")
                 return False, "", threats_detected
         
-        # Check 4: Excessive repetition (flooding attack)
+        # Check 4: SOFT - Excessive repetition (LOG ONLY, don't block)
         words = user_input.split()
         if len(words) > 10:
             # Count word frequency
@@ -148,18 +160,19 @@ class SecurityValidator:
             max_freq = max(word_freq.values())
             if max_freq > len(words) * 0.5:
                 threats_detected.append("repetition_attack")
-                logger.warning(f"Excessive repetition detected: {max_freq}/{len(words)}")
-                return False, "", threats_detected
+                logger.warning(f"⚠️ SOFT THREAT (logged): Excessive repetition: {max_freq}/{len(words)}")
+                # PR4: Don't block, just log
         
-        # Check 5: Extremely long words (buffer overflow attempts)
+        # Check 5: SOFT - Long words (LOG ONLY)
         for word in words:
             if len(word) > cls.MAX_WORD_LENGTH:
                 threats_detected.append("buffer_overflow_attempt")
-                logger.warning(f"Excessively long word: {len(word)} chars")
+                logger.warning(f"⚠️ SOFT THREAT (logged): Long word: {len(word)} chars")
                 # Truncate the word
                 user_input = user_input.replace(word, word[:cls.MAX_WORD_LENGTH])
         
-        # Check 6: SQL injection patterns (if somehow someone tries)
+        # Check 6: SOFT - SQL injection patterns (LOG ONLY)
+        # ChatGPT PR4: We don't interpolate into SQL, so this is log-only
         sql_patterns = [
             r"'\s*OR\s+'1'\s*=\s*'1",
             r";\s*DROP\s+TABLE",
@@ -169,30 +182,25 @@ class SecurityValidator:
         for pattern in sql_patterns:
             if re.search(pattern, user_input, re.IGNORECASE):
                 threats_detected.append("sql_injection_attempt")
-                logger.warning(f"SQL injection pattern detected: {pattern}")
-                return False, "", threats_detected
+                logger.warning(f"⚠️ SOFT THREAT (logged): SQL pattern (not blocking): {pattern}")
+                # Don't block - we don't use SQL interpolation
         
-        # Check 7: Unicode normalization attacks
-        # Normalize unicode to prevent homograph attacks
+        # Check 7: SOFT - Unicode normalization (LOG ONLY)
         try:
             import unicodedata
             normalized = unicodedata.normalize('NFKC', user_input)
             if normalized != user_input:
                 threats_detected.append("unicode_manipulation")
-                logger.warning("Unicode normalization applied")
+                logger.warning("⚠️ SOFT THREAT (logged): Unicode normalization applied")
                 user_input = normalized
         except Exception as e:
             logger.error(f"Unicode normalization error: {e}")
         
-        # If we detected threats but sanitized successfully
-        is_safe = len([t for t in threats_detected if t in [
-            "prompt_injection_attempt", 
-            "sql_injection_attempt",
-            "repetition_attack"
-        ]]) == 0
+        # PR4: Only block if hard threats detected
+        is_safe = len(hard_threats) == 0
         
         if threats_detected:
-            logger.info(f"Input sanitized. Threats: {threats_detected}")
+            logger.info(f"Security check: hard={hard_threats}, soft={[t for t in threats_detected if t not in hard_threats]}")
         
         return is_safe, user_input, threats_detected
     
