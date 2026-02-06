@@ -3057,13 +3057,17 @@ CRITICAL RULES:
         # DATA LOAD / ANALYSIS GATES
         # ====================================================================
         
+        # NOTE: If governance_result.blocked=True with silence_required=True,
+        # we already returned at line 2212. These gates are redundant safety checks.
+        
         if not data_load_allowed:
-            await send_twilio_message(sender, "")
-            return
+            # This should never happen (governor should have blocked)
+            logger.error(f"⚠️ BUG: data_load_allowed=False but not blocked by governor")
+            return  # Silent return (no empty message)
         
         if not analysis_allowed:
-            await send_twilio_message(sender, "Monitoring.")
-            return
+            logger.error(f"⚠️ BUG: analysis_allowed=False but not blocked by governor")
+            return  # Silent return
         
         # ====================================================================
         # SECURITY VALIDATION
