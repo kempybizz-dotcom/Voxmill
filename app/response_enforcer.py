@@ -160,62 +160,27 @@ class ResponseEnforcer:
         return content
     
     @staticmethod
-    def _detect_strategic_query(message: str) -> bool:
-        """
-        Detect if query requires strategic analysis regardless of intent
-        
-        REMOVED: All keyword detection (weak, brittle)
-        NEW: Pure heuristic - questions >6 words = strategic depth required
-        
-        LLM determines actual intent. This only prevents premature truncation.
-        """
-        
-        if not message:
-            return False
-        
-        message_lower = message.lower().strip()
-        
-        # Heuristic: Questions with >6 words likely need analysis depth
-        is_question = message.strip().endswith('?') or any(
-            message_lower.startswith(q) for q in ['what', 'where', 'why', 'how', 'when', 'which', 'who']
-        )
-        
-        word_count = len(message.split())
-        
-        # Strategic = question AND substantial (>6 words)
-        is_strategic = is_question and word_count >= 6
-        
-        if is_strategic:
-            logger.info(f"🎯 Strategic depth required: question with {word_count} words")
-        
-        return is_strategic
-    
-    @staticmethod
     def select_shape_before_generation(intent, envelope, message: str = None) -> ResponseShape:
         """
         Select response shape BEFORE calling LLM
         
         This determines response envelope constraints
         
-        CRITICAL: Now considers message content to detect strategic queries
-        
-        UPGRADE LOGIC:
-        - Complex questions (>6 words) → STRUCTURED_BRIEF
-        - Otherwise → Intent-based shape
+        ChatGPT PR5: Trust governor's intent classification
+        Removed strategic query detection - governor already classifies intent
+        This enforcer only maps intent → shape, no semantic analysis
         """
         
         from app.conversational_governor import Intent
         
-        # ✅ STRATEGIC QUERY OVERRIDE: Detect strategic depth requirement
-        if message and ResponseEnforcer._detect_strategic_query(message):
-            logger.info(f"🎯 Strategic query detected, upgrading to STRUCTURED_BRIEF")
-            return ResponseShape.STRUCTURED_BRIEF
+        # PR5: No more heuristic overrides - trust governor intent
+        # Removed _detect_strategic_query - was bypassing governor
         
-        # UPDATED MAPPING: More appropriate shapes for each intent
+        # INTENT → SHAPE MAPPING (formatting only)
         shape_map = {
             Intent.PROVOCATION: ResponseShape.SILENCE,
             Intent.CASUAL: ResponseShape.ACKNOWLEDGMENT,
-            Intent.STATUS_CHECK: ResponseShape.STATUS_LINE,  # Now 200 chars, not 50
+            Intent.STATUS_CHECK: ResponseShape.STATUS_LINE,
             Intent.STRATEGIC: ResponseShape.STRUCTURED_BRIEF,
             Intent.DECISION_REQUEST: ResponseShape.DECISION,
             Intent.META_STRATEGIC: ResponseShape.SINGLE_SIGNAL,
@@ -223,7 +188,7 @@ class ResponseEnforcer:
             Intent.SECURITY: ResponseShape.STATUS_LINE,
             Intent.ADMINISTRATIVE: ResponseShape.STATUS_LINE,
             Intent.MONITORING_DIRECTIVE: ResponseShape.STATUS_LINE,
-            Intent.META_AUTHORITY: ResponseShape.STRUCTURED_BRIEF,  # ✅ Human signals need space
+            Intent.META_AUTHORITY: ResponseShape.STRUCTURED_BRIEF,
             Intent.PROFILE_STATUS: ResponseShape.STATUS_LINE,
             Intent.VALUE_JUSTIFICATION: ResponseShape.STATUS_LINE,
             Intent.TRUST_AUTHORITY: ResponseShape.STATUS_LINE,
