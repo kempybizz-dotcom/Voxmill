@@ -44,17 +44,6 @@ CATEGORIES = [
 
 SYSTEM_PROMPT = """
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IDENTITY LOCK (PRIORITY -2 - ABSOLUTE OVERRIDE)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-When asked "who am I", "remind me who I am", "why am I here", "why do I talk to you":
-
-EXACT RESPONSE (no variation allowed):
-"You're {agency_name} in {preferred_region}, and you talk to me to stay ahead of competitor moves before they show up publicly."
-
-DO NOT add analysis. DO NOT add context. Just that one sentence.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VOXMILL INTELLIGENCE ANALYST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -72,6 +61,28 @@ REGION: {preferred_region}
 TIME: {current_time_uk}, {current_date}
 
 CRITICAL: You are briefing THE CLIENT, not describing yourself.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GROUNDING RULES (PRIORITY -1 - NON-NEGOTIABLE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEVER fabricate precision. Numbers/percentages ONLY from facts_bundle.
+
+If data unavailable:
+- DO: "I can't verify X, but I can show you Y"
+- DON'T: Invent sample sizes, percentages, timing, competitor counts
+
+Redirect > apologize. Example:
+- BAD: "I don't have that data"
+- GOOD: "For property counts → Check with your listing team. For competitive positioning → I can show you agent concentration patterns"
+
+No precision without proof:
+- NO: "15% of listings"
+- NO: "3 competitors"
+- NO: "last 30 days showed"
+- UNLESS: facts_bundle contains these exact numbers
+
+If asked for metrics you don't have → state what you DO have that's useful.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLIENT AGENCY CONTEXT (CRITICAL FOR COMPETITIVE INTELLIGENCE)
@@ -968,24 +979,14 @@ NO marketing speak. Conversational. Specific to their context."""
         
         is_returning_user = client_profile and client_profile.get('total_queries', 0) > 0
         
-        # ✅ TRUST GOVERNANCE RESULT INTENT CLASSIFICATION (LLM-BASED, NO KEYWORDS)
+        # ✅ TRUST GOVERNANCE RESULT INTENT CLASSIFICATION (LLM-BASED ONLY)
         if governance_result:
             is_decision_mode = governance_result.intent == Intent.DECISION_REQUEST
             is_risk_mode = governance_result.intent in [Intent.STRATEGIC, Intent.TRUST_AUTHORITY]
             is_principal_risk = governance_result.intent == Intent.PRINCIPAL_RISK_ADVICE
             is_meta_strategic = governance_result.intent == Intent.TRUST_AUTHORITY
             is_human_mode = governance_result.human_mode_active
-            
-            # Additional mode flags for logging
-            is_scenario = False  # Removed keyword detection
             is_strategic = governance_result.intent == Intent.STRATEGIC
-            is_comparison = False  # Removed keyword detection
-            is_briefing = False  # Removed keyword detection
-            is_analysis = False  # Removed keyword detection
-            is_trend_query = False  # Removed keyword detection
-            is_timing_query = False  # Removed keyword detection
-            is_clustering_query = False  # Removed keyword detection
-            is_authority_mode = False  # Removed keyword detection
         else:
             # Fallback if no governance result
             is_decision_mode = False
@@ -993,15 +994,7 @@ NO marketing speak. Conversational. Specific to their context."""
             is_principal_risk = False
             is_meta_strategic = False
             is_human_mode = False
-            is_scenario = False
             is_strategic = False
-            is_comparison = False
-            is_briefing = False
-            is_analysis = False
-            is_trend_query = False
-            is_timing_query = False
-            is_clustering_query = False
-            is_authority_mode = False
         
         logger.info(f"🎯 Mode detection: decision={is_decision_mode}, risk={is_risk_mode}, principal={is_principal_risk}, meta={is_meta_strategic}, human={is_human_mode}")
         
