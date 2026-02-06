@@ -778,6 +778,8 @@ CRITICAL INTENT ROUTING (PRIORITY 2):
 
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
+- TEMPORAL QUERIES WITHOUT MARKET NAMES: "What's happening?", "What's going on?", "Any updates?", "What's new?" → intent_type: market_query, is_mandate_relevant: true (user has preferred region, will be auto-scoped)
+- GIBBERISH: Only truly nonsensical input (random characters, profanity, spam) → intent_type: gibberish. DO NOT classify vague but valid questions as gibberish.
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
 - is_dismissal: true if user explicitly requests direct data without context
 - privilege_escalation: ALWAYS is_mandate_relevant=false (blocks tier changes, account modifications)
@@ -1436,7 +1438,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 confidence=confidence,
                 blocked=True,
                 silence_required=True,
-                response=None,  # Silent instead of harsh refusal
+                response="Outside intelligence scope.",  # ✅ CHANGED: Consistent refusal
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=0,
                 analysis_allowed=False,
