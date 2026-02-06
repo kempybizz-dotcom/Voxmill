@@ -1436,7 +1436,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                 confidence=confidence,
                 blocked=True,
                 silence_required=True,
-                response="Outside intelligence scope.",  # ✅ CHANGED: Consistent refusal
+                response=None,  # Silent instead of harsh refusal
                 allowed_shapes=envelope.allowed_shapes,
                 max_words=0,
                 analysis_allowed=False,
