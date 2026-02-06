@@ -2064,7 +2064,7 @@ Try: "Compare Mayfair vs Knightsbridge"""
             else:
                 # Strategy 2: Extract any mentioned market names
                 for market in available_markets:
-                    if market.lower() in message_text_clean.lower():
+                    if market.lower() in message_lower:
                         entities.append(market)
             
             # Remove duplicates, preserve order
@@ -3402,6 +3402,8 @@ CRITICAL RULES:
         if not is_safe:
             logger.warning(f"Security violation: {threats}")
             await send_twilio_message(sender, "Your message contains suspicious content and cannot be processed.")
+                session_data['last_response_type'] = 'security_block'
+                conversation.save_session()
             return
         
         if threats:
