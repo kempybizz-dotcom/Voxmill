@@ -1700,9 +1700,10 @@ Active market: {market}"""
             
             if is_reverse:
                 # ✅ REVERSE: RECOMPUTE with swapped markets (ChatGPT PR2 fix)
-                locked_regions = conversation.context.get('locked_comparison')
+                # PR6: Use proper session method, not shadow state
+                locked_regions_list = conversation.get_locked_comparison()
                 
-                if not locked_regions or len(locked_regions) < 2:
+                if not locked_regions_list or len(locked_regions_list) < 2:
                     response = """No active comparison to reverse.
 
 Try: "Compare Mayfair vs Knightsbridge"""
@@ -1710,17 +1711,10 @@ Try: "Compare Mayfair vs Knightsbridge"""
                     log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
                     return  # TERMINAL
                 
-                # Get original markets
-                original_market1 = locked_regions.get('market1', '')
-                original_market2 = locked_regions.get('market2', '')
-                
-                if not original_market1 or not original_market2:
-                    response = """No active comparison to reverse.
-
-Try: "Compare Mayfair vs Knightsbridge"""
-                    await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
-                    return  # TERMINAL
+                # Get original markets (list: [region1, region2])
+                # PR6: Session method returns list, not dict
+                original_market1 = locked_regions_list[0]
+                original_market2 = locked_regions_list[1]
                 
                 # SWAP: market1 ↔ market2
                 new_market1 = original_market2
@@ -1760,14 +1754,9 @@ Try: "Compare Mayfair vs Knightsbridge"""
                     governance_result=None
                 )
                 
-                # Lock reversed comparison
-                conversation.context['locked_comparison'] = {
-                    'market1': new_market1,
-                    'market2': new_market2,
-                    'locked_at': datetime.now(),
-                    'expires_at': datetime.now() + timedelta(minutes=10)
-                }
-                conversation.context['last_comparison_response'] = reversed_response
+                # Lock reversed comparison (PR6: proper session persistence)
+                conversation.lock_comparison(new_market1, new_market2)
+                conversation.set_last_comparison_response(reversed_response)
                 
                 # Send recomputed response
                 await send_twilio_message(sender, reversed_response)
@@ -1914,13 +1903,8 @@ Comparison framework:
             query_region = market1
             is_comparison = True  # Flag for downstream logic
             
-            # Lock comparison for follow-ups
-            conversation.context['locked_comparison'] = {
-                'market1': market1,
-                'market2': market2,
-                'locked_at': datetime.now(),
-                'expires_at': datetime.now() + timedelta(minutes=10)
-            }
+            # Lock comparison for follow-ups (PR6: proper session persistence)
+            conversation.lock_comparison(market1, market2)
             
             logger.info(f"🔒 Comparison locked: {market1} vs {market2} (10min expiry)")
             logger.info(f"✅ Comparison variables set — continuing to GPT handler")
@@ -3374,9 +3358,9 @@ Try: "Show Mayfair overview"""
             log_interaction(sender, message_text, "llm_error", response_text, 0, client_profile)
             return  # TERMINAL
         
-        # ✅ STORE COMPARISON RESPONSE FOR REVERSE
+        # ✅ STORE COMPARISON RESPONSE FOR REVERSE (PR6: proper session persistence)
         if is_comparison and comparison_datasets:
-            conversation.context['last_comparison_response'] = response_text
+            conversation.set_last_comparison_response(response_text)
         
         
         # Track usage
