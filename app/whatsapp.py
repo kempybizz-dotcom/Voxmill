@@ -39,12 +39,7 @@ from app.conversation_manager import ConversationSession, resolve_reference, gen
 from app.security import SecurityValidator, log_security_event
 from app.cache_manager import CacheManager
 from app.client_manager import get_client_profile, update_client_history
-from app.pin_auth import (
-    PINAuthenticator,
-    get_pin_status_message,
-    get_pin_response_message,
-    sync_pin_status_to_airtable
-)
+# PIN imports removed - PR2
 from app.response_enforcer import ResponseEnforcer, ResponseShape
 from app.market_canonicalizer import MarketCanonicalizer  # ✅ FIX 2
 from app.config import (
@@ -1168,25 +1163,10 @@ Contact intel@voxmill.uk if you need assistance."""
         # CRITICAL FIX: SKIP REPEAT DETECTION DURING AUTH FLOW
         # ========================================
         
-        # Check if user is in auth flow (PIN verification or locked state)
+        # Auth flow check removed - PR2 (PIN disabled)
         in_auth_flow = False
         
-        try:
-            # REMOVED - use PINAuthenticator instead
-            pin_auth = PINAuthenticator(sender)
-            
-            # Check if locked or awaiting PIN
-            is_locked = pin_auth.is_locked()
-            needs_pin, _ = pin_auth.verify_access(client_profile)
-            
-            in_auth_flow = is_locked or needs_pin
-            
-            if in_auth_flow:
-                logger.info(f"🔐 Auth flow active - SKIPPING repeat detection")
-        except Exception as e:
-            logger.debug(f"Could not check auth state: {e}")
-        
-        # Only check for repeats if NOT in auth flow
+        # Check for repeats (auth flow always False now)
         if not in_auth_flow:
             # Check if exact repeat
             if current_message_clean == last_user_message and last_user_message != '':
@@ -1464,275 +1444,14 @@ Voxmill Intelligence — Precision at Scale"""
             if LOG_DISABLED_GATES:
                 logger.info(f"🔓 GATE 4: SKIPPED (ENABLE_PIN_GATE=False)")
         
-        if ENABLE_PIN_GATE:
-            # ====================================================================
+        # ====================================================================
+        # GATE 4.5: PIN AUTHENTICATION (REMOVED - PR2)
+        # ====================================================================
+        # PIN authentication completely removed per ChatGPT PR2 specification
+        # No imports, no auth checks, no PIN prompts, no terminal states
+        logger.debug("PIN gate removed - PR2")
         
-        
-            # PIN sync (lazy, only if >24h stale)
-            try:
-                from pymongo import MongoClient
-                MONGODB_URI = os.getenv('MONGODB_URI')
-            
-                if MONGODB_URI:
-                    mongo_client = MongoClient(MONGODB_URI)
-                    db = mongo_client['Voxmill']
-                
-                    pin_record = db['pin_auth'].find_one({'phone_number': sender})
-                    needs_sync = False
-                
-                    if not pin_record:
-                        needs_sync = True
-                    else:
-                        last_synced = pin_record.get('updated_at')
-                        if last_synced:
-                            if last_synced.tzinfo is None:
-                                last_synced = last_synced.replace(tzinfo=timezone.utc)
-                        
-                            hours_since_sync = (datetime.now(timezone.utc) - last_synced).total_seconds() / 3600
-                        
-                            if hours_since_sync > 24:
-                                needs_sync = True
-                        else:
-                            needs_sync = True
-                
-                    if needs_sync:
-                        AIRTABLE_API_KEY = os.getenv('AIRTABLE_API_KEY')
-                        AIRTABLE_BASE_ID = os.getenv('AIRTABLE_BASE_ID')
-                        airtable_table = client_profile.get('airtable_table', 'Accounts')
-                    
-                        if AIRTABLE_API_KEY and AIRTABLE_BASE_ID and client_profile.get('airtable_record_id'):
-                            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{airtable_table.replace(' ', '%20')}/{client_profile['airtable_record_id']}"
-                            headers = {"Authorization": f"Bearer {AIRTABLE_API_KEY}"}
-                        
-                            response = requests.get(url, headers=headers, timeout=5)
-                        
-                            if response.status_code == 200:
-                                fields = response.json().get('fields', {})
-                                airtable_last_pin = fields.get('PIN Last Verified')
-                            
-                                if airtable_last_pin:
-                                    last_verified_dt = dateutil_parser.parse(airtable_last_pin)
-                                    if last_verified_dt.tzinfo is None:
-                                        last_verified_dt = last_verified_dt.replace(tzinfo=timezone.utc)
-                                
-                                    db['pin_auth'].update_one(
-                                        {'phone_number': sender},
-                                        {'$set': {
-                                            'last_verified_at': last_verified_dt,
-                                            'synced_from_airtable': True,
-                                            'updated_at': datetime.now(timezone.utc)
-                                        }},
-                                        upsert=True
-                                    )
-                                    logger.info(f"✅ PIN synced from Airtable")
-            except Exception as e:
-                logger.debug(f"PIN sync skipped: {e}")
-        
-            # ========================================
-            # GATE 4.5: PIN AUTHENTICATION CHECK
-            # ========================================
-        
-            # PIN verification (now returns 3 values: needs_verification, reason, is_terminal)
-            needs_verification, reason, is_terminal = PINAuthenticator.check_needs_verification(sender, client_profile)
-            client_name = client_profile.get('name', 'there')
-
-            # ========================================
-            # CRITICAL: TERMINAL STATE = HALT ALL EXECUTION
-            # When is_terminal=True, system is in auth flow
-            # NO LLM calls, NO intelligence generation, ONLY auth responses
-            # ========================================
-
-            if is_terminal:
-                # ✅ FIX: Check if message IS a PIN attempt (verify or setup)
-                if len(message_text.strip()) == 4 and message_text.strip().isdigit():
-                    # Try verification first (covers both setup AND unlock)
-                    if reason == "not_set":
-                        # Setup flow
-                        success, message = PINAuthenticator.set_pin(sender, message_text.strip())
-                    
-                        if not success:
-                            response = get_pin_response_message(success, message, client_name)
-                            await send_twilio_message(sender, response)
-                            return  # ✅ TERMINAL
-                    
-                        await sync_pin_status_to_airtable(sender, "Active")
-                    
-                        # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                        client_profile = get_client_profile(sender)
-                    
-                        unlock_response = "Access verified."
-                        await send_twilio_message(sender, unlock_response)
-                    
-                        conversation = ConversationSession(sender)
-                        conversation.update_session(
-                            user_message=message_text,
-                            assistant_response=unlock_response,
-                            metadata={'category': 'pin_setup'}
-                        )
-                    
-                        logger.info(f"✅ PIN setup complete")
-                        return  # ✅ TERMINAL
-                
-                    else:
-                        # Verification flow (covers locked, inactivity, subscription_change)
-                        success, message = PINAuthenticator.verify_and_unlock(sender, message_text.strip(), client_profile)
-                    
-                        if not success:
-                            response = get_pin_response_message(success, message, client_name)
-                            await send_twilio_message(sender, response)
-                        
-                            if message == "locked":
-                                await sync_pin_status_to_airtable(sender, "Locked", "Too many failed attempts")
-                            return  # ✅ TERMINAL
-                    
-                        await sync_pin_status_to_airtable(sender, "Active")
-                    
-                        # ✅ CRITICAL: RELOAD CLIENT PROFILE WITH FRESH PIN STATE
-                        client_profile = get_client_profile(sender)
-                    
-                        unlock_response = "Access verified."
-                        await send_twilio_message(sender, unlock_response)
-                    
-                        conversation = ConversationSession(sender)
-                        conversation.update_session(
-                            user_message=message_text,
-                            assistant_response=unlock_response,
-                            metadata={'category': 'pin_unlock'}
-                        )
-                    
-                        logger.info(f"✅ PIN verified")
-                        return  # ✅ TERMINAL
-            
-                # If we get here, PIN needed but user didn't send one
-                if reason == "locked":
-                    response = get_pin_status_message("locked", client_name)
-                    await send_twilio_message(sender, response)
-                    return  # ✅ TERMINAL
-                else:
-                    response = get_pin_status_message(reason, client_name)
-                    await send_twilio_message(sender, response)
-                    return  # ✅ TERMINAL
-        
-            # PIN commands (READ-ONLY - keywords only as routing hints)
-            message_lower = message_text.lower().strip()
-        
-            if message_lower == 'lock' or 'lock intelligence' in message_lower or 'lock access' in message_lower:
-                success, message = PINAuthenticator.manual_lock(sender)
-            
-                if success:
-                    response = """INTELLIGENCE LINE LOCKED
-
-    Your access has been secured.
-
-    Enter your 4-digit code to unlock."""
-                    await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
-                else:
-                    response = "Unable to lock. Please try again."
-            
-                await send_twilio_message(sender, response)
-                return
-        
-            if 'verify pin' in message_lower or 'verify my pin' in message_lower:
-                response = """PIN VERIFICATION
-
-    Enter your 4-digit access code to verify your account."""
-                await send_twilio_message(sender, response)
-                return
-        
-            if 'reset pin' in message_lower or 'change pin' in message_lower:
-                conversation = ConversationSession(sender)
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response="PIN_RESET_INITIATED",
-                    metadata={'pin_flow_state': 'awaiting_reset'}
-                )
-            
-                response = """PIN RESET
-
-    To reset your access code, reply with:
-
-    OLD_PIN NEW_PIN
-
-    Example: 1234 5678"""
-            
-                await send_twilio_message(sender, response)
-                return
-        
-            # Check PIN reset flow
-            conversation = ConversationSession(sender)
-            last_metadata = conversation.get_last_metadata()
-        
-            if last_metadata and last_metadata.get('pin_flow_state') == 'awaiting_reset':
-                digits_only = ''.join(c for c in message_text if c.isdigit())
-            
-                if len(digits_only) == 8:
-                    old_pin = digits_only[:4]
-                    new_pin = digits_only[4:]
-                
-                    success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                        metadata={'pin_flow_state': None}
-                    )
-                
-                    if success:
-                        response = """PIN RESET SUCCESSFUL
-
-    Your new access code is active."""
-                        await sync_pin_status_to_airtable(sender, "Active")
-                    else:
-                        response = f"{message}\n\nTry again: OLD_PIN NEW_PIN"
-                
-                    await send_twilio_message(sender, response)
-                    return
-            
-                elif len(digits_only) == 4:
-                    response = """PIN RESET
-
-    Please send both OLD and NEW PIN:
-
-    OLD_PIN NEW_PIN
-
-    Example: 1234 5678"""
-                    await send_twilio_message(sender, response)
-                    return
-        
-            if len(message_text.strip()) == 9 and ' ' in message_text:
-                parts = message_text.strip().split()
-                if len(parts) == 2 and all(p.isdigit() and len(p) == 4 for p in parts):
-                    old_pin, new_pin = parts
-                    success, message = PINAuthenticator.reset_pin_request(sender, old_pin, new_pin)
-                
-                    conversation = ConversationSession(sender)
-                    conversation.update_session(
-                        user_message=message_text,
-                        assistant_response="PIN_RESET_COMPLETE" if success else "PIN_RESET_FAILED",
-                        metadata={'pin_flow_state': None}
-                    )
-                
-                    if success:
-                        response = """PIN RESET SUCCESSFUL
-
-    Your new access code is active."""
-                        await sync_pin_status_to_airtable(sender, "Active")
-                    else:
-                        response = f"{message}"
-                
-                    await send_twilio_message(sender, response)
-                    return
-        
-            logger.info(f"✅ GATE 4 PASSED: PIN verified")
-        # End of ENABLE_PIN_GATE block
-        
-        
-        
-            # ====================================================================
-            # GATE 4.5: PIN AUTHENTICATION CHECK
-            # ====================================================================
-        
-            # ====================================================================
+        # ====================================================================
         # GATE 5: FSM STATE CHECK (INSTITUTIONAL CONTROL - FIRST LOGIC GATE)
         # ====================================================================
         
@@ -1980,55 +1699,82 @@ Active market: {market}"""
             is_reverse = any(kw in message_lower for kw in reverse_keywords)
             
             if is_reverse:
-                # ✅ REVERSE: Transform-only (NO LLM CALL)
+                # ✅ REVERSE: RECOMPUTE with swapped markets (ChatGPT PR2 fix)
                 locked_regions = conversation.context.get('locked_comparison')
                 
-                if locked_regions and len(locked_regions) >= 2:
-                    last_analysis = conversation.context.get('last_comparison_response')
-                    
-                    if not last_analysis:
-                        response = """No active comparison to reverse.
-
-Try: "Compare Mayfair vs Knightsbridge"""
-                        await send_twilio_message(sender, response)
-                        log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
-                        return  # TERMINAL
-                    
-                    # Swap region names in cached text
-                    region_1_old = locked_regions.get('market1', '')
-                    region_2_old = locked_regions.get('market2', '')
-                    region_1_new = locked_regions.get('market2', '')
-                    region_2_new = locked_regions.get('market1', '')
-                    
-                    # String replacement (order matters)
-                    reversed_response = last_analysis.replace(region_1_old, "__TEMP__")
-                    reversed_response = reversed_response.replace(region_2_old, region_1_old)
-                    reversed_response = reversed_response.replace("__TEMP__", region_2_old)
-                    
-                    # Lock reversed comparison
-                    conversation.context['locked_comparison'] = {
-                        'market1': region_1_new,
-                        'market2': region_2_new,
-                        'locked_at': datetime.now(),
-                        'expires_at': datetime.now() + timedelta(minutes=10)
-                    }
-                    conversation.context['last_comparison_response'] = reversed_response
-                    
-                    # Send cached + swapped response (NO LLM)
-                    await send_twilio_message(sender, reversed_response)
-                    log_interaction(sender, message_text, "comparison_reversed", reversed_response, 0, client_profile)
-                    
-                    logger.info(f"✅ Reverse transform-only: {region_1_old} ↔ {region_2_old} (no LLM call)")
-                    return  # TERMINAL
-                    
-                else:
+                if not locked_regions or len(locked_regions) < 2:
                     response = """No active comparison to reverse.
 
 Try: "Compare Mayfair vs Knightsbridge"""
-                    
                     await send_twilio_message(sender, response)
-                    log_interaction(sender, message_text, "comparison_missing", response, 0, client_profile)
+                    log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
                     return  # TERMINAL
+                
+                # Get original markets
+                original_market1 = locked_regions.get('market1', '')
+                original_market2 = locked_regions.get('market2', '')
+                
+                if not original_market1 or not original_market2:
+                    response = """No active comparison to reverse.
+
+Try: "Compare Mayfair vs Knightsbridge"""
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "reverse_failed", response, 0, client_profile)
+                    return  # TERMINAL
+                
+                # SWAP: market1 ↔ market2
+                new_market1 = original_market2
+                new_market2 = original_market1
+                
+                logger.info(f"🔄 REVERSE RECOMPUTE: {original_market1} vs {original_market2} → {new_market1} vs {new_market2}")
+                
+                # Load dataset for new_market2 (which was original_market1)
+                try:
+                    dataset_2 = load_dataset(area=new_market2, city='London')
+                    logger.info(f"✅ Loaded comparison dataset: {new_market2}")
+                except Exception as e:
+                    logger.error(f"Failed to load dataset for {new_market2}: {e}")
+                    response = f"Unable to reverse comparison - data unavailable for {new_market2}."
+                    await send_twilio_message(sender, response)
+                    return  # TERMINAL
+                
+                # Load primary dataset for new_market1
+                try:
+                    dataset_1 = load_dataset(area=new_market1, city='London')
+                    logger.info(f"✅ Loaded primary dataset: {new_market1}")
+                except Exception as e:
+                    logger.error(f"Failed to load dataset for {new_market1}: {e}")
+                    response = f"Unable to reverse comparison - data unavailable for {new_market1}."
+                    await send_twilio_message(sender, response)
+                    return  # TERMINAL
+                
+                # Recompute comparison with swapped markets
+                comparison_datasets = [dataset_2]
+                
+                # Call LLM to generate reversed comparison
+                category, reversed_response, metadata = await classify_and_respond(
+                    message=f"Compare {new_market1} vs {new_market2}",
+                    dataset=dataset_1,
+                    client_profile=client_profile,
+                    comparison_datasets=comparison_datasets,
+                    governance_result=None
+                )
+                
+                # Lock reversed comparison
+                conversation.context['locked_comparison'] = {
+                    'market1': new_market1,
+                    'market2': new_market2,
+                    'locked_at': datetime.now(),
+                    'expires_at': datetime.now() + timedelta(minutes=10)
+                }
+                conversation.context['last_comparison_response'] = reversed_response
+                
+                # Send recomputed response
+                await send_twilio_message(sender, reversed_response)
+                log_interaction(sender, message_text, "comparison_reversed_recompute", reversed_response, 0, client_profile)
+                
+                logger.info(f"✅ Reverse RECOMPUTED: {new_market1} vs {new_market2}")
+                return  # TERMINAL
             
             # NOT a reverse — parse entities for new comparison
             from app.market_canonicalizer import MarketCanonicalizer
@@ -2418,66 +2164,9 @@ For detailed analysis, contact intel@voxmill.uk"""
         # LOCK_REQUEST HANDLER (AFTER GOVERNANCE)
         # ====================================================================
         
-        if governance_result.intent == Intent.LOCK_REQUEST:
-            try:
-                logger.info(f"🔒 Lock request detected via LLM")
-                
-                # Execute lock
-                success, message_response = PINAuthenticator.manual_lock(sender)
-                
-                if success:
-                    response = """INTELLIGENCE LINE LOCKED
-
-Your access has been secured.
-
-Enter your 4-digit code to unlock."""
-                    
-                    await sync_pin_status_to_airtable(sender, "Requires Re-verification", "Manual lock")
-                else:
-                    response = "Unable to lock. Please try again."
-                
-                await send_twilio_message(sender, response)
-                
-                # Update session
-                conversation.update_session(
-                    user_message=message_text,
-                    assistant_response=response,
-                    metadata={'category': 'lock_request', 'intent': 'lock_request'}
-                )
-                
-                # Log interaction
-                log_interaction(sender, message_text, "lock_request", response, 0, client_profile)
-                
-                logger.info(f"✅ Lock request handled via LLM routing")
-                return  # TERMINAL
-                
-            except Exception as e:
-                logger.error(f"❌ Lock request error: {e}", exc_info=True)
-                response = "Lock failed. Please try again."
-                await send_twilio_message(sender, response)
-                return
+        # Lock/unlock handlers removed - PR2 (PIN disabled)
+        # Governor will handle these intents via natural responses
         
-        # ====================================================================
-        # UNLOCK_REQUEST ROUTING (INFORMATIONAL ONLY)
-        # ====================================================================
-        
-        if governance_result.intent == Intent.UNLOCK_REQUEST:
-            response = """UNLOCK REQUIRED
-
-Enter your 4-digit access code to unlock."""
-            
-            await send_twilio_message(sender, response)
-            
-            conversation.update_session(
-                user_message=message_text,
-                assistant_response=response,
-                metadata={'category': 'unlock_request', 'intent': 'unlock_request'}
-            )
-            
-            log_interaction(sender, message_text, "unlock_request", response, 0, client_profile)
-            
-            logger.info(f"✅ Unlock request reminder sent")
-            return  # TERMINAL
         # ====================================================================
         # GOVERNANCE LAYER (MAIN)
         # ====================================================================
