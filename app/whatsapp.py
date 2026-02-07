@@ -1145,8 +1145,11 @@ Contact intel@voxmill.uk if you need assistance."""
         conversation = ConversationSession(sender)
 
         # ====================================================================
-        # GATE 2.65: REPEAT QUERY DETECTION (CACHE-LEVEL)
         # ====================================================================
+        # GATE 2.65: REPEAT QUERY DETECTION (SILENT LOGGING ONLY)
+        # ====================================================================
+        # PR PHASE 3: Repeat detection converted to silent logging only
+        # No user-facing messages, no "You just asked that" scolding
         
         logger.info(f"🔐 GATE 2.65: Checking for repeat queries...")
         
@@ -1159,60 +1162,28 @@ Contact intel@voxmill.uk if you need assistance."""
         # Get last user message from session
         last_user_message = session_data.get('last_user_message_raw', '')
         
-        # ========================================
-        # CRITICAL FIX: SKIP REPEAT DETECTION DURING AUTH FLOW
-        # ========================================
-        
-        # Auth flow check removed - PR2 (PIN disabled)
-        in_auth_flow = False
-        
-        # Check for repeats (auth flow always False now)
-        if not in_auth_flow:
-            # Check if exact repeat
-            if current_message_clean == last_user_message and last_user_message != '':
-                # Get cached response
-                last_bot_response = session_data.get('last_bot_response_raw', '')
-        
-                if last_bot_response:
-                    # ✅ CRITICAL: Track consecutive repeats
-                    repeat_count = session_data.get('consecutive_repeats', 0) + 1
-                    session_data['consecutive_repeats'] = repeat_count
+        # Silent repeat tracking (no user-facing action)
+        if current_message_clean == last_user_message and last_user_message != '':
+            # Track consecutive repeats silently
+            repeat_count = session_data.get('consecutive_repeats', 0) + 1
+            session_data['consecutive_repeats'] = repeat_count
             
-                    logger.info(f"🔁 REPEAT DETECTED: {repeat_count}/3")
+            logger.info(f"🔁 REPEAT DETECTED (silent): {repeat_count}/3")
             
-                    # ✅ SILENCE after 3 consecutive repeats
-                    if repeat_count >= 3:
-                        conversation.set_silence_mode(duration=300)  # 5 minutes
+            # ONLY take action at extreme abuse threshold (10+ repeats)
+            if repeat_count >= 10:
+                conversation.set_silence_mode(duration=300)  # 5 minutes
                 
-                        try:
-                            RateLimiter.update_abuse_score(sender, 'repeat_spam', 15)
-                        except Exception:
-                            pass
+                try:
+                    RateLimiter.update_abuse_score(sender, 'extreme_repeat_spam', 20)
+                except Exception:
+                    pass
                 
-                        response = "Repeat spam detected. Silenced for 5 minutes."
-                        await send_twilio_message(sender, response)
-                        logger.warning(f"🔇 SILENCED for repeat spam: {sender}")
-                        return  # TERMINAL
-            
-                   # Only add "..." if response was actually truncated
-                    if len(last_bot_response) > 200:
-                        abbreviated_response = f"You just asked that.\n\n{last_bot_response[:200]}..."
-
-                    else:abbreviated_response = f"You just asked that.\n\n{last_bot_response}"
-                        
-            
-                    await send_twilio_message(sender, abbreviated_response)
-            
-                    # Update abuse score
-                    try:
-                        RateLimiter.update_abuse_score(sender, 'repeat_query', 3)
-                    except Exception:
-                        pass
-            
-                    return  # TERMINAL
-            else:
-                # ✅ RESET repeat counter if message is different
-                session_data['consecutive_repeats'] = 0
+                logger.warning(f"🔇 SILENCED for extreme repeat spam (10+ repeats): {sender}")
+                return  # Silent return, no message to user
+        else:
+            # Reset repeat counter if message is different
+            session_data['consecutive_repeats'] = 0
 
         # Store current message for next comparison
         session_data['last_user_message_raw'] = current_message_clean
