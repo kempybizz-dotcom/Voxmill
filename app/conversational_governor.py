@@ -403,7 +403,7 @@ class ConversationalGovernor:
             ),
             
             Intent.META_AUTHORITY: Envelope(
-                analysis_allowed=False,  # No market data needed
+                analysis_allowed=True,   # ✅ PR6B: Allow analysis for personalized response
                 max_response_length=150,
                 silence_allowed=False,
                 silence_required=False,
