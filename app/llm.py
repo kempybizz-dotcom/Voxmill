@@ -879,8 +879,24 @@ BANNED for this response. Use alternatives:
         except Exception as e:
             logger.warning(f"Could not apply phrase deduplication: {e}")
         
+        # ============================================================
+        # PATCH 3: SYNTHETIC DATA DETECTION & DEMO BANNER
+        # ============================================================
         # Extract primary dataset metrics
         metadata = dataset.get('metadata', {})
+        
+        # Check if this is synthetic/demo data
+        is_synthetic = metadata.get('is_synthetic', False)
+        is_real_data = metadata.get('is_real_data', True)
+        data_source = metadata.get('data_source', 'unknown')
+        
+        # Detect synthetic data by source name as fallback
+        if not is_synthetic and data_source in ['mock_data', 'synthetic_demo', 'demo']:
+            is_synthetic = True
+            is_real_data = False
+            logger.warning(f"⚠️ Synthetic data detected by source: {data_source}")
+        
+        # ============================================================
         metrics = dataset.get('metrics', dataset.get('kpis', {}))
         properties = dataset.get('properties', [])
         intelligence = dataset.get('intelligence', {})
@@ -1410,6 +1426,46 @@ DO NOT invent specific data. State "data not available" if asked for metrics.
         # Apply dismissal override if needed
         enhanced_system_prompt += dismissal_override
         
+        # ============================================================
+        # PATCH 3: ADD DEMO DATA BANNER IF SYNTHETIC
+        # ============================================================
+        if is_synthetic:
+            logger.warning(f"🎭 SYNTHETIC DATA ACTIVE — Adding demo banner")
+            
+            synthetic_override = """
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎭 DEMO DATA MODE — SYNTHETIC DATA ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRITICAL: You are analyzing SYNTHETIC DEMONSTRATION DATA.
+
+All agent names, prices, properties, and statistics are randomly generated for demo purposes.
+NO REAL-WORLD CLAIMS ALLOWED.
+
+MANDATORY REQUIREMENTS:
+1. Prepend EVERY response with: "[DEMO DATA — SYNTHETIC]"
+2. Never claim real-world authority
+3. Frame all analysis as "demonstration of analytical approach"
+4. If user asks about specific agents/competitors → remind them this is demo data
+
+Tone shift: "Here's how we'd analyze this pattern..." NOT "This is what's happening..."
+
+Example response format:
+"[DEMO DATA — SYNTHETIC]
+
+In this simulated scenario, Mock Agency Alpha appears to be... [analysis]
+
+Note: All entities and figures are synthetic for demonstration purposes."
+
+VIOLATION = TRUST BREACH. Demo data presented as real = product death.
+"""
+            
+            enhanced_system_prompt += synthetic_override
+        else:
+            logger.info("✅ Real data mode — no demo banner needed")
+        
+        # ============================================================
         # ============================================================
         # CALL GPT-4 WITH FIXED PARAMETERS (INSTITUTIONAL BREVITY)
         # ============================================================
