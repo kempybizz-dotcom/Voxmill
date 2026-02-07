@@ -1103,8 +1103,8 @@ REQUIRED:
                         context_parts.append(f"• {pair['leader']} → {pair['follower']}")
                         context_parts.append(f"  Correlation: {pair['correlation']*100:.0f}% | Lag: {pair['avg_lag_days']}d")
         
-        # Add comparison datasets if available
-        if comparison_datasets and is_comparison:
+        # Add comparison datasets if available (PR1: removed is_comparison variable)
+        if comparison_datasets:
             context_parts.append("\nCOMPARISON DATASETS:")
             for idx, comp_dataset in enumerate(comparison_datasets[:3]):
                 comp_meta = comp_dataset.get('metadata', {})
@@ -1289,17 +1289,11 @@ Max 25 words total. Plain language only. Structural change from previous respons
         elif is_small_talk:
             mode = "OFF-TOPIC REDIRECT"
         # PR1: Removed is_timing_query and is_clustering_query (unused keyword detection)
-        elif is_scenario:
-            mode = "SCENARIO MODELLING"
+        # PR1: Removed is_scenario, is_briefing, is_analysis, is_trend_query
         elif is_strategic:
             mode = "STRATEGIC OUTLOOK"
-        elif is_comparison and comparison_datasets:
+        elif comparison_datasets:  # PR1: Use comparison_datasets instead of is_comparison
             mode = "COMPARATIVE ANALYSIS"
-        elif is_briefing:
-            mode = "WEEKLY BRIEFING"
-        elif is_analysis:
-            mode = "FULL STRUCTURED ANALYSIS"
-        elif is_trend_query:
             mode = "TREND ANALYSIS"
         else:
             mode = "QUICK RESPONSE"
@@ -1825,19 +1819,11 @@ Current focus: competitive positioning, pricing trends, instruction flow."""
                 category = "decision_mode"
             elif is_meta_strategic:
                 category = "meta_strategic"
-            # PR1: Removed is_timing_query and is_clustering_query checks
-            elif is_scenario:
-                category = "scenario_modelling"
+            # PR1: Removed is_timing_query, is_clustering_query, is_scenario, is_briefing, is_analysis, is_trend_query
             elif is_strategic:
                 category = "strategic_outlook"
-            elif is_comparison:
+            elif comparison_datasets:  # PR1: Use comparison_datasets instead of is_comparison
                 category = "comparative_analysis"
-            elif is_briefing:
-                category = "weekly_briefing"
-            elif is_analysis:
-                category = "analysis_snapshot"
-            elif is_trend_query:
-                category = "market_overview"
             else:
                 category = "market_overview"
             
