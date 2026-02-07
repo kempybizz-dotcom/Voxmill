@@ -1288,10 +1288,7 @@ Max 25 words total. Plain language only. Structural change from previous respons
             mode = "RETURNING USER GREETING"
         elif is_small_talk:
             mode = "OFF-TOPIC REDIRECT"
-        elif is_timing_query:
-            mode = "LIQUIDITY TIMING ANALYSIS"
-        elif is_clustering_query:
-            mode = "BEHAVIORAL CLUSTERING ANALYSIS"
+        # PR1: Removed is_timing_query and is_clustering_query (unused keyword detection)
         elif is_scenario:
             mode = "SCENARIO MODELLING"
         elif is_strategic:
@@ -1326,8 +1323,6 @@ User context:
 - Is returning user: {is_returning_user}
 - Is decision mode: {is_decision_mode}
 - Is meta-strategic: {is_meta_strategic}
-- Is timing query: {is_timing_query}
-- Is clustering query: {is_clustering_query}
 - Total queries from user: {client_profile.get('total_queries', 0) if client_profile else 0}
 
 Classify this message and generate {"an executive directive response in DECISION MODE format" if is_decision_mode else "a strategic gap assessment in META-STRATEGIC format" if is_meta_strategic else "an executive analyst response"} with full V3+V4 predictive intelligence.
@@ -1830,10 +1825,7 @@ Current focus: competitive positioning, pricing trends, instruction flow."""
                 category = "decision_mode"
             elif is_meta_strategic:
                 category = "meta_strategic"
-            elif is_timing_query:
-                category = "market_overview"
-            elif is_clustering_query:
-                category = "competitive_landscape"
+            # PR1: Removed is_timing_query and is_clustering_query checks
             elif is_scenario:
                 category = "scenario_modelling"
             elif is_strategic:
