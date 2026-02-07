@@ -403,16 +403,16 @@ class ConversationalGovernor:
             ),
             
             Intent.META_AUTHORITY: Envelope(
-                analysis_allowed=False,
+                analysis_allowed=False,  # No market data needed
                 max_response_length=150,
                 silence_allowed=False,
                 silence_required=False,
                 refusal_allowed=False,
                 refusal_required=False,
                 decision_mode_eligible=False,
-                data_load_allowed=False,
-                llm_call_allowed=False,
-                allowed_shapes=["STATUS_LINE"]
+                data_load_allowed=True,  # ✅ PR6: Allow data for context
+                llm_call_allowed=True,   # ✅ PR6: LLM generates personalized response
+                allowed_shapes=["STRUCTURED_BRIEF"]  # ✅ PR6: Allow detailed response
             ),
             
             Intent.PROFILE_STATUS: Envelope(
