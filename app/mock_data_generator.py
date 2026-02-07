@@ -1,7 +1,14 @@
 """
-VOXMILL MULTI-INDUSTRY MOCK DATA GENERATOR
-==========================================
+VOXMILL MULTI-INDUSTRY MOCK DATA GENERATOR (PRODUCTION-SAFE EDITION)
+====================================================================
 Production-grade synthetic data for testing and demos
+
+✅ CRITICAL FIX: ALL real names removed
+- NO real agency names
+- NO real brand names  
+- NO real clinic names
+- NO real venue names
+- ALL data obviously synthetic
 
 Industries Supported:
 - Real Estate (London luxury markets)
@@ -14,6 +21,7 @@ Features:
 - Competitor presence simulation
 - Daily variance for freshness
 - Industry-specific attributes
+- SYNTHETIC FLAG on all data
 """
 
 import random
@@ -24,24 +32,24 @@ import hashlib
 import statistics
 
 # ============================================================
-# INDUSTRY: REAL ESTATE (LONDON LUXURY)
+# INDUSTRY: REAL ESTATE
 # ============================================================
 
 class RealEstateMockData:
-    """Generate realistic London luxury property data"""
+    """Generate realistic property data with SYNTHETIC names only"""
     
-    # Mayfair market parameters
-    MAYFAIR_AGENTS = [
-        ('Wetherell', 0.18),  # 18% market share
-        ('Knight Frank Mayfair', 0.15),
-        ('Savills Mayfair', 0.14),
-        ('Strutt & Parker', 0.12),
-        ('Chestertons Mayfair', 0.10),
-        ('Beauchamp Estates', 0.09),
-        ('Rokstone', 0.08),
-        ('Aylesford International', 0.07),
-        ('Aston Chase', 0.04),
-        ('Private', 0.03)
+    # ✅ SYNTHETIC AGENCIES (NO REAL NAMES)
+    AGENTS = [
+        ('Mock Agency Alpha', 0.18),
+        ('Mock Agency Beta', 0.15),
+        ('Mock Agency Gamma', 0.14),
+        ('Mock Agency Delta', 0.12),
+        ('Mock Agency Epsilon', 0.10),
+        ('Mock Agency Zeta', 0.09),
+        ('Mock Agency Eta', 0.08),
+        ('Mock Agency Theta', 0.07),
+        ('Mock Agency Iota', 0.04),
+        ('Demo Listing Service', 0.03)
     ]
     
     PROPERTY_TYPES = [
@@ -52,36 +60,37 @@ class RealEstateMockData:
         ('Mansion', 0.08)
     ]
     
-    MAYFAIR_STREETS = [
-        'Park Lane', 'Grosvenor Square', 'Mount Street', 'South Audley Street',
-        'Brook Street', 'Carlos Place', 'Green Street', 'North Audley Street',
-        'Davies Street', 'Berkeley Square', 'Curzon Street', 'Charles Street'
+    # ✅ SYNTHETIC STREETS (obviously fake)
+    STREETS = [
+        'Synthetic Avenue A', 'Synthetic Avenue B', 'Synthetic Avenue C',
+        'Demo Square North', 'Demo Square South', 'Demo Square East',
+        'Mock Boulevard 1', 'Mock Boulevard 2', 'Mock Boulevard 3',
+        'Test Street Alpha', 'Test Street Beta', 'Test Street Gamma',
+        'Example Lane A', 'Example Lane B', 'Example Lane C'
     ]
     
     @staticmethod
     def generate_properties(area: str, count: int = 75) -> List[Dict]:
-        """Generate realistic property listings"""
+        """Generate synthetic property listings"""
         
         properties = []
         base_seed = int(hashlib.md5(f"{area}{datetime.now().date()}".encode()).hexdigest(), 16)
         random.seed(base_seed)
         
-        # Market parameters by area
-        market_params = {
-            'Mayfair': {'avg_price': 3500000, 'std_dev': 1200000, 'avg_sqft': 2200},
-            'Knightsbridge': {'avg_price': 3200000, 'std_dev': 1100000, 'avg_sqft': 2000},
-            'Chelsea': {'avg_price': 2800000, 'std_dev': 950000, 'avg_sqft': 1900},
-            'Belgravia': {'avg_price': 3800000, 'std_dev': 1400000, 'avg_sqft': 2400},
-            'Kensington': {'avg_price': 2500000, 'std_dev': 800000, 'avg_sqft': 1800}
+        # Generic market parameters (not location-specific)
+        default_params = {
+            'avg_price': 2500000,
+            'std_dev': 1000000,
+            'avg_sqft': 2000
         }
         
-        params = market_params.get(area, market_params['Mayfair'])
+        params = default_params  # All areas use same params in demo mode
         
         for i in range(count):
             # Select agent based on market share
             agent = random.choices(
-                [a[0] for a in RealEstateMockData.MAYFAIR_AGENTS],
-                weights=[a[1] for a in RealEstateMockData.MAYFAIR_AGENTS]
+                [a[0] for a in RealEstateMockData.AGENTS],
+                weights=[a[1] for a in RealEstateMockData.AGENTS]
             )[0]
             
             # Select property type
@@ -90,10 +99,8 @@ class RealEstateMockData:
                 weights=[t[1] for t in RealEstateMockData.PROPERTY_TYPES]
             )[0]
             
-            # Generate realistic price (normal distribution)
+            # Generate price (normal distribution)
             price = max(500000, int(random.gauss(params['avg_price'], params['std_dev'])))
-            
-            # Round to nearest £50k
             price = round(price / 50000) * 50000
             
             # Generate size
@@ -110,13 +117,13 @@ class RealEstateMockData:
             else:
                 bedrooms = random.choice([4, 5, 6])
             
-            # Days on market (realistic distribution)
+            # Days on market
             days_on_market = max(1, int(random.expovariate(1/45)))
             
-            # Address
-            street = random.choice(RealEstateMockData.MAYFAIR_STREETS)
+            # Address with synthetic street
+            street = random.choice(RealEstateMockData.STREETS)
             number = random.randint(1, 150)
-            address = f"{number} {street}, {area}, London"
+            address = f"{number} {street}, {area}"
             
             # Status
             status = 'active' if days_on_market < 90 else random.choice(['active', 'under_offer'])
@@ -134,7 +141,8 @@ class RealEstateMockData:
                 'submarket': area,
                 'days_on_market': days_on_market,
                 'status': status,
-                'source': 'mock_data',
+                'source': 'synthetic_demo',  # ← Changed from 'mock_data'
+                'is_synthetic': True,  # ← FLAG
                 'scraped_at': datetime.now(timezone.utc).isoformat()
             })
         
@@ -142,45 +150,53 @@ class RealEstateMockData:
 
 
 # ============================================================
-# INDUSTRY: AUTOMOTIVE (PRESTIGE DEALERSHIPS)
+# INDUSTRY: AUTOMOTIVE
 # ============================================================
 
 class AutomotiveMockData:
-    """Generate realistic prestige car dealership data"""
+    """Generate synthetic car dealership data"""
     
+    # ✅ SYNTHETIC DEALERS (NO REAL NAMES)
     DEALERS = [
-        ('HR Owen Mayfair', 0.22),
-        ('Jack Barclay Bentley', 0.18),
-        ('H.R. Owen Ferrari', 0.15),
-        ('Romans International', 0.12),
-        ('Stratstone', 0.10),
-        ('JCT600', 0.08),
-        ('Carrs Ferrari', 0.07),
-        ('Dick Lovett', 0.05),
+        ('Mock Dealership Alpha', 0.22),
+        ('Mock Dealership Beta', 0.18),
+        ('Mock Dealership Gamma', 0.15),
+        ('Mock Dealership Delta', 0.12),
+        ('Mock Dealership Epsilon', 0.10),
+        ('Mock Dealership Zeta', 0.08),
+        ('Mock Dealership Eta', 0.07),
+        ('Demo Auto Group', 0.05),
         ('Private Sale', 0.03)
     ]
     
+    # ✅ SYNTHETIC BRANDS (obviously fake)
     BRANDS = [
-        ('Bentley', 0.20), ('Ferrari', 0.18), ('Rolls-Royce', 0.15),
-        ('Lamborghini', 0.12), ('McLaren', 0.10), ('Aston Martin', 0.10),
-        ('Porsche', 0.08), ('Maserati', 0.05), ('Bugatti', 0.02)
+        ('Mock Brand Luxury A', 0.20),
+        ('Mock Brand Luxury B', 0.18),
+        ('Mock Brand Luxury C', 0.15),
+        ('Mock Brand Luxury D', 0.12),
+        ('Mock Brand Luxury E', 0.10),
+        ('Mock Brand Luxury F', 0.10),
+        ('Mock Brand Luxury G', 0.08),
+        ('Mock Brand Luxury H', 0.05),
+        ('Mock Brand Luxury I', 0.02)
     ]
     
     MODELS = {
-        'Bentley': ['Continental GT', 'Flying Spur', 'Bentayga'],
-        'Ferrari': ['812 Superfast', 'F8 Tributo', 'SF90 Stradale', 'Roma'],
-        'Rolls-Royce': ['Phantom', 'Ghost', 'Cullinan', 'Wraith'],
-        'Lamborghini': ['Aventador', 'Huracan', 'Urus'],
-        'McLaren': ['720S', 'GT', 'Artura'],
-        'Aston Martin': ['DB12', 'Vantage', 'DBX'],
-        'Porsche': ['911 Turbo S', 'Taycan', 'Cayenne Turbo'],
-        'Maserati': ['MC20', 'Quattroporte', 'Levante'],
-        'Bugatti': ['Chiron', 'Divo']
+        'Mock Brand Luxury A': ['Model X1', 'Model X2', 'Model X3'],
+        'Mock Brand Luxury B': ['Model Y1', 'Model Y2', 'Model Y3', 'Model Y4'],
+        'Mock Brand Luxury C': ['Model Z1', 'Model Z2', 'Model Z3', 'Model Z4'],
+        'Mock Brand Luxury D': ['Model A1', 'Model A2', 'Model A3'],
+        'Mock Brand Luxury E': ['Model B1', 'Model B2', 'Model B3'],
+        'Mock Brand Luxury F': ['Model C1', 'Model C2', 'Model C3'],
+        'Mock Brand Luxury G': ['Model D1', 'Model D2', 'Model D3'],
+        'Mock Brand Luxury H': ['Model E1', 'Model E2', 'Model E3'],
+        'Mock Brand Luxury I': ['Model F1', 'Model F2']
     }
     
     @staticmethod
     def generate_inventory(area: str, count: int = 60) -> List[Dict]:
-        """Generate realistic prestige car inventory"""
+        """Generate synthetic car inventory"""
         
         inventory = []
         base_seed = int(hashlib.md5(f"auto_{area}{datetime.now().date()}".encode()).hexdigest(), 16)
@@ -202,22 +218,9 @@ class AutomotiveMockData:
             # Select model
             model = random.choice(AutomotiveMockData.MODELS[brand])
             
-            # Generate price based on brand
-            brand_prices = {
-                'Bentley': (200000, 350000),
-                'Ferrari': (250000, 500000),
-                'Rolls-Royce': (300000, 550000),
-                'Lamborghini': (200000, 400000),
-                'McLaren': (180000, 350000),
-                'Aston Martin': (150000, 300000),
-                'Porsche': (120000, 250000),
-                'Maserati': (100000, 200000),
-                'Bugatti': (2500000, 3500000)
-            }
-            
-            price_range = brand_prices[brand]
-            price = random.randint(price_range[0], price_range[1])
-            price = round(price / 5000) * 5000  # Round to nearest £5k
+            # Generic price ranges
+            price = random.randint(100000, 500000)
+            price = round(price / 5000) * 5000
             
             # Year and mileage
             year = random.randint(2020, 2024)
@@ -237,7 +240,8 @@ class AutomotiveMockData:
                 'location': area,
                 'days_on_lot': days_on_lot,
                 'condition': 'Excellent' if mileage < 10000 else 'Good',
-                'source': 'mock_data',
+                'source': 'synthetic_demo',
+                'is_synthetic': True,
                 'scraped_at': datetime.now(timezone.utc).isoformat()
             })
         
@@ -245,21 +249,22 @@ class AutomotiveMockData:
 
 
 # ============================================================
-# INDUSTRY: HEALTHCARE (PRIVATE CLINICS)
+# INDUSTRY: HEALTHCARE
 # ============================================================
 
 class HealthcareMockData:
-    """Generate realistic private healthcare clinic data"""
+    """Generate synthetic healthcare clinic data"""
     
+    # ✅ SYNTHETIC CLINICS (NO REAL NAMES)
     CLINICS = [
-        ('The London Clinic', 0.20),
-        ('The Wellington Hospital', 0.18),
-        ('The Princess Grace Hospital', 0.15),
-        ('The Lister Hospital', 0.12),
-        ('The Harley Street Clinic', 0.10),
-        ('BMI The London Independent', 0.08),
-        ('The Cromwell Hospital', 0.08),
-        ('King Edward VII Hospital', 0.06),
+        ('Mock Medical Center A', 0.20),
+        ('Mock Medical Center B', 0.18),
+        ('Mock Medical Center C', 0.15),
+        ('Mock Medical Center D', 0.12),
+        ('Mock Medical Center E', 0.10),
+        ('Demo Health Clinic A', 0.08),
+        ('Demo Health Clinic B', 0.08),
+        ('Demo Health Clinic C', 0.06),
         ('Private Practice', 0.03)
     ]
     
@@ -271,7 +276,7 @@ class HealthcareMockData:
     
     @staticmethod
     def generate_services(area: str, count: int = 50) -> List[Dict]:
-        """Generate realistic healthcare service data"""
+        """Generate synthetic healthcare service data"""
         
         services = []
         base_seed = int(hashlib.md5(f"health_{area}{datetime.now().date()}".encode()).hexdigest(), 16)
@@ -288,23 +293,10 @@ class HealthcareMockData:
                 weights=[s[1] for s in HealthcareMockData.SPECIALTIES]
             )[0]
             
-            # Pricing by specialty
-            specialty_prices = {
-                'Cardiology': (250, 600),
-                'Orthopedics': (200, 500),
-                'Oncology': (300, 800),
-                'Neurology': (250, 650),
-                'Dermatology': (150, 400),
-                'Ophthalmology': (180, 450),
-                'Plastic Surgery': (500, 2000),
-                'ENT': (150, 400),
-                'Gastroenterology': (200, 500)
-            }
+            # Generic pricing
+            consultation_fee = random.randint(150, 800)
             
-            price_range = specialty_prices[specialty]
-            consultation_fee = random.randint(price_range[0], price_range[1])
-            
-            # Wait times (days)
+            # Wait times
             wait_time = max(1, int(random.expovariate(1/14)))
             
             services.append({
@@ -316,7 +308,8 @@ class HealthcareMockData:
                 'location': area,
                 'rating': round(random.uniform(4.0, 5.0), 1),
                 'accepts_insurance': random.choice([True, True, False]),
-                'source': 'mock_data',
+                'source': 'synthetic_demo',
+                'is_synthetic': True,
                 'scraped_at': datetime.now(timezone.utc).isoformat()
             })
         
@@ -324,39 +317,40 @@ class HealthcareMockData:
 
 
 # ============================================================
-# INDUSTRY: HOSPITALITY (PREMIUM HOTELS/RESTAURANTS)
+# INDUSTRY: HOSPITALITY
 # ============================================================
 
 class HospitalityMockData:
-    """Generate realistic premium hospitality data"""
+    """Generate synthetic hospitality venue data"""
     
+    # ✅ SYNTHETIC VENUES (NO REAL NAMES)
     HOTELS = [
-        ('The Ritz London', 0.15),
-        ('Claridge\'s', 0.14),
-        ('The Savoy', 0.13),
-        ('The Dorchester', 0.12),
-        ('The Connaught', 0.11),
-        ('The Berkeley', 0.10),
-        ('Mandarin Oriental', 0.09),
-        ('The Langham', 0.08),
-        ('Four Seasons Park Lane', 0.08)
+        ('Mock Hotel A', 0.15),
+        ('Mock Hotel B', 0.14),
+        ('Mock Hotel C', 0.13),
+        ('Mock Hotel D', 0.12),
+        ('Mock Hotel E', 0.11),
+        ('Demo Resort A', 0.10),
+        ('Demo Resort B', 0.09),
+        ('Demo Resort C', 0.08),
+        ('Demo Resort D', 0.08)
     ]
     
     RESTAURANTS = [
-        ('Restaurant Gordon Ramsay', 0.12),
-        ('Alain Ducasse at The Dorchester', 0.11),
-        ('The Ledbury', 0.10),
-        ('Core by Clare Smyth', 0.09),
-        ('Sketch', 0.08),
-        ('Hélène Darroze', 0.08),
-        ('Le Gavroche', 0.07),
-        ('The Clove Club', 0.06),
-        ('Dinner by Heston', 0.06)
+        ('Mock Restaurant A', 0.12),
+        ('Mock Restaurant B', 0.11),
+        ('Mock Restaurant C', 0.10),
+        ('Mock Restaurant D', 0.09),
+        ('Mock Restaurant E', 0.08),
+        ('Demo Dining A', 0.08),
+        ('Demo Dining B', 0.07),
+        ('Demo Dining C', 0.06),
+        ('Demo Dining D', 0.06)
     ]
     
     @staticmethod
     def generate_venues(area: str, count: int = 40) -> List[Dict]:
-        """Generate realistic hospitality venue data"""
+        """Generate synthetic hospitality venue data"""
         
         venues = []
         base_seed = int(hashlib.md5(f"hosp_{area}{datetime.now().date()}".encode()).hexdigest(), 16)
@@ -370,7 +364,7 @@ class HospitalityMockData:
                     [h[0] for h in HospitalityMockData.HOTELS],
                     weights=[h[1] for h in HospitalityMockData.HOTELS]
                 )[0]
-                avg_rate = random.randint(400, 1500)
+                avg_rate = random.randint(200, 1000)
                 occupancy = round(random.uniform(0.65, 0.95), 2)
                 
                 venues.append({
@@ -382,7 +376,8 @@ class HospitalityMockData:
                     'location': area,
                     'rating': round(random.uniform(4.3, 5.0), 1),
                     'rooms': random.choice([150, 200, 250, 300]),
-                    'source': 'mock_data',
+                    'source': 'synthetic_demo',
+                    'is_synthetic': True,
                     'scraped_at': datetime.now(timezone.utc).isoformat()
                 })
             else:
@@ -390,7 +385,7 @@ class HospitalityMockData:
                     [r[0] for r in HospitalityMockData.RESTAURANTS],
                     weights=[r[1] for r in HospitalityMockData.RESTAURANTS]
                 )[0]
-                avg_check = random.randint(80, 350)
+                avg_check = random.randint(50, 300)
                 covers_per_day = random.randint(40, 120)
                 
                 venues.append({
@@ -402,7 +397,8 @@ class HospitalityMockData:
                     'location': area,
                     'rating': round(random.uniform(4.0, 5.0), 1),
                     'michelin_stars': random.choice([0, 1, 1, 2, 3]),
-                    'source': 'mock_data',
+                    'source': 'synthetic_demo',
+                    'is_synthetic': True,
                     'scraped_at': datetime.now(timezone.utc).isoformat()
                 })
         
@@ -415,7 +411,7 @@ class HospitalityMockData:
 
 def load_mock_dataset(area: str, industry: str, max_items: int = 100) -> List[Dict]:
     """
-    Load mock data for any industry
+    Load synthetic demo data for any industry
     
     Args:
         area: Geographic area/market
@@ -423,7 +419,7 @@ def load_mock_dataset(area: str, industry: str, max_items: int = 100) -> List[Di
         max_items: Maximum items to generate
     
     Returns:
-        List of mock data items
+        List of synthetic data items (all flagged with is_synthetic=True)
     """
     
     if industry == "real_estate":
