@@ -77,10 +77,36 @@ You are FORBIDDEN from generating:
 
 ONLY EXCEPTION: Number explicitly present in facts_bundle below.
 
-RULE 2: AGENT NAME BAN
+RULE 2: AGENT NAME BAN (STRICT ENFORCEMENT)
 You are FORBIDDEN from inventing agent/agency names.
-ONLY mention agents if they appear in facts_bundle.
-If asked to "name agents" and none in data → say: "I don't have verified agent names."
+
+AGENT NAMING PROTOCOL:
+1. ONLY mention specific agents if they appear in facts_bundle with verified data
+2. If facts_bundle contains NO agent names → use generic terms:
+   - "competitors", "rivals", "top agents", "leading agencies"
+   - NEVER fabricate names like "Knight Frank", "Savills", "Beauchamp Estates"
+
+3. If user asks "Name the top 3 agents..." or "Which agents are..." or "Who are the leading agencies...":
+   → Check facts_bundle for agent list
+   → If NO agents in facts_bundle: "I don't have verified agent data for that market."
+   → NEVER generate names from your training data
+
+4. If user asks about specific agent behavior without that agent in facts_bundle:
+   → Refuse: "I can't verify activity for [AgentName] without dataset access."
+
+EXAMPLES:
+
+✓ CORRECT (no agents in data):
+User: "Name the top 3 agents doing off-market deals in Mayfair"
+Response: "I don't have verified agent data for Mayfair. I can discuss general competitive patterns if helpful."
+
+✓ CORRECT (agents in data):
+User: "What are the top agents doing?"
+Response: "Based on the dataset: Wetherell and Savills appear most active..." [if these names are IN facts_bundle]
+
+✗ FORBIDDEN (inventing names):
+User: "Name the top 3 agents"
+Response: "Knight Frank Mayfair, Beauchamp Estates, and Rokstone are..." [NO AGENT DATA = FABRICATION]
 
 RULE 3: CONFIDENCE THEATER BAN
 NEVER generate:
@@ -1591,6 +1617,112 @@ Original user question: {message}"""
             else:
                 logger.info("✅ Retry succeeded - no numeric violations")
                 response_text = retry_text
+        
+        # ============================================================
+        # PHASE 2B: POST-GENERATION AGENT NAME VALIDATOR
+        # ============================================================
+        
+        def contains_agent_violations(text: str, dataset: Dict) -> Tuple[bool, List[str]]:
+            """
+            Detect fabricated agent names that aren't in the dataset
+            
+            Returns: (has_violations, list_of_agent_names_found)
+            """
+            import re
+            
+            # Get verified agents from dataset
+            is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
+            
+            # Extract agent names from dataset
+            verified_agents = set()
+            
+            # Check top_agents in intelligence layer
+            intelligence = dataset.get('intelligence', {})
+            top_agents = intelligence.get('top_agents', [])
+            for agent_entry in top_agents:
+                if isinstance(agent_entry, dict):
+                    agent_name = agent_entry.get('agent', '')
+                    if agent_name:
+                        verified_agents.add(agent_name.lower())
+                elif isinstance(agent_entry, str):
+                    verified_agents.add(agent_entry.lower())
+            
+            # Check properties for agent names
+            properties = dataset.get('properties', [])
+            for prop in properties:
+                agent = prop.get('agent', '')
+                if agent:
+                    verified_agents.add(agent.lower())
+            
+            # Known London luxury agencies (common fabrications)
+            known_agencies = [
+                'knight frank', 'savills', 'strutt & parker', 'chestertons',
+                'beauchamp estates', 'rokstone', 'aylesford international',
+                'wetherell', 'aston chase', 'hamptons', 'foxtons',
+                'douglas & gordon', 'john d wood', 'lurot brand'
+            ]
+            
+            violations = []
+            
+            # Check if response mentions any known agencies
+            text_lower = text.lower()
+            for agency in known_agencies:
+                if agency in text_lower:
+                    # Check if this agency is verified
+                    if agency not in verified_agents and not is_synthetic:
+                        violations.append(agency)
+            
+            return len(violations) > 0, violations
+        
+        # Run agent validator (only for real data)
+        is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
+        
+        if not is_synthetic:
+            has_agent_violations, fabricated_agents = contains_agent_violations(response_text, dataset)
+            
+            # Extract verified agents for logging
+            verified_agents = set()
+            intelligence = dataset.get('intelligence', {})
+            top_agents = intelligence.get('top_agents', [])
+            for agent_entry in top_agents:
+                if isinstance(agent_entry, dict):
+                    verified_agents.add(agent_entry.get('agent', '').lower())
+                elif isinstance(agent_entry, str):
+                    verified_agents.add(agent_entry.lower())
+            
+            if has_agent_violations:
+                logger.warning(f"⚠️ FABRICATED AGENT NAMES DETECTED: {fabricated_agents}")
+                logger.warning(f"Verified agents in dataset: {list(verified_agents) if verified_agents else 'none'}")
+                
+                # Check if user specifically asked to "name agents"
+                user_asked_for_names = any(phrase in message.lower() for phrase in [
+                    'name the', 'which agents', 'who are the', 'list the', 
+                    'top 3 agents', 'top agents', 'leading agencies'
+                ])
+                
+                if user_asked_for_names:
+                    # User explicitly asked for names - refuse
+                    response_text = "I don't have verified agent data for that market. I can discuss general competitive patterns if helpful."
+                    logger.info("✅ Refused to fabricate agent names for direct naming request")
+                else:
+                    # Mentioned agents in context - replace with generic terms
+                    logger.info("🔄 Replacing fabricated agent names with generic terms...")
+                    
+                    import re
+                    cleaned_text = response_text
+                    
+                    # Replace specific agencies with generic terms
+                    replacements = {
+                        r'\b(knight frank|savills|beauchamp estates|rokstone|aylesford international|wetherell|aston chase)\b': 'top agents',
+                        r'\b(strutt & parker|chestertons|hamptons|foxtons)\b': 'competitors',
+                        r'\b(douglas & gordon|john d wood|lurot brand)\b': 'rivals'
+                    }
+                    
+                    for pattern, replacement in replacements.items():
+                        cleaned_text = re.sub(pattern, replacement, cleaned_text, flags=re.IGNORECASE)
+                    
+                    response_text = cleaned_text
+                    logger.info("✅ Agent names replaced with generic terms")
         
         # ========================================
         # DECISION MODE POST-PROCESSING ENFORCEMENT
