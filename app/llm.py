@@ -260,8 +260,8 @@ In final summaries / one-sentence answers: ABSTRACT TO BEHAVIOR
 ✘ WRONG: "Watch for Knight Frank and Beauchamp Estates moving premium stock..."
 ✓ CORRECT: "Watch for rivals moving premium stock off-market before pricing adjusts."
 
-✘ WRONG: "If Knight Frank drops 3+ prices..."
-✓ CORRECT: "If top agents drop 3+ prices..."
+✘ WRONG: "If Knight Frank drops prices..."
+✓ CORRECT: "If top agents drop prices..."
 
 Final answers = behavior + risk, not names.
 
@@ -323,27 +323,30 @@ Max 35 words after pushback. No metaphors. No repetition of previous phrasing.
 CONFIDENCE CHALLENGE PROTOCOL (PRIORITY 1.5)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-User challenges confidence. LLM detects confidence query.
+When user asks for confidence score/rating:
 
-EXACT FORMAT (MANDATORY):
-"Confidence: X/10. I'm wrong fast if [SPECIFIC OBSERVABLE] shows up in the next 48 hours. If that happens, the read flips."
+REFUSE numeric scoring:
+"I can't provide a numeric confidence score. Here's what I can tell you:
+- Status: [Verified / Inference / Unknown]
+- Based on: [what evidence exists]
+- I'm wrong if: [one falsifiable signal, non-numeric]"
 
-CRITICAL: Falsifier must be OPERATIONALLY OBVIOUS, not abstract.
+EXAMPLES (NON-NUMERIC):
 
-✓ CORRECT (specific observable):
-"Confidence: 6/10. I'm wrong fast if Knight Frank drops 3+ prices by Friday. If that happens, the read flips."
+✓ CORRECT:
+"Status: Inference (not verified data)
+Based on: Pattern in listing behavior
+I'm wrong if: Knight Frank drops prices in next 48 hours"
 
-✗ WRONG (abstract):
-"Confidence: 6/10. I'm wrong fast if top agents adjust strategies. If that happens, the read flips."
+✓ CORRECT:
+"Status: Unknown
+I don't have verified data to assess this claim"
 
-WHEN AGENT NAMES AVAILABLE IN DATASET:
-- ALWAYS use specific names (Knight Frank, Savills, Beauchamp Estates)
-- NEVER use "top agents" if you have actual agent data
-
-WHEN NO AGENT DATA:
-- Use operational observables: "3+ price cuts in prime stock", "velocity drops below 40", "off-market volume doubles"
-
-NO hedging. NO "based on current data". Just: score, specific falsifier, flip.
+✗ FORBIDDEN:
+- "Confidence: 6/10"
+- "Confidence: High/Medium/Low"
+- "Early signal" (unless you explain it means unverified inference)
+- Any numeric scoring
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AGENT BEHAVIOR CONFIDENCE DISCIPLINE (NEW - PRIORITY 1.5)
@@ -418,8 +421,8 @@ REQUIRED STRUCTURE:
 
 Examples:
 ✓ "Patient — unless a rival re-anchors sellers first. Then move immediately."
-✓ "Early — unless velocity drops below 35. Then wait for recovery."
-✓ "Hold — unless Knight Frank cuts 3+ prices. Then match within 48 hours."
+✓ "Early — unless velocity drops significantly. Then wait for recovery."
+✓ "Hold — unless rivals cut prices. Then match within 48 hours."
 
 NO philosophical language. NO "it depends". Give primary stance + exception trigger + action.
 
@@ -469,8 +472,8 @@ REQUIRED FORMAT (ALL 4 ELEMENTS MANDATORY):
 3. CONSEQUENCE (what breaks / who wins instead):
    "Consequence if ignored: [Specific failure mode + beneficiary]"
 
-4. CONFIDENCE LABEL:
-   "Confidence: [Verified / Observed pattern / Early signal / Hypothesis]"
+4. STATUS LABEL (NON-NUMERIC):
+   "Status: [Verified / Inference / Unknown]"
 
 EXAMPLES:
 
@@ -481,7 +484,7 @@ Why this matters: If competitors secure instructions at softer guide prices off-
 
 Consequence if ignored: Apparent market stability masks declining instruction share — by the time pricing data reflects it, leverage is already lost.
 
-Confidence: Early signal (not yet visible in listing data)."
+Status: Inference (not verified in listing data)"
 
 ✗ INCORRECT (Opportunity disguised as risk):
 "The primary risk is undervaluing properties in Mount Street, where average prices are significantly higher. Adjusting asking prices could optimize returns."
@@ -518,7 +521,7 @@ Why it matters:
 What would confirm it:
 [ONE behavioral signal - be specific, avoid raw numbers]
 
-Confidence: early signal / inferred / observed
+Status: [Verified / Inference / Unknown]
 
 ELITE LANGUAGE RULES:
 - THINK IN: loss of control, timing, narrative, power, leverage
@@ -531,14 +534,12 @@ CONFIRMATION SIGNALS (BEHAVIORAL, NOT MECHANICAL):
 ✓ "Increase in quiet fee flexibility"
 ✓ "Off-market pushes on prime stock"
 ✓ "Sub-5% price trims without fanfare"
-✗ "Price reductions of 3-5%"
-✗ "Market share adjustments"
-✗ "Aggressive pricing strategies"
+✗ NO numeric claims like "3-5%" without verification
 
-CONFIDENCE CALIBRATION:
-- early signal: Pattern emerging, not yet confirmed (USE THIS FOR MOCK DATA)
-- inferred: Multiple weak signals pointing same direction
-- observed: Hard data, verifiable in current listings
+STATUS CALIBRATION:
+- Verified: Hard data, explicitly in dataset
+- Inference: Pattern emerging from available signals
+- Unknown: Insufficient data to assess
 
 RULES:
 - ONE risk only (the most important)
@@ -547,19 +548,19 @@ RULES:
 - Must include behavioral confirmation signal
 - NEVER mention Voxmill, datasets, or system capabilities
 - No hedging language ("might", "could", "possibly")
-- NEVER use "observed pattern" unless you have hard data
+- NEVER claim hard data unless explicitly in dataset
 
 Example (ELITE):
 "If I were sitting in your seat this week, my biggest concern would be losing narrative control on pricing before the market visibly resets.
 
 
 Why it matters:
-Competitors like [agent A] and [agent B] tend to move first when sentiment turns. If they quietly re-anchor seller expectations before prices adjust publicly, they win instructions while you defend positioning.
+Competitors tend to move first when sentiment turns. If they quietly re-anchor seller expectations before prices adjust publicly, they win instructions while you defend positioning.
 
 What would confirm it:
-An increase in quiet fee flexibility, off-market pushes, or sub-5% price trims on prime stock in [your market].
+An increase in quiet fee flexibility, off-market pushes, or subtle price trims on prime stock in your market.
 
-Confidence: early signal"
+Status: Inference"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GEOGRAPHIC SCOPE
@@ -1490,6 +1491,106 @@ VIOLATION = TRUST BREACH. Demo data presented as real = product death.
         else:
             logger.error("No LLM provider configured")
             return "market_overview", "System configuration error. Please contact support.", {}
+        
+        # ============================================================
+        # PHASE 1B: POST-GENERATION NUMERIC VALIDATOR
+        # ============================================================
+        
+        def contains_numeric_violations(text: str, dataset: Dict) -> Tuple[bool, List[str]]:
+            """
+            Detect numeric content that violates grounding rules
+            
+            Returns: (has_violations, list_of_violations)
+            """
+            violations = []
+            
+            # Extract allowed numbers from dataset (if real data)
+            is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
+            
+            if is_synthetic:
+                # Synthetic data: numbers are allowed (they're in mock data)
+                return False, []
+            
+            # For real data: detect numeric violations
+            import re
+            
+            # Detect numeric confidence scores
+            if re.search(r'Confidence:\s*\d+/\d+', text, re.IGNORECASE):
+                violations.append("numeric_confidence_score")
+            
+            if re.search(r'Confidence:\s*\d+', text, re.IGNORECASE):
+                violations.append("numeric_confidence")
+            
+            # Detect standalone percentages without context
+            if re.search(r'\d+\.?\d*%', text):
+                violations.append("percentage")
+            
+            # Detect currency amounts
+            if re.search(r'£\d+|€\d+|\$\d+', text):
+                violations.append("currency")
+            
+            # Detect numeric patterns like "3+" or "drops 3+ prices"
+            if re.search(r'\d+\+', text):
+                violations.append("numeric_plus_pattern")
+            
+            # Detect inventory/velocity scores
+            if re.search(r'Inventory:\s*\d+|Velocity:\s*\d+', text, re.IGNORECASE):
+                violations.append("fabricated_metrics")
+            
+            return len(violations) > 0, violations
+        
+        # Run validator
+        has_violations, violations = contains_numeric_violations(response_text, dataset)
+        
+        if has_violations and not is_synthetic:
+            logger.warning(f"⚠️ NUMERIC VIOLATIONS DETECTED: {violations}")
+            logger.warning(f"Original response: {response_text[:200]}")
+            
+            # Retry with strict no-numbers instruction
+            logger.info("🔄 Regenerating response with numeric ban...")
+            
+            strict_prompt = f"""CRITICAL OVERRIDE: 
+The previous response contained numeric content that violates grounding rules.
+
+Generate a new response with ABSOLUTE PROHIBITION on:
+- Any digits (0-9)
+- Currency symbols (£, $, €)
+- Percentages (%)
+- Numeric confidence scores
+- Inventory/velocity numbers
+- "X+" patterns
+
+Use ONLY qualitative language. If you cannot answer without numbers, say: "I can't provide verified figures for that."
+
+Original user question: {message}"""
+            
+            retry_response = openai_client.chat.completions.create(
+                model="gpt-4-turbo",
+                messages=[
+                    {"role": "system", "content": enhanced_system_prompt},
+                    {"role": "user", "content": strict_prompt}
+                ],
+                max_tokens=350,
+                temperature=0.2,  # Lower temperature for stricter adherence
+                timeout=90.0,
+                stream=False
+            )
+            
+            retry_text = retry_response.choices[0].message.content
+            
+            # Check retry
+            retry_has_violations, retry_violations = contains_numeric_violations(retry_text, dataset)
+            
+            if retry_has_violations:
+                logger.error(f"❌ RETRY STILL HAS VIOLATIONS: {retry_violations}")
+                # Strip numbers and add disclaimer
+                import re
+                cleaned_text = re.sub(r'\d+\.?\d*%?', '[figure omitted]', retry_text)
+                cleaned_text = re.sub(r'£\d+\.?\d*[kmKM]?', '[amount omitted]', cleaned_text)
+                response_text = f"I can't provide verified figures for that.\n\n{cleaned_text}"
+            else:
+                logger.info("✅ Retry succeeded - no numeric violations")
+                response_text = retry_text
         
         # ========================================
         # DECISION MODE POST-PROCESSING ENFORCEMENT
