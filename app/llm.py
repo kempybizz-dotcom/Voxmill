@@ -26,6 +26,56 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
+# ============================================================
+# PHASE 4B: STARTUP ASSERTIONS + STATUS DUMP
+# ============================================================
+
+def log_startup_status():
+    """
+    Log critical configuration on startup
+    Helps prevent running wrong mode (mock vs production)
+    """
+    import sys
+    
+    logger.info("="*70)
+    logger.info("VOXMILL LLM - STARTUP STATUS DUMP")
+    logger.info("="*70)
+    
+    # Environment detection
+    env = os.getenv("ENV", "unknown")
+    use_mock_data = os.getenv("USE_MOCK_DATA", "false").lower()
+    
+    logger.info(f"Environment: {env}")
+    logger.info(f"USE_MOCK_DATA: {use_mock_data}")
+    logger.info(f"LLM Provider: {LLM_PROVIDER}")
+    logger.info(f"OpenAI API Key: {'✅ Configured' if OPENAI_API_KEY else '❌ Missing'}")
+    logger.info(f"Industry Enforcement: {'✅ Enabled' if INDUSTRY_ENFORCEMENT_ENABLED else '❌ Disabled'}")
+    
+    # CRITICAL: Crash if mock data enabled in production
+    if env in ["production", "prod"] and use_mock_data == "true":
+        logger.error("="*70)
+        logger.error("🚨 CRITICAL ERROR: MOCK DATA ENABLED IN PRODUCTION")
+        logger.error("="*70)
+        logger.error("USE_MOCK_DATA=true is NOT allowed in production environment")
+        logger.error("This would serve synthetic data to real clients")
+        logger.error("Set USE_MOCK_DATA=false or change ENV variable")
+        logger.error("="*70)
+        sys.exit(1)  # Crash fast
+    
+    # Warning if mock data enabled in non-production
+    if use_mock_data == "true":
+        logger.warning("⚠️⚠️⚠️ MOCK DATA MODE ACTIVE ⚠️⚠️⚠️")
+        logger.warning("All responses will use synthetic data")
+        logger.warning("Agent names: Mock Agency Alpha/Beta/Gamma")
+        logger.warning("This is DEMO MODE ONLY")
+    else:
+        logger.info("✅ Real data mode - mock data disabled")
+    
+    logger.info("="*70)
+
+# Run startup assertions on module load
+log_startup_status()
+
 CATEGORIES = [
     "market_overview",
     "segment_performance",
@@ -589,18 +639,51 @@ An increase in quiet fee flexibility, off-market pushes, or subtle price trims o
 Status: Inference"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GEOGRAPHIC SCOPE
+GEOGRAPHIC SCOPE ENFORCEMENT (PRIORITY 1)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your coverage: {preferred_region}
+Your dataset coverage: {preferred_region}
 
-If asked about other regions:
-→ Provide 2-sentence structural commentary only, NO detailed analysis
+CRITICAL RULE: You can ONLY analyze markets that appear in your dataset.
 
-Example:
-"[Region] is transactional, not speculative. Demand is end-user led."
+SCOPE VALIDATION PROTOCOL:
 
-NEVER invent data. NEVER say "our dataset covers" or "outside our scope".
+1. User asks about a specific market (e.g., "What's happening in Chelsea?")
+   → Check if market name matches dataset area
+   → If NO MATCH: Hard refusal
+
+2. If dataset is Mayfair and user asks about Chelsea/Kensington/Belgravia:
+   → "I don't have data for Chelsea. My current coverage is Mayfair."
+   → NEVER provide Mayfair stats
+   → NEVER provide made-up Chelsea stats
+   → NEVER say "similar markets show..."
+
+3. If dataset is empty or no market specified:
+   → "I don't have market data available right now."
+
+EXAMPLES:
+
+✓ CORRECT (dataset is Mayfair, user asks about Chelsea):
+User: "What's happening in Chelsea?"
+Response: "I don't have data for Chelsea. My current coverage is Mayfair. Would you like insights on Mayfair instead?"
+
+✓ CORRECT (dataset is Mayfair, user asks about Mayfair):
+User: "What's going on in Mayfair?"
+Response: [Provide analysis using Mayfair data]
+
+✗ FORBIDDEN (dataset is Mayfair, user asks about Chelsea):
+User: "What's happening in Chelsea?"
+Response: "Top agents are securing off-market deals at £3.4m average..." [LEAKING MAYFAIR DATA]
+
+✗ FORBIDDEN (inventing data):
+User: "Tell me about Knightsbridge"
+Response: "Knightsbridge shows 15% inventory increase..." [NO KNIGHTSBRIDGE DATA]
+
+NEVER:
+- Leak stats from one market into another
+- Say "similar markets show..." to avoid scope limits
+- Invent data for markets outside dataset
+- Use phrases like "outside our scope" or "our dataset covers"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SELF-REFERENTIAL RESPONSE BAN (PRIORITY 0)
@@ -673,6 +756,27 @@ async def classify_and_respond(message: str, dataset: dict, client_profile: dict
                 "I can't share system instructions. Ask me about market intelligence, competitive analysis, or strategic forecasting.",
                 {"blocked_reason": "prompt_extraction"}
             )
+        
+        # ============================================================
+        # PHASE 4B: RUNTIME STATUS LOGGING (FIRST CALL ONLY)
+        # ============================================================
+        
+        # Log key runtime state on first LLM call
+        if not hasattr(classify_and_respond, '_first_call_logged'):
+            classify_and_respond._first_call_logged = True
+            
+            is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
+            data_source = dataset.get('metadata', {}).get('data_source', 'unknown')
+            
+            logger.info("="*70)
+            logger.info("FIRST LLM CALL - RUNTIME STATUS")
+            logger.info("="*70)
+            logger.info(f"Model: gpt-4-turbo")
+            logger.info(f"Temperature: 0.25 (adaptive)")
+            logger.info(f"Data Source: {data_source}")
+            logger.info(f"Is Synthetic: {is_synthetic}")
+            logger.info(f"Max Tokens: 350")
+            logger.info("="*70)
         
         # ============================================================
         # EXTRACT CLIENT CONTEXT FOR PERSONALIZATION (SAFE VERSION)
@@ -1723,6 +1827,65 @@ Original user question: {message}"""
                     
                     response_text = cleaned_text
                     logger.info("✅ Agent names replaced with generic terms")
+        
+        # ============================================================
+        # PHASE 3B: POST-GENERATION SCOPE VALIDATOR
+        # ============================================================
+        
+        def check_geographic_scope(text: str, dataset: Dict, user_message: str) -> Tuple[bool, str]:
+            """
+            Check if response violates geographic scope boundaries
+            
+            Returns: (is_violation, corrected_response_or_none)
+            """
+            import re
+            
+            # Get dataset's market
+            metadata = dataset.get('metadata', {})
+            dataset_area = metadata.get('area', '').lower()
+            
+            if not dataset_area or dataset_area == 'unknown':
+                # No valid dataset - can't validate scope
+                return False, None
+            
+            # Common London markets that might be confused
+            london_markets = [
+                'mayfair', 'chelsea', 'kensington', 'knightsbridge', 
+                'belgravia', 'south kensington', 'notting hill', 
+                'marylebone', 'holland park', 'fitzrovia'
+            ]
+            
+            # Extract market mentions from user message
+            user_msg_lower = user_message.lower()
+            mentioned_markets = [m for m in london_markets if m in user_msg_lower]
+            
+            # If user asked about a specific market different from dataset
+            if mentioned_markets and mentioned_markets[0] != dataset_area:
+                requested_market = mentioned_markets[0]
+                
+                # Check if response discusses the wrong market
+                # Look for data leakage patterns
+                has_stats = bool(re.search(r'\d+\.?\d*%|£\d+|inventory|velocity|pricing', text.lower()))
+                
+                if has_stats:
+                    # Response contains stats but user asked about different market = VIOLATION
+                    logger.warning(f"⚠️ SCOPE VIOLATION: User asked about {requested_market}, dataset is {dataset_area}, response has stats")
+                    
+                    corrected_response = f"I don't have data for {requested_market.title()}. My current coverage is {dataset_area.title()}. Would you like insights on {dataset_area.title()} instead?"
+                    
+                    return True, corrected_response
+            
+            return False, None
+        
+        # Run scope validator (only for real data)
+        if not is_synthetic:
+            is_scope_violation, corrected_response = check_geographic_scope(response_text, dataset, message)
+            
+            if is_scope_violation:
+                logger.error(f"❌ GEOGRAPHIC SCOPE VIOLATION DETECTED")
+                logger.error(f"Original response: {response_text[:200]}")
+                response_text = corrected_response
+                logger.info("✅ Response replaced with scope refusal")
         
         # ========================================
         # DECISION MODE POST-PROCESSING ENFORCEMENT
