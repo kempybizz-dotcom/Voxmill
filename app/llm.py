@@ -1643,7 +1643,7 @@ VIOLATION = TRUST BREACH. Demo data presented as real = product death.
                 return False, []
             
             # For real data: detect numeric violations
-            import re
+            
             
             # Detect numeric confidence scores
             if re.search(r'Confidence:\s*\d+/\d+', text, re.IGNORECASE):
@@ -1715,7 +1715,7 @@ Original user question: {message}"""
             if retry_has_violations:
                 logger.error(f"❌ RETRY STILL HAS VIOLATIONS: {retry_violations}")
                 # Strip numbers and add disclaimer
-                import re
+                
                 cleaned_text = re.sub(r'\d+\.?\d*%?', '[figure omitted]', retry_text)
                 cleaned_text = re.sub(r'£\d+\.?\d*[kmKM]?', '[amount omitted]', cleaned_text)
                 response_text = f"I can't provide verified figures for that.\n\n{cleaned_text}"
@@ -1733,7 +1733,7 @@ Original user question: {message}"""
             
             Returns: (has_violations, list_of_agent_names_found)
             """
-            import re
+            
             
             # Get verified agents from dataset
             is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
@@ -1813,7 +1813,7 @@ Original user question: {message}"""
                     # Mentioned agents in context - replace with generic terms
                     logger.info("🔄 Replacing fabricated agent names with generic terms...")
                     
-                    import re
+                    
                     cleaned_text = response_text
                     
                     # Replace specific agencies with generic terms
@@ -1839,7 +1839,7 @@ Original user question: {message}"""
             
             Returns: (is_violation, corrected_response_or_none)
             """
-            import re
+            
             
             # Get dataset's market
             metadata = dataset.get('metadata', {})
