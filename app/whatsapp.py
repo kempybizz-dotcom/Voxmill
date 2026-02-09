@@ -55,6 +55,50 @@ from app.config import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ============================================================
+# STARTUP STATUS DUMP (PHASE 4)
+# ============================================================
+
+def log_whatsapp_startup_status():
+    """Log critical WhatsApp handler configuration on startup"""
+    import sys
+    
+    logger.info("="*70)
+    logger.info("VOXMILL WHATSAPP HANDLER - STARTUP STATUS")
+    logger.info("="*70)
+    
+    env = os.getenv("ENV", "unknown")
+    use_mock_data = os.getenv("USE_MOCK_DATA", "false").lower()
+    
+    logger.info(f"Environment: {env}")
+    logger.info(f"USE_MOCK_DATA: {use_mock_data}")
+    logger.info(f"Twilio SID: {'✅' if TWILIO_ACCOUNT_SID else '❌'}")
+    
+    # Gate status
+    logger.info(f"PIN Gate: {'✅ Enabled' if ENABLE_PIN_GATE else '❌ Disabled'}")
+    logger.info(f"Silence Mode: {'✅ Enabled' if ENABLE_SILENCE_MODE else '❌ Disabled'}")
+    logger.info(f"Repeat Detection: {'✅ Enabled' if ENABLE_REPEAT_DETECTION else '❌ Disabled'}")
+    logger.info(f"Abuse Blocks: {'✅ Enabled' if ENABLE_ABUSE_SCORING_BLOCKS else '❌ Disabled'}")
+    logger.info(f"Security Blocks: {'✅ Enabled' if ENABLE_SECURITY_BLOCKS else '❌ Disabled'}")
+    
+    # CRITICAL: Crash if mock in production
+    if env in ["production", "prod"] and use_mock_data == "true":
+        logger.error("="*70)
+        logger.error("🚨 CRITICAL: MOCK DATA IN PRODUCTION")
+        logger.error("="*70)
+        logger.error("WhatsApp handler will serve synthetic data to real users")
+        logger.error("Set USE_MOCK_DATA=false immediately")
+        logger.error("="*70)
+        sys.exit(1)
+    
+    if use_mock_data == "true":
+        logger.warning("⚠️ MOCK DATA MODE - Synthetic responses only")
+    
+    logger.info("="*70)
+
+# Run on module load
+log_whatsapp_startup_status()
+
 # Twilio configuration
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
