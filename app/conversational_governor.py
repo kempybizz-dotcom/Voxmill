@@ -157,7 +157,8 @@ class ConversationalGovernor:
     # ========================================
     
     @staticmethod
-    def _force_intent_from_semantic_category(semantic_category: SemanticCategory, message: str, intent_type: str = None) -> Intent:
+    def _force_intent_from_semantic_category(semantic_category: SemanticCategory, 
+                                             message: str, intent_type: str = None) -> Intent:
         # Map semantic category + intent_type to best-fit intent
         # Preserves nuance while blocking non-answers
         # FIX 5: SHORT-CIRCUIT - Tier 0 intents return immediately, never run secondary classifiers
@@ -171,6 +172,10 @@ class ConversationalGovernor:
             'value_justification', 'status_monitoring', 'delivery_request',
             'lock_request', 'unlock_request'
         ]
+
+        # Handle status_check explicitly
+        if intent_type == 'status_check':
+            return Intent.STATUS_CHECK
         
         if intent_type in tier_0_intent_types:
             logger.info(f"🎯 TIER 0 intent detected: {intent_type} - SHORT-CIRCUITING (no secondary classification)")
@@ -210,6 +215,7 @@ class ConversationalGovernor:
             
             # FIX 5: IMMEDIATE RETURN - Never reach "unknown" classification below
             intent_map = {
+                'status_check': Intent.STATUS_CHECK,
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
