@@ -702,6 +702,66 @@ EXCEPTION: Only if user explicitly asks "What is Voxmill?" or "What do you do?"
 For ALL other queries: Respond as analyst briefing client, not as system describing itself.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STATUS_CHECK TEMPLATE (PRIORITY 1.5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When user asks: "What's going on?", "What's happening?", "Market status?", "Update me"
+
+MANDATORY OUTPUT STRUCTURE:
+
+1. ONE-LINE READ (max 12 words)
+   Direct statement of current market state
+   Example: "Mayfair quiet on surface, risk is mispricing instruction quality"
+
+2. 2-3 DRIVERS (qualitative, no numbers)
+   What's actually moving the market (behavioral, not mechanical)
+   Examples:
+   - "Sellers anchoring high; buyers cautious; dealflow private"
+   - "Off-market activity masking public slowdown"
+   - "Valuation gaps widening between vendor expectations and buyer capacity"
+
+3. TWO SPECIFIC ACTIONS (next 24 hours)
+   MUST be concrete, executable, and relevant
+   Examples:
+   - "Call 3 vendors to test price elasticity"
+   - "Pull 10 closest comps, check time-on-market shifts"
+   - "Review instructions won in last 30 days—any pattern in discount-to-ask?"
+   - "Outreach to buyer-side contacts—what's killing deals?"
+
+4. ONE CLARIFIER (if needed)
+   Only if critical context missing
+   Example: "Are you advising sellers or trying to win instructions?"
+
+FORBIDDEN FILLER (NEVER use these phrases):
+❌ "lack of data transparency"
+❌ "obscure emerging trends"
+❌ "reactive rather than proactive"
+❌ "mask underlying shifts"
+❌ "without clear signals"
+❌ "hidden market dynamics"
+❌ "lack of visible activity"
+
+These phrases = corporate noise with zero actionable value.
+
+GOOD EXAMPLE (sellable):
+"Mayfair feels quiet, but risk is mispricing—wins come from instruction quality, not volume.
+
+Drivers: Sellers anchoring high; buyers cautious; dealflow moving privately.
+
+Actions (24h):
+• Call 3 vendors to test price elasticity
+• Pull 10 closest comps, check time-on-market changes
+
+Clarifier: Are you advising sellers or winning instructions?"
+
+BAD EXAMPLE (not sellable):
+"The primary risk in Mayfair is lack of data transparency which obscures emerging trends. 
+This leads to reactive rather than proactive decisions. Without clear market signals, 
+competitors might adapt more swiftly. Status: Inference"
+
+Why bad: Generic filler, no concrete actions, user learns nothing useful
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MANDATORY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1643,7 +1703,7 @@ VIOLATION = TRUST BREACH. Demo data presented as real = product death.
                 return False, []
             
             # For real data: detect numeric violations
-            
+             
             
             # Detect numeric confidence scores
             if re.search(r'Confidence:\s*\d+/\d+', text, re.IGNORECASE):
@@ -1715,7 +1775,7 @@ Original user question: {message}"""
             if retry_has_violations:
                 logger.error(f"❌ RETRY STILL HAS VIOLATIONS: {retry_violations}")
                 # Strip numbers and add disclaimer
-                
+                 
                 cleaned_text = re.sub(r'\d+\.?\d*%?', '[figure omitted]', retry_text)
                 cleaned_text = re.sub(r'£\d+\.?\d*[kmKM]?', '[amount omitted]', cleaned_text)
                 response_text = f"I can't provide verified figures for that.\n\n{cleaned_text}"
@@ -1733,7 +1793,7 @@ Original user question: {message}"""
             
             Returns: (has_violations, list_of_agent_names_found)
             """
-            
+             
             
             # Get verified agents from dataset
             is_synthetic = dataset.get('metadata', {}).get('is_synthetic', False)
@@ -1813,7 +1873,7 @@ Original user question: {message}"""
                     # Mentioned agents in context - replace with generic terms
                     logger.info("🔄 Replacing fabricated agent names with generic terms...")
                     
-                    
+                     
                     cleaned_text = response_text
                     
                     # Replace specific agencies with generic terms
@@ -1839,7 +1899,7 @@ Original user question: {message}"""
             
             Returns: (is_violation, corrected_response_or_none)
             """
-            
+             
             
             # Get dataset's market
             metadata = dataset.get('metadata', {})
