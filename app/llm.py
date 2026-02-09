@@ -2,6 +2,7 @@ import os
 import logging
 import json
 import re
+from typing import Dict, Tuple, List
 from openai import OpenAI
 from datetime import datetime
 from app.adaptive_llm import get_adaptive_llm_config, AdaptiveLLMController
