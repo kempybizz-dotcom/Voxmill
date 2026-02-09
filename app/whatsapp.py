@@ -2042,6 +2042,60 @@ Contact intel@voxmill.uk to activate market coverage."""
                     conversation_context=conversation_context
                 )
                 
+                # ============================================================
+                # PHASE 5B: MARKET CLARIFICATION FOR VAGUE STATUS_CHECK
+                # ============================================================
+                
+                # If STATUS_CHECK but no market mentioned → ask for clarification
+                if governance_result.intent == Intent.STATUS_CHECK:
+                    # Extract markets mentioned in message
+                    segment_lower = segment.lower()
+                    
+                    known_markets = available_markets if available_markets else [
+                        'Mayfair', 'Chelsea', 'Knightsbridge', 'Belgravia',
+                        'Kensington', 'Notting Hill', 'Marylebone'
+                    ]
+                    
+                    market_mentioned = any(market.lower() in segment_lower for market in known_markets)
+                    
+                    # Check for vague queries with no market context
+                    vague_queries = [
+                        "what's going on",
+                        "what's happening",
+                        "what's up",
+                        "give me an update",
+                        "market status",
+                        "market update",
+                        "how's the market"
+                    ]
+                    
+                    is_vague = any(vq in segment_lower for vq in vague_queries)
+                    
+                    # Trigger clarification if vague + no market mentioned
+                    if is_vague and not market_mentioned:
+                        logger.info("🔍 CLARIFICATION NEEDED: Vague STATUS_CHECK with no market mentioned")
+                        
+                        # Format available markets for display
+                        if len(known_markets) <= 5:
+                            market_list = ', '.join(known_markets)
+                        else:
+                            market_list = ', '.join(known_markets[:5]) + f', and {len(known_markets) - 5} more'
+                        
+                        clarification_response = f"Which market—{market_list}?"
+                        
+                        # Store pending question context
+                        conversation.set_pending_question('market_context', segment)
+                        
+                        await send_twilio_message(sender, clarification_response)
+                        log_interaction(sender, segment, "clarification_request", clarification_response, 0, client_profile)
+                        
+                        # Don't continue processing - wait for user's market selection
+                        continue
+                
+                # ============================================================
+                # END CLARIFICATION CHECK
+                # ============================================================
+                
                 if governance_result.blocked:
                     if governance_result.response and not governance_result.silence_required:
                         responses.append(governance_result.response)
