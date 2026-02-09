@@ -96,13 +96,13 @@ def log_whatsapp_startup_status():
     
     logger.info("="*70)
 
-# Run on module load
-log_whatsapp_startup_status()
-
-# Twilio configuration
+# Twilio configuration (MUST be defined BEFORE calling log_whatsapp_startup_status)
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")
+
+# Run startup logging AFTER variables are defined
+log_whatsapp_startup_status()
 
 # Initialize Twilio client
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN else None
