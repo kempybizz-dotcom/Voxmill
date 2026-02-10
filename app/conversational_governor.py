@@ -1324,6 +1324,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
         tier_0_detected = False
         if intent_type_hint:
             intent_type_map = {
+                'status_check': Intent.STATUS_CHECK,
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
