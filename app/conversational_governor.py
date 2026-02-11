@@ -64,6 +64,7 @@ class Intent(Enum):
 TIER_0_NON_OVERRIDABLE = [
     Intent.SECURITY,              # PIN/auth must always work
     Intent.ADMINISTRATIVE,        # Account management critical
+    Intent.STATUS_CHECK,          # ✅ NEW: Status check queries
     Intent.LOCK_REQUEST,          # ✅ NEW: Lock commands
     Intent.UNLOCK_REQUEST,        # ✅ NEW: Unlock commands (4-digit codes handled separately)
     Intent.TRUST_AUTHORITY,       # Confidence challenges
@@ -85,7 +86,6 @@ TIER_1_HIGH_PRIORITY = [
 ]
 
 TIER_2_DEFAULT = [
-    Intent.STATUS_CHECK,          # Quick status
     Intent.UNKNOWN,               # Fallback
 ]
 
@@ -1196,6 +1196,7 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
         intent_type_hint = ConversationalGovernor._last_intent_type
         
         tier_0_intents = {
+            'status_check': Intent.STATUS_CHECK,
             'trust_authority': Intent.TRUST_AUTHORITY,
             'principal_risk_advice': Intent.PRINCIPAL_RISK_ADVICE,
             'meta_authority': Intent.META_AUTHORITY,
@@ -1324,7 +1325,6 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
         tier_0_detected = False
         if intent_type_hint:
             intent_type_map = {
-                'status_check': Intent.STATUS_CHECK,
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
