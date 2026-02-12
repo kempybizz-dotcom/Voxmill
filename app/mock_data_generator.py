@@ -436,7 +436,7 @@ def load_mock_dataset(area: str, industry: str, max_items: int = 100) -> List[Di
     
     else:
         # Default to real estate
-        return RealEstateMockData.generate_properties(area, count=max_items)"""
+        return RealEstateMockData.generate_properties(area, count=max_items)
 VOXMILL MULTI-INDUSTRY MOCK DATA GENERATOR (PRODUCTION-SAFE EDITION)
 ====================================================================
 Production-grade synthetic data for testing and demos
