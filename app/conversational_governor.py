@@ -64,7 +64,6 @@ class Intent(Enum):
 TIER_0_NON_OVERRIDABLE = [
     Intent.SECURITY,              # PIN/auth must always work
     Intent.ADMINISTRATIVE,        # Account management critical
-    Intent.STATUS_CHECK,          # ✅ NEW: Status check queries
     Intent.LOCK_REQUEST,          # ✅ NEW: Lock commands
     Intent.UNLOCK_REQUEST,        # ✅ NEW: Unlock commands (4-digit codes handled separately)
     Intent.TRUST_AUTHORITY,       # Confidence challenges
@@ -86,6 +85,7 @@ TIER_1_HIGH_PRIORITY = [
 ]
 
 TIER_2_DEFAULT = [
+    Intent.STATUS_CHECK,          # Quick status
     Intent.UNKNOWN,               # Fallback
 ]
 
@@ -1295,9 +1295,13 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                    f"entities={auto_scope_result.entities}, "
                    f"source={auto_scope_result.inferred_from}")
         
-        intent, confidence = ConversationalGovernor._classify_intent(message_text)
-        
-        logger.info(f"Intent classified: {intent.value} (confidence: {confidence:.2f})")
+        # ✅ BUG 1 FIX: Skip _classify_intent if tier_0_routed already set a definitive intent.
+        # Without this, _classify_intent overwrites the correct STATUS_CHECK intent with UNKNOWN.
+        if tier_0_routed:
+            logger.info(f"⚡ TIER 0 ROUTED: Skipping _classify_intent (intent already set to {intent.value})")
+        else:
+            intent, confidence = ConversationalGovernor._classify_intent(message_text)
+            logger.info(f"Intent classified: {intent.value} (confidence: {confidence:.2f})")
         
         CONFIDENCE_THRESHOLDS = {
             Intent.SECURITY: 0.95,
@@ -1322,9 +1326,11 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
             intent = Intent.UNKNOWN
             confidence = 0.50
         
-        tier_0_detected = False
+        # ✅ BUG 2 FIX: Sync tier_0_detected with tier_0_routed so the override guard works.
+        tier_0_detected = tier_0_routed
         if intent_type_hint:
             intent_type_map = {
+                'status_check': Intent.STATUS_CHECK,
                 'trust_authority': Intent.TRUST_AUTHORITY,
                 'meta_authority': Intent.META_AUTHORITY,
                 'executive_compression': Intent.EXECUTIVE_COMPRESSION,
