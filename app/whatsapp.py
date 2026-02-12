@@ -2060,13 +2060,13 @@ Contact intel@voxmill.uk to activate market coverage."""
                     
                     # Check for vague queries with no market context
                     vague_queries = [
-                        "what's going on",
-                        "what's happening",
-                        "what's up",
-                        "give me an update",
-                        "market status",
-                        "market update",
-                        "how's the market"
+                        "what's going on", "whats going on",
+                        "what's happening", "whats happening",
+                        "what's up", "whats up",
+                        "give me an update", "update me",
+                        "market status", "market update",
+                        "how's the market", "hows the market",
+                        "any updates", "what's new", "whats new"
                     ]
                     
                     is_vague = any(vq in segment_lower for vq in vague_queries)
@@ -3302,7 +3302,7 @@ CRITICAL RULES:
                 logger.info(f"🗺️ Region extracted from query: '{query_region}' (overriding '{preferred_region}')")
                 break
         
-# ====================================================================
+        # ====================================================================
         # SELECTIVE DATASET LOADING (OPTIMIZED)
         # ====================================================================
         
@@ -3314,6 +3314,34 @@ CRITICAL RULES:
         _instant_eligible = governance_result.intent == Intent.STATUS_CHECK
         
         if _instant_eligible:
+            # ================================================================
+            # PHASE 5B: CLARIFICATION GATE (single-intent path)
+            # Runs BEFORE dataset load — ask market if vague + multi-market
+            # ================================================================
+            _msg_lower = message_text.lower()
+            _market_in_msg = any(m.lower() in _msg_lower for m in (available_markets or []))
+            _vague = any(vq in _msg_lower for vq in [
+                "what's going on", "whats going on",
+                "what's happening", "whats happening",
+                "what's up", "whats up",
+                "give me an update", "update me",
+                "market status", "market update",
+                "how's the market", "hows the market",
+                "any updates", "what's new", "whats new"
+            ])
+            if _vague and not _market_in_msg and len(available_markets or []) > 1:
+                _mlist = ', '.join((available_markets or [])[:5])
+                _clarification = f"Which market—{_mlist}?"
+                conversation = ConversationSession(sender)
+                conversation.set_pending_question('market_context', message_text)
+                await send_twilio_message(sender, _clarification)
+                log_interaction(sender, message_text, "clarification_request", _clarification, 0, client_profile)
+                logger.info(f"🔍 CLARIFICATION SENT (single-intent): {_clarification}")
+                return
+            # ================================================================
+            # END CLARIFICATION GATE
+            # ================================================================
+
             logger.info(f"🎯 Loading dataset for region: '{query_region}'")
             
             # ✅ FIX 2: CANONICALIZE BEFORE LOADING
