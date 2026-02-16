@@ -1250,16 +1250,16 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
         
         if not is_mandate_relevant:
             if intent_type_hint in ['gibberish', 'profanity']:
-                logger.info(f"🔇 NOISE detected ({intent_type_hint}) - silent acknowledgment")
+                logger.info(f"🔇 NOISE detected ({intent_type_hint}) — sending redirect")
                 
                 return GovernanceResult(
                     intent=Intent.CASUAL,
                     confidence=semantic_confidence,
                     blocked=True,
-                    silence_required=True,  # Silence instead of canned response
-                    response=None,  # No response for gibberish
+                    silence_required=False,
+                    response="Didn't catch that. Try: 'What's going on in Mayfair?' or 'Who's moving?'",
                     allowed_shapes=["ACKNOWLEDGMENT"],
-                    max_words=5,
+                    max_words=15,
                     analysis_allowed=False,
                     data_load_allowed=False,
                     llm_call_allowed=False,
@@ -1267,16 +1267,16 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
                     semantic_category=semantic_category.value
                 )
             else:
-                logger.warning(f"🚫 REFUSAL: Not mandate-relevant, treating as out of scope")
+                logger.warning(f"🚫 REFUSAL: Not mandate-relevant — sending redirect")
                 
                 return GovernanceResult(
                     intent=Intent.CASUAL,
                     confidence=semantic_confidence,
                     blocked=True,
-                    silence_required=True,  # Silence instead of refusal
-                    response=None,  # No "Outside scope" message
+                    silence_required=False,
+                    response="That's outside what I cover. Ask me about Mayfair — pricing, agents, timing, or market shifts.",
                     allowed_shapes=["ACKNOWLEDGMENT"],
-                    max_words=10,
+                    max_words=20,
                     analysis_allowed=False,
                     data_load_allowed=False,
                     llm_call_allowed=False,
