@@ -1790,10 +1790,23 @@ Try: "Compare Mayfair vs Knightsbridge"""
             # Strip common timeframe phrases that break entity extraction
             # e.g., "Chelsea for the last 3 months" → "Chelsea"
             timeframe_patterns = [
-                r'\s+for\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
-                r'\s+in\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
-                r'\s+over\s+the\s+last\s+\d+\s+(week|month|quarter|year)s?',
-                r'\s+since\s+last\s+(week|month|quarter|year)',
+                # Numeric: "for the last 30 days/weeks/months/quarters/years"
+                r'\s+for\s+the\s+last\s+\d+\s+(day|week|month|quarter|year)s?',
+                r'\s+in\s+the\s+last\s+\d+\s+(day|week|month|quarter|year)s?',
+                r'\s+over\s+the\s+last\s+\d+\s+(day|week|month|quarter|year)s?',
+                r'\s+for\s+the\s+past\s+\d+\s+(day|week|month|quarter|year)s?',
+                r'\s+in\s+the\s+past\s+\d+\s+(day|week|month|quarter|year)s?',
+                # Bare: "for the last week/month/quarter/year"
+                r'\s+for\s+the\s+last\s+(day|week|month|quarter|year)',
+                r'\s+in\s+the\s+last\s+(day|week|month|quarter|year)',
+                r'\s+over\s+the\s+last\s+(day|week|month|quarter|year)',
+                r'\s+since\s+last\s+(day|week|month|quarter|year)',
+                # This/last: "this week", "last month"
+                r'\s+this\s+(week|month|quarter|year)',
+                r'\s+last\s+(week|month|quarter|year)',
+                # YTD
+                r'\s+ytd\b',
+                r'\s+year\s+to\s+date',
             ]
             
             message_text_clean = message_text
@@ -1842,6 +1855,30 @@ Available: {', '.join(available_markets[:5])}"""
             
             if len(entities) > 2:
                 entities = entities[:2]
+            
+            # ── PATCH: Reject self-comparison caused by context fallback ──
+            # e.g. "How does Mayfair compare to Knightsbridge?" where Knightsbridge
+            # isn't in available_markets → context resolver fills both slots with Mayfair
+            if len(entities) == 2 and entities[0] == entities[1]:
+                logger.warning(f"⚠️ Self-comparison detected ({entities[0]} vs {entities[0]}) — attempting regex rescue")
+                london_markets_re = (
+                    r"\b(Mayfair|Chelsea|Knightsbridge|Belgravia|Kensington|"
+                    r"Notting Hill|Holland Park|Marylebone|Fitzrovia|Soho|"
+                    r"Covent Garden|Islington|Canary Wharf|Richmond|Hampstead|"
+                    r"Wimbledon|Fulham|Battersea|Clapham|South Kensington|"
+                    r"Pimlico|Westminster|St Johns Wood|Bayswater)\b"
+                )
+                raw_found = re.findall(london_markets_re, message_text, re.IGNORECASE)
+                raw_found = list(dict.fromkeys([m.title() for m in raw_found]))
+                if len(raw_found) >= 2:
+                    entities = raw_found[:2]
+                    logger.info(f"🔄 Self-comparison corrected: {entities[0]} vs {entities[1]}")
+                else:
+                    response = "I can compare any two markets — specify both. Try: 'Compare Mayfair vs Chelsea'."
+                    await send_twilio_message(sender, response)
+                    log_interaction(sender, message_text, "comparison_self_resolved", response, 0, client_profile)
+                    return
+            # ── END PATCH ────────────────────────────────────────────────
             
             # GATE 2: Validate entities against available markets
             market1, market2 = entities[0], entities[1]
