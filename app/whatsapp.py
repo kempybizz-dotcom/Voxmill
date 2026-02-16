@@ -1818,16 +1818,36 @@ Try: "Compare Mayfair vs Knightsbridge"""
             # Parse comparison entities
             entities = []
             
-            # Strategy 1: "compare X vs Y" or "X versus Y"
-            vs_pattern = r'(?:compare\s+)?([a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z\s]+)'
-            match = re.search(vs_pattern, message_text_clean, re.IGNORECASE)
+            # Strategy 1: "X vs Y", "X versus Y", "compare X to Y", "how does X compare to Y"
+            # Covers: "Compare Mayfair vs Chelsea", "How does Mayfair compare to Knightsbridge?"
+            comparison_patterns = [
+                r'(?:compare\s+)?([a-zA-Z][a-zA-Z\s]+?)\s+(?:vs\.?|versus)\s+([a-zA-Z][a-zA-Z\s]+?)(?:\s*[?,.]|$)',
+                r'(?:compare|how\s+does)\s+([a-zA-Z][a-zA-Z\s]+?)\s+(?:compare\s+to|against|with)\s+([a-zA-Z][a-zA-Z\s]+?)(?:\s*[?,.]|$)',
+            ]
             
-            if match:
-                entities = [match.group(1).strip().title(), match.group(2).strip().title()]
-            else:
-                # Strategy 2: Extract any mentioned market names
+            for pat in comparison_patterns:
+                match = re.search(pat, message_text_clean, re.IGNORECASE)
+                if match:
+                    entities = [match.group(1).strip().title(), match.group(2).strip().title()]
+                    break
+            
+            if not entities:
+                # Strategy 2: Extract any named London markets from the message
+                # Uses a broad market list — not limited to available_markets
+                london_markets_broad = [
+                    "Mayfair", "Chelsea", "Knightsbridge", "Belgravia", "Kensington",
+                    "Notting Hill", "Holland Park", "Marylebone", "Fitzrovia", "Soho",
+                    "Covent Garden", "Islington", "Canary Wharf", "Richmond", "Hampstead",
+                    "Wimbledon", "Fulham", "Battersea", "Clapham", "South Kensington",
+                    "Pimlico", "Westminster", "St Johns Wood", "Bayswater"
+                ]
+                for market in london_markets_broad:
+                    if market.lower() in message_text_clean.lower():
+                        entities.append(market)
+                
+                # Also check available_markets for any industry-specific markets not in the list
                 for market in available_markets:
-                    if market.lower() in message_lower:
+                    if market.lower() in message_text_clean.lower() and market not in entities:
                         entities.append(market)
             
             # Remove duplicates, preserve order
