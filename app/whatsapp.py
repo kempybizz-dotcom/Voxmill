@@ -1272,8 +1272,8 @@ Contact intel@voxmill.uk if you need assistance."""
                 logger.warning(f"🔇 User silenced for spam: {sender}")
                 return  # TERMINAL
             
-            # Send "Standing by" for first 2 gibberish messages
-            await send_twilio_message(sender, "")
+            # Redirect for first 2 gibberish messages (empty string crashes Twilio)
+            await send_twilio_message(sender, "Didn't catch that. Try: 'What's going on in Mayfair?' or 'Who's moving?'")
             return  # TERMINAL
         
         logger.info(f"✅ GATE 2.7 PASSED: Not obvious gibberish")
