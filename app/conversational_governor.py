@@ -756,7 +756,7 @@ Respond ONLY with valid JSON:
     "is_mandate_relevant": true/false,
     "semantic_category": "competitive_intelligence" | "market_dynamics" | "strategic_positioning" | "temporal_analysis" | "surveillance" | "administrative" | "social" | "non_domain",
     "confidence": 0.0-1.0,
-    "intent_type: "market_query" | "status_check" | "follow_up" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "lock_request" | "unlock_request" | "gibberish" | "profanity",
+    "intent_type: "market_query" | "status_check" | "follow_up" | "context_deepen" | "contradiction" | "preference_change" | "meta_authority" | "profile_status" | "identity_query" | "plain_english_definition" | "portfolio_status" | "portfolio_management" | "value_justification" | "trust_authority" | "principal_risk_advice" | "status_monitoring" | "delivery_request" | "privilege_escalation" | "scope_override" | "lock_request" | "unlock_request" | "gibberish" | "profanity",
     "is_human_signal": true/false,
     "is_dismissal": false,
     "requested_region": null
@@ -785,6 +785,8 @@ CRITICAL INTENT ROUTING (PRIORITY 2):
 Guidelines:
 - is_mandate_relevant: true if asking about markets, competition, pricing, agents, properties, strategy, timing, OR meta-strategic questions
 - VAGUE STATUS QUERIES: "What's happening?", "What's going on?", "What's up?", "Any updates?", "Market status?", "Give me an update", "How's the market?" → intent_type: status_check, is_mandate_relevant: true
+- CONTEXT DEEPENING: "Tell me more", "Tell me more about that", "Go deeper", "Explain more", "More detail", "Expand on that", "Elaborate", "What else?", "Keep going" → intent_type: context_deepen, is_mandate_relevant: true
+- CONTRADICTION/PUSHBACK: "That's wrong", "I disagree", "That doesn't match", "The market is hotter/quieter than that", "You're off", "Not what I'm seeing", "That's not right", "Wrong" → intent_type: contradiction, is_mandate_relevant: true
 - GIBBERISH: Only random characters, spam, profanity (e.g. "asdfkjh", "!!!!!"). DO NOT classify vague but valid questions as gibberish.
 - is_human_signal: true if expressing INTUITION, UNCERTAINTY, or requesting BEHAVIORAL EXPLANATION
 - is_dismissal: true if user explicitly requests direct data without context
@@ -1207,6 +1209,9 @@ META-STRATEGIC EXAMPLES (ALWAYS relevant=true, intent_type=trust_authority):
             'value_justification': Intent.VALUE_JUSTIFICATION,
             'status_monitoring': Intent.STATUS_MONITORING,
             'delivery_request': Intent.DELIVERY_REQUEST,
+            # P1 additions: route to STRATEGIC (GPT path) not instant snapshot
+            'context_deepen': Intent.STRATEGIC,
+            'contradiction': Intent.STRATEGIC,
         }
         
         if intent_type_hint in tier_0_intents:
