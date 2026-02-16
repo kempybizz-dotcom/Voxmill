@@ -3454,14 +3454,44 @@ Try: "Show Mayfair overview"""
                 )
             
             # STATUS_CHECK → instant snapshot (sub-1s, no GPT call)
-            formatted_response = InstantIntelligence.get_full_market_snapshot(canonical_region, dataset, client_profile)
-            category = "market_overview"
+            # ── P1.3 REPEAT DETECTION: if same intent fired in last 2 messages,
+            # route to GPT for a different angle instead of identical snapshot ──
+            session_data_check = conversation.get_session()
+            last_category = session_data_check.get('last_response_category', '')
+            repeat_count_check = session_data_check.get('status_check_repeat_count', 0)
+            
+            if last_category == 'market_overview':
+                # Second+ identical status_check — send to GPT for variation
+                repeat_count_check += 1
+                session_data_check['status_check_repeat_count'] = repeat_count_check
+                logger.info(f"🔁 REPEAT STATUS_CHECK detected (#{repeat_count_check}) — routing to GPT for variation")
+                
+                variation_angles = [
+                    "Give a different angle on the market from the previous snapshot — focus on agent behaviour and competitive dynamics.",
+                    "Reframe the market position from a buyer pressure perspective — what's driving or killing deal velocity right now?",
+                    "Lead with timing risk — what's the window here and what closes it?",
+                ]
+                angle = variation_angles[(repeat_count_check - 1) % len(variation_angles)]
+                
+                category, formatted_response, metadata = await classify_and_respond(
+                    message=f"{message_text} [{angle}]",
+                    dataset=dataset,
+                    client_profile=client_profile,
+                    comparison_datasets=None,
+                    governance_result=governance_result
+                )
+            else:
+                session_data_check['status_check_repeat_count'] = 0
+                formatted_response = InstantIntelligence.get_full_market_snapshot(canonical_region, dataset, client_profile)
+                category = "market_overview"
+            # ── END P1.3 ────────────────────────────────────────────────
             
             await send_twilio_message(sender, formatted_response)
             
             # Cache response for repeat detection
             session_data = conversation.get_session()
             session_data['last_bot_response_raw'] = formatted_response
+            session_data['last_response_category'] = category  # P1.3: track for repeat variation
             
             conversation.update_session(
                 user_message=message_text, 
